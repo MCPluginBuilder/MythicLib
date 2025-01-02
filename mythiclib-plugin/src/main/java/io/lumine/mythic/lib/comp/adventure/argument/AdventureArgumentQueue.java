@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.comp.adventure.argument;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.function.Supplier;
  * <p>
  * This class is reponsible holding the arguments in a linked queue.
  */
-@ApiStatus.Internal
 public class AdventureArgumentQueue {
 
     private final List<AdventureArgument> args;

@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.script.variable;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 import javax.annotation.Nullable;
 

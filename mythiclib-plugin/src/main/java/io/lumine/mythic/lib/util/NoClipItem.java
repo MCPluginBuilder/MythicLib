@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.TemporaryListener;
+import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
@@ -81,7 +82,7 @@ public class NoClipItem extends TemporaryListener {
      * https://i.imgur.com/oLjkeoD.png
      */
     private ItemStack stripItemData(ItemStack oldItem) {
-        final NBTItem oldItemNBT = MythicLib.plugin.getVersion().getWrapper().getNBTItem(oldItem);
+        final NBTItem oldItemNBT = VersionWrapper.get().getNBTItem(oldItem);
 
         // Make new item.
         final ItemStack newItem = new ItemStack(oldItem.getType());
@@ -126,7 +127,7 @@ public class NoClipItem extends TemporaryListener {
 
         // Set ItemMeta and get item as NBTItem to continue work.
         newItem.setItemMeta(newItemMeta);
-        final NBTItem newItemNBT = MythicLib.plugin.getVersion().getWrapper().getNBTItem(newItem);
+        final NBTItem newItemNBT = VersionWrapper.get().getNBTItem(newItem);
 
         // Copy Tier for item Glow.
         newItemNBT.addTag(new ItemTag("MMOITEMS_TIER", oldItemNBT.getString("MMOITEMS_TIER").trim().isEmpty() ? null : oldItemNBT.getString("MMOITEMS_TIER")));

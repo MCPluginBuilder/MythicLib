@@ -1,14 +1,17 @@
 package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -27,6 +30,10 @@ import java.util.UUID;
 public interface VersionWrapper {
 
     static final String PLAYER_PROFILE_NAME = "SkullTexture";
+
+    public static VersionWrapper get() {
+        return MythicLib.plugin.getVersion().getWrapper();
+    }
 
     /**
      * @return Either a GameProfile object or PlayerProfile depending on version.
@@ -54,7 +61,8 @@ public interface VersionWrapper {
      * used to apply Fortune levels for loot multiplication.
      *
      * @param material Type of broken block
-     * @return Drops of provided block if it's an ore, null otherwise
+     * @return Drops of provided block if it's an ore, null otherwise. The drops correspond
+     *         to the autosmelt drops, not the vanilla block drops.
      */
     OreDrops getOreDrops(Material material);
 
@@ -183,6 +191,22 @@ public interface VersionWrapper {
         return new AttributeModifier(UUID.nameUUIDFromBytes(str.getBytes(StandardCharsets.UTF_8)), str, amount, operation);
     }
 
+    /**
+     * In 1.21.2+ Biome was changed from an Enum to an interface.
+     */
+    @BackwardsCompatibility(version = "1.21.2")
+    default String getBiomeName(@NotNull Biome biome) {
+        return biome.getKey().getKey().toUpperCase();
+    }
+
+    /**
+     * In 1.21.2+ Sound was changed from an Enum to an interface.
+     */
+    @BackwardsCompatibility(version = "1.21.2")
+    default String getSoundName(@NotNull Sound sound) {
+        return sound.getKey().getKey().toUpperCase();
+    }
+
     default boolean matches(AttributeModifier modifier, NamespacedKey key) {
         return modifier.getName().equals(key.toString());
     }
@@ -191,5 +215,5 @@ public interface VersionWrapper {
 
     VInventoryView getOpenInventory(@NotNull Player player);
 
-    InventoryClickEvent newInventoryClickEvent(@NotNull VInventoryView view, @NotNull InventoryType.@NotNull SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action);
+    InventoryClickEvent newInventoryClickEvent(@NotNull VInventoryView view, @NotNull InventoryType.SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action);
 }

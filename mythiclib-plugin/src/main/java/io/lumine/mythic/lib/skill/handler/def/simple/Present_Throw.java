@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -61,7 +61,7 @@ public class Present_Throw extends SkillHandler<SimpleSkillResult> {
          * trajectory change
          */
         final double trajRatio = item.getEntity().getVelocity().getX() / item.getEntity().getVelocity().getZ();
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 0);
         new BukkitRunnable() {
             int ti = 0;
 
@@ -75,7 +75,7 @@ public class Present_Throw extends SkillHandler<SimpleSkillResult> {
                 item.getEntity().getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), item.getEntity().getLocation().add(0, .1, 0), 0);
                 if (item.getEntity().isOnGround() || Math.abs(trajRatio - currentTrajRatio) > .1) {
                     item.getEntity().getWorld().spawnParticle(VParticle.FIREWORK.get(), item.getEntity().getLocation().add(0, .1, 0), 128, 0, 0, 0, .25);
-                    item.getEntity().getWorld().playSound(item.getEntity().getLocation(), VSound.ENTITY_FIREWORK_ROCKET_TWINKLE.get(), 2, 1.5f);
+                    item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 1.5f);
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(item.getEntity().getLocation()))
                         if (entity.getLocation().distanceSquared(item.getEntity().getLocation()) < radiusSquared && UtilityMethods.canTarget(caster, entity))
                             skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);

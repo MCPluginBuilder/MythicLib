@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -54,7 +55,7 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
                         if (entity.getLocation().distanceSquared(loc) < 40 && caster.getEyeLocation().getDirection().angle(entity.getLocation().toVector().subtract(caster.getLocation().toVector())) < Math.PI / 6 && UtilityMethods.canTarget(caster, entity))
                             skillMeta.getCaster().attack((LivingEntity) entity, dps, DamageType.SKILL, DamageType.PHYSICAL, DamageType.PROJECTILE);
 
-                loc.getWorld().playSound(loc, Sound.ENTITY_ZOMBIE_HURT, 1, 1);
+                loc.getWorld().playSound(loc, Sounds.ENTITY_ZOMBIE_HURT, 1, 1);
 
                 NoClipItem item = new NoClipItem(caster.getLocation().add(0, 1.2, 0), new ItemStack(Material.ROTTEN_FLESH));
                 Bukkit.getScheduler().scheduleSyncDelayedTask(MythicLib.plugin, item::close, 40);

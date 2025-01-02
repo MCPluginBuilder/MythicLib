@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.variable.def.EntityVariable;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Entity;
 
 import java.util.Arrays;

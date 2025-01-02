@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +31,7 @@ public class Evade extends SkillHandler<SimpleSkillResult> {
     @Override
     public void whenCast(SimpleSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_TELEPORT.get(), 1, 2);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 1, 2);
         new SmallParticleEffect(caster, Particle.CLOUD);
         new EvadeSkill(skillMeta.getCaster().getData(), skillMeta.getParameter("duration"));
     }

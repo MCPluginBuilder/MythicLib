@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.api.crafting.recipes.ShapelessRecipe;
 import io.lumine.mythic.lib.api.util.ui.FFPMythicLib;
 import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackProvider;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 

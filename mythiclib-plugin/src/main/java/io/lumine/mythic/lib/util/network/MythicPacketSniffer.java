@@ -1,15 +1,14 @@
 package io.lumine.mythic.lib.util.network;
 
+import io.lumine.mythic.lib.api.event.FixPlayerInteractEvent;
+import io.lumine.mythic.lib.version.Attributes;
+import io.lumine.mythic.lib.version.ServerVersion;
 import io.netty.channel.Channel;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.NotNull;
@@ -20,20 +19,52 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Minecraft vanilla behaviour (glitched):
+ * This fixes an issue with Vanilla Minecraft which has been addressed a few
+ * times already by item plugins. Some sources:
+ * Sources:
+ * - <a href="https://www.spigotmc.org/threads/1-19-playerinteractevent-not-called-when-entity-is-in-sight-client-bug.574671/">...</a>
+ * - <a href="https://github.com/PluginBugs/Issues-ItemsAdder/issues/1993">...</a>
+ * <p>
+ * Minecraft <=1.20.5 Left-Click Vanilla Behaviour:
  * - distance < 3, successful melee hit, no interact packet but attack packet.
  * - distance 3 - 5, missed melee attack, no interact packet, no attack packet.
  * - distance > 5, not an attack, interact packet.
  * - at any distance, swing packet.
  * <p>
+ * Minecraft post-1.20.5 Left-Click Vanilla Behaviour:
+ * - distance <= entity_interaction_range, successful melee hit, no interact packet, attack packet
+ * - distance > entity_interaction_range, failed melee hit, interact packet
+ * <p>
+ * TODO im
+ * <p>
  * This class fixes when the entity is at distance <5 to send an interact
  * packet at this situation. The recreated behaviour is that interact events
- * are called EVERYTIME.
+ * are called EVERYTIME, even during successful hits.
+ * <p>
+ * Technically, only the part between 3 and 5 blocks in <=1.20.5 is problematic,
+ * as PlayerInteractEvent's might be designed to only trigger when out-of-range.
+ * This means that this class sort-of modifies the behaviour of PlayerInteractEvents;
+ * which could lead to issues with other plugins. In hope to fix other parts
+ * of the MMO plugins which might rely on left clicks triggering in canonical/logical
+ * fashion, the behaviour of PlayerInteractEvent's is willingly slightly modified
+ * across the entire server.
  *
- * @author Roch Blondiaux (Kiwix). 18/05/2023
+ * <p>
+ * In 1.20.5+, this problem is less severe, an alternative to listening to packets
+ * would be to trigger skills with the LEFT_CLICK trigger during melee attacks,
+ * which can easily be done using the PlayerAttackEvent from MythicLib. This will
+ * be done in the future in 1.20.5+ if issues are found with this fix.
+ *
+ * @author Roch Blondiaux (Kiwix). 18/05/2023. Jules (08/12/2024)
  */
 public class MythicPacketSniffer extends LightInjector {
-    private static final double MAX_RANGE = 5;
+    private final boolean legacy;
+    private final String expectedPacketName, expectedFieldName;
+
+    /**
+     * Max range used for <=1.20.5 before 'Entity Interaction Range' was implemented
+     */
+    private static final double LEGACY_MAX_RANGE = 5;
 
     private static final Map<String, Map<String, Field>> FIELDS = new ConcurrentHashMap<>();
 
@@ -48,28 +79,12 @@ public class MythicPacketSniffer extends LightInjector {
      * @throws IllegalStateException    When <b>not</b> called from the main thread.
      * @throws IllegalArgumentException If the provided {@code plugin} is not enabled.
      */
-    public MythicPacketSniffer(@NotNull Plugin plugin) {
+    public MythicPacketSniffer(@NotNull Plugin plugin, ServerVersion version) {
         super(plugin);
-    }
 
-    @Override
-    protected @Nullable Object onPacketReceiveAsync(@Nullable Player sender, @NotNull Channel channel, @NotNull Object packet) {
-        if (sender == null) return packet;
-        final String packetName = packet.getClass().getSimpleName();
-
-        if (packetName.equals("PacketPlayInArmAnimation")) {
-            Object hand = getField(packet, "a");
-            if (hand == null || !hand.toString().equals("MAIN_HAND")) return packet;
-
-            // We need to run this synchronously because Bukkit sucks
-            Bukkit.getScheduler().runTask(getPlugin(), () -> {
-                final SeenEntity entity = getLineOfSight(sender);
-                if (entity != null)
-                    triggerEvent(sender);
-            });
-        }
-
-        return packet;
+        legacy = version.isUnder(1, 20, 5);
+        expectedPacketName = legacy ? "PacketPlayInArmAnimation" : "ServerboundSwingPacket";
+        expectedFieldName = legacy ? "a" : "hand";
     }
 
     @Override
@@ -77,37 +92,54 @@ public class MythicPacketSniffer extends LightInjector {
         return packet;
     }
 
+    @Override
+    protected @Nullable Object onPacketReceiveAsync(@Nullable Player sender, @NotNull Channel channel, @NotNull Object packet) {
+        if (sender == null) return packet;
+        final String packetName = packet.getClass().getSimpleName();
+
+        if (packetName.equals(this.expectedPacketName)) {
+            Object hand = getField(packet, expectedFieldName);
+            if (hand == null || !hand.toString().equals("MAIN_HAND")) return packet;
+
+            // Both the event and Entity#getNearbyEntities() need to be ran sync
+            Bukkit.getScheduler().runTask(getPlugin(), () -> {
+                if (!eventCalled(sender)) triggerEvent(sender);
+            });
+        }
+
+        return packet;
+    }
+
     /**
-     * Approximate re-implementation of the line of sight of a
-     * player, that is the entity that the player is looking at.
+     * Approximate re-implementation of the following logic:
+     * - raycast from the player towards their eye location
+     * - is there an interact event being called
      *
-     * @return The entity in line of sight as well as their distance
-     * to the player's camera
+     * @return If an event is expected to be called
      */
-    @Nullable
-    private SeenEntity getLineOfSight(Player player) {
-        final RayTraceResult result = player.getWorld().rayTrace(
-                player.getEyeLocation(),
-                player.getEyeLocation().getDirection(),
-                MAX_RANGE,
-                FluidCollisionMode.NEVER,
-                true,
-                0,
-                entity -> entity instanceof LivingEntity && !entity.equals(player));
-        if (result == null) return null;
-        final Entity entity = result.getHitEntity();
-        if (entity == null || entity instanceof Player && ((Player) entity).getGameMode().ordinal() == 3) return null;
-        final double distance = result.getHitPosition().distance(player.getEyeLocation().toVector());
-        return new SeenEntity(entity, distance);
+    private boolean eventCalled(Player player) {
+        double entityInteractionRange = legacy ? LEGACY_MAX_RANGE : player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).getValue();
+
+        RayTraceResult result = player.getWorld().rayTrace(player.getEyeLocation(), player.getEyeLocation().getDirection(), entityInteractionRange, FluidCollisionMode.NEVER, true, 0, entity -> entity instanceof LivingEntity && !entity.equals(player));
+
+        // No entity/block in line of sight = event always called
+        if (result == null) return true;
+
+        // Block in line of sight but no entity = an event is called IIF
+        // block is within block interaction range (always the case in <=1.20.5)
+        Entity entity = result.getHitEntity();
+        if (entity == null || entity instanceof Player && ((Player) entity).getGameMode().ordinal() == 3) {
+            double blockInteractionRange = legacy ? LEGACY_MAX_RANGE : player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).getValue();
+            double distance = result.getHitPosition().distance(player.getEyeLocation().toVector());
+            return distance <= blockInteractionRange;
+        }
+
+        // Entity in line of sight = event is never called
+        return false;
     }
 
     private void triggerEvent(@NotNull Player player) {
-        Bukkit.getPluginManager().callEvent(new PlayerInteractEvent(player,
-                Action.LEFT_CLICK_AIR,
-                player.getInventory().getItemInMainHand(),
-                null,
-                BlockFace.EAST,
-                EquipmentSlot.HAND));
+        Bukkit.getPluginManager().callEvent(new FixPlayerInteractEvent(player));
     }
 
     @Nullable
@@ -123,24 +155,23 @@ public class MythicPacketSniffer extends LightInjector {
                 try {
                     return fs.get(field).get(object);
                 } catch (ReflectiveOperationException e) {
-                    return null;
+                    throw new RuntimeException(String.format("Could not get field "), e);
                 }
             }
         }
 
         Class<?> current = c;
         Field f;
-        while (true)
-            try {
-                f = current.getDeclaredField(field);
-                break;
-            } catch (ReflectiveOperationException e1) {
-                current = current.getSuperclass();
-                if (current != null) {
-                    continue;
-                }
-                return null;
+        while (true) try {
+            f = current.getDeclaredField(field);
+            break;
+        } catch (ReflectiveOperationException e1) {
+            current = current.getSuperclass();
+            if (current != null) {
+                continue;
             }
+            return null;
+        }
 
         f.setAccessible(true);
 
@@ -158,18 +189,6 @@ public class MythicPacketSniffer extends LightInjector {
             return f.get(object);
         } catch (ReflectiveOperationException e) {
             return null;
-        }
-
-    }
-
-    private class SeenEntity {
-        @NotNull
-        final Entity entity;
-        final double distance;
-
-        private SeenEntity(@NotNull Entity entity, double distance) {
-            this.entity = entity;
-            this.distance = distance;
         }
     }
 }

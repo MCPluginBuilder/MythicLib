@@ -36,8 +36,10 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_21_R1.CraftSound;
 import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R1.block.CraftBlockType;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
@@ -65,6 +67,16 @@ public class VersionWrapper_1_21_R1 implements VersionWrapper {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public String getBiomeName(Biome biome) {
+        return biome.name();
+    }
+
+    @Override
+    public String getSoundName(Sound sound) {
+        return sound.name();
     }
 
     @Override
@@ -403,8 +415,7 @@ public class VersionWrapper_1_21_R1 implements VersionWrapper {
     public Sound getBlockPlaceSound(Block block) {
         ServerLevel nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
         BlockState state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        SoundEvent event = state.getSoundType().getPlaceSound();
-        return Sound.valueOf(event.getLocation().getPath().replace(".", "_").toUpperCase());
+        return CraftSound.minecraftToBukkit(state.getSoundType().getPlaceSound());
     }
 
     @Override

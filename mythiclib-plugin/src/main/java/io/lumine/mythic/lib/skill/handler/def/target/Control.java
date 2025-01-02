@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -36,7 +36,7 @@ public class Control extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
         result.getTarget().addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 20 * 2, 0));
         new TelekinesyRunnable(skillMeta.getCaster(), result.getTarget(), skillMeta.getParameter("knockback") / 100, skillMeta.getParameter("duration"));
     }
@@ -73,7 +73,7 @@ public class Control extends SkillHandler<TargetSkillResult> {
                     entity.removePotionEffect(VPotionEffectType.SLOWNESS.get());
 
                 entity.getWorld().spawnParticle(VParticle.WITCH.get(), entity.getLocation().add(0, entity.getHeight() / 2, 0), 16);
-                entity.getWorld().playSound(entity.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 2, 1);
+                entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 2, 1);
                 close();
             }
         }

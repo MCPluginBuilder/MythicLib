@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.comp.adventure;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.adventure.argument.AdventureArgument;
 import io.lumine.mythic.lib.comp.adventure.argument.AdventureArgumentQueue;
 import io.lumine.mythic.lib.comp.adventure.argument.EmptyArgumentQueue;
@@ -9,10 +10,8 @@ import io.lumine.mythic.lib.comp.adventure.tag.AdventureTag;
 import io.lumine.mythic.lib.comp.adventure.tag.implementation.*;
 import io.lumine.mythic.lib.comp.adventure.tag.implementation.decorations.*;
 import io.lumine.mythic.lib.util.AdventureUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.math3.util.Pair;
+import io.lumine.mythic.lib.util.Pair;
 import org.bukkit.ChatColor;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
  *
  * @author Roch Blondiaux (Kiwix).
  */
-@ApiStatus.NonExtendable
 public class AdventureParser {
 
     /* Constants */
@@ -38,7 +36,6 @@ public class AdventureParser {
 
     private final List<AdventureTag> tags = new ArrayList<>();
 
-    @ApiStatus.Internal
     @TestOnly
     public AdventureParser(boolean testing) {
     }
@@ -170,7 +167,7 @@ public class AdventureParser {
             String context = hasContext ? getTagContent(cpy, rawTag, original) : null;
             Pair<List<String>, String> contextDecorations = hasContext ? processContextDecorations(context) : null;
             String resolved = hasContext ?
-                    ((ContextTagResolver) tag.resolver()).resolve(rawTag, args, contextDecorations.getValue(), contextDecorations.getKey())
+                    ((ContextTagResolver) tag.resolver()).resolve(rawTag, args, contextDecorations.getRight(), contextDecorations.getLeft())
                     : tag.resolver().resolve(rawTag, args);
             cpy = cpy.replace(hasContext ? String.format("%s%s", original, context) : original, resolved != null ? resolved : "");
         } catch (Exception e) {
@@ -191,7 +188,7 @@ public class AdventureParser {
     private @NotNull String getTagContent(@NotNull String src, @NotNull String tagName, @NotNull String tagIdentifier) {
         // Match closed tags
         final String closeTag = String.format("</%s>", tagName);
-        String content = StringUtils.substringBetween(src, tagIdentifier, closeTag);
+        String content = UtilityMethods.substringBetween(src, tagIdentifier, closeTag);
         if (content != null) return content;
 
         String cpy = src.substring(src.indexOf(tagIdentifier) + tagIdentifier.length());
@@ -215,6 +212,11 @@ public class AdventureParser {
         content = cpy.substring(0, colorIndex);
         return content;
     }
+
+    /**
+     * appache common-lang3
+     */
+
 
     /**
      * Parse tags arguments from a string.
@@ -390,6 +392,7 @@ public class AdventureParser {
             if (tagName.isEmpty() || tagName.startsWith("/"))
                 continue;
 
+
             findByName(tagName)
                     .filter(t -> !t.color())
                     .map(t -> t.resolver().resolve("", new EmptyArgumentQueue()))
@@ -400,7 +403,7 @@ public class AdventureParser {
         for (Map.Entry<String, String> e : decorations.entrySet())
             context = context.replace(String.format("<%s>", e.getKey()), "");
 
-        return Pair.create(new ArrayList<>(decorations.values()), context);
+        return Pair.of(new ArrayList<>(decorations.values()), context);
     }
 
     private @NotNull String getLastLegacyColor(@NotNull final String input, boolean matchDecorations) {
@@ -444,7 +447,6 @@ public class AdventureParser {
      *
      * @param tag The tag to register.
      */
-    @ApiStatus.Internal
     public void forceRegister(AdventureTag tag) {
         tags.add(tag);
     }

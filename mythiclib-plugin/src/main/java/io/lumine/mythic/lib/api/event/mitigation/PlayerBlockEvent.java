@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.api.event.mitigation;
 
 import io.lumine.mythic.lib.api.event.MMOPlayerDataEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageEvent;

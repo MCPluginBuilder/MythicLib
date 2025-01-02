@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -55,7 +56,7 @@ public class Combo_Attack extends SkillHandler<TargetSkillResult> {
     }
 
     private void playEffect(Entity target) {
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_PLAYER_ATTACK_KNOCKBACK, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_PLAYER_ATTACK_KNOCKBACK, 1, 2);
         target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, target.getHeight() / 2, 0), 24, 0, 0, 0, .7);
     }
 }

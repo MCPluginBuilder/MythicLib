@@ -3,8 +3,11 @@ package io.lumine.mythic.lib.manager;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.element.Element;
+import io.lumine.mythic.lib.module.GeneralManager;
+import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.util.ConfigFile;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,8 +18,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public class ElementManager {
+@ModuleInfo(key = "elements")
+public class ElementManager extends GeneralManager {
     private final Map<String, Element> mapped = new HashMap<>();
+
+    public ElementManager(MMOPluginImpl plugin) {
+        super(plugin);
+    }
 
     public void register(Element element) {
         Validate.isTrue(!mapped.containsKey(element.getId()), "An element already exists with the ID '" + element.getId() + "'");

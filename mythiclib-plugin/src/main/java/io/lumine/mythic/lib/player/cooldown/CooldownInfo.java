@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.player.cooldown;
 
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 public class CooldownInfo {
     private final long initialCooldown, castTime = System.currentTimeMillis();

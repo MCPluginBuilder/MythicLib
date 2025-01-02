@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -36,7 +36,7 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
             double ti = 0;
 
             public void run() {
-                loc.getWorld().playSound(loc, VSound.BLOCK_NOTE_BLOCK_HAT.get(), 2, 2);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_HAT, 2, 2);
                 for (int j = 0; j < 2; j++) {
                     ti += .05;
 
@@ -44,13 +44,13 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
                     loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 1, .04, 0, .04, 0);
                     if (ti >= 1) {
                         loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 24, 0, 0, 0, .12);
-                        loc.getWorld().playSound(loc, VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, 2);
+                        loc.getWorld().playSound(loc, Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 2);
                         cancel();
                     }
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
 
         skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
     }

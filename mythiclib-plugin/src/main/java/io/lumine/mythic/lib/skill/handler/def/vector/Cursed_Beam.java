@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -38,7 +38,7 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
 
         double duration = skillMeta.getParameter("duration");
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
         new BukkitRunnable() {
             final Vector dir = result.getTarget().multiply(.3);
             final Location loc = caster.getEyeLocation().clone();
@@ -64,7 +64,7 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
                         if (UtilityMethods.canTarget(caster, loc, target)) {
                             effect(target);
                             double damage = skillMeta.getParameter("damage");
-                            loc.getWorld().playSound(loc, VSound.ENTITY_ENDERMAN_TELEPORT.get(), 2, .7f);
+                            loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_TELEPORT, 2, .7f);
 
                             for (Entity entity : entities)
                                 if (UtilityMethods.canTarget(caster, entity) && loc.distanceSquared(entity.getLocation().add(0, 1, 0)) < 9) {

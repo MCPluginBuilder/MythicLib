@@ -68,7 +68,7 @@ public class StatMap implements PlayerStatProvider {
 
     public void updateAll() {
         for (StatHandler handler : MythicLib.plugin.getStats().getHandlers()) {
-            final StatInstance ins = stats.get(handler.getStat());
+            final StatInstance ins = handler.forcesUpdates() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
             if (ins != null) ins.update();
         }
     }

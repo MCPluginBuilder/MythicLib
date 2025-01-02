@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.damage;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.player.PlayerMetadata;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 

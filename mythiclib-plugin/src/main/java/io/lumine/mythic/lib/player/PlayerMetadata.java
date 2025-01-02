@@ -11,7 +11,7 @@ import io.lumine.mythic.lib.damage.DamageMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

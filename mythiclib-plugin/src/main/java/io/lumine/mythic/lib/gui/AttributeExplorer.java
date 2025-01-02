@@ -8,8 +8,9 @@ import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
 import io.lumine.mythic.lib.api.util.AltChar;
 import io.lumine.mythic.lib.util.ReflectionUtils;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -113,7 +114,7 @@ public class AttributeExplorer extends PluginInventory {
             lore.add(ChatColor.YELLOW + AltChar.smallListDash + " Right click to set the base value.");
             lore.add(ChatColor.YELLOW + AltChar.smallListDash + " Shift click to reset base value.");
 
-            meta.getPersistentDataContainer().set(ATTRIBUTE_KEY, PersistentDataType.STRING, handler.getAttribute().name());
+            meta.getPersistentDataContainer().set(ATTRIBUTE_KEY, PersistentDataType.STRING, Attributes.name(handler.getAttribute()));
             meta.setLore(lore);
             item.setItemMeta(meta);
             inv.setItem(ATTRIBUTE_SLOTS[j++], item);
@@ -188,7 +189,7 @@ public class AttributeExplorer extends PluginInventory {
     }
 
     private String getName(Attribute attribute) {
-        return UtilityMethods.caseOnWords(attribute.name()
+        return UtilityMethods.caseOnWords(Attributes.name(attribute)
                 .replace("GENERIC_", "")
                 .replace("PLAYER_", "")
                 .toLowerCase().replace("_", " "));
@@ -251,7 +252,7 @@ public class AttributeExplorer extends PluginInventory {
         String tag = item.getItemMeta().getPersistentDataContainer().get(MODIFIER_KEY, PersistentDataType.STRING);
         if (tag != null && event.getAction() == InventoryAction.PICKUP_HALF) {
             final AttributeModifier mod = !legacy
-                    ? getPlayer().getAttribute(explored).getModifier(NamespacedKey.fromString(tag))
+                    ? VersionUtils.getModifier(getPlayer().getAttribute(explored), NamespacedKey.fromString(tag))
                     : getModifier(getPlayer().getAttribute(explored), UUID.fromString(tag));
             Validate.notNull(mod, "Could not find attribute modifier with tag '" + tag + "'");
             target.getAttribute(explored).removeModifier(mod);
@@ -263,14 +264,14 @@ public class AttributeExplorer extends PluginInventory {
 
         tag = item.getItemMeta().getPersistentDataContainer().get(ATTRIBUTE_KEY, PersistentDataType.STRING);
         if (tag != null) {
-            final Attribute attribute = Attribute.valueOf(tag);
+            final Attribute attribute = Attributes.fromName(tag);
 
             if (event.getAction() == InventoryAction.PICKUP_ALL) {
                 setExplored(attribute);
                 open();
             } else if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                 target.getAttribute(attribute).setBaseValue(target.getAttribute(attribute).getDefaultValue());
-                getPlayer().sendMessage(ChatColor.YELLOW + "> Base value of " + ChatColor.GOLD + attribute.name() + ChatColor.YELLOW + " successfully reset.");
+                getPlayer().sendMessage(ChatColor.YELLOW + "> Base value of " + ChatColor.GOLD + Attributes.name(attribute) + ChatColor.YELLOW + " successfully reset.");
                 open();
 
             } else if (event.getAction() == InventoryAction.PICKUP_HALF) {

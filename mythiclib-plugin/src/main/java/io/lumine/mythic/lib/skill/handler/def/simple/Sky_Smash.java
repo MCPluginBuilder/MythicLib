@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
@@ -33,7 +34,7 @@ public class Sky_Smash extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2, .5f);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2, .5f);
         caster.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 2, 254));
         Location loc = caster.getEyeLocation().add(caster.getEyeLocation().getDirection().multiply(3));
         loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);

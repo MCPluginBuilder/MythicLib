@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -37,7 +37,7 @@ public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
             if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) <= radius * radius)
                 skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 0);
         loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 64, 0, 0, 0, .2);
         loc.getWorld().spawnParticle(VParticle.EXPLOSION.get(), loc, 32, 0, 0, 0, .2);
         Vector vec = new Vector(0, .3, 0);

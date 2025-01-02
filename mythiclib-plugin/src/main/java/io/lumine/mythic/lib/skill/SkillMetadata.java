@@ -13,7 +13,7 @@ import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.script.variable.def.*;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.SkillOrientation;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;

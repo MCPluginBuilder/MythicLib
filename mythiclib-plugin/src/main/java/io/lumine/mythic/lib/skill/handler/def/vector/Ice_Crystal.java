@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -38,7 +38,7 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
     public void whenCast(VectorSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
         new BukkitRunnable() {
             final Vector vec = result.getTarget().multiply(.45);
             final Location loc = caster.getEyeLocation().clone().add(0, -.3, 0);
@@ -48,7 +48,7 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
                 if (ti++ > 25)
                     cancel();
 
-                loc.getWorld().playSound(loc, Sound.BLOCK_GLASS_BREAK, 2, 1);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_GLASS_BREAK, 2, 1);
                 List<Entity> entities = UtilityMethods.getNearbyChunkEntities(loc);
                 for (int j = 0; j < 3; j++) {
                     loc.add(vec);
@@ -73,7 +73,7 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
                         if (UtilityMethods.canTarget(caster, loc, entity)) {
                             loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
                             loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 48, 0, 0, 0, .2);
-                            loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2, 1);
+                            loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 2, 1);
                             skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(),
                                     (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));

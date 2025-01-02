@@ -37,7 +37,7 @@ public enum VParticle {
     private final Particle wrapped;
 
     VParticle(String... candidates) {
-        wrapped = UtilityMethods.resolveEnumField(Particle::valueOf, candidates);
+        wrapped = UtilityMethods.resolveField(Particle::valueOf, candidates);
     }
 
     @NotNull

@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -55,7 +55,7 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
                 }
 
                 if (j % 10 == 0) {
-                    loc.getWorld().playSound(loc, VSound.ENTITY_ENDERMAN_HURT.get(), 2, 1);
+                    loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_HURT, 2, 1);
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) <= 25)
                             skillMeta.getCaster().attack((LivingEntity) entity, dps, false, DamageType.SKILL, DamageType.MAGIC);

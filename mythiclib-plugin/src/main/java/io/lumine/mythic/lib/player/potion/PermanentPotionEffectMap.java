@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.player.potion;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.player.modifier.ModifierMap;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;

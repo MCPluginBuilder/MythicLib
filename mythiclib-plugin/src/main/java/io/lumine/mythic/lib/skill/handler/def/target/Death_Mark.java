@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Sound;
@@ -47,7 +48,7 @@ public class Death_Mark extends SkillHandler<TargetSkillResult> {
                     skillMeta.getCaster().attack(target, dps, false, DamageType.SKILL, DamageType.MAGIC);
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_BLAZE_HURT, 1, 2);
         target.removePotionEffect(VPotionEffectType.SLOWNESS.get());
         target.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), (int) duration, (int) skillMeta.getParameter("amplifier")));
     }

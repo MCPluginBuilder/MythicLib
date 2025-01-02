@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
@@ -31,7 +31,7 @@ public class Shock extends SkillHandler<TargetSkillResult> {
 
         double duration = skillMeta.getParameter("duration");
 
-        target.getWorld().playSound(target.getLocation(), VSound.ENTITY_ZOMBIE_PIGMAN_ANGRY.get(), 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_ZOMBIE_PIGMAN_ANGRY, 1, 2);
         new BukkitRunnable() {
             final Location loc = target.getLocation();
             final double rads = Math.toRadians(caster.getEyeLocation().getYaw() - 90);

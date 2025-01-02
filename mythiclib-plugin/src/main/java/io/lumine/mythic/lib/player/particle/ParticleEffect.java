@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
 import io.lumine.mythic.lib.player.particle.type.*;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 

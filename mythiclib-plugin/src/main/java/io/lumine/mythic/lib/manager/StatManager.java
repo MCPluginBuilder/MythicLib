@@ -11,8 +11,8 @@ import io.lumine.mythic.lib.api.stat.handler.DelegateStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.VMaterial;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,7 +29,7 @@ public class StatManager {
     /**
      * Cached values for MMOProfiles
      */
-    private final Map<Attribute, Double> playerDefaultBaseValues = new HashMap<>();
+    private final Map<org.bukkit.attribute.Attribute, Double> playerDefaultBaseValues = new HashMap<>();
 
     public void initialize(boolean clearBefore) {
         if (clearBefore) handlers.clear();
@@ -39,45 +39,45 @@ public class StatManager {
 
         // Default stat handlers
         try {
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_ARMOR, SharedStat.ARMOR, 0, Material.IRON_CHESTPLATE, "Armor bonus of an Entity."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_ARMOR_TOUGHNESS, SharedStat.ARMOR_TOUGHNESS, 0, Material.GOLDEN_CHESTPLATE, "Armor toughness bonus of an Entity."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_ATTACK_DAMAGE, SharedStat.ATTACK_DAMAGE, 1, Material.IRON_SWORD, "Attack damage of an Entity."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_ATTACK_SPEED, SharedStat.ATTACK_SPEED, 4, Material.LIGHT_GRAY_DYE, "Attack speed of an Entity."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_KNOCKBACK_RESISTANCE, SharedStat.KNOCKBACK_RESISTANCE, 0, Material.TNT_MINECART, "Resistance of an Entity to knockback."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_LUCK, SharedStat.LUCK, 0, VMaterial.GRASS_BLOCK.get(), "Luck bonus of an Entity."));
-            registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_MAX_HEALTH, SharedStat.MAX_HEALTH, 20, Material.APPLE, "Maximum health of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.ARMOR, 0, Material.IRON_CHESTPLATE, "Armor bonus of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.ARMOR_TOUGHNESS, 0, Material.GOLDEN_CHESTPLATE, "Armor toughness bonus of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.ATTACK_DAMAGE, 1, Material.IRON_SWORD, "Attack damage of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.ATTACK_SPEED, 4, Material.LIGHT_GRAY_DYE, "Attack speed of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.KNOCKBACK_RESISTANCE, 0, Material.TNT_MINECART, "Resistance of an Entity to knockback."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.LUCK, 0, VMaterial.GRASS_BLOCK.get(), "Luck bonus of an Entity."));
+            registerStat(new AttributeStatHandler(statsConfig, SharedStat.MAX_HEALTH, 20, Material.APPLE, "Maximum health of an Entity."));
             final StatHandler msStatHandler = new MovementSpeedStatHandler(statsConfig);
             registerStat(msStatHandler);
             registerStat(new DelegateStatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION, msStatHandler));
 
             // 1.20.2
             if (MythicLib.plugin.getVersion().isAbove(1, 20, 2))
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_MAX_ABSORPTION, SharedStat.MAX_ABSORPTION, 0, Material.GOLDEN_APPLE, "Max amount of absorption hearts."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.MAX_ABSORPTION, 0, Material.GOLDEN_APPLE, "Max amount of absorption hearts."));
 
             // 1.20.5
             if (MythicLib.plugin.getVersion().isAbove(1, 20, 5)) {
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_BLOCK_BREAK_SPEED, SharedStat.BLOCK_BREAK_SPEED, 1, Material.IRON_PICKAXE, "Speed of breaking blocks."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_BLOCK_INTERACTION_RANGE, SharedStat.BLOCK_INTERACTION_RANGE, 4.5, Material.SPYGLASS, "How far players may break or interact with blocks."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_ENTITY_INTERACTION_RANGE, SharedStat.ENTITY_INTERACTION_RANGE, 3, Material.SPYGLASS, "How far players may hit or interact with entities."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_FALL_DAMAGE_MULTIPLIER, SharedStat.FALL_DAMAGE_MULTIPLIER, 1, Material.GOLDEN_APPLE, "Max amount of absorption hearts."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_GRAVITY, SharedStat.GRAVITY, .08, Material.STONE, "How strong gravity is."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_JUMP_STRENGTH, SharedStat.JUMP_STRENGTH, .42, Material.FEATHER, "How high you can jump."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_SAFE_FALL_DISTANCE, SharedStat.SAFE_FALL_DISTANCE, 3, Material.RED_BED, "How high you can drop from without fall damage."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_SCALE, SharedStat.SCALE, 1, Material.GUARDIAN_SPAWN_EGG, "Size of an entity."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_STEP_HEIGHT, SharedStat.STEP_HEIGHT, .6, Material.OAK_SLAB, "How high you can climb blocks when walking."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.BLOCK_BREAK_SPEED, 1, Material.IRON_PICKAXE, "Speed of breaking blocks."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.BLOCK_INTERACTION_RANGE, 4.5, Material.SPYGLASS, "How far players may break or interact with blocks."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.ENTITY_INTERACTION_RANGE, 3, Material.SPYGLASS, "How far players may hit or interact with entities."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.FALL_DAMAGE_MULTIPLIER, 1, Material.GOLDEN_APPLE, "Max amount of absorption hearts."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.GRAVITY, .08, Material.STONE, "How strong gravity is."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.JUMP_STRENGTH, .42, Material.FEATHER, "How high you can jump."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.SAFE_FALL_DISTANCE, 3, Material.RED_BED, "How high you can drop from without fall damage."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.SCALE, 1, Material.GUARDIAN_SPAWN_EGG, "Size of an entity."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.STEP_HEIGHT, .6, Material.OAK_SLAB, "How high you can climb blocks when walking."));
             }
 
             // 1.21
             if (MythicLib.plugin.getVersion().isAbove(1, 21)) {
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_BURNING_TIME, SharedStat.BURNING_TIME, 1, Material.COOKED_BEEF, "A factor for increasing/reducing mining speed"));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE, SharedStat.EXPLOSION_KNOCKBACK_RESISTANCE, 0, Material.OBSIDIAN, "Resistance to knockback due to explosions."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_MINING_EFFICIENCY, SharedStat.MINING_EFFICIENCY, 0, Material.IRON_PICKAXE, "A factor for increasing/reducing mining speed"));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_MOVEMENT_EFFICIENCY, SharedStat.MOVEMENT_EFFICIENCY, 0, Material.SOUL_SAND, "Movement speed factor when walking on blocks that slow down movement."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_OXYGEN_BONUS, SharedStat.OXYGEN_BONUS, 0, Material.GLASS_BOTTLE, "Determines the chance not to use up air when underwater."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_SNEAKING_SPEED, SharedStat.SNEAKING_SPEED, .3, Material.LEATHER_BOOTS, "Movement speed when sneaking."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_SUBMERGED_MINING_SPEED, SharedStat.SUBMERGED_MINING_SPEED, .2, Material.IRON_PICKAXE, "Mining speed factor when submerged."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.PLAYER_SWEEPING_DAMAGE_RATIO, SharedStat.SWEEPING_DAMAGE_RATIO, 0, Material.IRON_SWORD, "Damage ratio when performing sweep melee attacks."));
-                registerStat(new AttributeStatHandler(statsConfig, Attribute.GENERIC_WATER_MOVEMENT_EFFICIENCY, SharedStat.WATER_MOVEMENT_EFFICIENCY, 0, Material.WATER_BUCKET, "Movement speed factor when submerged."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.BURNING_TIME, 1, Material.COOKED_BEEF, "A factor for increasing/reducing mining speed"));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.EXPLOSION_KNOCKBACK_RESISTANCE, 0, Material.OBSIDIAN, "Resistance to knockback due to explosions."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.MINING_EFFICIENCY, 0, Material.IRON_PICKAXE, "A factor for increasing/reducing mining speed"));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.MOVEMENT_EFFICIENCY, 0, Material.SOUL_SAND, "Movement speed factor when walking on blocks that slow down movement."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.OXYGEN_BONUS, 0, Material.GLASS_BOTTLE, "Determines the chance not to use up air when underwater."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.SNEAKING_SPEED, .3, Material.LEATHER_BOOTS, "Movement speed when sneaking."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.SUBMERGED_MINING_SPEED, .2, Material.IRON_PICKAXE, "Mining speed factor when submerged."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.SWEEPING_DAMAGE_RATIO, 0, Material.IRON_SWORD, "Damage ratio when performing sweep melee attacks."));
+                registerStat(new AttributeStatHandler(statsConfig, SharedStat.WATER_MOVEMENT_EFFICIENCY, 0, Material.WATER_BUCKET, "Movement speed factor when submerged."));
             }
 
         } catch (Exception exception) {

@@ -1,8 +1,6 @@
 package io.lumine.mythic.lib.api.util.ui;
 
-import io.lumine.mythic.lib.api.crafting.recipes.MythicCraftingManager;
 import io.lumine.mythic.lib.api.util.ToStringLambda;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -26,7 +24,6 @@ import java.util.stream.Stream;
  * Basically, they will return <code>null</code> instead of throwing exceptions,
  * admitting even input that makes no sense without generating errors.
  *
- * @see io.lumine.utils.numbers.Numbers
  * @author Gunging
  */
 @SuppressWarnings("unused")
@@ -615,10 +612,11 @@ public class SilentNumbers {
          * online would be wasting my time reinventing the
          * wheel. Just look at that lol
          */
+        if (inputString == null) return "";
 
-        if (StringUtils.isBlank(inputString)) { return ""; }
+        if (inputString.isEmpty()) { return ""; }
 
-        if (StringUtils.length(inputString) == 1) { return inputString.toUpperCase(); }
+        if (inputString.length() == 1) { return inputString.toUpperCase(); }
 
         StringBuffer resultPlaceHolder = new StringBuffer(inputString.length());
 
@@ -634,7 +632,7 @@ public class SilentNumbers {
             resultPlaceHolder.append(" ");
         });
 
-        return StringUtils.trim(resultPlaceHolder.toString());
+        return  resultPlaceHolder.toString().trim();
     }
 
     /**

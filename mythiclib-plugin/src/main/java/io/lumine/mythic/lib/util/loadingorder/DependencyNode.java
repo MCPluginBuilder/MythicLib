@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.util.loadingorder;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;

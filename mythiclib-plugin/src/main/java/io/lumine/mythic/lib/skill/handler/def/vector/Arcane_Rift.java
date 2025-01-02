@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -40,7 +40,7 @@ public class Arcane_Rift extends SkillHandler<VectorSkillResult> {
         double slowDuration = skillMeta.getParameter("duration");
         double slowAmplifier = skillMeta.getParameter("amplifier");
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_DEATH.get(), 2, .5f);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_DEATH, 2, .5f);
         new BukkitRunnable() {
             final Vector vec = result.getTarget().setY(0).normalize().multiply(.5 * skillMeta.getParameter("speed"));
             final Location loc = caster.getLocation();

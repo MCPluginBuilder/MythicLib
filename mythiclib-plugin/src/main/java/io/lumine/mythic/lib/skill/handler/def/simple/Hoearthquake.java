@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VMaterial;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -36,7 +37,7 @@ public class Hoearthquake extends SkillHandler<SimpleSkillResult> {
                     cancel();
 
                 loc.add(vec);
-                loc.getWorld().playSound(loc, Sound.BLOCK_GRAVEL_BREAK, 2, 1);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_GRAVEL_BREAK, 2, 1);
                 loc.getWorld().spawnParticle(Particle.CLOUD, loc, 1, .5, 0, .5, 0);
 
                 for (int x = -1; x < 2; x++)

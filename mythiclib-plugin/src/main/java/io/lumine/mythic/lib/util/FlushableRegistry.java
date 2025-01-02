@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.MythicLib;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

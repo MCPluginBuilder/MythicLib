@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.CustomProjectileHandler;
 import io.lumine.mythic.lib.util.RayTrace;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -37,7 +37,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
     public void whenCast(SimpleSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
         new BukkitRunnable() {
             int j = 0;
             final Vector vec = caster.getPlayer().getEyeLocation().getDirection();
@@ -53,7 +53,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                 loc.add(vec);
 
                 if (j % 3 == 0)
-                    loc.getWorld().playSound(loc, Sound.BLOCK_FIRE_AMBIENT, 2, 1);
+                    loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_AMBIENT, 2, 1);
                 loc.getWorld().spawnParticle(Particle.FLAME, loc, 4, .02, .02, .02, 0);
                 loc.getWorld().spawnParticle(Particle.LAVA, loc, 0);
 
@@ -61,7 +61,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                 if (target != null) {
                     loc.getWorld().spawnParticle(Particle.LAVA, loc, 8);
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 32, 0, 0, 0, .1);
-                    loc.getWorld().playSound(loc, Sound.ENTITY_BLAZE_HURT, 2, 1);
+                    loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
                     double damage = skillMeta.getParameter("damage");
                     skillMeta.getCaster().attack((LivingEntity) target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
@@ -78,7 +78,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
 
                             double range = 2.5 * (1 + RANDOM.nextDouble());
                             Vector dir = randomDirection();
-                            loc.getWorld().playSound(loc, Sound.ENTITY_BLAZE_HURT, 2, 1.5f);
+                            loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1.5f);
 
                             RayTrace result = new RayTrace(loc, dir, range, entity -> UtilityMethods.canTarget(caster, entity));
                             if (result.hasHit())

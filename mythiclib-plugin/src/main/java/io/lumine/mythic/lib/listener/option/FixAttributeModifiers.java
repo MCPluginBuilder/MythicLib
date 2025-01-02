@@ -6,7 +6,8 @@ import fr.phoenixdevt.profiles.event.PlayerIdDispatchEvent;
 import fr.phoenixdevt.profiles.event.ProfileSelectedEvent;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.version.Attributes;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -22,7 +23,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FixAttributeModifiers implements Listener {
@@ -35,9 +35,9 @@ public class FixAttributeModifiers implements Listener {
 
         // List of attributes to reset
         final List<String> _attributes = config.getStringList("attributes");
-        if (_attributes.isEmpty()) attributes.addAll(Arrays.asList(Attribute.values()));
+        if (_attributes.isEmpty()) attributes.addAll(Attributes.getAll());
         else for (String str : _attributes)
-            attributes.add(Attribute.valueOf(UtilityMethods.enumName(str)));
+            attributes.add(Attributes.fromName(UtilityMethods.enumName(str)));
 
         try {
             // Will fail if Profile-API is not implemented

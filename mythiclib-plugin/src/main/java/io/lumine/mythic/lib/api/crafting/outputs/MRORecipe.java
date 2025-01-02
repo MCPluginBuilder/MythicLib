@@ -14,7 +14,7 @@ import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackCategory;
 import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackProvider;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
 import io.lumine.mythic.lib.version.VersionUtils;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -35,7 +35,7 @@ public class Telekinesy extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
         new TelekinesyRunnable(skillMeta.getCaster().getData(), result.getTarget(), skillMeta.getParameter("duration"), skillMeta.getParameter("knockback") / 100);
     }
 
@@ -64,7 +64,7 @@ public class Telekinesy extends SkillHandler<TargetSkillResult> {
         public void a(PlayerInteractEvent event) {
             if (event.getPlayer().equals(caster.getPlayer()) && event.getAction().name().contains("LEFT_CLICK")) {
                 entity.setVelocity(caster.getPlayer().getEyeLocation().getDirection().multiply(1.5 * f));
-                entity.getWorld().playSound(entity.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 2, 1);
+                entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 2, 1);
                 entity.getWorld().spawnParticle(VParticle.WITCH.get(), entity.getLocation().add(0, entity.getHeight() / 2, 0), 16);
                 close();
             }

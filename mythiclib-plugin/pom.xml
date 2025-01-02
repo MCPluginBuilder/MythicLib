@@ -25,7 +25,6 @@
         </resources>
 
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -59,10 +58,11 @@
             <id>aikar</id>
             <url>https://repo.aikar.co/nexus/content/groups/aikar/</url>
         </repository>
+        <!-- WG has too many dependencies
         <repository>
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
-        </repository>
+        </repository> -->
         <repository>
             <id>hikari-cp</id>
             <url>https://clojars.org/repo/</url>
@@ -71,10 +71,13 @@
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
+        <!--
         <repository>
             <id>sonatype-oss-snapshots1</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
+        -->
+        <!-- HolographicDisplays -->
         <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
@@ -121,12 +124,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.6.1</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>net.objecthunter</groupId>
             <artifactId>exp4j</artifactId>
             <version>0.4.8</version>
@@ -137,7 +134,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -222,9 +219,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.gmail.filoghost.holographicdisplays</groupId>
+            <groupId>me.filoghost.holographicdisplays</groupId>
             <artifactId>holographicdisplays-api</artifactId>
-            <version>2.4.9-SNAPSHOT</version>
+            <version>3.0.5</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -280,16 +277,18 @@
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
             <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.2-SNAPSHOT</version>
+            <version>7.0.12</version>
+            <classifier>dist</classifier>
             <scope>provided</scope>
             <optional>true</optional>
-
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>7.3.9-beta</version>
+            <classifier>dist</classifier>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>me.vagdedes.spartan</groupId>
@@ -339,15 +338,6 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- TODO remove this dep, will be unshaded from Paper/Spigot in the future. Move to lang3 -->
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
 

@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.ItemSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -34,7 +34,7 @@ public class Item_Throw extends SkillHandler<ItemSkillResult> {
 
         final NoClipItem item = new NoClipItem(caster.getLocation().add(0, 1.2, 0), itemStack);
         item.getEntity().setVelocity(result.getTarget().multiply(1.5 * skillMeta.getParameter("force")));
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 0);
         new BukkitRunnable() {
             double ti = 0;
 

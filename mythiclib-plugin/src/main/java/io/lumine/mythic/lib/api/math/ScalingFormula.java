@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.api.math;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Random;

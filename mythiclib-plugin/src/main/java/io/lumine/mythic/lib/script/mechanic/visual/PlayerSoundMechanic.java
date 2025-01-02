@@ -6,16 +6,15 @@ import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-
 @MechanicMetadata
 public class PlayerSoundMechanic extends TargetMechanic {
-    private Sound sound;
+    private final Sound bukkitSound;
     private final String soundString;
     private final DoubleFormula vol, pitch;
 
@@ -23,10 +22,16 @@ public class PlayerSoundMechanic extends TargetMechanic {
         super(config);
 
         config.validateKeys("sound");
+
         soundString = config.getString("sound");
-        //The string given as input might not correspond to an element of the enum (custom sound)
-        if (Arrays.stream(Sound.values()).map(Enum::name).anyMatch(name -> UtilityMethods.enumName(soundString).equals(name)))
-            sound = Sound.valueOf(UtilityMethods.enumName(soundString));
+
+        Sound bukkitSound;
+        try {
+            bukkitSound = Sounds.fromName(UtilityMethods.enumName(soundString));
+        } catch (Exception exception) {
+            bukkitSound = null;
+        }
+        this.bukkitSound = bukkitSound;
         vol = config.getDoubleFormula("volume", DoubleFormula.constant(1));
         pitch = config.getDoubleFormula("pitch", DoubleFormula.constant(1));
     }
@@ -39,7 +44,7 @@ public class PlayerSoundMechanic extends TargetMechanic {
         final float vol = (float) this.vol.evaluate(meta);
         final float pitch = (float) this.pitch.evaluate(meta);
 
-        if (sound == null) player.playSound(target.getLocation(), soundString, vol, pitch);
-        else player.playSound(target.getLocation(), sound, vol, pitch);
+        if (bukkitSound == null) player.playSound(target.getLocation(), soundString, vol, pitch);
+        else player.playSound(target.getLocation(), bukkitSound, vol, pitch);
     }
 }

@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 
+@Deprecated
 public class SoundObject {
 
     @Nullable
@@ -19,13 +21,14 @@ public class SoundObject {
     private final float volume;
     private final float pitch;
 
+    @Deprecated
     public SoundObject(String input) {
         final String[] split = input.split(",");
 
         Sound sound = null;
         String key = null;
         try {
-            sound = Sound.valueOf(UtilityMethods.enumName(split[0]));
+            sound = Sounds.fromName(UtilityMethods.enumName(split[0]));
         } catch (Exception ignored) {
             key = split[0];
         }
@@ -37,13 +40,14 @@ public class SoundObject {
         pitch = split.length > 2 ? Float.parseFloat(split[2]) : 1;
     }
 
+    @Deprecated
     public SoundObject(ConfigurationSection config) {
         final String input = config.getString("sound");
 
         Sound sound = null;
         String key = null;
         try {
-            sound = Sound.valueOf(UtilityMethods.enumName(input));
+            sound = Sounds.fromName(UtilityMethods.enumName(input));
         } catch (Exception ignored) {
             key = input;
         }

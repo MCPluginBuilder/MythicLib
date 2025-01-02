@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Mob;
@@ -36,7 +36,7 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_TELEPORT.get(), 3, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 0);
         for (Player online : Bukkit.getOnlinePlayers())
             online.hidePlayer(MythicLib.plugin, caster);
 
@@ -49,7 +49,7 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
         svh.setDeceptions(SilentNumbers.floor(skillMeta.getParameter("deception")));
     }
 
-    public class ShadowVeilEffect extends BukkitRunnable implements Listener {
+    public static class ShadowVeilEffect extends BukkitRunnable implements Listener {
         private final Player player;
         private final double duration;
         private final Location loc;
@@ -77,7 +77,7 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
                 return;
 
             player.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), player.getLocation().add(0, 1, 0), 32, 0, 0, 0, .13);
-            player.getWorld().playSound(player.getLocation(), VSound.ENTITY_ENDERMAN_TELEPORT.get(), 3, 0);
+            player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 0);
 
             // sets time to -1 so that next calls know the handler has already
             // been closed

@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -33,7 +33,7 @@ public class Black_Hole extends SkillHandler<LocationSkillResult> {
         double duration = skillMeta.getParameter("duration") * 20;
         double radius = skillMeta.getParameter("radius");
 
-        loc.getWorld().playSound(loc, VSound.ENTITY_ENDERMAN_TELEPORT.get(), 3, 1);
+        loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 1);
         new BukkitRunnable() {
             int ti = 0;
             final double r = 4;
@@ -42,7 +42,7 @@ public class Black_Hole extends SkillHandler<LocationSkillResult> {
                 if (ti++ > Math.min(300, duration))
                     cancel();
 
-                loc.getWorld().playSound(loc, VSound.BLOCK_NOTE_BLOCK_HAT.get(), 2, 2);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_HAT, 2, 2);
                 loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
                 for (int j = 0; j < 3; j++) {
                     double ran = RANDOM.nextDouble() * Math.PI * 2;

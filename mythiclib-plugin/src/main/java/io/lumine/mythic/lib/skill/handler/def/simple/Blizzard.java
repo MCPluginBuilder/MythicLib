@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -53,7 +54,7 @@ public class Blizzard extends SkillHandler<SimpleSkillResult> {
                 loc.setPitch((float) (loc.getPitch() + (RANDOM.nextDouble() - .5) * inaccuracy));
                 loc.setYaw((float) (loc.getYaw() + (RANDOM.nextDouble() - .5) * inaccuracy));
 
-                loc.getWorld().playSound(loc, Sound.ENTITY_SNOWBALL_THROW, 1, 1);
+                loc.getWorld().playSound(loc, Sounds.ENTITY_SNOWBALL_THROW, 1, 1);
                 Snowball snowball = caster.launchProjectile(Snowball.class);
                 snowball.setVelocity(loc.getDirection().multiply(1.3 * force));
                 handler.entities.add(snowball.getUniqueId());

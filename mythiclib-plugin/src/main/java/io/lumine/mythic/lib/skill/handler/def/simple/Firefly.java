@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -45,7 +45,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
 
                 if (caster.getLocation().getBlock().getType() == Material.WATER) {
                     caster.setVelocity(caster.getVelocity().multiply(3).setY(1.8));
-                    caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+                    caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_FIRE_EXTINGUISH, 1, .5f);
                     caster.getWorld().spawnParticle(VParticle.EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .2);
                     caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .2);
                     cancel();
@@ -57,7 +57,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                         double damage = skillMeta.getParameter("damage");
                         double knockback = skillMeta.getParameter("knockback");
 
-                        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1, .5f);
+                        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1, .5f);
                         caster.getWorld().spawnParticle(Particle.LAVA, caster.getLocation().add(0, 1, 0), 32);
                         caster.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), caster.getLocation().add(0, 1, 0), 24, 0, 0, 0, .3);
                         caster.getWorld().spawnParticle(Particle.FLAME, caster.getLocation().add(0, 1, 0), 24, 0, 0, 0, .3);
@@ -80,7 +80,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                 }
 
                 caster.setVelocity(caster.getEyeLocation().getDirection());
-                caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, 1);
+                caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
     }

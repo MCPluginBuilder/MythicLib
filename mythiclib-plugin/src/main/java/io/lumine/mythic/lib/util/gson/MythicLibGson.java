@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.util.gson;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.lumine.mythic.lib.MythicLib;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.potion.PotionEffect;

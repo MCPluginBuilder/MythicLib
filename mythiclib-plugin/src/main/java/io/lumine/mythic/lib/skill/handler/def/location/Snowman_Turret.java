@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -45,7 +45,7 @@ public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
         double duration = Math.min(skillMeta.getParameter("duration") * 20, 300);
         double radiusSquared = Math.pow(skillMeta.getParameter("radius"), 2);
 
-        loc.getWorld().playSound(loc, VSound.ENTITY_ENDERMAN_TELEPORT.get(), 2, 1);
+        loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_TELEPORT, 2, 1);
         final Snowman snowman = loc.getWorld().spawn(loc.add(0, 1, 0), Snowman.class);
         snowman.setInvulnerable(true);
         snowman.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 100000, 254, true));
@@ -71,7 +71,7 @@ public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(snowman.getLocation()))
                         if (!entity.equals(snowman) && UtilityMethods.canTarget(caster, entity)
                                 && entity.getLocation().distanceSquared(snowman.getLocation()) < radiusSquared) {
-                            snowman.getWorld().playSound(snowman.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 1.3f);
+                            snowman.getWorld().playSound(snowman.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 1.3f);
                             Snowball snowball = snowman.launchProjectile(Snowball.class);
                             snowball.setVelocity(entity.getLocation().add(0, entity.getHeight() / 2, 0).toVector()
                                     .subtract(snowman.getLocation().add(0, 1, 0).toVector()).normalize().multiply(1.3));

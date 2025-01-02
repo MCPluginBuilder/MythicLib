@@ -4,11 +4,11 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -38,7 +38,7 @@ public class HealMechanic extends TargetMechanic {
         if (called.isCancelled())
             return;
 
-        double maxHealth = living.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double maxHealth = living.getAttribute(Attributes.MAX_HEALTH).getValue();
         living.setHealth(Math.max(0, Math.min(maxHealth, living.getHealth() + called.getAmount())));
     }
 }

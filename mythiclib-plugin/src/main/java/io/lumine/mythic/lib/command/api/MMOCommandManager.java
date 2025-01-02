@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.command.api;
 
 import io.lumine.mythic.lib.manager.MMOManager;
 import io.lumine.mythic.lib.util.ConfigFile;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.file.FileConfiguration;

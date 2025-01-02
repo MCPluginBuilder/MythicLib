@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -96,7 +96,7 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
                 caster.getPlayer().removePotionEffect(VPotionEffectType.SLOWNESS.get());
             }
 
-            caster.getPlayer().getWorld().playSound(caster.getPlayer().getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 1, last ? 0 : 1);
+            caster.getPlayer().getWorld().playSound(caster.getPlayer().getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, last ? 0 : 1);
             new BukkitRunnable() {
                 int j = 0;
                 final Vector vec = caster.getPlayer().getEyeLocation().getDirection();
@@ -109,7 +109,7 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
                     loc.add(vec);
 
                     if (j % 2 == 0)
-                        loc.getWorld().playSound(loc, Sound.BLOCK_FIRE_AMBIENT, 2, 1);
+                        loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_AMBIENT, 2, 1);
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 4, .1, .1, .1, 0);
                     loc.getWorld().spawnParticle(Particle.LAVA, loc, 0);
 
@@ -117,7 +117,7 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
                         if (UtilityMethods.canTarget(caster.getPlayer(), loc, target)) {
                             loc.getWorld().spawnParticle(Particle.LAVA, loc, 8);
                             loc.getWorld().spawnParticle(Particle.FLAME, loc, 32, 0, 0, 0, .1);
-                            loc.getWorld().playSound(loc, Sound.ENTITY_BLAZE_HURT, 2, 1);
+                            loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                             target.setFireTicks(target.getFireTicks() + ignite);
                             caster.attack((LivingEntity) target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             cancel();

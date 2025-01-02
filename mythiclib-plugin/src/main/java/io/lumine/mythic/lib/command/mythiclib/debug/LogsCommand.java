@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.comp.mclogs.APIResponse;
 import io.lumine.mythic.lib.comp.mclogs.MclogsAPI;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;

@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.api.stat.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.StatInstance;
+import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -26,23 +27,24 @@ public class AttributeStatHandler extends StatHandler {
      * which are based on vanilla player attributes.
      *
      * @param config      The root configuration file
-     * @param attribute   The corresponding vanilla player attribute
      * @param stat        The stat identifier
      * @param material    For usage, see {@link io.lumine.mythic.lib.gui.AttributeExplorer}
      * @param description For usage, see {@link io.lumine.mythic.lib.gui.AttributeExplorer}
      */
     public AttributeStatHandler(ConfigurationSection config,
-                                @NotNull Attribute attribute,
                                 @NotNull String stat,
                                 double playerDefaultBase,
                                 @NotNull Material material,
                                 @NotNull String description) {
         super(config, stat);
 
-        this.attribute = attribute;
+        this.attribute = Attributes.adapt(stat);
         this.material = material;
         this.description = description;
         this.playerDefaultBase = playerDefaultBase;
+
+        // Force update on login
+        this.forceUpdate = true;
     }
 
     @Override

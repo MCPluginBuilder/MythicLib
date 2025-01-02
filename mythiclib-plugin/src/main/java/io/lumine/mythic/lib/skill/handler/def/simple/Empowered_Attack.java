@@ -10,7 +10,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -38,7 +38,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
     @Override
     public void whenCast(SimpleSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.playSound(caster.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
+        caster.playSound(caster.getLocation(), Sounds.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
         new EmpoweredAttack(skillMeta.getCaster(), skillMeta.getParameter("extra"), skillMeta.getParameter("ratio"), skillMeta.getParameter("radius"));
     }
 
@@ -89,7 +89,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
                     drawVector(clone, loc.clone().subtract(clone).toVector());
                 }
 
-                target.getWorld().playSound(target.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_BLAST.get(), 2, .5f);
+                target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 2, .5f);
                 target.getWorld().spawnParticle(VParticle.FIREWORK.get(), target.getLocation().add(0, target.getHeight() / 2, 0), 32, 0, 0, 0, .2);
 
                 double sweep = event.getAttack().getDamage().getDamage() * r;

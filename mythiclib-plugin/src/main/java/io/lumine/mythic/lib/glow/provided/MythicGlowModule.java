@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.glow.provided;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.glow.GlowModule;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;

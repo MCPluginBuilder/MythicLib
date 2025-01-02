@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.NBTTypeHelper;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
 import net.md_5.bungee.api.ChatMessageType;
@@ -28,8 +29,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_19_R1.CraftSound;
 import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
@@ -43,10 +46,7 @@ import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class VersionWrapper_1_19_R1 implements VersionWrapper {
@@ -56,6 +56,16 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public String getBiomeName(Biome biome) {
+        return biome.name();
+    }
+
+    @Override
+    public String getSoundName(Sound sound) {
+        return sound.name();
     }
 
     @Override
@@ -310,6 +320,11 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
         public int getTypeId(String path) {
             return compound.get(path).getId();
         }
+
+        @Override
+        public void setCanMine(Collection<Material> blocks) {
+            throw new NotImplementedException("Not supported in <1.21");
+        }
     }
 
     private static class CraftNBTCompound extends NBTCompound {
@@ -384,9 +399,7 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
     public Sound getBlockPlaceSound(Block block) {
         ServerLevel nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
         BlockState state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        SoundEvent event = state.getBlock().getSoundType(state).getPlaceSound();
-
-        return Sound.valueOf(event.getLocation().getPath().replace(".", "_").toUpperCase());
+        return CraftSound.getBukkit(state.getSoundType().getPlaceSound());
     }
 
     @Override

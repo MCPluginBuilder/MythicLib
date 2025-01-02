@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
@@ -35,7 +36,7 @@ public class Circular_Slash extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 2, .5f);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_PLAYER_ATTACK_SWEEP, 2, .5f);
         caster.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 5, 100));
         for (Entity entity : caster.getNearbyEntities(radius, radius, radius)) {
             if (UtilityMethods.canTarget(caster, entity)) {

@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.script.variable.def.PositionVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 @MechanicMetadata
 public class MultiplyVectorMechanic extends VariableMechanic {

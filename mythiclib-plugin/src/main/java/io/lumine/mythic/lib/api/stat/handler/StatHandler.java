@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.api.stat.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +20,11 @@ public class StatHandler {
     protected final double baseValue, minValue, maxValue;
     protected final DecimalFormat decimalFormat;
     protected final String stat;
+
+    /**
+     * Should this stat force updates on player login
+     */
+    protected boolean forceUpdate;
 
     /**
      * @param config Root stat handlers configuration file
@@ -75,6 +80,10 @@ public class StatHandler {
      */
     public double getBaseValue(@NotNull StatInstance instance) {
         return baseValue;
+    }
+
+    public boolean forcesUpdates() {
+        return forceUpdate;
     }
 
     /**

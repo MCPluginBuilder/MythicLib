@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -39,7 +39,7 @@ public class Blink extends SkillHandler<SimpleSkillResult> {
         // Effects on prev position
         caster.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 0);
         caster.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .1);
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_TELEPORT.get(), 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
         @Nullable final RayTraceResult rtResult = caster.getWorld().rayTraceBlocks(caster.getEyeLocation(), dir, range, FluidCollisionMode.NEVER, true);
         final Location loc = rtResult == null || rtResult.getHitBlock() == null ? caster.getLocation().add(dir.clone().multiply(range)) :

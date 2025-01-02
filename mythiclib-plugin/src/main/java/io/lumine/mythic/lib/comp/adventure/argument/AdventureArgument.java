@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.comp.adventure.argument;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.OptionalDouble;
@@ -14,7 +13,6 @@ import java.util.OptionalInt;
  * <p>
  * This class contains information about the argument.
  */
-@ApiStatus.NonExtendable
 public class AdventureArgument {
 
     private final String value;

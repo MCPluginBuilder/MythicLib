@@ -7,9 +7,9 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Attributes;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -50,7 +50,7 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
          * bug where you can kill the chicken for a brief few ticks after it
          * spawns in!
          */
-        chicken.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(2048);
+        chicken.getAttribute(Attributes.MAX_HEALTH).setBaseValue(2048);
         chicken.setHealth(2048);
 
         /*
@@ -76,7 +76,7 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
 
                 chicken.setVelocity(vec);
                 if (ti % 4 == 0)
-                    chicken.getWorld().playSound(chicken.getLocation(), Sound.ENTITY_CHICKEN_HURT, 2, 1);
+                    chicken.getWorld().playSound(chicken.getLocation(), Sounds.ENTITY_CHICKEN_HURT, 2, 1);
                 chicken.getWorld().spawnParticle(VParticle.EXPLOSION.get(), chicken.getLocation().add(0, .3, 0), 0);
                 chicken.getWorld().spawnParticle(VParticle.FIREWORK.get(), chicken.getLocation().add(0, .3, 0), 1, 0, 0, 0, .05);
                 double currentTrajRatio = chicken.getVelocity().getX() / chicken.getVelocity().getZ();
@@ -87,7 +87,7 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
 
                     chicken.getWorld().spawnParticle(VParticle.FIREWORK.get(), chicken.getLocation().add(0, .3, 0), 128, 0, 0, 0, .25);
                     chicken.getWorld().spawnParticle(VParticle.EXPLOSION.get(), chicken.getLocation().add(0, .3, 0), 24, 0, 0, 0, .25);
-                    chicken.getWorld().playSound(chicken.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2, 1.5f);
+                    chicken.getWorld().playSound(chicken.getLocation(), Sounds.ENTITY_GENERIC_EXPLODE, 2, 1.5f);
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(chicken.getLocation()))
                         if (!entity.isDead() && entity.getLocation().distanceSquared(chicken.getLocation()) < radiusSquared
                                 && UtilityMethods.canTarget(caster, entity)) {

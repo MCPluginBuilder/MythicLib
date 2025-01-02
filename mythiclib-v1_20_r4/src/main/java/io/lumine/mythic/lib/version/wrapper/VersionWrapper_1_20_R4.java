@@ -23,7 +23,6 @@ import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
@@ -35,8 +34,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_20_R4.CraftSound;
 import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
 import org.bukkit.craftbukkit.v1_20_R4.block.CraftBlockType;
 import org.bukkit.craftbukkit.v1_20_R4.entity.CraftPlayer;
@@ -64,6 +65,16 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public String getBiomeName(Biome biome) {
+        return biome.name();
+    }
+
+    @Override
+    public String getSoundName(Sound sound) {
+        return sound.name();
     }
 
     @Override
@@ -402,8 +413,7 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
     public Sound getBlockPlaceSound(Block block) {
         ServerLevel nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
         BlockState state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        SoundEvent event = state.getSoundType().getPlaceSound();
-        return Sound.valueOf(event.getLocation().getPath().replace(".", "_").toUpperCase());
+        return CraftSound.minecraftToBukkit(state.getSoundType().getPlaceSound());
     }
 
     @Override

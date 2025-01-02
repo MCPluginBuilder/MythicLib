@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.api.itemtype;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.NBTItem;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 

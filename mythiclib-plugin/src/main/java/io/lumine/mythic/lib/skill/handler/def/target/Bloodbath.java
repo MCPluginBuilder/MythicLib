@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Effect;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -25,7 +26,7 @@ public class Bloodbath extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_COW_HURT, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_COW_HURT, 1, 2);
         target.getWorld().playEffect(target.getLocation().add(0, 1, 0), Effect.STEP_SOUND, 152);
         caster.setFoodLevel((int) Math.min(20, caster.getFoodLevel() + skillMeta.getParameter("amount")));
     }

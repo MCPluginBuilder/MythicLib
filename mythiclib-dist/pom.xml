@@ -50,10 +50,6 @@
 
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.commons.math3</pattern>
-                                    <shadedPattern>io.lumine.mythic.lib.math3</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>com.google.gson</pattern>
                                     <shadedPattern>io.lumine.mythic.lib.gson</shadedPattern>
                                 </relocation>
@@ -201,6 +197,20 @@
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-v1_21_r1</artifactId>
+            <version>1.7.1-SNAPSHOT</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.lumine</groupId>
+            <artifactId>mythiclib-v1_21_r2</artifactId>
+            <version>1.7.1-SNAPSHOT</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.lumine</groupId>
+            <artifactId>mythiclib-v1_21_r3</artifactId>
             <version>1.7.1-SNAPSHOT</version>
             <scope>compile</scope>
             <optional>true</optional>

@@ -3,10 +3,9 @@ package io.lumine.mythic.lib.data;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.util.MMOPlugin;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -23,7 +22,6 @@ import java.util.UUID;
  */
 public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     private final MMOPlayerData playerData;
-    @Nullable
     private final MMOPlugin mmoPlugin;
 
     /**
@@ -31,11 +29,6 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * and if it can be saved again in the remote/local database.
      */
     private boolean sync;
-
-    @Deprecated
-    public SynchronizedDataHolder(@NotNull MMOPlayerData playerData) {
-        this(null, playerData);
-    }
 
     /**
      * @param mmoPlugin  If the plugin creating the player data is a profile plugin
@@ -82,7 +75,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         if (MythicLib.plugin.getProfileMode() == null) return getUniqueId();
 
         // Profile plugin => take official ID (if proxy-based profiles are enabled), unique ID otherwise (legacy profiles)
-        if (mmoPlugin != null && mmoPlugin.hasProfiles())
+        if (mmoPlugin.hasProfiles())
             return playerData.hasOfficialId() ? getOfficialId() : getUniqueId();
 
         // Otherwise, take profile ID if it exists
@@ -106,6 +99,6 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         Validate.isTrue(playerData.isOnline() || playerData.isLookup(), "Cannot synchronize non-lookup offline player data");
 
         sync = true;
-        if (mmoPlugin != null) playerData.markAsSynchronized(mmoPlugin, this);
+        playerData.markAsSynchronized(mmoPlugin, this);
     }
 }

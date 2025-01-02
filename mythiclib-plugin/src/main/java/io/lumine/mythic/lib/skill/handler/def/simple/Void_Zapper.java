@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -34,7 +34,7 @@ public class Void_Zapper extends SkillHandler<SimpleSkillResult> {
     @Override
     public void whenCast(SimpleSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_HURT.get(), 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_HURT, 1, 1);
         new SkillHandler(skillMeta);
     }
 

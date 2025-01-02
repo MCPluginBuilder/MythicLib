@@ -7,10 +7,11 @@ import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,7 +49,7 @@ public class AttackEffects implements Listener {
             event.getDamage().additiveModifier(stats.getStat(type.getOffenseStat()) / 100, type);
 
         // Apply undead damage
-        if (MythicLib.plugin.getVersion().getWrapper().isUndead(event.getEntity()))
+        if (VersionWrapper.get().isUndead(event.getEntity()))
             event.getDamage().additiveModifier(stats.getStat("UNDEAD_DAMAGE") / 100);
 
         // Apply PvP or PvE damage, one of the two anyways.
@@ -66,7 +67,7 @@ public class AttackEffects implements Listener {
             event.getDamage().multiplicativeModifier(damageMultiplicator, DamageType.UNARMED);
             event.getDamage().registerWeaponCriticalStrike();
 
-            event.getEntity().getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1, 1);
+            event.getEntity().getWorld().playSound(event.getEntity().getLocation(), Sounds.ENTITY_PLAYER_ATTACK_CRIT, 1, 1);
             applyCritEffects(event.getEntity(), Particle.CRIT, 32, .4f);
         }
 
@@ -77,7 +78,7 @@ public class AttackEffects implements Listener {
             event.getAttacker().getData().applyCooldown(CooldownType.SKILL_CRIT, skillCritCooldown);
             event.getDamage().multiplicativeModifier(stats.getStat("SKILL_CRITICAL_STRIKE_POWER") / 100, DamageType.SKILL);
             event.getDamage().registerSkillCriticalStrike();
-            event.getEntity().getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1, 2);
+            event.getEntity().getWorld().playSound(event.getEntity().getLocation(), Sounds.ENTITY_PLAYER_ATTACK_CRIT, 1, 2);
             applyCritEffects(event.getEntity(), VParticle.TOTEM_OF_UNDYING.get(), 16, .4f);
         }
 

@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -49,7 +50,7 @@ public class Wither extends SkillHandler<TargetSkillResult> {
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
         target.addPotionEffect(
                 new PotionEffect(PotionEffectType.WITHER, (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
     }

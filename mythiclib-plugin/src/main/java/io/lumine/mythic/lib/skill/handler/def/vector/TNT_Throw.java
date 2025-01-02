@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public class TNT_Throw extends SkillHandler<VectorSkillResult> {
         tnt.setFuseTicks(80);
         tnt.setVelocity(vec);
         new CancelTeamDamage(caster, tnt);
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 0);
         caster.getWorld().spawnParticle(VParticle.EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 12, 0, 0, 0, .1);
     }
 

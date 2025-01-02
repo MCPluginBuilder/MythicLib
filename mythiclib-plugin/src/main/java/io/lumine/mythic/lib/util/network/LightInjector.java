@@ -38,7 +38,6 @@ import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Range;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -558,11 +557,11 @@ public abstract class LightInjector {
         }
     }
 
-    private static Field getField(Class<?> clazz, Class<?> type, @Range(from = 1, to = Integer.MAX_VALUE) int index) {
+    private static Field getField(Class<?> clazz, Class<?> type, int index) {
         return getField(clazz, type, index, 0);
     }
 
-    private static Field getField(Class<?> clazz, Class<?> type, @Range(from = 1, to = Integer.MAX_VALUE) int index, @Range(from = 0, to = Integer.MAX_VALUE) int superClassesToTry) {
+    private static Field getField(Class<?> clazz, Class<?> type, int index, int superClassesToTry) {
         final Class<?> savedClazz = clazz;
         final int savedIndex = index;
 
@@ -637,7 +636,7 @@ public abstract class LightInjector {
         }
     }
 
-    private static Method getMethod(Class<?> clazz, Class<?> returnType, @Range(from = 1, to = Integer.MAX_VALUE) int index) {
+    private static Method getMethod(Class<?> clazz, Class<?> returnType, int index) {
         final int savedIndex = index;
         Method[] methods = clazz.getDeclaredMethods();
         for (Method m : methods) {

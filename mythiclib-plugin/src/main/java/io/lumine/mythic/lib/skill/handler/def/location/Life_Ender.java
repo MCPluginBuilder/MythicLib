@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -38,7 +38,7 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
         double knockback = skillMeta.getParameter("knockback");
         double radius = skillMeta.getParameter("radius");
 
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDERMAN_TELEPORT.get(), 2, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 2, 1);
         new BukkitRunnable() {
             final Location source = loc.clone().add(5 * Math.cos(RANDOM.nextDouble() * 2 * Math.PI), 20, 5 * Math.sin(RANDOM.nextDouble() * 2 * Math.PI));
             final Vector vec = loc.subtract(source).toVector().multiply((double) 1 / 30);
@@ -58,7 +58,7 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
                 }
 
                 if (ti >= 30) {
-                    source.getWorld().playSound(source, Sound.ENTITY_GENERIC_EXPLODE, 3, 1);
+                    source.getWorld().playSound(source, Sounds.ENTITY_GENERIC_EXPLODE, 3, 1);
                     source.getWorld().spawnParticle(Particle.FLAME, source, 64, 0, 0, 0, .25);
                     source.getWorld().spawnParticle(Particle.LAVA, source, 32);
                     for (double j = 0; j < Math.PI * 2; j += Math.PI / 24)

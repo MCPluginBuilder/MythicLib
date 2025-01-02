@@ -7,12 +7,15 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.damage.*;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
+import io.lumine.mythic.lib.module.GeneralManager;
+import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.version.Attributes;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.VersionUtils;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
@@ -36,7 +39,8 @@ import java.util.logging.Level;
  *
  * @author jules
  */
-public class DamageManager implements Listener, MMOManager {
+@ModuleInfo(key = "damage", load = false)
+public class DamageManager extends GeneralManager implements Listener {
 
     /**
      * External attack handlers
@@ -54,8 +58,12 @@ public class DamageManager implements Listener, MMOManager {
 
     private AttributeModifier noKnockbackModifier;
 
+    public DamageManager(MMOPluginImpl plugin) {
+        super(plugin);
+    }
+
     @Override
-    public void initialize(boolean clearBefore) {
+    public void onEnable() {
         noKnockbackModifier = VersionUtils.attrMod(new NamespacedKey(MythicLib.plugin, "no_knockback"), 100, AttributeModifier.Operation.ADD_NUMBER);
     }
 
@@ -122,7 +130,7 @@ public class DamageManager implements Listener, MMOManager {
 
         // Should knockback be applied
         if (!knockback) {
-            final AttributeInstance instance = target.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE);
+            final AttributeInstance instance = target.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
             try {
                 instance.addModifier(noKnockbackModifier);
                 applyDamage(damage, target, damager, true, ignoreImmunity);
@@ -250,7 +258,7 @@ public class DamageManager implements Listener, MMOManager {
      *
      * @param attackMeta Attack metadata being registered
      * @return Attack metadata already present on the player, if it's not
-     * the case it's an internal error.
+     *         the case it's an internal error.
      */
     @Nullable
     public AttackMetadata markAsMetadata(@NotNull AttackMetadata attackMeta) {

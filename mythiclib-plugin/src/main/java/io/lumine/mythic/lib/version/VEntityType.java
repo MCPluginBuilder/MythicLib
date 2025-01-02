@@ -12,7 +12,7 @@ public enum VEntityType {
     private final EntityType wrapped;
 
     VEntityType(String... candidates) {
-        wrapped = UtilityMethods.resolveEnumField(EntityType::valueOf, candidates);
+        wrapped = UtilityMethods.resolveField(EntityType::valueOf, candidates);
     }
 
     @NotNull

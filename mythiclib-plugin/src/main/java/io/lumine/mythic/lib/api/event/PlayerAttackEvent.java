@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.entity.EntityDamageEvent;

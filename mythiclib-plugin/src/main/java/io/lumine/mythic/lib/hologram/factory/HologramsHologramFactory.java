@@ -5,7 +5,7 @@ import com.sainttx.holograms.api.HologramManager;
 import com.sainttx.holograms.api.line.TextLine;
 import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;

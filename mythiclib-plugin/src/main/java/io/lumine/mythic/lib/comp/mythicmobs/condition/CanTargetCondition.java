@@ -10,7 +10,7 @@ import io.lumine.mythic.core.utils.annotations.MythicCondition;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 
 @MythicCondition(author = "Indyuce", name = "mmocantarget", aliases = {}, description = "Whether the caster can interact with the target")

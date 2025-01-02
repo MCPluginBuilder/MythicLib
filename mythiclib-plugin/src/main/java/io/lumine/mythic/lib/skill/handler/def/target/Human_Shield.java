@@ -8,10 +8,10 @@ import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Attributes;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,7 +36,7 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 1, 1);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_BLAZE_AMBIENT, 1, 1);
         new HumanShield(skillMeta.getCaster().getData(), (Player) result.getTarget(), skillMeta.getParameter("reduction"), skillMeta.getParameter("redirect"), skillMeta.getParameter("duration"), skillMeta.getParameter("low"));
     }
 
@@ -68,7 +68,7 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
                 event.getDamage().multiplicativeModifier(damageCoefficient);
 
                 double health = caster.getPlayer().getHealth() - initialDamage * redirectRate;
-                if (health > caster.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() * minimumHealthPercentage)
+                if (health > caster.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue() * minimumHealthPercentage)
                     caster.getPlayer().setHealth(health);
                 else {
                     caster.getPlayer().setHealth(1);

@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.version;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,13 +59,15 @@ public class ServerVersion {
 
         // Validate all mappings
         try {
+            //Attributes.getAll(); static code wont run
             VEnchantment.values();
             VEntityType.values();
             VMaterial.values();
             VParticle.values();
             VPotionEffectType.values();
-            VSound.values();
+            Validate.notNull(Sounds.ENTITY_ENDERMAN_HURT, "Error with sounds");
         } catch (Throwable throwable) {
+            throwable.printStackTrace();
             throw new RuntimeException("Compatibility error: " + throwable.getMessage());
         }
     }

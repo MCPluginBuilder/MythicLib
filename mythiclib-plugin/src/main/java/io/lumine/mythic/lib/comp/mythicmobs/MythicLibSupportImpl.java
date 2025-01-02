@@ -11,7 +11,6 @@ import io.lumine.mythic.bukkit.events.MythicReloadedEvent;
 import io.lumine.mythic.bukkit.utils.Events;
 import io.lumine.mythic.bukkit.utils.plugin.ReloadableModule;
 import io.lumine.mythic.core.skills.placeholders.Placeholder;
-import io.lumine.mythic.core.skills.placeholders.types.MetaPlaceholder;
 import io.lumine.mythic.core.skills.variables.Variable;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
@@ -27,7 +26,7 @@ import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownInfo;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.EntityDamageEvent;
 

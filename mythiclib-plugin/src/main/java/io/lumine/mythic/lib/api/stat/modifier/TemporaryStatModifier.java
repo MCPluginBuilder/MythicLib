@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class TemporaryStatModifier extends StatModifier implements Closeable {

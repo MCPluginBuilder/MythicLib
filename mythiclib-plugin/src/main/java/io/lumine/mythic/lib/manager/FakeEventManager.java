@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.manager;
 import io.lumine.mythic.lib.api.event.fake.FakeBlockBreakEvent;
 import io.lumine.mythic.lib.api.event.fake.FakeEntityDamageByEntityEvent;
 import io.lumine.mythic.lib.api.event.fake.FakeEventCaller;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;

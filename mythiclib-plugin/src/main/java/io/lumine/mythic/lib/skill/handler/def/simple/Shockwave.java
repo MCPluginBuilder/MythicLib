@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
@@ -50,7 +51,7 @@ public class Shockwave extends SkillHandler<SimpleSkillResult> {
 
                 loc.add(vec);
 
-                loc.getWorld().playSound(loc, Sound.BLOCK_GRAVEL_BREAK, 1, 2);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_GRAVEL_BREAK, 1, 2);
                 loc.getWorld().spawnParticle(VParticle.BLOCK.get(), loc, 12, .5, 0, .5, 0, Material.DIRT.createBlockData());
 
                 for (Entity ent : UtilityMethods.getNearbyChunkEntities(loc))

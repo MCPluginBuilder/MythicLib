@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,7 +45,7 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
 
         MARKED_ENTITIES.put(target.getUniqueId(), 1 + skillMeta.getParameter("extra-damage") / 100);
         playWeakenEffect(target.getLocation());
-        target.getWorld().playSound(target.getLocation(), VSound.ENTITY_ENDERMAN_HURT.get(), 2, 1.5f);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_ENDERMAN_HURT, 2, 1.5f);
 
         /*
          * display particles until the entity is hit again and eventually remove
@@ -78,7 +78,7 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
             event.getDamage().multiplicativeModifier(found);
             playWeakenEffect(entity.getLocation());
             MARKED_ENTITIES.remove(entity.getUniqueId());
-            entity.getWorld().playSound(entity.getLocation(), VSound.ENTITY_ENDERMAN_DEATH.get(), 2, 2);
+            entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_ENDERMAN_DEATH, 2, 2);
         }
     }
 
@@ -88,7 +88,7 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
         final ItemStack item = event.getItem();
         if (item.getType() == Material.MILK_BUCKET && MARKED_ENTITIES.containsKey(player.getUniqueId())) {
             MARKED_ENTITIES.remove(player.getUniqueId());
-            player.getWorld().playSound(player.getLocation(), VSound.ENTITY_ENDERMAN_DEATH.get(), 2, 2);
+            player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDERMAN_DEATH, 2, 2);
         }
     }
 

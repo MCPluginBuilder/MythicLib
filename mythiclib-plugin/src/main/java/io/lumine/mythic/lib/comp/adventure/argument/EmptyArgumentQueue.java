@@ -1,7 +1,5 @@
 package io.lumine.mythic.lib.comp.adventure.argument;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import java.util.Collections;
 
 /**
@@ -10,7 +8,6 @@ import java.util.Collections;
  *
  * @author Roch Blondiaux (Kiwix).
  */
-@ApiStatus.Internal
 public class EmptyArgumentQueue extends AdventureArgumentQueue{
 
     public EmptyArgumentQueue() {

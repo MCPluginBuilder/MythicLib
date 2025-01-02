@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -55,7 +55,7 @@ public class Bunny_Mode extends SkillHandler<SimpleSkillResult> {
                     lastJump = System.currentTimeMillis();
                     final Vector dir = UtilityMethods.safeNormalize(caster.getEyeLocation().getDirection().setY(0), new Vector(0, 1, 0));
                     caster.setVelocity(dir.multiply(.8 * xz).setY(0.5 * y));
-                    caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_ENDER_DRAGON_FLAP.get(), 2, 1);
+                    caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDER_DRAGON_FLAP, 2, 1);
                     for (double a = 0; a < Math.PI * 2; a += Math.PI / 12)
                         caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation(), 0, Math.cos(a), 0, Math.sin(a), .2);
                 }

@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -44,7 +45,7 @@ public class Burning_Hands extends SkillHandler<SimpleSkillResult> {
                     cancel();
 
                 Location loc = caster.getLocation().add(0, 1.2, 0);
-                loc.getWorld().playSound(loc, Sound.BLOCK_FIRE_AMBIENT, 1, 1);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_AMBIENT, 1, 1);
 
                 for (double m = -45; m < 45; m += 5) {
                     double a = (m + caster.getEyeLocation().getYaw() + 90) * Math.PI / 180;

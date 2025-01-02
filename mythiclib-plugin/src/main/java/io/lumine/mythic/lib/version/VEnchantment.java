@@ -15,7 +15,7 @@ public enum VEnchantment {
     private final Enchantment wrapped;
 
     VEnchantment(String... candidates) {
-        wrapped = UtilityMethods.resolveEnumField(VEnchantment::fromKey, candidates);
+        wrapped = UtilityMethods.resolveField(VEnchantment::fromKey, candidates);
     }
 
     @Nullable

@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.api.crafting.ingredients;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

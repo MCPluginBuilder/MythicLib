@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -25,7 +26,7 @@ public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2, 1.5f);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2, 1.5f);
         target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, target.getHeight() / 2, 0), 32, 0, 0, 0, .5);
         target.getWorld().spawnParticle(VParticle.SMOKE.get(), target.getLocation().add(0, target.getHeight() / 2, 0), 64, 0, 0, 0, .08);
 

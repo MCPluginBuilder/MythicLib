@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -35,8 +35,8 @@ public class Overload extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2, 0);
-        caster.getWorld().playSound(caster.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_TWINKLE.get(), 2, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_GENERIC_EXPLODE, 2, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 0);
         caster.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 2, 254));
 
         for (Entity entity : caster.getNearbyEntities(radius, radius, radius))

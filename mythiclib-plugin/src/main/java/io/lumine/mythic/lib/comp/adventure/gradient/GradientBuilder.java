@@ -69,7 +69,7 @@ public class GradientBuilder {
      * @param interpolator The interpolator to use.
      * @return The gradient.
      */
-    public static String multiRgbGradient(String str, Color[] colors, double @Nullable [] portions, Interpolator interpolator, List<String> decorations) {
+    public static String multiRgbGradient(String str, Color[] colors, @Nullable double[] portions, Interpolator interpolator, List<String> decorations) {
         final double[] p;
         if (portions == null) {
             p = new double[colors.length - 1];

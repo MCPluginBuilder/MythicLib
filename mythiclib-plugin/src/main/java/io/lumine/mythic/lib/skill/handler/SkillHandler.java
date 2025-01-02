@@ -33,6 +33,7 @@ import java.util.*;
  * @param <T> Skill result class being used by that skill behaviour
  * @author jules
  */
+// TODO adapt skill handlers to take in ConfigWrappers, not only config sections. syntax will be alot like MythicMobs
 public abstract class SkillHandler<T extends SkillResult> {
     private final String id;
     private final Set<String> parameters = new HashSet<>();

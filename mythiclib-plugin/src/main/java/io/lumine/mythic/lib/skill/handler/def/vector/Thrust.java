@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
@@ -32,7 +33,7 @@ public class Thrust extends SkillHandler<VectorSkillResult> {
         final Player caster = skillMeta.getCaster().getPlayer();
         final double damage = skillMeta.getParameter("damage");
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1, 0);
         caster.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 2, 3));
 
         Location loc = caster.getEyeLocation().clone();

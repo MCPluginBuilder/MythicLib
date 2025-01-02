@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.NBTTypeHelper;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
 import net.minecraft.server.v1_14_R1.*;
@@ -14,6 +15,7 @@ import net.minecraft.server.v1_14_R1.IChatBaseComponent.ChatSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.reflect.FieldUtils;
@@ -34,10 +36,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class VersionWrapper_1_14_R1 implements VersionWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
@@ -45,6 +44,16 @@ public class VersionWrapper_1_14_R1 implements VersionWrapper {
     public VersionWrapper_1_14_R1() {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
+    }
+
+    @Override
+    public String getBiomeName(Biome biome) {
+        return biome.name();
+    }
+
+    @Override
+    public String getSoundName(Sound sound) {
+        return sound.name();
     }
 
     @Override
@@ -303,6 +312,11 @@ public class VersionWrapper_1_14_R1 implements VersionWrapper {
         @Override
         public int getTypeId(String path) {
             return compound.get(path).getTypeId();
+        }
+
+        @Override
+        public void setCanMine(Collection<Material> blocks) {
+            throw new NotImplementedException("Not supported in <1.21");
         }
     }
 

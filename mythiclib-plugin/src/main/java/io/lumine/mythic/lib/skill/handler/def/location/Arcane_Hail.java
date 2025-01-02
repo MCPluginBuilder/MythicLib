@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -46,7 +46,7 @@ public class Arcane_Hail extends SkillHandler<LocationSkillResult> {
                 }
 
                 Location loc1 = loc.clone().add(randomCoordMultiplier() * radius, 0, randomCoordMultiplier() * radius);
-                loc1.getWorld().playSound(loc1, VSound.ENTITY_ENDERMAN_HURT.get(), 1, 0);
+                loc1.getWorld().playSound(loc1, Sounds.ENTITY_ENDERMAN_HURT, 1, 0);
                 for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc1))
                     if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc1) <= 4)
                         skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);

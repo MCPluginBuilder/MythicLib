@@ -10,8 +10,9 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -80,7 +81,7 @@ public class MitigationMechanics implements Listener {
             playerData.applyCooldown(CooldownType.DODGE, calculateCooldown(dodgeDefaultCooldown, stats.getStat("DODGE_COOLDOWN_REDUCTION")));
             event.setCancelled(true);
             player.setNoDamageTicks(10);
-            player.getWorld().playSound(player.getLocation(), VSound.ENTITY_ENDER_DRAGON_FLAP.get(), 2, 1);
+            player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDER_DRAGON_FLAP, 2, 1);
             player.getWorld().spawnParticle(VParticle.EXPLOSION.get(), player.getLocation(), 16, 0, 0, 0, .06);
             if (dodgeKnockback > 0)
                 player.setVelocity(getVector(player, event).multiply(-.85 * dodgeKnockback).setY(.3));
@@ -100,7 +101,7 @@ public class MitigationMechanics implements Listener {
             event.setCancelled(true);
             player.setNoDamageTicks(10);
             sendMessage(player, parryMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
-            player.getWorld().playSound(player.getLocation(), VSound.ENTITY_ENDER_DRAGON_FLAP.get(), 2, 1);
+            player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDER_DRAGON_FLAP, 2, 1);
             player.getWorld().spawnParticle(VParticle.EXPLOSION.get(), player.getLocation(), 16, 0, 0, 0, .06);
             if (parryKnockback > 0 && event.toBukkit() instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) event.toBukkit()).getDamager() instanceof LivingEntity) {
                 LivingEntity attacker = (LivingEntity) ((EntityDamageByEntityEvent) event.toBukkit()).getDamager();
@@ -124,7 +125,7 @@ public class MitigationMechanics implements Listener {
                     "damage", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getDamageBlocked()),
                     "power", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getPower() * 100.));
             event.getDamage().multiplicativeModifier(1 - mitigationEvent.getPower());
-            player.getWorld().playSound(player.getLocation(), VSound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR.get(), 2, 1);
+            player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2, 1);
 
             double yaw = getYaw(player, getVector(player, event)) + 90;
             for (double j = yaw - 90; j < yaw + 90; j += 5)
@@ -144,7 +145,7 @@ public class MitigationMechanics implements Listener {
             format = format.replace("#" + placeholders[i].toString() + "#", placeholders[i + 1].toString());
 
         if (actionBarMessage)
-            MythicLib.plugin.getVersion().getWrapper().sendActionBar(player, format);
+            VersionWrapper.get().sendActionBar(player, format);
         else
             player.sendMessage(format);
     }

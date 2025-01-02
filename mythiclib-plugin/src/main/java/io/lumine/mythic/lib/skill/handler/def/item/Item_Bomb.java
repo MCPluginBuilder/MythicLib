@@ -9,9 +9,8 @@ import io.lumine.mythic.lib.skill.result.def.ItemSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -37,7 +36,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
 
         final NoClipItem item = new NoClipItem(caster.getLocation().add(0, 1.2, 0), itemStack);
         item.getEntity().setVelocity(result.getTarget().multiply(1.3));
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 2, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 2, 0);
 
         new BukkitRunnable() {
             int j = 0;
@@ -57,7 +56,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
 
                     item.getEntity().getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), item.getEntity().getLocation(), 24, 2, 2, 2, 0);
                     item.getEntity().getWorld().spawnParticle(VParticle.EXPLOSION.get(), item.getEntity().getLocation(), 48, 0, 0, 0, .2);
-                    item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 3, 0);
+                    item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.ENTITY_GENERIC_EXPLODE, 3, 0);
 
                     item.close();
                     cancel();
@@ -66,7 +65,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
 
                 item.getEntity().getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), item.getEntity().getLocation().add(0, .2, 0), 0);
                 item.getEntity().getWorld().spawnParticle(VParticle.FIREWORK.get(), item.getEntity().getLocation().add(0, .2, 0), 1, 0, 0, 0, .1);
-                item.getEntity().getWorld().playSound(item.getEntity().getLocation(), VSound.BLOCK_NOTE_BLOCK_HAT.get(), 2, (float) (.5 + (j / 40. * 1.5)));
+                item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.BLOCK_NOTE_BLOCK_HAT, 2, (float) (.5 + (j / 40. * 1.5)));
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
     }

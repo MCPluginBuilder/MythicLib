@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -27,6 +28,6 @@ public class Minor_Healings extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         UtilityMethods.heal(target, skillMeta.getParameter("heal"));
         new SmallParticleEffect(target, Particle.HEART, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_PLAYER_LEVELUP, 2, 2);
     }
 }

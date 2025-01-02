@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Sound;
@@ -47,7 +48,7 @@ public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
                     caster.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), caster.getLocation().add(Math.cos(k + j) * 2, 1 + Math.sin(k + j * 7) / 3, Math.sin(k + j) * 2), 0);
 
                 if (ti % 2 == 0)
-                    caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_SNOW_BREAK, 1, 1);
+                    caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_SNOW_BREAK, 1, 1);
 
                 if (ti % 7 == 0)
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(caster.getLocation()))

@@ -2,34 +2,45 @@ package io.lumine.mythic.lib.module;
 
 import io.lumine.mythic.lib.util.annotation.NotUsed;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @NotUsed
 public class MMOPluginRegistry {
-    private final List<MMOPluginImpl> plugins = new ArrayList<>();
+    private final Map<String, MMOPluginImpl> plugins = new HashMap<>();
 
     /**
      * Sorted list including all managers from all registered MMO plugins
      */
     private final List<Module> sorted = new ArrayList<>();
 
+    private final Map<String, Module> moduleRegistry = new HashMap<>();
+
     private boolean registration = true;
 
     private static MMOPluginRegistry instance;
 
     private MMOPluginRegistry() {
-        // Singleton
+        // Singleton pattern
     }
 
+    @NotNull
     public static MMOPluginRegistry getInstance() {
         if (instance == null) instance = new MMOPluginRegistry();
         return instance;
     }
 
+    @Nullable
+    public MMOPluginImpl getPlugin(@NotNull String key) {
+        return plugins.get(key);
+    }
+
     public void registerPlugin(@NotNull MMOPluginImpl plugin) {
-        this.plugins.add(plugin);
+        this.plugins.put(plugin.getName(), plugin);
     }
 
     public boolean isRegistrationAllowed() {

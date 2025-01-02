@@ -6,12 +6,16 @@ import io.lumine.mythic.lib.player.particle.ParticleEffect;
 import io.lumine.mythic.lib.player.potion.PermanentPotionEffect;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * @deprecated Not used
+ */
+@Deprecated
 public class ModifierManager {
     private final Map<String, Function<ConfigObject, PlayerModifier>> modifierTypes = new HashMap<>();
 

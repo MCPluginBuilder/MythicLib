@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.script.variable;
 
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;

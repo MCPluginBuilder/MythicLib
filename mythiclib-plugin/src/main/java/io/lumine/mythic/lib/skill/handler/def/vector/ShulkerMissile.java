@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -51,7 +52,7 @@ public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
                     return;
                 }
 
-                caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+                caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
                 ShulkerBullet shulkerBullet = (ShulkerBullet) caster.getWorld().spawnEntity(caster.getLocation().add(0, 1, 0), EntityType.SHULKER_BULLET);
                 shulkerBullet.setShooter(caster);
                 new ShulkerMissileHandler(skillMeta.getCaster(), shulkerBullet, result.getTarget(), (long) (skillMeta.getParameter("duration") * 20), skillMeta.getParameter("damage"), (int) (20 * skillMeta.getParameter("effect-duration")));

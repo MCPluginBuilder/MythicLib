@@ -10,7 +10,7 @@ import io.lumine.mythic.lib.damage.ProjectileAttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;

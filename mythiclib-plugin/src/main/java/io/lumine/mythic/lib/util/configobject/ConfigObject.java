@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.util.DoubleFormula;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

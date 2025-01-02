@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -36,14 +36,14 @@ public class Sparkle extends SkillHandler<TargetSkillResult> {
 
         skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC);
         target.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), target.getLocation().add(0, 1, 0), 0);
-        target.getWorld().playSound(target.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_TWINKLE.get(), 2, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 2);
 
         int count = 0;
         for (Entity entity : target.getNearbyEntities(radius, radius, radius))
             if (count < limit && UtilityMethods.canTarget(caster, entity)) {
                 count++;
                 skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
-                entity.getWorld().playSound(entity.getLocation(), VSound.ENTITY_FIREWORK_ROCKET_TWINKLE.get(), 2, 2);
+                entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 2);
                 Location loc_t = target.getLocation().add(0, .75, 0);
                 Location loc_ent = entity.getLocation().add(0, .75, 0);
                 for (double j1 = 0; j1 < 1; j1 += .04) {

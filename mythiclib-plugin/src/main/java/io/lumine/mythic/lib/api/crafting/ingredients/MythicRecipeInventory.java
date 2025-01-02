@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.api.crafting.ingredients;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.crafting.recipes.MythicCraftingManager;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

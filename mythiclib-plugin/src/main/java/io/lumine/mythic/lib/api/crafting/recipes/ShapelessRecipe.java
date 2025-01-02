@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.api.crafting.uimanager.ProvidedUIFilter;
 import io.lumine.mythic.lib.api.util.Ref;
 import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackProvider;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;

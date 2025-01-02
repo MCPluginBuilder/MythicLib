@@ -12,7 +12,7 @@ import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.util.Autosaveable;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;

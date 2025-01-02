@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.api.player;
 
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 /**

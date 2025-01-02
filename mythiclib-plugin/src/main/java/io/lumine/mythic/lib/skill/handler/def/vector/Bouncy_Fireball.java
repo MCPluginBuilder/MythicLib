@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -32,7 +33,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
     public void whenCast(VectorSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 2, 0);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 2, 0);
         new BukkitRunnable() {
             final Vector vec = result.getTarget().setY(0).normalize().multiply(.5 * skillMeta.getParameter("speed"));
             final Location loc = caster.getLocation().clone().add(0, 1.2, 0);
@@ -44,7 +45,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
             public void run() {
                 if (j++ > 100) {
                     loc.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), loc, 32, 0, 0, 0, .05);
-                    loc.getWorld().playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 1, 1);
+                    loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_EXTINGUISH, 1, 1);
                     cancel();
                     return;
                 }
@@ -63,7 +64,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
                     loc.add(vec.clone().multiply(-1));
                     y = .4;
                     bounces++;
-                    loc.getWorld().playSound(loc, Sound.ENTITY_BLAZE_HURT, 3, 2);
+                    loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 3, 2);
                 }
 
                 if (bounces > 2) {
@@ -80,7 +81,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
 
                     loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 12, 2, 2, 2, 0);
                     loc.getWorld().spawnParticle(VParticle.EXPLOSION.get(), loc, 48, 0, 0, 0, .2);
-                    loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 3, 0);
+                    loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 3, 0);
                     cancel();
                 }
             }

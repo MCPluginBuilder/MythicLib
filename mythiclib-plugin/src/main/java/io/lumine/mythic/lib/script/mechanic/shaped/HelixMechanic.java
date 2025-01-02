@@ -10,7 +10,7 @@ import io.lumine.mythic.lib.script.targeter.location.DefaultLocationTargeter;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;

@@ -7,6 +7,8 @@ import io.lumine.mythic.lib.comp.interaction.TargetRestriction;
 import io.lumine.mythic.lib.comp.interaction.relation.Relationship;
 import io.lumine.mythic.lib.comp.interaction.relation.RelationshipHandler;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
+import io.lumine.mythic.lib.module.GeneralManager;
+import io.lumine.mythic.lib.module.ModuleInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
@@ -15,9 +17,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EntityManager {
+@ModuleInfo(key = "entities", load = false)
+public class EntityManager extends GeneralManager {
     private final Set<TargetRestriction> restrictions = new HashSet<>();
     private final Set<RelationshipHandler> relHandlers = new HashSet<>();
+
+    public EntityManager() {
+        super(MythicLib.plugin);
+    }
 
     /**
      * See {@link TargetRestriction} for more information. This should be

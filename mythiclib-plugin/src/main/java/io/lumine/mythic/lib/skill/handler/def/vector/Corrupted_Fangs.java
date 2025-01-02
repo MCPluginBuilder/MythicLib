@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
@@ -39,7 +40,7 @@ public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
     public void whenCast(VectorSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+        caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
         new BukkitRunnable() {
             final Vector vec = result.getTarget().setY(0).multiply(2);
             final Location loc = caster.getLocation();

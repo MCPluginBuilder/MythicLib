@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.comp.anticheat.CheatType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.HashMap;

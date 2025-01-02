@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.AttackSkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -57,7 +58,7 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
                     cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_WITCH_DRINK, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITCH_DRINK, 1, 2);
         UtilityMethods.heal(caster, skillMeta.getAttackSource().getDamage().getDamage() * skillMeta.getParameter("drain") / 100);
     }
 

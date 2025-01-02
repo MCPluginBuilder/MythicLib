@@ -10,7 +10,7 @@ import io.lumine.mythic.bukkit.utils.text.Text;
 import io.lumine.mythic.core.config.GenericConfig;
 import io.lumine.mythic.core.skills.placeholders.parsers.PlaceholderBooleanImpl;
 import io.lumine.mythic.core.skills.placeholders.parsers.PlaceholderColorImpl;
-import org.apache.commons.lang.NotImplementedException;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;

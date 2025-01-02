@@ -13,6 +13,7 @@ import io.lumine.mythic.lib.version.VInventoryView;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -23,18 +24,19 @@ import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_21_R2.CraftSound;
+import org.bukkit.craftbukkit.v1_21_R2.block.CraftBlockType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -51,14 +53,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class VersionWrapper_Reflection implements VersionWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
-    private final Map<Attribute, Double> playerDefaultBaseValues = new HashMap<>();
 
     // Reflection stuff
     private final ServerVersion version;
-    private final Class<?> _CraftWorld, _CraftPlayer, _CraftItemStack;
     private final Method _CraftWorld_getHandle, _CraftPlayer_getHandle, _CraftPlayer_getProfile, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy;
 
     public VersionWrapper_Reflection(ServerVersion version) throws NoSuchMethodException, ClassNotFoundException {
@@ -68,34 +69,17 @@ public class VersionWrapper_Reflection implements VersionWrapper {
 
         this.version = version;
 
-        _CraftWorld = obcClass("CraftWorld");
-        _CraftPlayer = obcClass("entity.CraftPlayer");
-        _CraftItemStack = obcClass("inventory.CraftItemStack");
+        // Classes
+        final Class<?> _CraftWorld = obcClass("CraftWorld");
+        final Class<?> _CraftPlayer = obcClass("entity.CraftPlayer");
+        final Class<?> _CraftItemStack = obcClass("inventory.CraftItemStack");
 
+        // Methods
         _CraftWorld_getHandle = _CraftWorld.getDeclaredMethod("getHandle");
         _CraftPlayer_getHandle = _CraftPlayer.getDeclaredMethod("getHandle");
         _CraftPlayer_getProfile = _CraftPlayer.getDeclaredMethod("getProfile");
         _CraftItemStack_asNMSCopy = _CraftItemStack.getDeclaredMethod("asNMSCopy", ItemStack.class);
         _CraftItemStack_asBukkitCopy = _CraftItemStack.getDeclaredMethod("asBukkitCopy", net.minecraft.world.item.ItemStack.class);
-
-        playerDefaultBaseValues.put(Attribute.GENERIC_MAX_HEALTH, 20d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_KNOCKBACK_RESISTANCE, 0d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_MOVEMENT_SPEED, .1);
-        playerDefaultBaseValues.put(Attribute.GENERIC_ATTACK_DAMAGE, 1d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_ATTACK_SPEED, 4d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_ARMOR, 0d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_ARMOR_TOUGHNESS, 0d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_FALL_DAMAGE_MULTIPLIER, 1d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_LUCK, 0d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_MAX_ABSORPTION, 0d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_SAFE_FALL_DISTANCE, 3d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_SCALE, 1d);
-        playerDefaultBaseValues.put(Attribute.GENERIC_STEP_HEIGHT, .6);
-        playerDefaultBaseValues.put(Attribute.GENERIC_GRAVITY, .08);
-        playerDefaultBaseValues.put(Attribute.GENERIC_JUMP_STRENGTH, .42);
-        playerDefaultBaseValues.put(Attribute.PLAYER_BLOCK_INTERACTION_RANGE, 4.5);
-        playerDefaultBaseValues.put(Attribute.PLAYER_ENTITY_INTERACTION_RANGE, 3d);
-        playerDefaultBaseValues.put(Attribute.PLAYER_BLOCK_BREAK_SPEED, 1d);
     }
 
     private Class<?> obcClass(String obcClassPath) throws ClassNotFoundException {
@@ -153,7 +137,10 @@ public class VersionWrapper_Reflection implements VersionWrapper {
         return material.getEquipmentSlot() == EquipmentSlot.HEAD;
     }
 
-    private static final OreDrops IRON_ORE = new OreDrops(Material.IRON_INGOT), GOLD_ORE = new OreDrops(Material.GOLD_INGOT), COPPER_ORE = new OreDrops(Material.COPPER_INGOT, 2, 5), ANCIENT_DEBRIS = new OreDrops(Material.NETHERITE_SCRAP);
+    private static final OreDrops IRON_ORE = new OreDrops(Material.IRON_INGOT),
+            GOLD_ORE = new OreDrops(Material.GOLD_INGOT),
+            COPPER_ORE = new OreDrops(Material.COPPER_INGOT, 2, 5),
+            ANCIENT_DEBRIS = new OreDrops(Material.NETHERITE_SCRAP);
 
     @Override
     public OreDrops getOreDrops(Material material) {
@@ -370,6 +357,15 @@ public class VersionWrapper_Reflection implements VersionWrapper {
         public int getTypeId(String path) {
             return compound.get(path).getId();
         }
+
+        @Override
+        public void setCanMine(Collection<Material> blocks) {
+            List<net.minecraft.world.level.block.Block> nmsBlocks = blocks.stream().map(CraftBlockType::bukkitToMinecraft).collect(Collectors.toList());
+            List<BlockPredicate> list = new ArrayList<>();
+            // First argument is not needed
+            list.add(BlockPredicate.Builder.block().of(null, nmsBlocks).build());
+            nms.set(DataComponents.CAN_BREAK, new AdventureModePredicate(list, false));
+        }
     }
 
     private static class CraftNBTCompound extends NBTCompound {
@@ -460,8 +456,7 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     public Sound getBlockPlaceSound(Block block) {
         ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
         BlockState state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        SoundEvent event = state.getSoundType().getPlaceSound();
-        return Sound.valueOf(event.getLocation().getPath().replace(".", "_").toUpperCase());
+        return CraftSound.minecraftToBukkit(state.getSoundType().getPlaceSound());
     }
 
     @Override

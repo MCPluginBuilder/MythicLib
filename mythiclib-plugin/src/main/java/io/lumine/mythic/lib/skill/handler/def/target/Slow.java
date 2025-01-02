@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Color;
@@ -47,7 +48,7 @@ public class Slow extends SkillHandler<TargetSkillResult> {
 
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_LLAMA_ANGRY, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_LLAMA_ANGRY, 1, 2);
         target.addPotionEffect(
                 new PotionEffect(VPotionEffectType.SLOWNESS.get(), (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
     }

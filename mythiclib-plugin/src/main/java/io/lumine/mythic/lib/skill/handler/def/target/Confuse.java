@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -26,7 +27,7 @@ public class Confuse extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
-        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_SHEEP_DEATH, 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_SHEEP_DEATH, 1, 2);
         new BukkitRunnable() {
             final Location loc = target.getLocation();
             final double rads = Math.toRadians(caster.getEyeLocation().getYaw() - 90);

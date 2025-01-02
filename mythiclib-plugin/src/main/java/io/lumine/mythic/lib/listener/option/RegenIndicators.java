@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.listener.option;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.IndicatorDisplayEvent;
+import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.util.CustomFont;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -31,7 +31,7 @@ public class RegenIndicators extends GameIndicators {
         Entity entity = event.getEntity();
         if (!(entity instanceof LivingEntity)
                 || event.getAmount() <= 0
-                || ((LivingEntity) entity).getHealth() + HEAL_EPSILON > ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue())
+                || ((LivingEntity) entity).getHealth() + HEAL_EPSILON > ((LivingEntity) entity).getAttribute(Attributes.MAX_HEALTH).getValue())
             return;
 
         // Display no indicator around vanished player

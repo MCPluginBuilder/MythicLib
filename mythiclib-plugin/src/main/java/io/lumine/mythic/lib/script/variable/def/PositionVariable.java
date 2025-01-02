@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.variable.Variable;
 import io.lumine.mythic.lib.script.variable.VariableMetadata;
 import io.lumine.mythic.lib.script.variable.VariableRegistry;
 import io.lumine.mythic.lib.util.Position;
+import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -32,7 +33,7 @@ public class PositionVariable extends Variable<Position> {
         VARIABLE_REGISTRY.registerVariable("pitch", var -> new DoubleVariable("temp", UtilityMethods.getYawPitch(var.toVector())[1]));
         VARIABLE_REGISTRY.registerVariable("length", var -> new DoubleVariable("temp", var.length()), "norm", "len");
         VARIABLE_REGISTRY.registerVariable("world", var -> new WorldVariable("temp", var.getWorld()));
-        VARIABLE_REGISTRY.registerVariable("biome", var -> new StringVariable("temp", getBiomeAt(var).name()));
+        VARIABLE_REGISTRY.registerVariable("biome", var -> new StringVariable("temp", VersionUtils.name(getBiomeAt(var))));
         VARIABLE_REGISTRY.registerVariable("altitude", var -> new DoubleVariable("temp", UtilityMethods.getAltitude(var.toLocation())));
     }
 

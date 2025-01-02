@@ -2,6 +2,9 @@ package io.lumine.mythic.lib.manager;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.module.GeneralManager;
+import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.condition.Condition;
 import io.lumine.mythic.lib.script.condition.generic.BooleanCondition;
@@ -49,7 +52,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadException;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -86,7 +89,8 @@ import java.util.logging.Level;
  *
  * @author jules
  */
-public class SkillManager {
+@ModuleInfo(key = "stats", load = false)
+public class SkillManager extends GeneralManager {
     private final Map<String, Function<ConfigObject, Mechanic>> mechanics = new HashMap<>();
     private final Map<String, Function<ConfigObject, Condition>> conditions = new HashMap<>();
     private final Map<String, Function<ConfigObject, EntityTargeter>> entityTargets = new HashMap<>();
@@ -111,7 +115,8 @@ public class SkillManager {
 
     private boolean registration = true;
 
-    public SkillManager() {
+    public SkillManager(MMOPluginImpl plugin) {
+        super(plugin);
 
         // Default mechanics
         registerMechanic("add_stat", config -> new AddStatModifierMechanic(config));

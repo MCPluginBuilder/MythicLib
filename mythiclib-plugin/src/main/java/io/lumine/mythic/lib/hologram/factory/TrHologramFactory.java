@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.hologram.HologramFactory;
 import io.lumine.mythic.lib.listener.option.GameIndicators;
 import me.arasple.mc.trhologram.api.TrHologramAPI;
 import me.arasple.mc.trhologram.api.hologram.HologramBuilder;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;

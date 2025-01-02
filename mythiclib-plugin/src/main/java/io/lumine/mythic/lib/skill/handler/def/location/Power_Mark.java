@@ -11,7 +11,7 @@ import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -57,7 +57,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
             this.caster = caster;
             this.loc = loc;
 
-            loc.getWorld().playSound(loc, Sound.BLOCK_END_PORTAL_FRAME_FILL, 2, 1);
+            loc.getWorld().playSound(loc, Sounds.BLOCK_END_PORTAL_FRAME_FILL, 2, 1);
 
             duration = skillMeta.getParameter("duration");
             ratio = skillMeta.getParameter("ratio") / 100;
@@ -76,7 +76,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
         public void stackDamage(PlayerAttackEvent event) {
             if (!event.isCancelled() && j < 20 * (duration - 2) && radiusCheck(event.getEntity().getLocation()) && event.getAttacker().getPlayer().equals(caster.getPlayer())) {
                 accumulate += event.getAttack().getDamage().getDamage() * ratio;
-                new ParabolicProjectile(event.getEntity().getLocation().add(0, event.getEntity().getHeight() / 2, 0), loc, () -> loc.getWorld().playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1), Color.PURPLE);
+                new ParabolicProjectile(event.getEntity().getLocation().add(0, event.getEntity().getHeight() / 2, 0), loc, () -> loc.getWorld().playSound(loc, Sounds.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1), Color.PURPLE);
             }
         }
 
@@ -92,7 +92,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
                 for (double a = 0; a < Math.PI * 2; a += Math.PI * 2 / 17)
                     new ParabolicProjectile(loc, loc.clone().add(6 * Math.cos(a), 0, 6 * Math.sin(a)), VParticle.WITCH.get());
 
-                loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2, 0);
+                loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 2, 0);
                 loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc.clone().add(0, 1, 0), 16, 2, 2, 2, 0);
                 loc.getWorld().spawnParticle(VParticle.EXPLOSION.get(), loc.clone().add(0, 1, 0), 24, 0, 0, 0, .3f);
 
@@ -108,7 +108,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
             }
 
             if (j % 2 == 0 && j > 20 * (duration - 2))
-                loc.getWorld().playSound(loc, VSound.BLOCK_NOTE_BLOCK_PLING.get(), 1, (float) (1 + (j - 20 * (duration - 2)) / 40));
+                loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_PLING, 1, (float) (1 + (j - 20 * (duration - 2)) / 40));
 
             double a = (double) j / 16;
             double r = Math.sqrt(Math.min(duration * 2 - (double) j / 10, 4)) * 2;

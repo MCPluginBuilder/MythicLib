@@ -18,7 +18,7 @@ public enum VMaterial {
     private final Material wrapped;
 
     VMaterial(String... candidates) {
-        wrapped = UtilityMethods.resolveEnumField(Material::valueOf, candidates);
+        wrapped = UtilityMethods.resolveField(Material::valueOf, candidates);
     }
 
     @NotNull

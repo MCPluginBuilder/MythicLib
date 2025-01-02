@@ -73,9 +73,16 @@ public class DamageCommand extends CommandTreeNode {
 
         // Try by UUID
         try {
-            final UUID uuid = UUID.fromString(input);
-            final Entity temp = world == null ? Bukkit.getEntity(uuid) : world.getEntity(uuid);
+            UUID uuid = UUID.fromString(input);
+
+            // Player by UUID
+            Entity temp = Bukkit.getPlayer(uuid);
+            if (temp != null) return (LivingEntity) temp;
+
+            // Entity by UUID
+            temp = Bukkit.getEntity(uuid);
             if (temp instanceof LivingEntity) return (LivingEntity) temp;
+
         } catch (Throwable ignored) {
             // Ignore
         }

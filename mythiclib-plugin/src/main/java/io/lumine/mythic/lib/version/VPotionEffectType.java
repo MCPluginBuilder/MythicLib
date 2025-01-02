@@ -16,7 +16,7 @@ public enum VPotionEffectType {
     private final PotionEffectType wrapped;
 
     VPotionEffectType(String... candidates) {
-        wrapped = UtilityMethods.resolveEnumField(PotionEffectType::getByName, candidates);
+        wrapped = UtilityMethods.resolveField(PotionEffectType::getByName, candidates);
     }
 
     @NotNull

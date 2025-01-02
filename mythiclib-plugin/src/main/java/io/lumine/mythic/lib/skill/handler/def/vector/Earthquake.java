@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -52,7 +53,7 @@ public class Earthquake extends SkillHandler<VectorSkillResult> {
 
                 loc.add(vec);
                 loc.getWorld().spawnParticle(Particle.CLOUD, loc, 5, .5, 0, .5, 0);
-                loc.getWorld().playSound(loc, Sound.BLOCK_GRAVEL_BREAK, 2, 1);
+                loc.getWorld().playSound(loc, Sounds.BLOCK_GRAVEL_BREAK, 2, 1);
 
                 for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                     if (UtilityMethods.canTarget(caster, entity) && loc.distanceSquared(entity.getLocation()) < 2 && !hit.contains(entity.getEntityId())) {

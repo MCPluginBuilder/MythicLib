@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.api.item;
 
-import io.lumine.mythic.lib.MythicLib;
-import org.apache.commons.lang.NotImplementedException;
+import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -57,10 +56,7 @@ public abstract class NBTItem {
         return hasTag("MMOITEMS_ITEM_TYPE");
     }
 
-    @Deprecated
-    public void setCanMine(Collection<Material> blocks) {
-        throw new NotImplementedException("Not implemented in <1.21");
-    }
+    public abstract void setCanMine(Collection<Material> blocks);
 
     public String getType() {
         String tag = getString("MMOITEMS_ITEM_TYPE");
@@ -68,7 +64,7 @@ public abstract class NBTItem {
     }
 
     public static NBTItem get(ItemStack item) {
-        return MythicLib.plugin.getVersion().getWrapper().getNBTItem(item);
+        return VersionWrapper.get().getNBTItem(item);
     }
 }
 

@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VSound;
+import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -32,7 +32,7 @@ public class Blind extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
-        target.getWorld().playSound(target.getLocation(), VSound.ENTITY_ENDERMAN_HURT.get(), 1, 2);
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_ENDERMAN_HURT, 1, 2);
         for (double i = 0; i < Math.PI * 2; i += Math.PI / 24)
             for (double j = 0; j < 2; j++) {
                 Location loc = target.getLocation();

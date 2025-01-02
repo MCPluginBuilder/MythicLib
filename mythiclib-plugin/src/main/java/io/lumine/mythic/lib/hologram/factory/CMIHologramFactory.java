@@ -4,7 +4,7 @@ import com.Zrips.CMI.CMI;
 import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
 import net.Zrips.CMILib.Container.CMILocation;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
