@@ -310,6 +310,29 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
         }
 
         @Override
+        public NBTItem setDouble(String path, double value) {
+            return null;
+        }
+
+        @Override
+        public NBTItem setBoolean(String path, boolean value) {
+            compound.putBoolean(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setInteger(String path, int value) {
+            compound.putInt(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setString(String path, String value) {
+            compound.putString(path, value);
+            return this;
+        }
+
+        @Override
         public void setCanMine(Collection<Material> blocks) {
             net.minecraft.world.level.block.Block[] arr = blocks.stream().map(CraftBlockType::bukkitToMinecraft).toArray(net.minecraft.world.level.block.Block[]::new);
             List<BlockPredicate> list = new ArrayList<>();

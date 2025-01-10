@@ -180,8 +180,13 @@ public class ItemTag {
      * This method is somewhat heavy, and not meant to use tags you'd read and write very often.
      * In fact, you cant even read them correctly normally (I've had to add a codification to
      * distinguish Booleans from Integers), you must use {@link #decompressTags(JsonArray)}
+     *
+     * @deprecated Poor performance and design
+     * @see NBTItem#setInteger(String, int)
      */
-    @NotNull public static JsonArray compressTags(@NotNull ArrayList<ItemTag> tags) {
+    @NotNull
+    @Deprecated
+    public static JsonArray compressTags(@NotNull ArrayList<ItemTag> tags) {
         JsonArray JsonList = new JsonArray();
 
         // For Each ItemTag
@@ -225,8 +230,12 @@ public class ItemTag {
 
     /**
      * Meant to revert {@link #compressTags(ArrayList)} so it will do exactly that.
+     *
+     * @deprecated Poor performance and design
      */
-    @NotNull public static ArrayList<ItemTag> decompressTags(@NotNull JsonArray compressedTags) {
+    @NotNull
+    @Deprecated
+    public static ArrayList<ItemTag> decompressTags(@NotNull JsonArray compressedTags) {
 
         // All right.
         ArrayList<ItemTag> returningList = new ArrayList<>();

@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.api.item;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,8 +33,17 @@ public abstract class NBTItem {
 
     public abstract int getInteger(String path);
 
+    public abstract NBTItem setInteger(String path, int value);
+
+    public abstract NBTItem setDouble(String path, double value);
+
+    public abstract NBTItem setString(String path, @NotNull String value);
+
+    public abstract NBTItem setBoolean(String path, boolean value);
+
     public abstract NBTCompound getNBTCompound(String path);
 
+    @Deprecated
     public abstract NBTItem addTag(List<ItemTag> tags);
 
     public abstract NBTItem removeTag(String... paths);

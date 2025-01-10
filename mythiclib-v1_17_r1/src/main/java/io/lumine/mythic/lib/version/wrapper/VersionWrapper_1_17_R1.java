@@ -22,7 +22,6 @@ import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -293,6 +292,30 @@ public class VersionWrapper_1_17_R1 implements VersionWrapper {
                     compound.put(tag.getPath(), tagList);
                 }
             });
+            return this;
+        }
+
+        @Override
+        public NBTItem setDouble(String path, double value) {
+            compound.putDouble(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setBoolean(String path, boolean value) {
+            compound.putBoolean(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setInteger(String path, int value) {
+            compound.putInt(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setString(String path, String value) {
+            compound.putString(path, value);
             return this;
         }
 

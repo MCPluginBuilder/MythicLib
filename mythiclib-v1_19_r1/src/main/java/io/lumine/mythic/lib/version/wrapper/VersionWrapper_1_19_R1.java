@@ -299,6 +299,30 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
         }
 
         @Override
+        public NBTItem setDouble(String path, double value) {
+            compound.putDouble(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setBoolean(String path, boolean value) {
+            compound.putBoolean(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setInteger(String path, int value) {
+            compound.putInt(path, value);
+            return this;
+        }
+
+        @Override
+        public NBTItem setString(String path, String value) {
+            compound.putString(path, value);
+            return this;
+        }
+
+        @Override
         public NBTItem removeTag(String... paths) {
             for (String path : paths)
                 compound.remove(path);
