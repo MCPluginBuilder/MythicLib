@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.util;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 
 public enum EntityLocationType {
 
@@ -34,6 +35,7 @@ public enum EntityLocationType {
     public Location getLocation(Entity entity) {
         Location loc = entity.getLocation();
         loc.add(0, entity.getHeight() * heightPercentage, 0);
+        if (entity instanceof LivingEntity) loc.setDirection(((LivingEntity) entity).getEyeLocation().getDirection());
         return loc;
     }
 }

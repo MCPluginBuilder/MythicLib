@@ -35,36 +35,47 @@ public class PassiveSkill extends PlayerModifier {
      * Skill cast whenever the action is performed
      */
     private final Skill triggered;
+    private final TriggerType trigger;
 
-    @Deprecated
-    public PassiveSkill(String key, TriggerType type, Skill triggered, EquipmentSlot equipmentSlot, ModifierSource modifierSource) {
-        this(key, triggered, equipmentSlot, modifierSource);
+    public PassiveSkill(String key, TriggerType trigger, Skill triggered) {
+        this(key, trigger, triggered, EquipmentSlot.OTHER, ModifierSource.OTHER);
     }
 
     /**
      * @param key            A key like 'item' or 'itemSet' indicating what is giving a triggered skill to the player.
      *                       There can be multiple skills with the same key, it's not a unique identifier.
      *                       It can be later used to isolate and unregister skills with a certain key.
-     * @param triggered      The skill
+     * @param trigger        What action triggers this skill
+     * @param triggered      The skill being triggered
      * @param equipmentSlot  The equipment slot granting this passive skill
      * @param modifierSource The source of the passive skill
      */
-    public PassiveSkill(String key, Skill triggered, EquipmentSlot equipmentSlot, ModifierSource modifierSource) {
+    public PassiveSkill(@NotNull String key, @NotNull TriggerType trigger, @NotNull Skill triggered, @NotNull EquipmentSlot equipmentSlot, @NotNull ModifierSource modifierSource) {
         super(key, equipmentSlot, modifierSource);
 
-        Validate.isTrue(triggered.getTrigger().isPassive(), "Skill is active");
-        this.triggered = Objects.requireNonNull(triggered, "Skill cannot be null");
-    }
-
-    @Deprecated
-    public PassiveSkill(String key, TriggerType type, Skill triggered) {
-        this(key, triggered, EquipmentSlot.OTHER, ModifierSource.OTHER);
+        this.trigger = trigger;
+        this.triggered = triggered;
     }
 
     public PassiveSkill(ConfigObject obj) {
         super(obj.getString("key"), EquipmentSlot.OTHER, ModifierSource.OTHER);
 
-        triggered = new SimpleSkill(TriggerType.API, MythicLib.plugin.getSkills().getHandlerOrThrow(obj.getString("skill")));
+        triggered = new SimpleSkill(MythicLib.plugin.getSkills().getHandlerOrThrow(obj.getString("skill")));
+        trigger = TriggerType.valueOf(obj.getString("trigger"));
+    }
+
+    /**
+     * @see Skill#getTrigger()
+     * @deprecated
+     */
+    @Deprecated
+    public PassiveSkill(String key, Skill triggered, EquipmentSlot equipmentSlot, ModifierSource modifierSource) {
+        super(key, equipmentSlot, modifierSource);
+
+        TriggerType backwardsCompatibleTrigger = triggered.getTrigger();
+        Validate.isTrue(backwardsCompatibleTrigger.isPassive(), "Skill is active");
+        this.triggered = Objects.requireNonNull(triggered, "Skill cannot be null");
+        this.trigger = backwardsCompatibleTrigger;
     }
 
     @NotNull
@@ -80,9 +91,18 @@ public class PassiveSkill extends PlayerModifier {
         return Math.max(1, (long) triggered.getParameter("timer")) * 50;
     }
 
-    @NotNull
+    /**
+     * @see #getTrigger()
+     * @deprecated
+     */
+    @Deprecated
     public TriggerType getType() {
-        return triggered.getTrigger();
+        return getTrigger();
+    }
+
+    @NotNull
+    public TriggerType getTrigger() {
+        return trigger;
     }
 
     @Override
@@ -93,5 +113,10 @@ public class PassiveSkill extends PlayerModifier {
     @Override
     public void unregister(MMOPlayerData playerData) {
         playerData.getPassiveSkillMap().removeModifier(getUniqueId());
+    }
+
+    @NotNull
+    public static PassiveSkill fromConfig(@NotNull ConfigObject config) {
+        return new PassiveSkill(config);
     }
 }

@@ -9,11 +9,15 @@ import io.lumine.mythic.lib.api.event.mitigation.PlayerParryEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
+import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.Module;
+import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,7 +33,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class MitigationMechanics implements Listener {
+@ModuleInfo(key = "mitigation")
+public class MitigationMechanics extends Module implements Listener {
     private static final Random RANDOM = new Random();
     private static final List<EntityDamageEvent.DamageCause> MITIGATION_CAUSES = Arrays.asList(EntityDamageEvent.DamageCause.PROJECTILE, EntityDamageEvent.DamageCause.ENTITY_ATTACK, EntityDamageEvent.DamageCause.ENTITY_EXPLOSION, EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK);
 
@@ -40,22 +45,25 @@ public class MitigationMechanics implements Listener {
     // Mitigation chat messages
     private String parryMessage, blockMessage, dodgeMessage;
 
-    public MitigationMechanics() {
-        reload();
+    public MitigationMechanics(MMOPluginImpl plugin) {
+        super(plugin);
     }
 
-    public void reload() {
-        dodgeKnockback = MythicLib.plugin.getConfig().getDouble("mitigation.dodge.knockback");
-        parryKnockback = MythicLib.plugin.getConfig().getDouble("mitigation.parry.knockback");
+    @Override
+    public void onEnable() {
+        ConfigurationSection config = MythicLib.plugin.getConfig().getConfigurationSection("mitigation");
 
-        parryDefaultCooldown = MythicLib.plugin.getConfig().getDouble("mitigation.parry.cooldown");
-        blockDefaultCooldown = MythicLib.plugin.getConfig().getDouble("mitigation.block.cooldown");
-        dodgeDefaultCooldown = MythicLib.plugin.getConfig().getDouble("mitigation.dodge.cooldown");
+        dodgeKnockback = config.getDouble("dodge.knockback");
+        parryKnockback = config.getDouble("parry.knockback");
 
-        parryMessage = MythicLib.plugin.getConfig().getString("mitigation.message.parry");
-        dodgeMessage = MythicLib.plugin.getConfig().getString("mitigation.message.dodge");
-        blockMessage = MythicLib.plugin.getConfig().getString("mitigation.message.block");
-        actionBarMessage = MythicLib.plugin.getConfig().getBoolean("mitigation.message.action-bar");
+        parryDefaultCooldown = config.getDouble("parry.cooldown");
+        blockDefaultCooldown = config.getDouble("block.cooldown");
+        dodgeDefaultCooldown = config.getDouble("dodge.cooldown");
+
+        parryMessage = config.getString("message.parry");
+        dodgeMessage = config.getString("message.dodge");
+        blockMessage = config.getString("message.block");
+        actionBarMessage = config.getBoolean("message.action-bar");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

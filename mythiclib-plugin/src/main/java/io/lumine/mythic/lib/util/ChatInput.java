@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.api.explorer;
+package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.MythicLib;
 import org.bukkit.Bukkit;
@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
@@ -58,13 +59,16 @@ public class ChatInput implements Listener {
 
     @EventHandler
     public void b(InventoryCloseEvent event) {
-        if (event.getPlayer().equals(player))
-            close();
+        if (event.getPlayer().equals(player)) close();
     }
 
     @EventHandler
     public void c(InventoryOpenEvent event) {
-        if (event.getPlayer().equals(player))
-            close();
+        if (event.getPlayer().equals(player)) close();
+    }
+
+    @EventHandler
+    public void c(PlayerQuitEvent event) {
+        if (event.getPlayer().equals(player)) close();
     }
 }

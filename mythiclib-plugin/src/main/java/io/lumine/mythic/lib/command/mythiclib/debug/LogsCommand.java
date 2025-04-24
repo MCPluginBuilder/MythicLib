@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Scanner;
@@ -19,7 +20,7 @@ public class LogsCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
 
         try {
             sender.sendMessage("Reading and uploading logs..");

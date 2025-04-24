@@ -103,7 +103,7 @@ public class CastingDelayHandler extends TemporaryListener {
     }
 
     private void castIfNotNull(@Nullable Skill skill) {
-        if (skill != null) skill.cast(new SkillMetadata(skill, getCaster()));
+        if (skill != null) skill.cast(metadata);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

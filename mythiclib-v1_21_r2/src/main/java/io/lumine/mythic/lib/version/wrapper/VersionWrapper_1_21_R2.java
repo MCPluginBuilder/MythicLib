@@ -476,12 +476,6 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper {
     }
 
     @Override
-    public boolean isUndead(Entity entity) {
-        EntityType type = entity.getType();
-        return type == EntityType.SKELETON || type == EntityType.STRAY || type == EntityType.WITHER_SKELETON || type == EntityType.ZOMBIE || type == EntityType.DROWNED || type == EntityType.HUSK || type.name().equals("PIG_ZOMBIE") || type == EntityType.ZOMBIE_VILLAGER || type == EntityType.PHANTOM || type == EntityType.WITHER || type == EntityType.SKELETON_HORSE || type == EntityType.ZOMBIE_HORSE;
-    }
-
-    @Override
     public void setUUID(Player player, UUID uniqueId) {
         if (player.getUniqueId().equals(uniqueId)) return;
 

@@ -5,7 +5,6 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -59,7 +58,7 @@ public class Element {
     @NotNull
     public Skill getSkill(boolean criticalStrike) {
         final SkillHandler<?> handler = criticalStrike && this.criticalStrike != null ? this.criticalStrike : regularAttack;
-        return new SimpleSkill(TriggerType.API, handler);
+        return new SimpleSkill(handler);
     }
 
     @Override

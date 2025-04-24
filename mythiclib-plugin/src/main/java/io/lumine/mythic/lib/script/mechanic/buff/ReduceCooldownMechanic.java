@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.script.mechanic.buff;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.cooldown.CooldownInfo;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -20,7 +21,7 @@ public class ReduceCooldownMechanic extends TargetMechanic {
         config.validateKeys("value", "path");
 
         this.cooldownPath = config.getString("path");
-        type = config.contains("type") ? ReductionType.valueOf(config.getString("type").toUpperCase()) : ReductionType.FLAT;
+        this.type = config.contains("reduction") ? ReductionType.valueOf(UtilityMethods.enumName(config.getString("reduction"))) : ReductionType.FLAT;
         this.value = new DoubleFormula(config.getString("value"));
     }
 
@@ -35,22 +36,10 @@ public class ReduceCooldownMechanic extends TargetMechanic {
         type.apply(info, value.evaluate(meta));
     }
 
-    public enum ReductionType {
-
-        /**
-         * See {@link CooldownInfo#reduceFlat(double)}
-         */
-        FLAT((info, value) -> info.reduceFlat(value)),
-
-        /**
-         * See {@link CooldownInfo#reduceInitialCooldown(double)}
-         */
-        INITIAL((info, value) -> info.reduceInitialCooldown(value)),
-
-        /**
-         * See {@link CooldownInfo#reduceRemainingCooldown(double)}
-         */
-        REMAINING((info, value) -> info.reduceRemainingCooldown(value));
+    public static enum ReductionType {
+        FLAT(CooldownInfo::reduceFlat),
+        INITIAL(CooldownInfo::reduceInitialCooldown),
+        REMAINING(CooldownInfo::reduceRemainingCooldown);
 
         private final BiConsumer<CooldownInfo, Double> effect;
 

@@ -1,33 +1,27 @@
 package io.lumine.mythic.lib.api.util;
 
 
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+@Deprecated
 public class SmartGive {
-    private final Inventory inv;
-    private final Location loc;
+    private final io.lumine.mythic.lib.util.SmartGive delegate;
 
+    @Deprecated
     public SmartGive(Player player) {
-        inv = player.getInventory();
-        loc = player.getLocation();
+        delegate = new io.lumine.mythic.lib.util.SmartGive(player);
     }
 
-    /*
-     * either give directly the item to the player or drops it on the ground if
-     * there is not enough space in the player inventory.
-     */
+    @Deprecated
     public void give(ItemStack... item) {
-        for (ItemStack drop : inv.addItem(item).values())
-            loc.getWorld().dropItem(loc, drop);
+        delegate.give(item);
     }
 
+    @Deprecated
     public void give(List<ItemStack> item) {
-        for (ItemStack drop : inv.addItem(item.toArray(new ItemStack[0])).values())
-            loc.getWorld().dropItem(loc, drop);
+        delegate.give(item);
     }
 }

@@ -5,6 +5,8 @@ import io.lumine.mythic.api.adapters.AbstractLocation;
 import io.lumine.mythic.api.mobs.GenericCaster;
 import io.lumine.mythic.api.skills.SkillCaster;
 import io.lumine.mythic.bukkit.BukkitAdapter;
+import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.core.players.PlayerData;
 import io.lumine.mythic.core.skills.SkillMetadataImpl;
 import io.lumine.mythic.core.skills.SkillTriggers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -14,7 +16,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 public class MythicMobsSkillResult implements SkillResult {
     private final SkillMetadataImpl mmSkillMeta;
@@ -23,14 +26,17 @@ public class MythicMobsSkillResult implements SkillResult {
     public MythicMobsSkillResult(@NotNull SkillMetadata skillMeta, @NotNull MythicMobsSkillHandler behaviour) {
 
         // TODO Support trigger/caster difference?
-        AbstractEntity trigger = BukkitAdapter.adapt(skillMeta.getCaster().getPlayer());
-        SkillCaster caster = new GenericCaster(trigger);
+        Player player = skillMeta.getCaster().getPlayer();
+        AbstractEntity trigger = BukkitAdapter.adapt(player);
+        Optional<PlayerData> playerDataOpt = MythicBukkit.inst().getPlayerManager().getProfile(player.getUniqueId());
+        SkillCaster caster = playerDataOpt.isPresent() ? playerDataOpt.get() : new GenericCaster(trigger);
 
-        HashSet<AbstractEntity> targetEntities = new HashSet<>();
-        HashSet<AbstractLocation> targetLocations = new HashSet<>();
+        List<AbstractEntity> targetEntities;
+        List<AbstractLocation> targetLocations;
 
         // Add target entity
-        if (skillMeta.hasTargetEntity()) targetEntities.add(BukkitAdapter.adapt(skillMeta.getTargetEntityOrNull()));
+        if (skillMeta.hasTargetEntity())
+            targetEntities = List.of(BukkitAdapter.adapt(skillMeta.getTargetEntityOrNull()));
 
             /*
              * If none is found, provide a default entity target. This takes
@@ -39,14 +45,14 @@ public class MythicMobsSkillResult implements SkillResult {
              * match the /mm test cast command.
              */
         else {
-            final Player player = skillMeta.getCaster().getPlayer();
             final RayTrace res = new RayTrace(player, 32, entity -> !entity.equals(player) && entity instanceof LivingEntity);
-            if (res.hasHit()) targetEntities.add(BukkitAdapter.adapt(res.getHit()));
+            targetEntities = res.hasHit() ? List.of(BukkitAdapter.adapt(res.getHit())) : List.of();
         }
 
         // Add target location
         if (skillMeta.hasTargetLocation())
-            targetLocations.add(BukkitAdapter.adapt(skillMeta.getTargetLocationOrNull()));
+            targetLocations = List.of(BukkitAdapter.adapt(skillMeta.getTargetLocationOrNull()));
+        else targetLocations = List.of();
 
         mmSkillMeta = new SkillMetadataImpl(SkillTriggers.API, caster, trigger, BukkitAdapter.adapt(skillMeta.getCaster().getPlayer().getEyeLocation()), targetEntities, targetLocations, 1);
 

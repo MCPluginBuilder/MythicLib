@@ -2,62 +2,99 @@ package io.lumine.mythic.lib.api.player;
 
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * Used by MythicLib to make a difference between stat
- * modifiers granted by off hand and main hand items.
+ * modifiers granted by offhand and mainhand items.
  * <p>
- * Used by MMOItems player inventory updates to differentiate where
- * items were placed in the player inventory.
+ * Used by the MMOItems player inventory manager to differentiate
+ * where items were placed.
  *
  * @author indyuce
  */
 public enum EquipmentSlot {
 
+    @Deprecated
+    ARMOR(true, false, null),
+
     /**
-     * When placed in any armor slot. No distinction between
-     * helmet, chestplate, leggings and boots unlike vanilla
-     * Minecraft since you can't place a chestplate item
-     * inside of the feet slot for instance.
+     * When placed in head slot
      */
-    ARMOR,
+    HEAD(true, false, org.bukkit.inventory.EquipmentSlot.HEAD),
+
+    /**
+     * When placed in head slot
+     */
+    CHEST(true, false, org.bukkit.inventory.EquipmentSlot.CHEST),
+
+    /**
+     * When placed in head slot
+     */
+    LEGS(true, false, org.bukkit.inventory.EquipmentSlot.LEGS),
+
+    /**
+     * When placed in head slot
+     */
+    FEET(true, false, org.bukkit.inventory.EquipmentSlot.FEET),
 
     /**
      * When placed in an accessory slot.
      */
-    ACCESSORY,
+    ACCESSORY(false, false, null),
+
+    /**
+     * When placed somewhere inside the player's inventory. It
+     * is primarily used for MMOItems ornaments so that items anywhere
+     * in the player's inventory may apply their stats.
+     *
+     * @see ModifierSource#ORNAMENT
+     */
+    INVENTORY(false, false, null),
 
     /**
      * When placed in main hand.
      */
-    MAIN_HAND,
+    MAIN_HAND(false, true, org.bukkit.inventory.EquipmentSlot.HAND),
 
     /**
      * When placed in off hand.
      */
-    OFF_HAND,
+    OFF_HAND(false, true, org.bukkit.inventory.EquipmentSlot.OFF_HAND),
 
     /**
      * Fictive equipment slot which overrides all
      * rules and apply the item stats whatsoever.
      */
-    OTHER;
+    OTHER(false, false, null);
+
+    private final boolean body, hand;
+    private final org.bukkit.inventory.EquipmentSlot bukkit;
+
+    EquipmentSlot(boolean body, boolean hand, org.bukkit.inventory.EquipmentSlot bukkit) {
+        this.body = body;
+        this.hand = hand;
+        this.bukkit = bukkit;
+    }
+
+    public boolean isBody() {
+        return body;
+    }
+
+    public boolean isHand() {
+        return hand;
+    }
 
     @NotNull
     public org.bukkit.inventory.EquipmentSlot toBukkit() {
-        switch (this) {
-            case MAIN_HAND:
-                return org.bukkit.inventory.EquipmentSlot.HAND;
-            case OFF_HAND:
-                return org.bukkit.inventory.EquipmentSlot.OFF_HAND;
-            default:
-                throw new RuntimeException("Not a hand slot");
-        }
+        return Objects.requireNonNull(bukkit, "No Bukkit equivalent");
     }
 
+    @NotNull
     private EquipmentSlot getOppositeHand() {
         Validate.isTrue(this == MAIN_HAND || this == OFF_HAND, "Not a hand equipment slot");
         return this == MAIN_HAND ? OFF_HAND : MAIN_HAND;
@@ -89,7 +126,7 @@ public enum EquipmentSlot {
      * @param modifierSource Source of modifier
      * @param equipmentSlot  Equipment slot of modifier
      * @return If a modifier with the given equipment slot and modifier source should
-     * be taken into account given the action hand
+     *         be taken into account given the action hand
      */
     public boolean isCompatible(@NotNull ModifierSource modifierSource, @NotNull EquipmentSlot equipmentSlot) {
         Validate.isTrue(isHand(), "Instance called must be a hand equipment slot");
@@ -118,32 +155,22 @@ public enum EquipmentSlot {
 
             // Accessories & armor
             case ARMOR:
-                return equipmentSlot == ARMOR;
+                return equipmentSlot.body;
             case ACCESSORY:
                 return equipmentSlot == ACCESSORY;
+            case ORNAMENT:
+                return equipmentSlot == INVENTORY;
 
             default:
                 throw new NotImplementedException();
         }
     }
 
-    public boolean isHand() {
-        return this == MAIN_HAND || this == OFF_HAND;
-    }
-
+    @NotNull
     public static EquipmentSlot fromBukkit(org.bukkit.inventory.EquipmentSlot slot) {
-        switch (slot) {
-            case HAND:
-                return MAIN_HAND;
-            case OFF_HAND:
-                return OFF_HAND;
-            case FEET:
-            case HEAD:
-            case LEGS:
-            case CHEST:
-                return ARMOR;
-            default:
-                return OTHER;
-        }
+        for (EquipmentSlot checked : values())
+            if (checked.bukkit == slot)
+                return checked;
+        return OTHER;
     }
 }

@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.modifier.TemporaryStatModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.util.Pair;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -33,8 +34,9 @@ public class MMOTempStatCommand implements CommandExecutor {
 
         MMOPlayerData playerData = MMOPlayerData.get(target);
 
-        ModifierType type = args[2].toCharArray()[args[2].length() - 1] == '%' ? ModifierType.RELATIVE : ModifierType.FLAT;
-        double value = Double.parseDouble(type == ModifierType.RELATIVE ? args[2].substring(0, args[2].length() - 1) : args[2]);
+        Pair<ModifierType, Double> modifierPair = ModifierType.pairFromString(args[2]);
+        ModifierType type = modifierPair.getLeft();
+        double value = modifierPair.getRight();
         long duration = Long.parseLong(args[3]);
 
         new TemporaryStatModifier(UUID.randomUUID().toString(), args[1], value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, duration);

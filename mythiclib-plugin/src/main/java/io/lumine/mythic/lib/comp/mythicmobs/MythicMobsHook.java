@@ -32,7 +32,7 @@ public class MythicMobsHook implements Listener {
     public void b(MythicReloadedEvent event) {
 
         // Reload skills
-        MythicLib.plugin.getSkills().initialize(true);
+        MythicLib.plugin.getSkills().reload();
     }
 
     @EventHandler

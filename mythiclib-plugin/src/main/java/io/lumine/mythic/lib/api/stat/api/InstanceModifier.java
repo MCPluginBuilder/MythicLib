@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
+import io.lumine.mythic.lib.util.Pair;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
@@ -45,15 +46,18 @@ public abstract class InstanceModifier extends PlayerModifier {
         Validate.notNull(str, "String cannot be null");
         Validate.notEmpty(str, "String cannot be empty");
 
-        type = str.toCharArray()[str.length() - 1] == '%' ? ModifierType.RELATIVE : ModifierType.FLAT;
-        value = Double.parseDouble(type == ModifierType.RELATIVE ? str.substring(0, str.length() - 1) : str);
+        Pair<ModifierType, Double> readValueInfo = ModifierType.pairFromString(str);
+        type = readValueInfo.getLeft();
+        value = readValueInfo.getRight();
     }
 
     public InstanceModifier(ConfigObject object) {
         super(object.getString("key"), EquipmentSlot.OTHER, ModifierSource.OTHER);
 
         value = object.getDouble("value");
-        type = object.getBoolean("multiplicative", false) ? ModifierType.RELATIVE : ModifierType.FLAT;
+        type = object.getBoolean("multiplicative", false) ? ModifierType.RELATIVE
+                : object.getBoolean("scalar") ? ModifierType.ADDITIVE_MULTIPLIER
+                : ModifierType.FLAT;
     }
 
     @NotNull
@@ -67,6 +71,6 @@ public abstract class InstanceModifier extends PlayerModifier {
 
     @Override
     public String toString() {
-        return MythicLib.plugin.getMMOConfig().decimal.format(value) + (type == ModifierType.RELATIVE ? "%" : "");
+        return MythicLib.plugin.getMMOConfig().decimal.format(value) + type.toStringSuffix();
     }
 }

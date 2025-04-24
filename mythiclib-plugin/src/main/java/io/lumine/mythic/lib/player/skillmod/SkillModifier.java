@@ -6,6 +6,8 @@ import io.lumine.mythic.lib.api.stat.api.InstanceModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,5 +95,10 @@ public class SkillModifier extends InstanceModifier {
     @Override
     public void unregister(MMOPlayerData playerData) {
         playerData.getSkillModifierMap().removeModifier(getUniqueId());
+    }
+
+    @NotNull
+    public static SkillModifier fromConfig(@NotNull ConfigObject configObject) {
+        throw new RuntimeException("Not implemented");
     }
 }

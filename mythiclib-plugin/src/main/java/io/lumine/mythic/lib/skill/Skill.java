@@ -5,12 +5,14 @@ import io.lumine.mythic.lib.api.event.skill.SkillCastEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
+import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -20,22 +22,20 @@ import java.util.Objects;
  * This class implements all skill restrictions and behaviours
  * that are SPECIFIC to MMOItems or MMOCore like resource costs,
  * cooldown messages, no-cooldown modes...
- * <p>
- * TODO move trigger type to a higher class like PassiveSkill,
- * TODO has NOTHING to do here and is very impractical when
- * TODO trying to cast skills
  *
  * @author jules
  */
 public abstract class Skill implements CooldownObject {
-    private final TriggerType trigger;
-
-    public Skill(@NotNull TriggerType trigger) {
-        this.trigger = Objects.requireNonNull(trigger, "Trigger cannot be null");
+    public Skill() {
     }
 
     @NotNull
     public SkillResult cast(@NotNull MMOPlayerData caster) {
+        return cast(caster, TriggerType.CAST);
+    }
+
+    @NotNull
+    public SkillResult cast(@NotNull MMOPlayerData caster, @NotNull TriggerType trigger) {
         return cast(new TriggerMetadata(caster, trigger));
     }
 
@@ -80,7 +80,6 @@ public abstract class Skill implements CooldownObject {
      * <p>
      * This method however calls {@link SkillCastEvent} after skill casting.
      */
-    @NotNull
     public <T extends SkillResult> void castInstantly(@NotNull SkillMetadata meta, @NotNull T result) {
 
         // High level skill effects
@@ -102,7 +101,6 @@ public abstract class Skill implements CooldownObject {
      * @param skillMeta Info of skill being cast
      * @return If the skill can be cast
      */
-    @NotNull
     public abstract boolean getResult(@NotNull SkillMetadata skillMeta);
 
     /**
@@ -121,15 +119,41 @@ public abstract class Skill implements CooldownObject {
     public abstract SkillHandler<?> getHandler();
 
     /**
-     * This contains the following information:
-     * - whether or not the skill is active or passive
-     * - whether or not the skill is silent
+     * !! WARNING !! Final skill parameter values also depend
+     * on the player's skill modifiers, and this method does NOT
+     * take them into account.
      *
-     * @return Context in which this skill is triggered
+     * @param path Modifier name.
+     * @return The skill parameter value unaffected by skill modifiers.
+     * @see SkillMetadata#getParameter(String)
      */
-    @NotNull
+    public double getParameter(String path) {
+        return getModifier(path);
+    }
+
+    @Override
+    public String getCooldownPath() {
+        return "skill_" + getHandler().getId();
+    }
+
+    //region Deprecated
+
+    private TriggerType backwardsCompatibleTrigger;
+
+    @Deprecated
+    public Skill(@Nullable TriggerType trigger) {
+        backwardsCompatibleTrigger = trigger;
+    }
+
+    /**
+     * @see PassiveSkill#getTrigger()
+     * @deprecated Not very logical to keep the trigger type inside the Skill instance.
+     *         It is already provided in the skill metadata and can be stored inside RegisteredSkill
+     *         instances based on if the providing plugin actually needs it or doesn't.
+     */
+    @Deprecated
     public TriggerType getTrigger() {
-        return trigger;
+        return Objects.requireNonNullElse(backwardsCompatibleTrigger, TriggerType.API);
     }
 
     /**
@@ -140,21 +164,5 @@ public abstract class Skill implements CooldownObject {
         return getParameter(path);
     }
 
-    /**
-     * !! WARNING !! Final skill parameter values also depend
-     * on the player's skill modifiers, and this method does NOT
-     * take them into account.
-     *
-     * @param path Modifier name.
-     * @return The skill parameter value unaffected by skill modifiers.
-     * @see {@link SkillMetadata#getParameter(String)}
-     */
-    public double getParameter(String path) {
-        return getModifier(path);
-    }
-
-    @Override
-    public String getCooldownPath() {
-        return "skill_" + getHandler().getId();
-    }
+    //endregion
 }

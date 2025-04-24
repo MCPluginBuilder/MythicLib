@@ -8,5 +8,5 @@ public @interface ModuleInfo {
 
     public String key();
 
-    public boolean load() default true;
+    //public boolean load() default true;
 }

@@ -54,7 +54,7 @@ public class PassiveSkillMap extends ModifierMap<PassiveSkill> {
         final TriggerMetadata triggerMeta = new TriggerMetadata(getPlayerData(), TriggerType.TIMER, EquipmentSlot.MAIN_HAND, null, null, null, null, null);
 
         for (PassiveSkill passive : getModifiers()) {
-            if (!passive.getType().equals(TriggerType.TIMER) || getPlayerData().getPlayer().getGameMode() == GameMode.SPECTATOR)
+            if (!passive.getTrigger().equals(TriggerType.TIMER) || getPlayerData().getPlayer().getGameMode() == GameMode.SPECTATOR)
                 continue;
 
             final String key = passive.getTriggeredSkill().getHandler().getId();

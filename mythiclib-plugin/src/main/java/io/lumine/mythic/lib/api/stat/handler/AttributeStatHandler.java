@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.api.stat.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.StatInstance;
+import io.lumine.mythic.lib.gui.builtin.AttributeExplorer;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Material;
@@ -28,8 +29,8 @@ public class AttributeStatHandler extends StatHandler {
      *
      * @param config      The root configuration file
      * @param stat        The stat identifier
-     * @param material    For usage, see {@link io.lumine.mythic.lib.gui.AttributeExplorer}
-     * @param description For usage, see {@link io.lumine.mythic.lib.gui.AttributeExplorer}
+     * @param material    For usage, see {@link AttributeExplorer}
+     * @param description For usage, see {@link AttributeExplorer}
      */
     public AttributeStatHandler(ConfigurationSection config,
                                 @NotNull String stat,

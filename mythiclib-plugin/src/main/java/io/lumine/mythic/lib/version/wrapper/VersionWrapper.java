@@ -126,8 +126,6 @@ public interface VersionWrapper {
 
     boolean isCropFullyGrown(Block block);
 
-    boolean isUndead(Entity entity);
-
     // Mostly NMS based methods from here
     NBTItem getNBTItem(ItemStack item);
 

@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.command.api;
 
+import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -20,7 +21,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
     private final String description;
     private final List<String> aliases = new ArrayList<>();
 
-    public CommandTreeRoot(@NotNull String id, @NotNull String permission) {
+    public CommandTreeRoot(@NotNull String id, @Nullable String permission) {
         super(null, id);
 
         this.permission = permission;
@@ -43,7 +44,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
             @NotNull
             @Override
             public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-                if (!sender.hasPermission(permission))
+                if (permission != null && !sender.hasPermission(permission))
                     return new ArrayList<>();
 
                 List<String> list = new CommandTreeExplorer(CommandTreeRoot.this, args).calculateTabCompletion();
@@ -53,7 +54,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
 
             @Override
             public boolean execute(@NotNull CommandSender sender, @NotNull String s, @NotNull String[] args) {
-                if (!sender.hasPermission(permission))
+                if (permission != null && !sender.hasPermission(permission))
                     return false;
 
                 final CommandTreeNode explorer = new CommandTreeExplorer(CommandTreeRoot.this, args).getNode();
@@ -66,42 +67,34 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         };
     }
 
+    @NotNull
     @Override
-    @Deprecated
     public CommandResult execute(CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 
+    @Deprecated
+    private final Lazy<BukkitCommand> bukkitCommandVm = Lazy.of(this::getCommand);
+
     /**
-     * This method is deprecated, to register a command you should use {@link MMOCommandManager} and register
-     * a toggleable command in {@link MMOCommandManager#getAll()}.
+     * @see MMOCommandManager
+     * @deprecated To register a command you should use {@link MMOCommandManager} and register
+     *         a toggleable command in {@link MMOCommandManager#getAll()}.
      */
     @Deprecated
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission(permission))
-            return false;
-
-        CommandTreeNode explorer = new CommandTreeExplorer(this, args).getNode();
-        CommandResult res = explorer.execute(sender, args);
-        Validate.notNull(res, "Command result cannot be null");
-        if (res == CommandResult.THROW_USAGE)
-            explorer.calculateUsageList().forEach(str -> sender.sendMessage(ChatColor.YELLOW + "/" + str));
-        return res == CommandResult.SUCCESS;
+        return bukkitCommandVm.get().execute(sender, label, args);
     }
 
     /**
-     * This method is deprecated, to register a command you should use {@link MMOCommandManager}
-     * and register a toggleable command in {@link MMOCommandManager#getAll()}.
+     * @see MMOCommandManager
+     * @deprecated To register a command you should use {@link MMOCommandManager}
+     *         and register a toggleable command in {@link MMOCommandManager#getAll()}.
      */
     @Deprecated
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission(permission))
-            return new ArrayList<>();
-
-        List<String> list = new CommandTreeExplorer(this, args).calculateTabCompletion();
-        return args[args.length - 1].isEmpty() ? list
-                : list.stream().filter(string -> string.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
+        return bukkitCommandVm.get().tabComplete(sender, label, args);
     }
 }

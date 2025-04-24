@@ -30,7 +30,7 @@ public class DamageCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
         final World world = sender instanceof Entity ? ((Entity) sender).getWorld() : null;
 
         // Find damager

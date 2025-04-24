@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.command.api.Parameter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class HealthScaleCommand extends CommandTreeNode {
     public HealthScaleCommand(CommandTreeNode parent) {
@@ -16,7 +17,7 @@ public class HealthScaleCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
 
         if (args.length < 3)
             return CommandResult.THROW_USAGE;

@@ -2,11 +2,12 @@ package io.lumine.mythic.lib.command.mythiclib.debug;
 
 import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import io.lumine.mythic.lib.command.api.Parameter;
-import io.lumine.mythic.lib.gui.AttributeExplorer;
+import io.lumine.mythic.lib.gui.builtin.AttributeExplorer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class AttributesCommand extends CommandTreeNode {
     public AttributesCommand(CommandTreeNode parent) {
@@ -16,7 +17,7 @@ public class AttributesCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "This command is only for players.");

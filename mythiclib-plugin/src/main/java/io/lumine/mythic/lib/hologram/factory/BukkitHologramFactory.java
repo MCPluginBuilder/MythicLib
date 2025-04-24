@@ -7,9 +7,11 @@ import io.lumine.mythic.lib.hologram.HologramFactory;
 import io.lumine.mythic.lib.listener.option.GameIndicators;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,15 +20,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class BukkitHologramFactory implements HologramFactory {
+public class BukkitHologramFactory implements HologramFactory /*, Listener*/ {
     public BukkitHologramFactory() {
         Validate.isTrue(MythicLib.plugin.getVersion().isAbove(1, 19, 4), "Text displays are only available on 1.19.4+");
+        //Bukkit.getPluginManager().registerEvents(this, MythicLib.plugin);
     }
 
     @NotNull
     public Hologram newHologram(@NotNull Location loc, @NotNull List<String> lines) {
         return new HologramImpl(loc, lines);
     }
+
+    private static final NamespacedKey PDC_KEY = new NamespacedKey(MythicLib.plugin, "hologram");
+/*
+    // Clear entities on world load
+    @EventHandler
+    public void clearEntities(WorldLoadEvent event) {
+        for (TextDisplay td : event.getWorld().getEntitiesByClass(TextDisplay.class))
+            if (td.getPersistentDataContainer().has(PDC_KEY)) td.remove();
+    }
+ */
 
     private static final class HologramImpl extends Hologram {
         private final List<String> lines = new ArrayList<>();
@@ -55,6 +68,7 @@ public class BukkitHologramFactory implements HologramFactory {
             Location clone = loc.clone();
             for (String line : lines) {
                 final TextDisplay as = clone.getWorld().spawn(clone, TextDisplay.class);
+                as.getPersistentDataContainer().set(PDC_KEY, PersistentDataType.BOOLEAN, true);
                 as.setBillboard(Display.Billboard.CENTER);
                 // as.setInterpolationDuration(INTERPOLATION_DURATION);
 

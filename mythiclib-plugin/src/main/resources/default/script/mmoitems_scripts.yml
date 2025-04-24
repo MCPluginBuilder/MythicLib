@@ -436,8 +436,9 @@ gauntlet_special_attack:
 crossbow_attack:
   public: true
   conditions:
-    - 'ammo{item=ARROW;creative_infinite=true;item_ignore_tag=MMOITEMS_DISABLE_ARROW_CONSUMPTION;consume_if_met=true}'
+    - 'ammo{item=ARROW;creative_infinite=true;item_ignore_tag=MMOITEMS_DISABLE_ARROW_CONSUMPTION}'
   mechanics:
+    - 'take_ammo{item=ARROW;creative_infinite=true;item_ignore_tag=MMOITEMS_DISABLE_ARROW_CONSUMPTION}'
     - 'play_sound{sound=ENTITY_ARROW_SHOOT;pitch=.5}'
     - 'shoot_arrow{from_item=true;player_attack_damage=true;tick=crossbow_arrow_tick;velocity="non_zero(<stat.arrow_velocity>, 1) * 3"}'
 

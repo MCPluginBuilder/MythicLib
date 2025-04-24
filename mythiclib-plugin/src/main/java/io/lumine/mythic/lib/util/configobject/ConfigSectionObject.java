@@ -1,8 +1,11 @@
 package io.lumine.mythic.lib.util.configobject;
 
+import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.script.Script;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -52,6 +55,16 @@ public class ConfigSectionObject implements ConfigObject {
     @Override
     public boolean getBoolean(String key, boolean defaultValue) {
         return config.getBoolean(key, defaultValue);
+    }
+
+    @Nullable
+    public Script getScriptOrNull(String key) {
+        return contains(key) ? getScript(key) : null;
+    }
+
+    @NotNull
+    public Script getScript(String key) {
+        return MythicLib.plugin.getSkills().loadScript(key, config.get(key));
     }
 
     @NotNull

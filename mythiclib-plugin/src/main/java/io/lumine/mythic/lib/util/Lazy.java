@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -18,6 +19,14 @@ public class Lazy<T> implements Supplier<T> {
         this.persistent = persistent;
     }
 
+    private Lazy(@Nullable T value) {
+        this.expression = null;
+        this.persistent = false;
+
+        this.evaluated = true;
+        this.value = value;
+    }
+
     public void flush() {
         Validate.isTrue(persistent, "Non persistent lazy value");
         value = null;
@@ -28,8 +37,12 @@ public class Lazy<T> implements Supplier<T> {
         return new Lazy<>(expression, true);
     }
 
-    public static <T> Lazy<T> of(Supplier<T> expression) {
+    public static <T> Lazy<T> of(@NotNull Supplier<T> expression) {
         return new Lazy<>(expression, true);
+    }
+
+    public static <T> Lazy<T> of(@Nullable T value) {
+        return new Lazy<>(value);
     }
 
     @Override

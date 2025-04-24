@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.script.targeter.location;
 
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;

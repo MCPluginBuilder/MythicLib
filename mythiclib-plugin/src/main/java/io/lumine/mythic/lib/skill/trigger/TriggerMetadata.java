@@ -27,7 +27,6 @@ import java.util.Objects;
  * @author jules
  */
 public class TriggerMetadata {
-
     private final MMOPlayerData playerData;
     private final TriggerType triggerType;
     private final EquipmentSlot actionHand;
@@ -160,6 +159,6 @@ public class TriggerMetadata {
      */
     @NotNull
     public SkillMetadata toSkillMetadata(Skill cast) {
-        return new SkillMetadata(cast, getCachedPlayerMetadata(), new VariableList(VariableScope.SKILL), source, targetLocation, target, null, attack);
+        return new SkillMetadata(triggerType, cast, getCachedPlayerMetadata(), new VariableList(VariableScope.SKILL), source, targetLocation, target, null, attack);
     }
 }

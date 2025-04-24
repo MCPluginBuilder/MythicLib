@@ -4,13 +4,11 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.relation.EmptyPvPInteractionRules;
 import io.lumine.mythic.lib.comp.interaction.relation.InteractionRules;
-import io.lumine.mythic.lib.module.GeneralManager;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
-import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,8 +18,8 @@ import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
-@ModuleInfo(key = "config", load = false)
-public class ConfigManager extends GeneralManager {
+@ModuleInfo(key = "config")
+public class ConfigManager extends Module {
     public final DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
 
     public DecimalFormat decimal, decimals;
@@ -74,13 +72,13 @@ public class ConfigManager extends GeneralManager {
         castingDelayBarStyle = UtilityMethods.resolveField(BarStyle::valueOf, () -> BarStyle.SEGMENTED_20, config.getString("casting-delay.bossbar.style", "SEGMENTED_20"));
         try {
             skillCastScript = config.getBoolean("casting-delay.cast-script.enabled") ?
-                    new SimpleSkill(TriggerType.CAST, new MythicLibSkillHandler(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cast-script.script")))) : null;
+                    new SimpleSkill(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cast-script.script"))) : null;
         } catch (IllegalArgumentException exception) {
             skillCastScript = null;
         }
         try {
             skillCancelScript = config.getBoolean("casting-delay.cancel-script.enabled") ?
-                    new SimpleSkill(TriggerType.CAST, new MythicLibSkillHandler(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cancel-script.script")))) : null;
+                    new SimpleSkill(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cancel-script.script"))) : null;
         } catch (IllegalArgumentException exception) {
             skillCancelScript = null;
         }

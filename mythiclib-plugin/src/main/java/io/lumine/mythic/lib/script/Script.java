@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.util.PreloadedObject;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -48,11 +49,23 @@ public class Script implements PreloadedObject {
             registerMechanic(String.valueOf(obj), () -> new MMOLineConfig(String.valueOf(obj)));
     });
 
+    public Script(@NotNull String key, @NotNull List<String> mechanics) {
+
+        // Syntax adapter
+        YamlConfiguration newConfig = new YamlConfiguration();
+        newConfig.set(key + ".mechanics", mechanics);
+
+        postLoadAction.cacheConfig(newConfig.getConfigurationSection(key));
+
+        this.id = key;
+        this.publik = false;
+    }
+
     public Script(@NotNull ConfigurationSection config) {
         postLoadAction.cacheConfig(config);
 
         this.id = config.getName();
-        publik = config.getBoolean("public", false);
+        this.publik = config.getBoolean("public", false);
     }
 
     public Script(String id, boolean publik) {

@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.comp.interaction.TargetRestriction;
 import io.lumine.mythic.lib.comp.interaction.relation.Relationship;
 import io.lumine.mythic.lib.comp.interaction.relation.RelationshipHandler;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
-import io.lumine.mythic.lib.module.GeneralManager;
+import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
@@ -17,8 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-@ModuleInfo(key = "entities", load = false)
-public class EntityManager extends GeneralManager {
+@ModuleInfo(key = "entities")
+public class EntityManager extends Module {
     private final Set<TargetRestriction> restrictions = new HashSet<>();
     private final Set<RelationshipHandler> relHandlers = new HashSet<>();
 

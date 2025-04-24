@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.damage.*;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
-import io.lumine.mythic.lib.module.GeneralManager;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -39,8 +39,8 @@ import java.util.logging.Level;
  *
  * @author jules
  */
-@ModuleInfo(key = "damage", load = false)
-public class DamageManager extends GeneralManager implements Listener {
+@ModuleInfo(key = "damage")
+public class DamageManager extends Module implements Listener {
 
     /**
      * External attack handlers

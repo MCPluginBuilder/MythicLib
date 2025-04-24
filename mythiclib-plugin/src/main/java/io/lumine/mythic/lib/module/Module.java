@@ -1,7 +1,11 @@
 package io.lumine.mythic.lib.module;
 
+import io.lumine.mythic.lib.util.annotation.NotUsed;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,16 +17,21 @@ import java.util.List;
  * depend on other modules to operate, and can be disabled/enabled
  * at runtime based on configuration files.
  */
+@NotUsed
 public abstract class Module {
     protected final MMOPluginImpl plugin;
     protected final NamespacedKey key;
     protected final List<NamespacedKey> dependencies = new ArrayList<>();
-    protected final boolean load;
-
-    protected final List<Module> resolvedDependencies = new ArrayList<>();
+    //protected final List<Module> resolvedDependencies = new ArrayList<>();
 
     // Runtime flags
-    protected boolean loaded, enabled;
+    // TODO set loaded to false.
+    protected boolean loaded = true, enabled, started;
+
+    /**
+     * Module was completely disabled either during loading or enabling phase
+     */
+    protected boolean disabled;
 
     protected Module(MMOPluginImpl plugin) {
         this.plugin = plugin;
@@ -30,13 +39,11 @@ public abstract class Module {
         ModuleInfo info = getClass().getAnnotation(ModuleInfo.class);
         Validate.notNull(info, "Could not find annotation data ModuleInfo");
         this.key = NamespacedKey.fromString(info.key(), plugin);
-        this.load = info.load();
     }
 
     protected Module(@NotNull MMOPluginImpl plugin, @NotNull String key, boolean load) {
         this.plugin = plugin;
         this.key = new NamespacedKey(plugin, key);
-        this.load = true;
     }
 
     /*
@@ -49,12 +56,15 @@ public abstract class Module {
         });
     }*/
 
-    public boolean isLoaded() {
-        return !load || loaded;
-    }
-
+    @Deprecated
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Deprecated
+    public boolean shouldLoad() {
+        // Default impl
+        return true;
     }
 
     /**
@@ -62,6 +72,7 @@ public abstract class Module {
      * references potentially needed everywhere else. This is usually
      * done when plugins are loading, not enabling
      */
+    @Deprecated
     public void load() {
         Validate.isTrue(!loaded, "Module is already loaded");
 
@@ -69,14 +80,32 @@ public abstract class Module {
         onLoad();
     }
 
+    @Deprecated
+    public boolean shouldEnable() {
+        // Default impl
+        return true;
+    }
+
     /**
-     * Called when the server starts or when the plugins are loaded.
+     * Called when the server starts or when the plugins are getting enabled.
      */
     public void enable() {
-        Validate.isTrue(!load || loaded, "Module is not loaded yet");
+        Validate.isTrue(loaded, "Module is not loaded yet");
         Validate.isTrue(!enabled, "Module is already enabled");
 
+        // Startup script
+        if (!started) {
+            onStartup();
+            started = true;
+        }
+
+        // Register listener if necessary
+        if (this instanceof Listener) Bukkit.getPluginManager().registerEvents((Listener) this, plugin);
+
+        // Flags
         this.enabled = true;
+
+        // Callback
         onEnable();
     }
 
@@ -86,16 +115,30 @@ public abstract class Module {
     public void reset() {
         Validate.isTrue(loaded || enabled, "Module is already reset");
 
+        // Unregister listeners if necessary
+        if (this instanceof Listener) HandlerList.unregisterAll((Listener) this);
+
+        // Flags
         this.loaded = false;
         this.enabled = false;
+
+        // Callback
         onReset();
     }
 
+    @Deprecated
     public void onLoad() {
         // Default impl
     }
 
     public void onEnable() {
+        // Default impl
+    }
+
+    /**
+     * Gets called at most once
+     */
+    public void onStartup() {
         // Default impl
     }
 
@@ -113,7 +156,7 @@ public abstract class Module {
     }
 
     @NotNull
-    public NamespacedKey getNamespacedKey() {
+    public NamespacedKey getKey() {
         return key;
     }
 

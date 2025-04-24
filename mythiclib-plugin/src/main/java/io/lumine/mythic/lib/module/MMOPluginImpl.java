@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+/**
+ * @see io.lumine.mythic.lib.util.MMOPlugin
+ */
 @NotUsed
 public class MMOPluginImpl extends JavaPlugin {
     private final List<Module> modules = new ArrayList<>();
 
     public MMOPluginImpl() {
-        MMOPluginRegistry.getInstance().registerPlugin(this);
+        ModuleRegistry.getInstance().registerPlugin(this);
     }
 
     /**

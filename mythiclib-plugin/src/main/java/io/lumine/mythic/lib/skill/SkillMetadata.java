@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.script.variable.Variable;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.script.variable.def.*;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.SkillOrientation;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
  * @author jules
  */
 public class SkillMetadata {
+    private final TriggerType trigger;
     private final Skill cast;
     private final VariableList vars;
 
@@ -72,29 +74,8 @@ public class SkillMetadata {
     @Nullable
     public final SkillOrientation orientation;
 
-    public SkillMetadata(Skill cast, @NotNull MMOPlayerData caster) {
-        this(cast, caster.getStatMap().cache(EquipmentSlot.MAIN_HAND), new VariableList(VariableScope.SKILL), caster.getPlayer().getLocation(), null, null, null, null);
-    }
-
-    @Deprecated
-    public SkillMetadata(Skill cast, @NotNull AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity) {
-        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta);
-    }
-
-    @Deprecated
-    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @Nullable AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
-        this(cast, caster, vars, source, targetLocation, targetEntity, orientation, attackMeta);
-    }
-
-    public SkillMetadata(Skill cast, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @NotNull AttackMetadata attackMeta) {
-        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta);
-    }
-
-    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
-        this(cast, caster, vars, source, targetLocation, targetEntity, orientation, null);
-    }
-
     /**
+     * @param trigger        How was the initial skill triggered
      * @param cast           Initial skill being cast. It's used to retrieve skill parameter values
      * @param caster         Cached statistics of the skill caster
      * @param vars           Skill variable list if it already exists
@@ -104,7 +85,16 @@ public class SkillMetadata {
      * @param orientation    Skill orientation if some rotation is required later on
      * @param attackSource   Attack which triggered the skill
      */
-    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation, @Nullable AttackMetadata attackSource) {
+    public SkillMetadata(@NotNull TriggerType trigger,
+                         @NotNull Skill cast,
+                         @NotNull PlayerMetadata caster,
+                         @NotNull VariableList vars,
+                         @NotNull Location source,
+                         @Nullable Location targetLocation,
+                         @Nullable Entity targetEntity,
+                         @Nullable SkillOrientation orientation,
+                         @Nullable AttackMetadata attackSource) {
+        this.trigger = trigger;
         this.cast = cast;
         this.caster = caster;
         this.vars = vars;
@@ -113,6 +103,11 @@ public class SkillMetadata {
         this.targetEntity = targetEntity;
         this.orientation = orientation;
         this.attackSource = attackSource;
+    }
+
+    @NotNull
+    public TriggerType getTrigger() {
+        return trigger;
     }
 
     @NotNull
@@ -135,27 +130,6 @@ public class SkillMetadata {
         return source.clone();
     }
 
-    /**
-     * @deprecated See {@link #getAttackSource()}
-     */
-    @Deprecated
-    public boolean hasAttackBound() {
-        return hasAttackSource();
-    }
-
-    /**
-     * Looks into the target entity metadata for an AttackMetadata.
-     * If it finds one then it has to be from the skill caster.
-     *
-     * @return Eventual attack currently being dealt to the entity.
-     * @deprecated See {@link #getAttackSource()}
-     */
-    @NotNull
-    @Deprecated
-    public AttackMetadata getAttack() {
-        return getAttackSource();
-    }
-
     public boolean hasAttackSource() {
         return attackSource != null;
     }
@@ -166,14 +140,6 @@ public class SkillMetadata {
     @NotNull
     public AttackMetadata getAttackSource() {
         return Objects.requireNonNull(attackSource, "Skill was not triggered by any attack");
-    }
-
-    /**
-     * @deprecated Skill modifiers are now called "parameters"
-     */
-    @Deprecated
-    public double getModifier(String param) {
-        return getParameter(param);
     }
 
     /**
@@ -289,7 +255,7 @@ public class SkillMetadata {
     @NotNull
     public SkillMetadata clone(@NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
         // TODO change rules to avoid amap null parameters
-        return new SkillMetadata(cast, caster, vars, source, targetLocation, targetEntity, orientation, attackSource);
+        return new SkillMetadata(trigger, cast, caster, vars, source, targetLocation, targetEntity, orientation, attackSource);
     }
 
     @NotNull
@@ -298,26 +264,6 @@ public class SkillMetadata {
     }
 
     public static final List<String> RESERVED_VARIABLE_NAMES = Arrays.asList("modifier", "parameter", "source", "targetLocation", "targetLoc", "target_loc", "target_location", "targetloc", "targetl", "caster", "attack", "stat", "target", "var", "rand", "random", "rdm");
-
-    /**
-     * @see #getVariable(String)
-     * @deprecated References no longer exist, in order to reduce confusion, MythicLib
-     *         now reserves specific names for internal variables, see {@link #RESERVED_VARIABLE_NAMES}
-     */
-    @Deprecated
-    public Variable getReference(String name) {
-        return getVariable(name);
-    }
-
-    /**
-     * @see #getVariable(String)
-     * @deprecated There are no longer major differences between internal/reserved variables
-     *         and user variables, so this method is no longer relevant.
-     */
-    @Deprecated
-    public Variable getCustomVariable(String name) {
-        return getUserVariable(name);
-    }
 
     public static final VariableList SERVER_VARIABLE_LIST = new VariableList(VariableScope.SERVER);
 
@@ -466,6 +412,8 @@ public class SkillMetadata {
         return str;
     }
 
+    //region Deprecated
+
     /**
      * @deprecated Use {@link PlayerMetadata#attack(LivingEntity, double, DamageType...)} instead
      */
@@ -474,4 +422,81 @@ public class SkillMetadata {
     public AttackMetadata attack(@NotNull LivingEntity target, double damage, DamageType... types) {
         return caster.attack(target, damage, types);
     }
+
+    /**
+     * @see #hasAttackSource()
+     * @deprecated
+     */
+    @Deprecated
+    public boolean hasAttackBound() {
+        return hasAttackSource();
+    }
+
+    /**
+     * Looks into the target entity metadata for an AttackMetadata.
+     * If it finds one then it has to be from the skill caster.
+     *
+     * @return Eventual attack currently being dealt to the entity.
+     * @see #getAttackSource()
+     * @deprecated
+     */
+    @Deprecated
+    public AttackMetadata getAttack() {
+        return getAttackSource();
+    }
+
+    /**
+     * @see #getVariable(String)
+     * @deprecated References no longer exist, in order to reduce confusion, MythicLib
+     *         now reserves specific names for internal variables, see {@link #RESERVED_VARIABLE_NAMES}
+     */
+    @Deprecated
+    public Variable getReference(String name) {
+        return getVariable(name);
+    }
+
+    /**
+     * @see #getVariable(String)
+     * @deprecated There are no longer major differences between internal/reserved variables
+     *         and user variables, so this method is no longer relevant.
+     */
+    @Deprecated
+    public Variable getCustomVariable(String name) {
+        return getUserVariable(name);
+    }
+
+    /**
+     * @deprecated Skill modifiers are now called "parameters"
+     */
+    @Deprecated
+    public double getModifier(String param) {
+        return getParameter(param);
+    }
+
+    @Deprecated
+    public SkillMetadata(Skill cast, @NotNull AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity) {
+        this(cast.getTrigger(), cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta);
+    }
+
+    @Deprecated
+    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @Nullable AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
+        this(cast.getTrigger(), cast, caster, vars, source, targetLocation, targetEntity, orientation, attackMeta);
+    }
+
+    @Deprecated
+    public SkillMetadata(Skill cast, @NotNull MMOPlayerData caster) {
+        this(cast.getTrigger(), cast, caster.getStatMap().cache(EquipmentSlot.MAIN_HAND), new VariableList(VariableScope.SKILL), caster.getPlayer().getLocation(), null, null, null, null);
+    }
+
+    @Deprecated
+    public SkillMetadata(Skill cast, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @NotNull AttackMetadata attackMeta) {
+        this(cast.getTrigger(), cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta);
+    }
+
+    @Deprecated
+    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
+        this(cast.getTrigger(), cast, caster, vars, source, targetLocation, targetEntity, orientation, null);
+    }
+
+    //endregion
 }

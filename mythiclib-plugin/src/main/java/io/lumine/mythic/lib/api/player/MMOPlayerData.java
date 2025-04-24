@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
 import io.lumine.mythic.lib.player.particle.ParticleEffectMap;
+import io.lumine.mythic.lib.player.permission.PermissionMap;
 import io.lumine.mythic.lib.player.potion.PermanentPotionEffectMap;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
@@ -55,6 +56,13 @@ public class MMOPlayerData {
     private long lastLogActivity;
 
     /**
+     * This fixes a very specific issue with recent versions of Spigot (1.19+).
+     * Bukkit interact events are called when a player drops an item. In specific
+     * scenarios, dropping an item triggers left-click abilities, which sucks.
+     */
+    public long lastDrop;
+
+    /**
      * When logging in, MythicLib waits for all MMO plugins
      * to fill in the empty player's StatMap before performing
      * stat updates.
@@ -69,6 +77,7 @@ public class MMOPlayerData {
     private final PermanentPotionEffectMap permEffectMap = new PermanentPotionEffectMap(this);
     private final ParticleEffectMap particleEffectMap = new ParticleEffectMap(this);
     private final PassiveSkillMap passiveSkillMap = new PassiveSkillMap(this);
+    private final PermissionMap permissionMap = new PermissionMap(this);
     private final VariableList variableList = new VariableList(VariableScope.PLAYER);
 
     /**
@@ -201,20 +210,19 @@ public class MMOPlayerData {
         return skillModifierMap;
     }
 
-    /**
-     * @deprecated Not implemented yet
-     */
-    @Deprecated
+    @NotNull
     public PermanentPotionEffectMap getPermanentEffectMap() {
         return permEffectMap;
     }
 
-    /**
-     * @deprecated Not implemented yet
-     */
-    @Deprecated
+    @NotNull
     public ParticleEffectMap getParticleEffectMap() {
         return particleEffectMap;
+    }
+
+    @NotNull
+    public PermissionMap getPermissionMap() {
+        return permissionMap;
     }
 
     /**
@@ -246,9 +254,18 @@ public class MMOPlayerData {
 
         for (PassiveSkill skill : skills) {
             final SkillHandler<?> handler = skill.getTriggeredSkill().getHandler();
-            if (handler.isTriggerable() && skill.getType().equals(triggerMetadata.getTriggerType()))
+            if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
                 skill.getTriggeredSkill().cast(triggerMetadata);
         }
+    }
+
+    /**
+     * Ticks every second in-game for every online player
+     */
+    public void tickOnline() {
+
+        // Apply permanent potion effects
+        permEffectMap.applyPermanentPotionEffects();
     }
 
     @NotNull
@@ -311,16 +328,16 @@ public class MMOPlayerData {
         this.player = player;
         this.lastLogActivity = System.currentTimeMillis();
 
-        // When logging in
+        // When logging in (called BEFORE all MMO plugins)
         if (player != null) {
             pluginLoadQueue = new ArrayList<>();
             for (MMOPlugin mmoPlugin : MythicLib.plugin.getMMOPlugins())
                 if (mmoPlugin.hasData()) pluginLoadQueue.add(mmoPlugin);
         }
 
-        // When logging off
+        // When logging off (called AFTER all MMO plugins)
         else {
-            pluginLoadQueue = null;
+            permissionMap.flushAttachment();
             statMap.flushCache();
         }
     }
@@ -475,7 +492,7 @@ public class MMOPlayerData {
      * This method is more performant than the following code:
      * <code>Bukkit.getOnlinePlayers().forEach(player -> MMOPlayerData.get(player)......);</code>
      */
-    public static void forEachOnline(Consumer<MMOPlayerData> action) {
+    public static void forEachOnline(@NotNull Consumer<MMOPlayerData> action) {
         for (MMOPlayerData registered : PLAYER_DATA.values())
             if (registered.isOnline()) action.accept(registered);
     }
@@ -485,11 +502,7 @@ public class MMOPlayerData {
      * checked once an hour to make sure not to cause memory leaks.
      */
     public static void flushOfflinePlayerData() {
-        final Iterator<MMOPlayerData> iterator = PLAYER_DATA.values().iterator();
-        while (iterator.hasNext()) {
-            final MMOPlayerData tempData = iterator.next();
-            if (tempData.isTimedOut()) iterator.remove();
-        }
+        PLAYER_DATA.values().removeIf(MMOPlayerData::isTimedOut);
     }
 
     //region Deprecated API

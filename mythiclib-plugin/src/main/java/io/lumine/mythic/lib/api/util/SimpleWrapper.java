@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.api.util;
 
-
+@Deprecated
 public class SimpleWrapper<T> {
     private T object;
 

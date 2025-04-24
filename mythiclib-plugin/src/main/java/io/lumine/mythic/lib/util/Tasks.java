@@ -3,14 +3,12 @@ package io.lumine.mythic.lib.util;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scheduler.BukkitWorker;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 public class Tasks {
     private static final List<Integer> ASYNC_SAFE_TASKS = new ArrayList<>();
@@ -59,22 +57,12 @@ public class Tasks {
      * @param plugin Plugin owner
      */
     public static void waitSafe(@NotNull Plugin plugin) {
-        while (true) {
-
-            // Check active workers
-            for (BukkitWorker worker : Bukkit.getScheduler().getActiveWorkers())
-                if (worker.getOwner().equals(plugin)) {
-                    try {
-                        Thread.sleep(ASYNC_TIME_OUT);
-                    } catch (InterruptedException exception) {
-                        // Do nothing
-                    } finally {
-                        continue;
-                    }
-                }
-
-            // No worker, exit loop
-            break;
+        while (Bukkit.getScheduler().getActiveWorkers().stream().anyMatch(worker -> worker.getOwner().equals(plugin))) {
+            try {
+                Thread.sleep(ASYNC_TIME_OUT);
+            } catch (InterruptedException exception) {
+                // Ignore
+            }
         }
     }
 
@@ -120,7 +108,7 @@ public class Tasks {
 
     private static void printStackTraceSync(@NotNull Plugin plugin, @NotNull Throwable throwable) {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            plugin.getLogger().log(Level.INFO, "Caught error on async thread:");
+            plugin.getLogger().info("Error caught on non-main thread:");
             throwable.printStackTrace();
         });
     }
@@ -153,6 +141,10 @@ public class Tasks {
             future.complete(null);
         });
         return future;
+    }
+
+    public static void runSync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
+        Bukkit.getScheduler().runTask(plugin, runnable);
     }
 
     /**

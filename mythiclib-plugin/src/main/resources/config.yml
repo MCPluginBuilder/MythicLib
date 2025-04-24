@@ -213,7 +213,7 @@ game-indicators:
   regen:
     enabled: false
     decimal-format: '0.#'
-    format: '&a+#'
+    format: '&a+{value}'
     custom-font:
       enabled: false
       '0': 'ᜀ'

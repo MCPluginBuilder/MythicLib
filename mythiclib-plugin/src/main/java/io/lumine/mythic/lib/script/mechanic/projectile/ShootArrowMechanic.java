@@ -10,7 +10,6 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ShootArrowMechanic extends DirectionMechanic {
-
     private final boolean fromItem, playerAttackDamage;
     private final DoubleFormula velocity;
 
@@ -62,6 +60,6 @@ public class ShootArrowMechanic extends DirectionMechanic {
 
     @NotNull
     private PassiveSkill skill(Script script, TriggerType triggerType) {
-        return new PassiveSkill(PASSIVE_SKILL_KEY, new SimpleSkill(triggerType, new MythicLibSkillHandler(script)), EquipmentSlot.OTHER, ModifierSource.OTHER);
+        return new PassiveSkill(PASSIVE_SKILL_KEY, triggerType, new SimpleSkill(script), EquipmentSlot.OTHER, ModifierSource.OTHER);
     }
 }

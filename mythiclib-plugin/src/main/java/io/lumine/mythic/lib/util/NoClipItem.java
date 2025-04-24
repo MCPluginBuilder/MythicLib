@@ -1,7 +1,5 @@
 package io.lumine.mythic.lib.util;
 
-import com.mojang.authlib.GameProfile;
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.TemporaryListener;
@@ -21,9 +19,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
 import java.util.Random;
-import java.util.logging.Level;
 
 public class NoClipItem extends TemporaryListener {
     private final Item item;
@@ -83,6 +79,7 @@ public class NoClipItem extends TemporaryListener {
      */
     private ItemStack stripItemData(ItemStack oldItem) {
         final NBTItem oldItemNBT = VersionWrapper.get().getNBTItem(oldItem);
+        final ItemMeta oldItemMeta = oldItem.getItemMeta();
 
         // Make new item.
         final ItemStack newItem = new ItemStack(oldItem.getType());
@@ -95,29 +92,20 @@ public class NoClipItem extends TemporaryListener {
          * Hiding the enchantment doesn't really matter but thought it'll be better
          * to look like a vanilla item if a player somehow picks it up and Luck 0 does nothing.
          */
-        if (oldItem.getItemMeta().hasEnchants()) {
+        if (oldItemMeta.hasEnchants()) {
             newItemMeta.addEnchant(Enchantment.KNOCKBACK, 0, true);
             newItemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
 
         // Copy CustomModelData.
-        if (oldItem.getItemMeta().hasCustomModelData() && oldItem.getItemMeta().getCustomModelData() != 0) {
-            newItemMeta.setCustomModelData(oldItem.getItemMeta().getCustomModelData());
+        if (oldItemMeta.hasCustomModelData() && oldItemMeta.getCustomModelData() != 0) {
+            newItemMeta.setCustomModelData(oldItemMeta.getCustomModelData());
         }
 
         // Copy Skull textures
-        if (oldItem.getItemMeta() instanceof SkullMeta) {
-            try {
-                final Field oldProfileField = oldItem.getItemMeta().getClass().getDeclaredField("profile");
-                oldProfileField.setAccessible(true);
-                final GameProfile oldProfile = (GameProfile) oldProfileField.get(oldItem.getItemMeta());
-
-                final Field profileField = newItemMeta.getClass().getDeclaredField("profile");
-                profileField.setAccessible(true);
-                profileField.set(newItemMeta, oldProfile);
-            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not set skull texture on stripItemData method in the NoClipItem class. Please report this issue!");
-            }
+        if (oldItemMeta instanceof SkullMeta) {
+            Object gameProfile = VersionWrapper.get().getProfile((SkullMeta) oldItemMeta);
+            VersionWrapper.get().setProfile((SkullMeta) newItemMeta, gameProfile);
         }
 
         // Copy Leather colors

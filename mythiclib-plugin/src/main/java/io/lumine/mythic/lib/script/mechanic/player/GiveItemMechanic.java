@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.script.mechanic.player;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
@@ -17,9 +18,9 @@ public class GiveItemMechanic extends TargetMechanic {
     public GiveItemMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("type");
+        config.validateKeys("material");
         amount = config.getDoubleFormula("amount", DoubleFormula.constant(1));
-        material = Material.valueOf(config.getString("type"));
+        material = Material.valueOf(UtilityMethods.enumName(config.getString("material")));
     }
 
     @Override

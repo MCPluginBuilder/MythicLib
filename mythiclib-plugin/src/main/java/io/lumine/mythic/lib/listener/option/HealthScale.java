@@ -32,3 +32,48 @@ public class HealthScale implements Listener {
         }, delay);
     }
 }
+
+/*
+
+public class HealthScale extends Module implements Listener {
+
+    /**
+     * Amount of total displayed in the health bar no matter what the player's
+     * max health is. It's good when people give insane amounts of health.
+     *
+private double scale;
+
+/**
+ * Some servers need delay before applying health scale after the player joins
+ *
+private int delay;
+
+public HealthScale(MMOPluginImpl plugin) {
+    super(plugin);
+}
+
+@Override
+public boolean shouldEnable() {
+    return plugin.getConfig().getBoolean("health-scale.enabled");
+}
+
+@Override
+public void onEnable() {
+    ConfigurationSection config = plugin.getConfig().getConfigurationSection("health-scale");
+    scale = config.getDouble("scale");
+    delay = config.getInt("delay");
+}
+
+@EventHandler
+private void onJoin(PlayerJoinEvent event) {
+    Player player = event.getPlayer();
+    Bukkit.getScheduler().runTaskLater(MythicLib.plugin, () -> {
+        player.setHealthScaled(true);
+        player.setHealthScale(scale);
+    }, delay);
+}
+}
+
+
+
+ */

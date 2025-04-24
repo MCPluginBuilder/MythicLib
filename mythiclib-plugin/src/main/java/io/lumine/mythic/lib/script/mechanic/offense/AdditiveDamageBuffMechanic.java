@@ -14,7 +14,9 @@ public class AdditiveDamageBuffMechanic extends TargetMechanic {
     private final DamageType damageType;
 
     /**
-     * @deprecated Use {@link MultiplyDamageMechanic} instead
+     * @see MultiplyDamageMechanic
+     * @see DamageMechanic
+     * @deprecated
      */
     @Deprecated
     public AdditiveDamageBuffMechanic(ConfigObject config) {

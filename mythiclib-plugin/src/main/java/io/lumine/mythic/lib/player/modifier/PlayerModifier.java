@@ -2,10 +2,21 @@ package io.lumine.mythic.lib.player.modifier;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
+import io.lumine.mythic.lib.player.particle.ParticleEffect;
+import io.lumine.mythic.lib.player.permission.PermissionModifier;
+import io.lumine.mythic.lib.player.potion.PermanentPotionEffect;
+import io.lumine.mythic.lib.player.skill.PassiveSkill;
+import io.lumine.mythic.lib.player.skillmod.SkillModifier;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * Player modifiers were defined in 1.2 as a generalization of
@@ -93,5 +104,40 @@ public abstract class PlayerModifier {
     @Override
     public int hashCode() {
         return Objects.hash(uniqueId);
+    }
+
+    private static final Map<String, Function<ConfigObject, PlayerModifier>> BY_KEY = new HashMap<>();
+
+    public static void registerPlayerModifierType(@NotNull String key, @NotNull Function<ConfigObject, PlayerModifier> resolver, String... aliases) {
+        Validate.notNull(key, "Key cannot be null");
+        Validate.notNull(resolver, "Resolver cannot be null");
+
+        BY_KEY.put(key, resolver);
+        for (String alias : aliases) {
+            Validate.notNull(alias, "Alias cannot be null");
+            BY_KEY.put(alias, resolver);
+        }
+    }
+
+    static {
+        registerPlayerModifierType("particle_effect", ParticleEffect::fromConfig, "particle", "particles");
+        registerPlayerModifierType("potion_effect", PermanentPotionEffect::fromConfig, "potion", "potioneffect", "pot");
+        registerPlayerModifierType("stat", StatModifier::new, "stats", "mmostat");
+        registerPlayerModifierType("skill", PassiveSkill::fromConfig, "ability", "passive_skill", "passive");
+        registerPlayerModifierType("skill_modifier", SkillModifier::fromConfig, "skill_mod", "skillmod", "skillmodifier");
+        registerPlayerModifierType("permission", PermissionModifier::fromConfig, "perm", "perm_node", "permnode");
+    }
+
+    @NotNull
+    public static PlayerModifier from(@NotNull ConfigObject config) {
+        Validate.notNull(config, "Config cannot be null");
+
+        // Find player modifier type
+        String configKey = config.getKey();
+        if (configKey == null) configKey = config.getString("type");
+
+        Function<ConfigObject, PlayerModifier> found = BY_KEY.get(configKey);
+        Validate.notNull(found, String.format("Could not match player modifier type to %s", configKey));
+        return found.apply(config);
     }
 }

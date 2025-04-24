@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.api.stat.api;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.player.modifier.PlayerModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * @see {@link InstanceModifier}
+ * @see InstanceModifier
  */
 public abstract class ModifiedInstance<T extends InstanceModifier> {
     protected final Map<UUID, T> modifiers = new ConcurrentHashMap<>();
@@ -64,10 +65,19 @@ public abstract class ModifiedInstance<T extends InstanceModifier> {
      */
     public double getFilteredTotal(double base, Predicate<T> filter, Function<T, T> modification) {
 
+        // Flat
         for (T mod : modifiers.values())
             if (mod.getType() == ModifierType.FLAT && filter.test(mod))
                 base += modification.apply(mod).getValue();
 
+        // Additive scalars
+        double scalar = 1;
+        for (T mod : modifiers.values())
+            if (mod.getType() == ModifierType.ADDITIVE_MULTIPLIER && filter.test(mod))
+                scalar += modification.apply(mod).getValue() / 100;
+        base *= scalar;
+
+        // Multiplicative scalars
         for (T mod : modifiers.values())
             if (mod.getType() == ModifierType.RELATIVE && filter.test(mod))
                 base *= 1 + modification.apply(mod).getValue() / 100;
@@ -156,7 +166,7 @@ public abstract class ModifiedInstance<T extends InstanceModifier> {
     @Deprecated
     @NotNull
     public Set<String> getKeys() {
-        return modifiers.values().stream().map(mod -> mod.getKey()).collect(Collectors.toSet());
+        return modifiers.values().stream().map(PlayerModifier::getKey).collect(Collectors.toSet());
     }
 
     /**

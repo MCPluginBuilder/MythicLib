@@ -1,21 +1,16 @@
 package io.lumine.mythic.lib.player.potion;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.player.modifier.ModifierMap;
-import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@Deprecated
 public class PermanentPotionEffectMap extends ModifierMap<PermanentPotionEffect> {
-    private final Map<PotionEffectType, Integer> maxAmplifier = new HashMap<>();
+    private final List<PotionEffect> bukkitEffectCache = new ArrayList<>();
 
     public PermanentPotionEffectMap(MMOPlayerData playerData) {
         super(playerData);
@@ -23,75 +18,33 @@ public class PermanentPotionEffectMap extends ModifierMap<PermanentPotionEffect>
 
     @Override
     public PermanentPotionEffect addModifier(PermanentPotionEffect effect) {
-        final @Nullable PermanentPotionEffect prev = super.addModifier(effect);
-
-        // Update cached map
-        PotionEffectType key = effect.getEffect();
-        maxAmplifier.put(key, Math.max(maxAmplifier.getOrDefault(key, -1), effect.getAmplifier()));
-
-        return prev;
+        final @Nullable PermanentPotionEffect previous = super.addModifier(effect);
+        resolvePermanentEffects();
+        return previous;
     }
 
     @Override
     public PermanentPotionEffect removeModifier(UUID uniqueId) {
         final @Nullable PermanentPotionEffect removed = super.removeModifier(uniqueId);
-
-        // Recalculate max
-        if (removed != null)
-            updateHighestLevel(removed.getEffect());
+        resolvePermanentEffects();
         return removed;
     }
 
-    public void applyPermanentEffects() {
-        Validate.isTrue(getPlayerData().isOnline(), "Player is offline");
-
-        final Player player = getPlayerData().getPlayer();
-        maxAmplifier.forEach((type, level) -> {
-            int currentAmplifier = player.hasPotionEffect(type) ? player.getPotionEffect(type).getAmplifier() : -1;
-            if (level >= currentAmplifier)
-                player.addPotionEffect(new PotionEffect(type, getEffectDuration(type), level, false, false));
-        });
+    public void applyPermanentPotionEffects() {
+        bukkitEffectCache.forEach(effect -> playerData.getPlayer().addPotionEffect(effect));
     }
 
-    /**
-     * Takes all the modifiers into account to calculate the highest
-     * potion effect level i.e the level the player should have.
-     *
-     * @param type Potion effect type
-     * @return Highest level of potion effect or -1 if none
-     */
-    public int getHighestLevel(PotionEffectType type) {
-        int amplifier = -1;
+    // TODO make it not reset everything everytime
+    // TODO there's probably an algorithmically better solution
+    private void resolvePermanentEffects() {
 
-        for (PermanentPotionEffect perm : getModifiers())
-            if (perm.getEffect() == type)
-                amplifier = Math.max(amplifier, perm.getAmplifier());
+        // Resolve highest levels
+        Map<PotionEffectType, Integer> highestLevels = new HashMap<>();
+        for (PermanentPotionEffect entry : this.modifiers.values())
+            highestLevels.merge(entry.getEffect(), entry.getAmplifier(), Integer::max);
 
-        return amplifier;
-    }
-
-    private void updateHighestLevel(PotionEffectType type) {
-        int max = getHighestLevel(type);
-        if (max == -1)
-            maxAmplifier.remove(type);
-        else
-            maxAmplifier.put(type, max);
-    }
-
-    /**
-     * The last 5 seconds of nausea are useless, night vision flashes in the
-     * last 10 seconds, blindness takes a few seconds to decay as well, and
-     * there can be small server lags. It's best to apply a specific duration
-     * for every type of permanent effect.
-     *
-     * @param type Potion effect type
-     * @return The duration that MythicLib should be using to give player
-     *         "permanent" potion effects, depending on the potion effect type
-     */
-    private int getEffectDuration(PotionEffectType type) {
-        return type.equals(PotionEffectType.NIGHT_VISION)
-                || type.equals(VPotionEffectType.NAUSEA.get())
-                ? 260 :
-                type.equals(PotionEffectType.BLINDNESS) ? 140 : 80;
+        // Cache Bukkit potion effects
+        bukkitEffectCache.clear();
+        highestLevels.forEach((type, amplifier) -> bukkitEffectCache.add(new PotionEffect(type, UtilityMethods.getPermanentEffectDuration(type), amplifier)));
     }
 }

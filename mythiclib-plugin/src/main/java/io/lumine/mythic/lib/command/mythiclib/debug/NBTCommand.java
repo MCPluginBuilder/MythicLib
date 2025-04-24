@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class NBTCommand extends CommandTreeNode {
     public NBTCommand(CommandTreeNode parent) {
@@ -19,7 +20,7 @@ public class NBTCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
 
         if (!(sender instanceof Player)) {
             sender.sendMessage("You can only use this command as a player");

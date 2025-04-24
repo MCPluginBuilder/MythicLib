@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.skill.handler;
 import io.lumine.mythic.api.config.MythicConfig;
 import io.lumine.mythic.api.skills.Skill;
 import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.core.config.MythicConfigImpl;
 import io.lumine.mythic.core.skills.MetaSkill;
 import io.lumine.mythic.core.skills.SkillExecutor;
 import io.lumine.mythic.lib.MythicLib;
@@ -11,6 +12,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,19 +35,11 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
 
         // Register extra skills first
         if (config.contains("extra-skills")) {
-
-           /* // Find FileConfiguration again
-            final long steps = config.getCurrentPath().chars().filter(ch -> ch == 'e').count();
-            ConfigurationSection explored = config;
-            for (int i = 0; i < steps + 1; i++)
-                explored = explored.getParent();
-            Validate.isTrue(explored instanceof FileConfiguration, "An error occured when attempting to roll back to config file");
-            final FileConfiguration configFile = (FileConfiguration) explored;*/
+            MythicConfig mythicConfig = findParentMythicConfig(config, "extra-skills");
 
             for (String key : config.getConfigurationSection("extra-skills").getKeys(false))
                 try {
-                    MythicConfig mythicConfig = new MythicConfigImpl("extra-skills." + key, config);
-                    MetaSkill metaSkill = new MetaSkill(skillManager, null, null, key, mythicConfig);
+                    MetaSkill metaSkill = new MetaSkill(skillManager, null, null, key, mythicConfig.getNestedConfig(key));
                     skillManager.registerSkill(key, metaSkill);
                 } catch (RuntimeException exception) {
                     MythicLib.plugin.getLogger().log(Level.WARNING, "Could not register MythicMob extra skill '" + key + "' for custom skill handler '" + getId() + "': " + exception.getMessage());
@@ -62,6 +56,19 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
                 CheatType cheatType = CheatType.valueOf(key.toUpperCase().replace(" ", "_").replace("-", "_"));
                 this.antiCheat.put(cheatType, config.getInt("disable-anti-cheat." + key));
             }
+    }
+
+    private MythicConfig findParentMythicConfig(ConfigurationSection section, String extraConfigPath) {
+        ConfigurationSection parent;
+        StringBuilder fullPath = new StringBuilder();
+
+        while ((parent = section.getParent()) != null) {
+            fullPath.insert(0, '.').insert(0, section.getName());
+            section = parent;
+        }
+
+        fullPath.append(extraConfigPath);
+        return new MythicConfigImpl(fullPath.toString(), (FileConfiguration) section); // Inshallah
     }
 
     public String getInternalName() {

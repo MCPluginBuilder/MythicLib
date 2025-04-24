@@ -1,11 +1,12 @@
-package io.lumine.mythic.lib.gui;
+package io.lumine.mythic.lib.gui.builtin;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.explorer.ChatInput;
-import io.lumine.mythic.lib.api.explorer.ItemBuilder;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
 import io.lumine.mythic.lib.api.util.AltChar;
+import io.lumine.mythic.lib.gui.PluginInventory;
+import io.lumine.mythic.lib.util.ChatInput;
+import io.lumine.mythic.lib.util.ItemBuilder;
 import io.lumine.mythic.lib.util.ReflectionUtils;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -82,7 +83,7 @@ public class AttributeExplorer extends PluginInventory {
     }
 
     @Override
-    public Inventory getInventory() {
+    public @NotNull Inventory getInventory() {
         Inventory inv = Bukkit.createInventory(this, 54, "Attributes of " + target.getName() + (explored == null ? "" : " (" + getName(explored) + ")"));
 
         inv.setItem(4, new ItemBuilder(Material.WHITE_BED, "&6Refresh &8(Click)"));
@@ -199,7 +200,7 @@ public class AttributeExplorer extends PluginInventory {
     private static final NamespacedKey MODIFIER_KEY = new NamespacedKey(MythicLib.plugin, "modifier");
 
     @Override
-    public void whenClicked(InventoryClickEvent event) {
+    public void onClick(InventoryClickEvent event) {
         event.setCancelled(true);
         if (!event.getInventory().equals(event.getClickedInventory()))
             return;

@@ -161,7 +161,7 @@ public class TriggerType {
      */
     SHIFT_SWAP_ITEMS = new TriggerType("SHIFT_SWAP_ITEMS", false),
 
-    // Misc
+    // Other Actions
 
     /**
      * Called when a player logs in
@@ -189,6 +189,8 @@ public class TriggerType {
      */
     TIMER = new TriggerType("TIMER"),
 
+    // Trigger "Causes". These are not natural triggers but are still used by plugins
+
     /**
      * Used when a player actively casts a skill (e.g MMOCore
      * skill casting system). This is the only trigger type
@@ -197,12 +199,16 @@ public class TriggerType {
      */
     CAST = new TriggerType("CAST", false, false),
 
+    COMMAND = new TriggerType("COMMAND"),
+
+    PLUGIN = new TriggerType("PLUGIN"),
+
     /**
      * Should be used by plugins when passive skills get triggered by
      * another cause not listed in {@link TriggerType}. This trigger
      * type is used by any hard coded passive skills like {@link Backstab}.
      *
-     * @see {@link SkillHandler#isTriggerable()}
+     * @see SkillHandler#isTriggerable()
      */
     API = new TriggerType("API");
 

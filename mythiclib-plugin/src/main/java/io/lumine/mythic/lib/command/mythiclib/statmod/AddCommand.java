@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import io.lumine.mythic.lib.command.api.Parameter;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.util.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public class AddCommand extends CommandTreeNode {
     });
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
         if (args.length < 5) return CommandResult.THROW_USAGE;
 
         final @Nullable Player target = Bukkit.getPlayer(args[2]);
@@ -47,9 +48,26 @@ public class AddCommand extends CommandTreeNode {
 
         final String statName = UtilityMethods.enumName(args[3]);
         final MMOPlayerData playerData = MMOPlayerData.get(target);
-        final ModifierType type = args[4].toCharArray()[args[4].length() - 1] == '%' ? ModifierType.RELATIVE : ModifierType.FLAT;
-        final double value = Double.parseDouble(type == ModifierType.RELATIVE ? args[4].substring(0, args[4].length() - 1) : args[4]);
-        final long duration = args.length > 5 ? Math.max(1, (long) Double.parseDouble(args[5])) : 0;
+
+        final ModifierType type;
+        final double value;
+        try {
+            Pair<ModifierType, Double> modifierPair = ModifierType.pairFromString(args[4]);
+            type = modifierPair.getLeft();
+            value = modifierPair.getRight();
+        } catch (Exception exception) {
+            sender.sendMessage(ChatColor.RED + "Invalid stat value");
+            return CommandResult.FAILURE;
+        }
+
+        long duration;
+        try {
+            duration = args.length > 5 ? Math.max(1, (long) Double.parseDouble(args[5])) : 0;
+        } catch (Exception exception) {
+            sender.sendMessage(ChatColor.RED + "Invalid duration");
+            return CommandResult.FAILURE;
+        }
+
         final String key = args.length > 6 ? args[6] : DEFAULT_STAT_KEY;
 
         if (duration <= 0)

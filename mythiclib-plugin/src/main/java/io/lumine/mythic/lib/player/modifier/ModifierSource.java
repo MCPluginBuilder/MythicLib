@@ -60,6 +60,15 @@ public enum ModifierSource {
     ACCESSORY,
 
     /**
+     * Modifier source given by MMOItems ornaments, nothing else.
+     * Only applies stats if placed inside the inventory. Hand or
+     * armor slots do not work.
+     *
+     * @see EquipmentSlot#INVENTORY
+     */
+    ORNAMENT,
+
+    /**
      * Modifier given by anything else. Modifiers always apply.
      * <p>
      * Has a lower priority compared to {@link EquipmentSlot#OTHER}

@@ -7,29 +7,28 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import io.lumine.mythic.lib.util.DelayFormat;
+import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import io.lumine.mythic.lib.version.Attributes;
-import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.VersionUtils;
+import io.lumine.mythic.lib.version.*;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.command.CommandMap;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -59,6 +58,15 @@ public class UtilityMethods {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
     }
 
+    /**
+     * Paper does not have this option. This allows some
+     * plugins to be built against Spigot and not Paper
+     */
+    @NotNull
+    public static CommandMap getCommandMap() {
+        return Bukkit.getCommandMap();
+    }
+
     public static Vector safeNormalize(@NotNull Vector vec) {
         return safeNormalize(vec, vec);
     }
@@ -69,9 +77,28 @@ public class UtilityMethods {
         return vec.multiply(1d / Math.sqrt(normSquared));
     }
 
+    public static int getPageNumber(int elements, int perPage) {
+        return Math.ceilDiv(Math.max(1, elements), perPage);
+    }
+
     public static void forcePotionEffect(LivingEntity entity, PotionEffectType type, double duration, int amplifier) {
         entity.removePotionEffect(type);
         entity.addPotionEffect(new PotionEffect(type, (int) (duration * 20), amplifier));
+    }
+
+    /**
+     * The last 5 seconds of nausea are useless, night vision flashes in the
+     * last 10 seconds, blindness takes a few seconds to decay as well, and
+     * there can be small server lags. It's best to apply a specific duration
+     * for every type of permanent effect.
+     *
+     * @param type Potion effect type
+     * @return The duration that MythicLib should be using to give player
+     *         "permanent" potion effects, depending on the potion effect type
+     */
+    public static int getPermanentEffectDuration(PotionEffectType type) {
+        return type.equals(PotionEffectType.NIGHT_VISION) || type.equals(VPotionEffectType.NAUSEA.get()) ? 260
+                : type.equals(PotionEffectType.BLINDNESS) ? 140 : 80;
     }
 
     @NotNull
@@ -86,6 +113,36 @@ public class UtilityMethods {
                                                        @NotNull EventPriority priority,
                                                        @NotNull Consumer<T> executor) {
         registerEvent(eventClass, PRIVATE_LISTENER, priority, executor, MythicLib.plugin, false);
+    }
+
+    private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
+        Set<EntityType> set = new HashSet<>();
+        for (String undeadEntityTypeCandidate : Arrays.asList(
+                "ZOMBIFIED_PIGLIN",
+                "SKELETON",
+                "STRAY",
+                "WITHER_SKELETON",
+                "ZOMBIE",
+                "DROWNED",
+                "HUSK",
+                "PIG_ZOMBIE",
+                "ZOMBIE_VILLAGER",
+                "PHANTOM",
+                "WITHER",
+                "SKELETON_HORSE",
+                "ZOMBIE_HORSE"
+        ))
+            try {
+                set.add(EntityType.valueOf(undeadEntityTypeCandidate));
+            } catch (Exception ignored) {
+                // Pass
+                MythicLib.plugin.getLogger().log(Level.INFO, "COuld not find entity type " + undeadEntityTypeCandidate);
+            }
+        return set;
+    });
+
+    public static boolean isUndead(@NotNull Entity entity) {
+        return UNDEAD_ENTITY_TYPES.get().contains(entity.getType());
     }
 
     /**
@@ -192,23 +249,17 @@ public class UtilityMethods {
         return item == null || item.getType() == Material.AIR;
     }
 
-    private final static char[] DELAY_CHARACTERS = {'m', 'h', 'd', 'm', 'y'};
-    private final static long[] DELAY_AMOUNTS = {60, 60 * 60, 60 * 60 * 24, 60 * 60 * 24 * 30, 60 * 60 * 24 * 30 * 365};
+    private static final DelayFormat DELAY_FORMAT_SECONDS = new DelayFormat("smhdMy");
+    private static final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
 
+    @Deprecated
     public static String formatDelay(long millis) {
+        return DELAY_FORMAT_MINUTES.format(millis);
+    }
 
-        if (millis < 1000 * 60) return "1m";
-
-        String format = "";
-        for (int j = DELAY_CHARACTERS.length - 1; j >= 0; j--) {
-            long divisor = DELAY_AMOUNTS[j] * 1000;
-            if (millis < divisor) continue;
-
-            format = (millis / divisor) + DELAY_CHARACTERS[j] + " " + format;
-            millis = millis % divisor;
-        }
-
-        return format;
+    @Deprecated
+    public static String formatDelay(long millis, boolean seconds) {
+        return (seconds ? DELAY_FORMAT_SECONDS : DELAY_FORMAT_MINUTES).format(millis);
     }
 
     private static final int PTS_PER_BLOCK = 10;
@@ -320,9 +371,9 @@ public class UtilityMethods {
 
         // Default value if any
         if (defaultValue != null) return Objects.requireNonNull(defaultValue.get(), "Null supplied default value");
-     
+
         // Error otherwise
-        throw new RuntimeException("Could not find enum field given candidates " + Arrays.asList(candidates));
+        throw new IllegalArgumentException("Could not find enum field given candidates " + Arrays.asList(candidates));
     }
 
     public static double getPlayerDefaultBaseValue(@NotNull Attribute attribute, @Nullable AttributeInstance instance) {
@@ -418,7 +469,17 @@ public class UtilityMethods {
     public static void closeOpenViewsOfType(Class<?> inventoryHolderClass) {
         for (Player online : Bukkit.getOnlinePlayers()) {
             final VInventoryView view = VersionUtils.getOpen(online);
-            if (inventoryHolderClass.isInstance(view.getTopInventory().getHolder())) view.close();
+            if (inventoryHolderClass.isInstance(getHolder(view.getTopInventory()))) view.close();
+        }
+    }
+
+    @Nullable
+    public static InventoryHolder getHolder(Inventory inventory) {
+        Validate.notNull(inventory, "Inventory cannot be null");
+        try {
+            return inventory.getHolder(false);
+        } catch (Throwable throwable) {
+            return inventory.getHolder();
         }
     }
 
@@ -624,34 +685,24 @@ public class UtilityMethods {
             plugin.getLogger().log(Level.INFO, colorPrefix + "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
     }
 
-    private static final int[] NEGATIVE_SPACE_AMOUNTS = {1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256, 512, 1024};
+    @Deprecated
+    public static String getFontSpace(int size) {
+        return getSpaceFont(size);
+    }
+
+    private static final int NEGATIVE_SPACE_BASE_CHAR = 0xD0000;
 
     /**
-     * Uses character convention from https://www.spigotmc.org/threads/negative-space-font-resource-pack.440952/
-     * Differs from the one given by https://github.com/AmberWat/NegativeSpaceFont
+     * Uses character convention from <a href="https://github.com/AmberWat/NegativeSpaceFont">this Github</a>
      *
-     * @param size Target size in pixels of negative space
+     * @param width Target width in pixels of positive/negative space
      * @return String containing negative font with given size
      */
     @NotNull
-    public static String getFontSpace(int size) {
-        Validate.isTrue(size < 2048 && size > -2048, "Size must be between -2050 and 2050");
-        if (size == 0) return "";
-
-        // Determine base char
-        final int BASE_CHAR = size < 0 ? 0xf801 : 0xf821;
-        if (size < 0) size = -size;
-
-        final StringBuilder built = new StringBuilder();
-        for (int i = 0; i < NEGATIVE_SPACE_AMOUNTS.length; i++) {
-            final int index = NEGATIVE_SPACE_AMOUNTS.length - 1 - i;
-            final int providedSize = NEGATIVE_SPACE_AMOUNTS[index];
-            if (size >= providedSize) {
-                size -= providedSize;
-                built.append((char) (BASE_CHAR + index));
-            }
-        }
-
-        return built.toString();
+    public static String getSpaceFont(int width) {
+        Validate.isTrue(width >= -8192 && width <= 8192, "Size must be between -8192 and 8192");
+        if (width == 0) return ""; // Easyyy
+        final int codePoint = NEGATIVE_SPACE_BASE_CHAR + width;
+        return new String(Character.toChars(codePoint));
     }
 }

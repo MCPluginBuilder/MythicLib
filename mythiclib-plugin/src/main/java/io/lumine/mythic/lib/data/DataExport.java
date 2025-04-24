@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.util.FileUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -15,11 +16,16 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
- * Used to export data from flat to SQL storage.
+ * Used to:
+ * - export data from flat to SQL storage.
+ * - apply changes to flat/SQL datafiles directly without needing the player to login.
  */
 public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataHolder> {
     private final SynchronizedDataManager<H, O> manager;
     private final CommandSender output;
+
+    @Nullable
+    private Runnable callback;
 
     /**
      * Amount of requests generated every batch
@@ -37,6 +43,10 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                       @NotNull CommandSender output) {
         this.manager = manager;
         this.output = output;
+    }
+
+    public void setCallback(@Nullable Runnable callback) {
+        this.callback = callback;
     }
 
     public boolean start(@NotNull Supplier<SynchronizedDataHandler<H, O>> source,
@@ -72,8 +82,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
         }
 
         final double timeEstimation = (double) playerIds.size() / BATCH_AMOUNT * BATCH_PERIOD / 20;
-        output.sendMessage("Exporting " + playerIds.size() + " player data(s).. See console for details");
-        output.sendMessage("Minimum Expected Time: " + DECIMAL_FORMAT.format(timeEstimation) + "s");
+        output.sendMessage("Processing " + playerIds.size() + " player data(s).. See console for details");
+        output.sendMessage("ETA: " + DECIMAL_FORMAT.format(timeEstimation) + "s");
 
         // Save player data
         new BukkitRunnable() {
@@ -96,7 +106,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                         sourceHandler.close();
                         targetHandler.close();
 
-                        manager.getOwningPlugin().getLogger().log(Level.WARNING, "Exported " + playerIds.size() + " player data(s) to SQL database. Total errors: " + errorCount);
+                        manager.getOwningPlugin().getLogger().log(Level.WARNING, "Processed " + playerIds.size() + " player data(s). Error Count: " + errorCount);
+                        if (callback != null) callback.run();
                         return;
                     }
 

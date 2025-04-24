@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@Deprecated
 public class MapWrapper<T, U> {
     private final Map<T, U> map = new HashMap<>();
 

@@ -9,6 +9,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class FixPlayerInteractEvent extends PlayerInteractEvent {
     public FixPlayerInteractEvent(@NotNull Player who) {
-        super(who, Action.LEFT_CLICK_AIR, null, null, BlockFace.EAST, EquipmentSlot.HAND, null);
+        super(who, Action.LEFT_CLICK_AIR, null, null, BlockFace.EAST, EquipmentSlot.HAND);
     }
 }

@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.api.explorer;
+package io.lumine.mythic.lib.util;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

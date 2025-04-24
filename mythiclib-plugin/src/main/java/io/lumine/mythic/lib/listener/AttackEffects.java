@@ -1,10 +1,12 @@
 package io.lumine.mythic.lib.listener;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.damage.DamageType;
+import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.Module;
+import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
 import io.lumine.mythic.lib.version.Sounds;
@@ -12,6 +14,7 @@ import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,20 +23,23 @@ import org.bukkit.event.Listener;
 
 import java.util.Random;
 
-public class AttackEffects implements Listener {
+@ModuleInfo(key = "attack_effects")
+public class AttackEffects extends Module implements Listener {
 
     // Critical strike configs
     private double weaponCritCooldown, skillCritCooldown;
 
     private static final Random RANDOM = new Random();
 
-    public AttackEffects() {
-        reload();
+    public AttackEffects(MMOPluginImpl plugin) {
+        super(plugin);
     }
 
-    public void reload() {
-        weaponCritCooldown = MythicLib.plugin.getConfig().getDouble("critical-strikes.weapon.cooldown", 3);
-        skillCritCooldown = MythicLib.plugin.getConfig().getDouble("critical-strikes.skill.cooldown", 3);
+    @Override
+    public void onEnable() {
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection("critical-strikes");
+        weaponCritCooldown = config.getDouble("weapon.cooldown", 3);
+        skillCritCooldown = config.getDouble("skill.cooldown", 3);
     }
 
     /**
@@ -49,7 +55,7 @@ public class AttackEffects implements Listener {
             event.getDamage().additiveModifier(stats.getStat(type.getOffenseStat()) / 100, type);
 
         // Apply undead damage
-        if (VersionWrapper.get().isUndead(event.getEntity()))
+        if (UtilityMethods.isUndead(event.getEntity()))
             event.getDamage().additiveModifier(stats.getStat("UNDEAD_DAMAGE") / 100);
 
         // Apply PvP or PvE damage, one of the two anyways.

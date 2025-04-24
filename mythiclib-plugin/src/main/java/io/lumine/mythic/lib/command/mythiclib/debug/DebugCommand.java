@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.command.mythiclib.debug;
 
 import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public class DebugCommand extends CommandTreeNode {
     public DebugCommand(CommandTreeNode parent) {
@@ -18,7 +19,7 @@ public class DebugCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 }

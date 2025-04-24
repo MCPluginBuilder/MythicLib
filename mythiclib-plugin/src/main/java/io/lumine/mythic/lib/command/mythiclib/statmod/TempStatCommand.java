@@ -14,7 +14,7 @@ public class TempStatCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 }

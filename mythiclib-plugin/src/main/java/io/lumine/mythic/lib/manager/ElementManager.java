@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.manager;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.element.Element;
-import io.lumine.mythic.lib.module.GeneralManager;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.util.ConfigFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 @ModuleInfo(key = "elements")
-public class ElementManager extends GeneralManager {
+public class ElementManager extends Module {
     private final Map<String, Element> mapped = new HashMap<>();
 
     public ElementManager(MMOPluginImpl plugin) {
@@ -32,12 +32,18 @@ public class ElementManager extends GeneralManager {
         mapped.put(element.getId(), element);
     }
 
-    public void reload(boolean clearBefore) {
-        if (clearBefore)
-            mapped.clear();
-        else
-            UtilityMethods.loadDefaultFile("", "elements.yml");
+    @Override
+    public void onReset() {
+        mapped.clear();
+    }
 
+    @Override
+    public void onEnable() {
+
+        // Load default file
+        UtilityMethods.loadDefaultFile("", "elements.yml");
+
+        // Load elements
         FileConfiguration config = new ConfigFile("elements").getConfig();
         for (String key : config.getKeys(false))
             try {

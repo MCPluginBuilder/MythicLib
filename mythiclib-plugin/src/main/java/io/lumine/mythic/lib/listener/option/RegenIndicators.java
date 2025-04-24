@@ -39,7 +39,7 @@ public class RegenIndicators extends GameIndicators {
 
         final String formattedNumber = formatNumber(event.getAmount());
         final String formattedDamage = font == null ? formattedNumber : font.format(formattedNumber);
-        final String indicatorMessage = getRaw().replace("#", formattedDamage);
+        final String indicatorMessage = getRaw().replace("{value}", formattedDamage);
         displayIndicator(entity, indicatorMessage, getIndicatorDirection(entity), IndicatorDisplayEvent.IndicatorType.REGENERATION);
     }
 

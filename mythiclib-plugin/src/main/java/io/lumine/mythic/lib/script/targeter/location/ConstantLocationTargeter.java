@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.targeter.location;
 
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.mechanic.shaped.HelixMechanic;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import org.bukkit.Location;
 
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Used by {@link HelixMechanic} to provide a default direction when none is given
- *
+ * <p>
  * This is never used by players and is used only internally
  */
 public class ConstantLocationTargeter extends LocationTargeter {

@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class StatsCommand extends CommandTreeNode {
     public StatsCommand(CommandTreeNode parent) {
@@ -14,7 +15,7 @@ public class StatsCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage("You can only use this command as a player");
             return CommandResult.FAILURE;

@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
@@ -14,7 +15,7 @@ public class VersionsCommand extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandSender sender, String[] args) {
 
         MythicLib.plugin.getLogger().log(Level.INFO, "Plugin versions:");
         for (Plugin plugin : Bukkit.getPluginManager().getPlugins())

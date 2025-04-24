@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -74,6 +75,14 @@ public class FileUtils {
         exploreFolderRecursively(getFile(plugin, path), fileAction);
     }
 
+    /**
+     * Prefer using the other method which allows to save multiple objects within the
+     * same configuration file. This method is mostly for YML syntax backwards compatibility.
+     *
+     * @see #loadObjectsFromFolder(Plugin, String, boolean, BiConsumer, String)
+     */
+    @Deprecated
+    @BackwardsCompatibility(version = "unspecified")
     public static void loadObjectsFromFolderRaw(@NotNull Plugin plugin,
                                                 @NotNull String path,
                                                 @NotNull Consumer<File> action,

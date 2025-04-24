@@ -1,10 +1,11 @@
-package io.lumine.mythic.lib.gui;
+package io.lumine.mythic.lib.gui.builtin;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.explorer.ChatInput;
-import io.lumine.mythic.lib.api.explorer.ItemBuilder;
+import io.lumine.mythic.lib.util.ChatInput;
+import io.lumine.mythic.lib.util.ItemBuilder;
 import io.lumine.mythic.lib.api.util.AltChar;
+import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Bukkit;
@@ -13,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.Inventory;
@@ -45,7 +47,7 @@ public class AttributeCreator extends PluginInventory {
     }
 
     @Override
-    public Inventory getInventory() {
+    public @NotNull Inventory getInventory() {
         Inventory inv = Bukkit.createInventory(this, 36, "Attribute Creation..");
 
         if (!legacy) {
@@ -70,7 +72,7 @@ public class AttributeCreator extends PluginInventory {
     }
 
     @Override
-    public void whenClicked(InventoryClickEvent event) {
+    public void onClick(InventoryClickEvent event) {
         event.setCancelled(true);
         if (!event.getInventory().equals(event.getClickedInventory()))
             return;
