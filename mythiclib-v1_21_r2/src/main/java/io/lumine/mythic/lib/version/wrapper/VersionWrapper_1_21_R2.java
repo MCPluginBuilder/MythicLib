@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
+
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
@@ -9,6 +10,8 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
+import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -23,15 +26,12 @@ import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -44,64 +44,22 @@ import org.bukkit.craftbukkit.v1_21_R2.block.CraftBlockType;
 import org.bukkit.craftbukkit.v1_21_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_1_21_R2 implements VersionWrapper {
+public class VersionWrapper_1_21_R2 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_21_R2() {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
-        final String stringUrl = textureValue.startsWith("http") ? textureValue : extractUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
-    }
-
-    private static final String URL_PREFIX = "\"url\":\"";
-    private static final String URL_SUFFIX = "\"";
-
-    private String extractUrl(String str) {
-        int start = str.indexOf(URL_PREFIX);
-        Validate.isTrue(start >= 0, "Could not find prefix in decoded skull value");
-        start += URL_PREFIX.length();
-        final int end = str.indexOf(URL_SUFFIX, start);
-        return str.substring(start, end);
     }
 
     @Override
@@ -444,8 +402,8 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper {
 
     @Override
     public void setSkullValue(Block block, String value) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        GameProfile profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
+        var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        var profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
         skull.setChanged();
@@ -480,8 +438,8 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper {
         if (player.getUniqueId().equals(uniqueId)) return;
 
         // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var gameProfile = handle.getGameProfile();
         try {
             final Field _id = gameProfile.getClass().getDeclaredField("id");
             _id.setAccessible(true);
@@ -495,11 +453,6 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper {
     }
 
     @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
-    }
-
-    @Override
     public AttributeModifier newAttributeModifier(NamespacedKey key, double amount, AttributeModifier.Operation operation) {
         return new AttributeModifier(key, amount, operation, EquipmentSlotGroup.ANY);
     }
@@ -509,62 +462,18 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper {
         return modifier.getKey().equals(key);
     }
 
-    private static class InventoryViewImpl implements VInventoryView {
-        private final InventoryView view;
-
-        InventoryViewImpl(InventoryView view) {
-            this.view = view;
-        }
-
-        @Override
-        public String getTitle() {
-            return view.getTitle();
-        }
-
-        @Override
-        public InventoryType getType() {
-            return view.getType();
-        }
-
-        @Override
-        public Inventory getTopInventory() {
-            return view.getTopInventory();
-        }
-
-
-        @Override
-        public Inventory getBottomInventory() {
-            return view.getBottomInventory();
-        }
-
-        @Override
-        public void setCursor(ItemStack actualCursor) {
-            view.setCursor(actualCursor);
-        }
-
-        @Override
-        public HumanEntity getPlayer() {
-            return view.getPlayer();
-        }
-
-        @Override
-        public void close() {
-            view.close();
-        }
-    }
-
     @Override
     public VInventoryView getView(InventoryEvent event) {
-        return new InventoryViewImpl(event.getView());
+        return new ModernInventoryViewImpl(event.getView());
     }
 
     @Override
     public VInventoryView getOpenInventory(Player player) {
-        return new InventoryViewImpl(player.getOpenInventory());
+        return new ModernInventoryViewImpl(player.getOpenInventory());
     }
 
     @Override
     public InventoryClickEvent newInventoryClickEvent(VInventoryView view, InventoryType.SlotType type, int slot, ClickType click, InventoryAction action) {
-        return new InventoryClickEvent(((InventoryViewImpl) view).view, type, slot, click, action);
+        return new InventoryClickEvent(((ModernInventoryViewImpl) view).view, type, slot, click, action);
     }
 }

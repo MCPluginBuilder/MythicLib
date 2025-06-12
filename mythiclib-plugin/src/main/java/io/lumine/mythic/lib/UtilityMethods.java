@@ -14,6 +14,7 @@ import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.*;
+import io.lumine.mythic.lib.version.api.GameProfile;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -199,7 +200,7 @@ public class UtilityMethods {
         }
     }
 
-    @Nullable
+    @NotNull
     public static ItemStack getHandItem(@NotNull LivingEntity entity, @NotNull org.bukkit.inventory.EquipmentSlot hand) {
         switch (hand) {
             case HAND:
@@ -221,8 +222,7 @@ public class UtilityMethods {
     }
 
     public static void setTextureValue(@NotNull SkullMeta meta, @NotNull String textureValue, @NotNull UUID uniqueId) {
-        final Object profile = VersionWrapper.get().newProfile(uniqueId, textureValue);
-        VersionWrapper.get().setProfile(meta, profile);
+        VersionWrapper.get().setProfile(meta, GameProfile.of(uniqueId, textureValue));
     }
 
     @Deprecated

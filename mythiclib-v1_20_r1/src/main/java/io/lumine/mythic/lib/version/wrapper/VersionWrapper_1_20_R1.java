@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.version.wrapper;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -10,6 +9,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -25,8 +25,6 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -42,16 +40,12 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 
-public class VersionWrapper_1_20_R1 implements VersionWrapper {
+public class VersionWrapper_1_20_R1 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_20_R1() {
@@ -70,40 +64,7 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
         return sound.name();
     }
 
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
 
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
-        final String stringUrl = extractUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
-    }
-
-    private static final String URL_PREFIX = "\"url\":\"";
-    private static final String URL_SUFFIX = "\"";
-
-    private String extractUrl(String str) {
-        int start = str.indexOf(URL_PREFIX);
-        Validate.isTrue(start >= 0, "Could not find prefix in decoded skull value");
-        start += URL_PREFIX.length();
-        final int end = str.indexOf(URL_SUFFIX, start);
-        return str.substring(start, end);
-    }
 
     @Override
     public boolean isGeneratorOutput(Material material) {
@@ -438,8 +399,8 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
 
     @Override
     public void setSkullValue(Block block, String value) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        GameProfile profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
+        var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        var profile = new com.mojang.authlib.GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();
@@ -474,8 +435,8 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
         if (player.getUniqueId().equals(uniqueId)) return;
 
         // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var gameProfile = handle.getGameProfile();
         try {
             final Field _id = gameProfile.getClass().getDeclaredField("id");
             _id.setAccessible(true);
@@ -486,11 +447,6 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     private static class InventoryViewImpl implements VInventoryView {

@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
-import com.mojang.authlib.GameProfile;
+
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.impl.LegacyGameProfileWrapper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -42,12 +43,11 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
-public class VersionWrapper_1_18_R2 implements VersionWrapper {
+public class VersionWrapper_1_18_R2 implements VersionWrapper, LegacyGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_18_R2() {
@@ -64,38 +64,6 @@ public class VersionWrapper_1_18_R2 implements VersionWrapper {
     @Override
     public String getSoundName(Sound sound) {
         return sound.name();
-    }
-
-    @Override
-    public Object getProfile(SkullMeta meta) {
-        try {
-            final Field profileField = meta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            final Object profile = profileField.get(meta);
-            profileField.setAccessible(false);
-            return profile;
-        } catch (NoSuchFieldException | IllegalAccessException exception) {
-            throw new IllegalArgumentException("Could not fetch skull profile:" + exception.getMessage());
-        }
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        try {
-            final Field profileField = meta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            profileField.set(meta, object);
-            profileField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException exception) {
-            throw new IllegalArgumentException("Could not apply skull profile:" + exception.getMessage());
-        }
-    }
-
-    @Override
-    public Object newProfile(UUID uniqueId, String textureValue) {
-        final GameProfile profile = new GameProfile(uniqueId, PLAYER_PROFILE_NAME);
-        profile.getProperties().put("textures", new Property("textures", textureValue));
-        return profile;
     }
 
     @Override
@@ -431,9 +399,8 @@ public class VersionWrapper_1_18_R2 implements VersionWrapper {
 
     @Override
     public void setSkullValue(Block block, String value) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle()
-                .getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        var profile = new com.mojang.authlib.GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();
@@ -468,8 +435,8 @@ public class VersionWrapper_1_18_R2 implements VersionWrapper {
         if (player.getUniqueId().equals(uniqueId)) return;
 
         // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var gameProfile = handle.getGameProfile();
         try {
             final Field _id = gameProfile.getClass().getDeclaredField("id");
             _id.setAccessible(true);
@@ -480,11 +447,6 @@ public class VersionWrapper_1_18_R2 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     private static class InventoryViewImpl implements VInventoryView {
