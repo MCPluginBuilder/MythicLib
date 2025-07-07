@@ -130,10 +130,10 @@ public class SkillManager extends Module {
         registerMechanic("apply_cooldown", ApplyCooldownMechanic::new, "apply_cd");
         registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
         registerMechanic("delay", DelayMechanic::new);
-        registerMechanic("dispatch_command", DispatchCommandMechanic::new);
+        registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
         registerMechanic("entity_effect", EntityEffectMechanic::new);
-        registerMechanic("lightning", config -> new LightningStrikeMechanic(config));
-        registerMechanic("script", config -> new ScriptMechanic(config), "skill", "cast");
+        registerMechanic("lightning", LightningStrikeMechanic::new);
+        registerMechanic("script", ScriptMechanic::new, "skill", "cast");
 
         registerMechanic("teleport", TeleportMechanic::new, "tp", "set_position", "set_pos", "setpos", "setposition", "set_location", "setlocation", "set_loc", "setloc", "move", "moveto", "move_to");
         registerMechanic("set_velocity", VelocityMechanic::new, "setvel", "set_vel", "setvelocity");
