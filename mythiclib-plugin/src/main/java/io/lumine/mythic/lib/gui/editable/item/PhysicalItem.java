@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.gui.editable.item;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
@@ -99,7 +100,7 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
             if (name != null) {
                 String rawName = preprocessName(inv, options.index(), name); // Preprocess
                 rawName = placeholders.apply(effectivePlayer, rawName); // Apply placeholders
-                rawName = ChatColor.translateAlternateColorCodes('&', rawName); // Color codes
+                rawName = MythicLib.plugin.parseColors(rawName); // Color codes
                 meta.setDisplayName(rawName); // Set
             }
 
@@ -115,7 +116,7 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
                 List<String> workLore = new ArrayList<>();
                 for (String line : lore) {
                     // Splitting the lines allows for internal placeholders to add line breaks
-                    String[] parsed = ChatColor.translateAlternateColorCodes('&', placeholders.apply(effectivePlayer, line)).split("\n");
+                    String[] parsed = MythicLib.plugin.parseColors(placeholders.apply(effectivePlayer, line)).split("\n");
                     for (String str : parsed) workLore.add(ChatColor.GRAY + str);
                 }
 
