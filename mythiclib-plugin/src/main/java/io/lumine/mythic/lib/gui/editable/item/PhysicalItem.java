@@ -71,6 +71,9 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
         return name;
     }
 
+    public void preprocessItem(@NotNull T inv, int index, @NotNull ItemStack item) {
+        // Nothing
+    }
 
     @Nullable
     public ItemStack getDisplayedItem(@NotNull T inv, int n) {
