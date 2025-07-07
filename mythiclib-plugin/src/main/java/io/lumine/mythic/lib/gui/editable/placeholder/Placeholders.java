@@ -29,8 +29,6 @@ public class Placeholders {
     @NotNull
     public String apply(@NotNull OfflinePlayer player, @NotNull String str) {
 
-        str = MythicLib.plugin.getPlaceholderParser().parse(player, str);
-
         // Apply internal placeholders
         int openIndex, closeIndex;
         while (((openIndex = str.indexOf("{")) != -1) && (closeIndex = str.substring(openIndex).indexOf("}")) != -1) {
@@ -38,6 +36,10 @@ public class Placeholders {
             final String value = parsePlaceholder(key);
             str = str.replace("{" + key + "}", value);
         }
+
+        // Only then apply PAPI external placeholders
+        // [BUGFIX] MMOCore has no self contained placeholders so it's safer to apply them first.
+        str = MythicLib.plugin.getPlaceholderParser().parse(player, str);
 
         return str;
     }
