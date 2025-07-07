@@ -99,8 +99,7 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
             // Display name
             if (name != null) {
                 String rawName = preprocessName(inv, options.index(), name); // Preprocess
-                rawName = placeholders.apply(effectivePlayer, rawName); // Apply placeholders
-                rawName = MythicLib.plugin.parseColors(rawName); // Color codes
+                rawName = placeholders.apply(effectivePlayer, rawName); // Apply placeholders (+ color codes)
                 meta.setDisplayName(rawName); // Set
             }
 
@@ -116,7 +115,7 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
                 List<String> workLore = new ArrayList<>();
                 for (String line : lore) {
                     // Splitting the lines allows for internal placeholders to add line breaks
-                    String[] parsed = MythicLib.plugin.parseColors(placeholders.apply(effectivePlayer, line)).split("\n");
+                    var parsed = placeholders.apply(effectivePlayer, line).split("\n");
                     for (String str : parsed) workLore.add(ChatColor.GRAY + str);
                 }
 
