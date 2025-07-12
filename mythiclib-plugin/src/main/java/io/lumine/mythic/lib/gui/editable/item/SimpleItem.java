@@ -5,11 +5,10 @@ import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
-import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * An inventory item that has no particular placeholder
@@ -18,8 +17,12 @@ import org.jetbrains.annotations.NotNull;
 public class SimpleItem<T extends GeneratedInventory> extends PhysicalItem<T> {
     private final Script script;
 
-    public SimpleItem(ConfigurationSection config) {
-        super(config);
+    public SimpleItem(@NotNull ConfigurationSection config) {
+        this(null, config);
+    }
+
+    public SimpleItem(@Nullable InventoryItem<T> parent, @NotNull ConfigurationSection config) {
+        super(parent, config);
 
         script = config.contains("on-click") ? MythicLib.plugin.getSkills().loadScript(config.get("on-click")) : null;
     }

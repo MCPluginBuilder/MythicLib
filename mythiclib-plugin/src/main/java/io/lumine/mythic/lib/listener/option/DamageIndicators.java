@@ -10,7 +10,6 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.util.CustomFont;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -34,6 +33,7 @@ import java.util.*;
 public class DamageIndicators extends GameIndicators {
     private final String skillIcon, weaponIcon, skillIconCrit, weaponIconCrit;
     private final boolean splitHolograms;
+    private final double minDamage;
 
     @Nullable
     private final CustomFont font, fontCrit;
@@ -46,6 +46,7 @@ public class DamageIndicators extends GameIndicators {
         this.skillIconCrit = config.getString("icon.skill.crit");
         this.weaponIconCrit = config.getString("icon.weapon.crit");
         this.splitHolograms = config.getBoolean("split-holograms");
+        this.minDamage = Math.max(config.getDouble("min_damage"), DamageMetadata.MINIMAL_DAMAGE);
 
         // Custom fonts
         if (config.getBoolean("custom-font.enabled")) {
@@ -59,8 +60,8 @@ public class DamageIndicators extends GameIndicators {
 
     @EventHandler
     public void displayIndicators(AttackUnregisteredEvent event) {
-        final Entity entity = event.getEntity();
-        if (event.getDamage().getDamage() < 2 * DamageMetadata.MINIMAL_DAMAGE) return;
+        final var entity = event.getEntity();
+        if (event.getDamage().getDamage() < minDamage) return;
 
         // Display no indicator around vanished player
         if (entity instanceof Player && UtilityMethods.isVanished((Player) entity)) return;

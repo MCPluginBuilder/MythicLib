@@ -14,12 +14,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class GeneratedInventory extends PluginInventory {
     private final EditableInventory editable;
     protected final String guiName;
 
     private final List<InventoryItem<?>> loaded = new ArrayList<>();
+
+    // TODO set to null when closing
+    protected Inventory lastOpened;
+
+    private int perPage = -1;
 
     public GeneratedInventory(Navigator navigator, EditableInventory editable) {
         super(navigator);
@@ -36,6 +44,37 @@ public abstract class GeneratedInventory extends PluginInventory {
     public EditableInventory getEditable() {
         return editable;
     }
+
+    //region Pagination
+
+    protected void enablePagination(int perPage) {
+        this.perPage = perPage;
+    }
+
+    public boolean hasPagination() {
+        return perPage >= 0;
+    }
+
+    /**
+     * Made to be overriden
+     *
+     * @see io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem
+     * @see io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem
+     */
+    // TODO remove and put in enablePagination as argument
+    public int getMaxPage() {
+        return 1;
+    }
+
+    public int getPageIndex(int offset) {
+        return (page - 1) * perPage + offset;
+    }
+
+    public int computeMaxPage(int contentSize) {
+        return Math.ceilDiv(Math.max(1, contentSize), perPage);
+    }
+
+    //endregion
 
     /**
      * @param function The item function, like 'next-page'
@@ -75,8 +114,9 @@ public abstract class GeneratedInventory extends PluginInventory {
         loaded.add(0, item);
     }
 
+    @NotNull
     @Override
-    public @NotNull Inventory getInventory() {
+    public Inventory getInventory() {
         /*
          * Very important, in order employer prevent ghost items, the loaded items map
          * must be cleared when the inventory is updated or open at least twice.
@@ -98,6 +138,8 @@ public abstract class GeneratedInventory extends PluginInventory {
             displayItem(inv, item); // Display item
         }
 
+        lastOpened = inv; // Store inventory for later
+
         return inv;
     }
 
@@ -113,13 +155,6 @@ public abstract class GeneratedInventory extends PluginInventory {
         }
     }
 
-    /**
-     * @see io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem
-     */
-    public int getMaxPage() {
-        return 1;
-    }
-
     @Override
     public void onClick(InventoryClickEvent event) {
         event.setCancelled(true);
@@ -128,6 +163,11 @@ public abstract class GeneratedInventory extends PluginInventory {
             final InventoryItem item = getBySlot(event.getSlot());
             if (item != null) item.onClick(this, event);
         }
+    }
+
+    @Override
+    public void onClose() {
+        lastOpened = null;
     }
 
     /**
@@ -155,5 +195,21 @@ public abstract class GeneratedInventory extends PluginInventory {
     @NotNull
     public String applyNamePlaceholders(String str) {
         return str;
+    }
+
+    public void asyncUpdate(InventoryItem<?> item, int n, ItemStack placed, Consumer<ItemStack> update) {
+        Bukkit.getScheduler().runTaskAsynchronously(MythicLib.plugin, () -> {
+            if (lastOpened == null) return;
+            update.accept(placed);
+            lastOpened.setItem(item.getSlots().get(n), placed);
+        });
+    }
+
+    public <T> void asyncUpdate(CompletableFuture<T> future, InventoryItem<?> item, int n, ItemStack placed, BiConsumer<T, ItemStack> update) {
+        future.thenAccept(t -> {
+            if (lastOpened == null) return;
+            update.accept(t, placed);
+            lastOpened.setItem(item.getSlots().get(n), placed);
+        });
     }
 }

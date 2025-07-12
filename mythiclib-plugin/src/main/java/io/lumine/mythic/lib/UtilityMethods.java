@@ -77,6 +77,7 @@ public class UtilityMethods {
         return vec.multiply(1d / Math.sqrt(normSquared));
     }
 
+    @Deprecated
     public static int getPageNumber(int elements, int perPage) {
         return Math.ceilDiv(Math.max(1, elements), perPage);
     }

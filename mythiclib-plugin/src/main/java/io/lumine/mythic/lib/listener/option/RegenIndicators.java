@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.listener.option;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.IndicatorDisplayEvent;
-import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.util.CustomFont;
+import io.lumine.mythic.lib.version.Attributes;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -17,29 +17,31 @@ import org.jetbrains.annotations.Nullable;
 public class RegenIndicators extends GameIndicators {
     @Nullable
     private final CustomFont font;
+    private final double minRegen;
 
     public RegenIndicators(ConfigurationSection config) {
         super(config);
 
-        font = config.getBoolean("custom-font.enabled") ? new CustomFont(config.getConfigurationSection("custom-font")) : null;
+        this.font = config.getBoolean("custom-font.enabled") ? new CustomFont(config.getConfigurationSection("custom-font")) : null;
+        this.minRegen = Math.max(config.getDouble("min_regen"), 0);
     }
 
     private static final double HEAL_EPSILON = 1e-3;
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void displayIndicators(EntityRegainHealthEvent event) {
-        Entity entity = event.getEntity();
+        var entity = event.getEntity();
         if (!(entity instanceof LivingEntity)
-                || event.getAmount() <= 0
+                || event.getAmount() <= minRegen
                 || ((LivingEntity) entity).getHealth() + HEAL_EPSILON > ((LivingEntity) entity).getAttribute(Attributes.MAX_HEALTH).getValue())
             return;
 
         // Display no indicator around vanished player
         if (entity instanceof Player && UtilityMethods.isVanished((Player) entity)) return;
 
-        final String formattedNumber = formatNumber(event.getAmount());
-        final String formattedDamage = font == null ? formattedNumber : font.format(formattedNumber);
-        final String indicatorMessage = getRaw().replace("{value}", formattedDamage);
+        final var formattedNumber = formatNumber(event.getAmount());
+        final var formattedDamage = font == null ? formattedNumber : font.format(formattedNumber);
+        final var indicatorMessage = getRaw().replace("{value}", formattedDamage);
         displayIndicator(entity, indicatorMessage, getIndicatorDirection(entity), IndicatorDisplayEvent.IndicatorType.REGENERATION);
     }
 

@@ -7,20 +7,19 @@ import io.lumine.mythic.lib.api.condition.type.LocationCondition;
 import io.lumine.mythic.lib.api.condition.type.MMOCondition;
 import org.bukkit.Location;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Needs a big rework
  */
 public class RegionCondition extends MMOCondition implements LocationCondition {
-    private final String region;
+    private final Set<String> applicables;
 
     public RegionCondition(MMOLineConfig config) {
         super(config);
 
         config.validateKeys("name");
-        this.region = config.getString("name");
+        this.applicables = new HashSet<>(Arrays.asList(config.getString("name").split(",")));
     }
 
     @Override
@@ -28,6 +27,9 @@ public class RegionCondition extends MMOCondition implements LocationCondition {
         List<String> regions = new ArrayList<>();
         WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery()
                 .getApplicableRegions(BukkitAdapter.adapt(location)).getRegions().forEach(region -> regions.add(region.getId()));
-        return regions.contains(region);
+
+        for (String region : regions)
+            if (this.applicables.contains(region)) return true;
+        return false;
     }
 }

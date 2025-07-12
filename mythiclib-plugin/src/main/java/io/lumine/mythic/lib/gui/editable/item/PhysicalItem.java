@@ -1,11 +1,13 @@
 package io.lumine.mythic.lib.gui.editable.item;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -24,101 +26,118 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
     private final Material material;
     private final String name;
     private final List<String> lore;
-    private final int modelData;
-    private final String customModelDataComponent;
+    private final int customModelDataInt;
+    private final String customModelDataString;
     private final NamespacedKey itemModel;
-    private final boolean hideFlags;
+    private final boolean hideFlags, hideTooltip;
 
     public PhysicalItem(@NotNull ConfigurationSection config) {
-        this(config, null);
+        this(null, config);
     }
 
-    public PhysicalItem(@NotNull ConfigurationSection config, @Nullable Material material) {
-        super(config);
+    public PhysicalItem(@Nullable InventoryItem<T> parent, @NotNull ConfigurationSection config) {
+        super(parent, config);
 
         this.id = config.getName();
-        this.material = material != null ? material : config.getString("item") != null ? Material.valueOf(UtilityMethods.enumName(config.getString("item"))) : Material.AIR;
+        this.material = config.getString("item") != null ? Material.valueOf(UtilityMethods.enumName(config.getString("item"))) : Material.DIRT;
         this.name = config.getString("name");
         this.lore = config.getStringList("lore");
         this.hideFlags = config.getBoolean("hide-flags");
-        this.modelData = config.getInt("custom-model-data");
-        this.customModelDataComponent = config.contains("custom-model-data-string") ? config.getString("custom-model-data-string") : null;
+        this.hideTooltip = config.getBoolean("hide-tooltip");
+        this.customModelDataInt = config.getInt("custom-model-data");
+        this.customModelDataString = config.contains("custom-model-data-string") ? config.getString("custom-model-data-string") : null;
         this.itemModel = config.contains("item-model") ? NamespacedKey.fromString(config.getString("item-model")) : null;
         this.texture = config.getString("texture");
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public Material getMaterial() {
-        return material;
-    }
-
-    public boolean hideFlags() {
-        return hideFlags;
-    }
-
-    public boolean hasName() {
-        return name != null;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasLore() {
-        return lore != null && !lore.isEmpty();
-    }
-
-    public List<String> getLore() {
-        return lore;
-    }
-
-    public int getModelData() {
-        return modelData;
+    /**
+     * Preprocesses item lore before PAPI placeholders, coloring
+     * are applied. Made to be overrided by subclasses.
+     */
+    public void preprocessLore(@NotNull T inv, int index, @NotNull List<String> lore) {
+        // Nothing
     }
 
     /**
-     * @param inv Generated inventory being opened by a fr.phoenix.mmoprofiles.contracts.player
-     * @param n   Some items are grouped, like the item 'stock' in the stock list
-     *            as they are multiple stocks employer display yet only ONE inventory item
-     *            gives the template. This is the index of the item being displayed.
+     * Preprocesses item name before applying PAPI placeholders and coloring.
+     * Made to be overrided by subclasses.
+     */
+    public String preprocessName(@NotNull T inv, int index, @NotNull String name) {
+        // Nothing
+        return name;
+    }
+
+    public void preprocessItem(@NotNull T inv, int index, @NotNull ItemStack item) {
+        // Nothing
+    }
+
+    @Nullable
+    public ItemStack getDisplayedItem(@NotNull T inv, int n) {
+        return getDisplayedItem(inv, ItemOptions.index(n));
+    }
+
+    /**
+     * @param inv     Generated inventory being opened by a player
+     * @param options Options when generating the item
      * @return Item that will be displayed in the generated inventory
      */
     @Nullable
-    public ItemStack getDisplayedItem(T inv, int n) {
-        Placeholders placeholders = getPlaceholders(inv, n);
-        ItemStack item = new ItemStack(material);
+    public ItemStack getDisplayedItem(T inv, ItemOptions options) {
+        Placeholders placeholders = getPlaceholders(inv, options.index());
+        OfflinePlayer effectivePlayer = getEffectivePlayer(inv, options.index());
+        ItemStack item = new ItemStack(options.material(material));
 
         // Meta can sometimes be null with AIR for instance)
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
 
-            if (hasName())
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', placeholders.apply(inv.getPlayer(), getName())));
-
-            if (hideFlags()) meta.addItemFlags(ItemFlag.values());
-
-            if (hasLore()) {
-                List<String> lore = new ArrayList<>();
-                for (String line : getLore()) {
-                    //Enables to have placeholders for a list of item. Color codes for the placeholders also (e.g player can introduce color codes in their input).
-                    String[] parsed = ChatColor.translateAlternateColorCodes('&', placeholders.apply(inv.getPlayer(), line)).split("\n");
-                    for (String str : parsed) {
-                        lore.add(ChatColor.GRAY + str);
-                    }
-                }
-                meta.setLore(lore);
+            // Display name
+            if (name != null) {
+                String rawName = preprocessName(inv, options.index(), name); // Preprocess
+                rawName = placeholders.apply(effectivePlayer, rawName); // Apply placeholders (+ color codes)
+                meta.setDisplayName(rawName); // Set
             }
 
-            if (modelData != 0) meta.setCustomModelData(getModelData());
+            // Hide flags
+            if (hideFlags) meta.addItemFlags(ItemFlag.values());
+            if (hideTooltip) meta.setHideTooltip(true);
+
+            // Lore
+            if (this.lore != null && !this.lore.isEmpty()) {
+                List<String> lore = new ArrayList<>(this.lore); // Clone
+                preprocessLore(inv, options.index(), lore); // Preprocess
+
+                List<String> workLore = new ArrayList<>();
+                for (String line : lore) {
+                    // Splitting the lines allows for internal placeholders to add line breaks
+                    var parsed = placeholders.apply(effectivePlayer, line).split("\n");
+                    for (String str : parsed) workLore.add(ChatColor.GRAY + str);
+                }
+
+                meta.setLore(workLore); // Set
+            }
+
+            // Custom model data integer
+            int customModelDataInt = options.customModelData(this.customModelDataInt);
+            if (customModelDataInt != 0) meta.setCustomModelData(customModelDataInt);
+
+            // Custom model data string
+            String customModelDataComponent = options.customModelDataString(customModelDataString);
             if (customModelDataComponent != null) {
                 CustomModelDataComponent comp = meta.getCustomModelDataComponent();
                 comp.setStrings(Collections.singletonList(customModelDataComponent));
                 meta.setCustomModelDataComponent(comp);
             }
+
+            // Item model
             if (itemModel != null) meta.setItemModel(itemModel);
+
+            // Skull texture
             if (texture != null && meta instanceof SkullMeta) UtilityMethods.setTextureValue((SkullMeta) meta, texture);
 
             item.setItemMeta(meta);

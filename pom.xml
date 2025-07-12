@@ -26,6 +26,8 @@
         <module>mythiclib-v1_21_r1</module>
         <module>mythiclib-v1_21_r2</module>
         <module>mythiclib-v1_21_r3</module>
+        <module>mythiclib-v1_21_r4</module>
+        <module>mythiclib-v1_21_r5</module>
         <module>mythiclib-vr</module>
     </modules>
 
@@ -64,8 +66,8 @@
                 <version>3.8.1</version>
                 <configuration>
                     <compilerArgument>-proc:none</compilerArgument>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
 

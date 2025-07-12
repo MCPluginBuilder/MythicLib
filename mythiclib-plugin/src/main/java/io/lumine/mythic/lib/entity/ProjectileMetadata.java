@@ -144,7 +144,7 @@ public class ProjectileMetadata extends TemporaryListener {
     /**
      * Will throw an error if it's not a custom bow
      *
-     * @return Damage of custom bow
+     * @return Custom bow damage
      */
     public double getDamage() {
         return shooter.getStat("ATTACK_DAMAGE") * damageMultiplier;

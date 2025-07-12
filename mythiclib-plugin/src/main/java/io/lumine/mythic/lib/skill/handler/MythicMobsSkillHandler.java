@@ -68,7 +68,7 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
         }
 
         fullPath.append(extraConfigPath);
-        return new MythicConfigImpl(fullPath.toString(), (FileConfiguration) section); // Inshallah
+        return new MythicConfigImpl(fullPath.toString(), section); // Inshallah
     }
 
     public String getInternalName() {

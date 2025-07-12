@@ -160,6 +160,7 @@ game-indicators:
   # provided in the wiki in order to remove the gray background
   damage:
     enabled: true
+    min_damage: 0.1 # Under 0.1 damage, no indicator will show
     decimal-format: '0.#'
     format: '{icon} &f{value}'
     custom-font:
@@ -211,6 +212,7 @@ game-indicators:
 
   # When an entity regens some health
   regen:
+    min_regen: 0.1 # Under 0.1 health regen, no indicator will show
     enabled: false
     decimal-format: '0.#'
     format: '&a+{value}'
