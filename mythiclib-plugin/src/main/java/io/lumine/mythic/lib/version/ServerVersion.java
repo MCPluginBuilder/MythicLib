@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.version;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHealIndicators;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
@@ -163,6 +164,16 @@ public class ServerVersion {
                 '}';
     }
 
+    //region Static methods
+
+    public static ServerVersion get() {
+        return MythicLib.plugin.getVersion();
+    }
+
+    //endregion
+
+    //region Deprecated
+
     @Deprecated
     public String getRevision() {
         return getCraftBukkitVersion();
@@ -196,4 +207,6 @@ public class ServerVersion {
     public boolean isBelowOrEqual(int... version) {
         return !isStrictlyHigher(version);
     }
+
+    //endregion
 }

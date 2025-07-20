@@ -20,6 +20,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.command.CommandMap;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
@@ -56,6 +57,14 @@ public class UtilityMethods {
 
     public static Location readLocation(@NotNull ConfigObject config) {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
+    }
+
+    public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
+        try {
+            return evaluate.apply(enumName(rawInput));
+        } catch (Throwable throwable) {
+            throw new RuntimeException(String.format(errorMessage, params));
+        }
     }
 
     /**
@@ -95,7 +104,7 @@ public class UtilityMethods {
      *
      * @param type Potion effect type
      * @return The duration that MythicLib should be using to give player
-     *         "permanent" potion effects, depending on the potion effect type
+     * "permanent" potion effects, depending on the potion effect type
      */
     public static int getPermanentEffectDuration(PotionEffectType type) {
         return type.equals(PotionEffectType.NIGHT_VISION) || type.equals(VPotionEffectType.NAUSEA.get()) ? 260
@@ -277,10 +286,10 @@ public class UtilityMethods {
     /**
      * @param loc Where we are looking for nearby entities
      * @return List of all entities surrounding a location. This method loops
-     *         through the 9 surrounding chunks and collect all entities from
-     *         them. This list can be cached and used multiple times in the same
-     *         tick for projectile based spells which need to run entity
-     *         checkups
+     * through the 9 surrounding chunks and collect all entities from
+     * them. This list can be cached and used multiple times in the same
+     * tick for projectile based spells which need to run entity
+     * checkups
      */
     public static List<Entity> getNearbyChunkEntities(Location loc) {
         final List<Entity> entities = new ArrayList<>();
@@ -559,6 +568,8 @@ public class UtilityMethods {
     }
 
     /**
+     * TODO rename this to screamingSnakeCase
+     *
      * @return Upper case string, with spaces and - replaced by _
      */
     public static String enumName(String str) {
@@ -570,8 +581,31 @@ public class UtilityMethods {
         return Tasks.sync(plugin, syncTask);
     }
 
+    @NotNull
+    public static <T extends Enum<?>> String kebabCase(T element) {
+        return element.name().toLowerCase().replace("_", "-");
+    }
+
+    @NotNull
+    public static String kebabCase(@NotNull String input) {
+        return input.toLowerCase().replace("_", "-").replace(" ", "-");
+    }
+
+    public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {
+        for (var value : values)
+            if (config.contains(value.toString())) return true;
+        return false;
+    }
+
+    public static <T extends Enum<?>> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull T[] enumValues, @NotNull Function<T, String> name) {
+        for (var value : enumValues)
+            if (config.contains(name.apply(value))) return true;
+        return false;
+    }
+
+    @Deprecated
     public static String ymlName(String str) {
-        return str.toLowerCase().replace("_", "-").replace(" ", "-");
+        return kebabCase(str);
     }
 
     /**
@@ -580,7 +614,7 @@ public class UtilityMethods {
      *
      * @param event Some damage event
      * @return The player, if this event is due to him. It is the player which
-     *         is taken into account when PvP is toggled on.
+     * is taken into account when PvP is toggled on.
      */
     @Nullable
     public static Player getPlayerDamager(EntityDamageByEntityEvent event) {
