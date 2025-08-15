@@ -194,7 +194,7 @@ public class IconOptions {
         if (object instanceof ConfigurationSection) {
             final var config = (ConfigurationSection) object;
             final var rawMaterial = config.getString("item", "BARRIER");
-            final var material = UtilityMethods.safeValueOf(Material::valueOf, rawMaterial, "Could not find material with ID '%s'", rawMaterial);
+            final var material = UtilityMethods.prettyValueOf(Material::valueOf, rawMaterial, "Could not find material with ID '%s'");
 
             // [Backwards compatibility] MMOCore 'model-data'
             final var customModelDataInt = config.getInt("custom-model-data", config.getInt("model-data"));

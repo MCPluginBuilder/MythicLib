@@ -52,6 +52,7 @@ import org.bukkit.profile.PlayerProfile;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -443,7 +444,8 @@ public class VersionWrapper_1_21_R4 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        GameProfile profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
+        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
+        GameProfile profile = new GameProfile(uuid, PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
         skull.setChanged();

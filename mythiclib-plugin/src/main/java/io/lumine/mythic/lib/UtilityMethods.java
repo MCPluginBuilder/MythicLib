@@ -59,11 +59,20 @@ public class UtilityMethods {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
     }
 
+    @Deprecated
     public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
         try {
             return evaluate.apply(enumName(rawInput));
         } catch (Throwable throwable) {
             throw new RuntimeException(String.format(errorMessage, params));
+        }
+    }
+
+    public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
+        try {
+            return evaluate.apply(enumName(rawInput));
+        } catch (Throwable throwable) {
+            throw new RuntimeException(String.format(errorMessage, rawInput));
         }
     }
 

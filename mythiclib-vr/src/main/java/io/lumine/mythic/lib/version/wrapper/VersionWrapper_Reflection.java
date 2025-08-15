@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -514,7 +515,8 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     public void setSkullValue(Block block, String value) {
         ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
         SkullBlockEntity skull = (SkullBlockEntity) nmsWorld.getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        GameProfile profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
+        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
+        GameProfile profile = new GameProfile(uuid, PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
         skull.setChanged();
