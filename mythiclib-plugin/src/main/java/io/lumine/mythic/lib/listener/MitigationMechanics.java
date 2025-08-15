@@ -78,7 +78,7 @@ public class MitigationMechanics extends Module implements Listener {
 
         // Dodging
         double dodgeRating = stats.getStat("DODGE_RATING") / 100;
-        if (RANDOM.nextDouble() < dodgeRating && !playerData.isOnCooldown(CooldownType.DODGE)) {
+        if (RANDOM.nextDouble() < dodgeRating && !playerData.getCooldownMap().isOnCooldown(CooldownType.DODGE)) {
 
             PlayerDodgeEvent mitigationEvent = new PlayerDodgeEvent(playerData, event.toBukkit());
             Bukkit.getPluginManager().callEvent(mitigationEvent);
@@ -86,7 +86,7 @@ public class MitigationMechanics extends Module implements Listener {
                 return;
 
             sendMessage(player, dodgeMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
-            playerData.applyCooldown(CooldownType.DODGE, calculateCooldown(dodgeDefaultCooldown, stats.getStat("DODGE_COOLDOWN_REDUCTION")));
+            playerData.getCooldownMap().applyCooldown(CooldownType.DODGE, calculateCooldown(dodgeDefaultCooldown, stats.getStat("DODGE_COOLDOWN_REDUCTION")));
             event.setCancelled(true);
             player.setNoDamageTicks(10);
             player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDER_DRAGON_FLAP, 2, 1);
@@ -98,14 +98,14 @@ public class MitigationMechanics extends Module implements Listener {
 
         // Parrying
         double parryRating = stats.getStat("PARRY_RATING") / 100;
-        if (RANDOM.nextDouble() < parryRating && !playerData.isOnCooldown(CooldownType.PARRY)) {
+        if (RANDOM.nextDouble() < parryRating && !playerData.getCooldownMap().isOnCooldown(CooldownType.PARRY)) {
 
             PlayerParryEvent mitigationEvent = new PlayerParryEvent(playerData, event.toBukkit());
             Bukkit.getPluginManager().callEvent(mitigationEvent);
             if (mitigationEvent.isCancelled())
                 return;
 
-            playerData.applyCooldown(CooldownType.PARRY, calculateCooldown(parryDefaultCooldown, stats.getStat("PARRY_COOLDOWN_REDUCTION")));
+            playerData.getCooldownMap().applyCooldown(CooldownType.PARRY, calculateCooldown(parryDefaultCooldown, stats.getStat("PARRY_COOLDOWN_REDUCTION")));
             event.setCancelled(true);
             player.setNoDamageTicks(10);
             sendMessage(player, parryMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
@@ -120,7 +120,7 @@ public class MitigationMechanics extends Module implements Listener {
 
         // Blocking
         double blockRating = stats.getStat("BLOCK_RATING") / 100;
-        if (RANDOM.nextDouble() < blockRating && !playerData.isOnCooldown(CooldownType.BLOCK)) {
+        if (RANDOM.nextDouble() < blockRating && !playerData.getCooldownMap().isOnCooldown(CooldownType.BLOCK)) {
 
             double blockPower = stats.getStat("BLOCK_POWER") / 100;
             PlayerBlockEvent mitigationEvent = new PlayerBlockEvent(playerData, event.toBukkit(), blockPower);
@@ -128,7 +128,7 @@ public class MitigationMechanics extends Module implements Listener {
             if (mitigationEvent.isCancelled())
                 return;
 
-            playerData.applyCooldown(CooldownType.BLOCK, calculateCooldown(blockDefaultCooldown, stats.getStat("BLOCK_COOLDOWN_REDUCTION")));
+            playerData.getCooldownMap().applyCooldown(CooldownType.BLOCK, calculateCooldown(blockDefaultCooldown, stats.getStat("BLOCK_COOLDOWN_REDUCTION")));
             sendMessage(player, blockMessage,
                     "damage", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getDamageBlocked()),
                     "power", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getPower() * 100.));

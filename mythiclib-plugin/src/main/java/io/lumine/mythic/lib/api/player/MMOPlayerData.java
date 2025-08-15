@@ -343,24 +343,6 @@ public class MMOPlayerData {
     }
 
     /**
-     * Used when damage mitigation or a crit occurs to apply cooldown
-     *
-     * @param cd    The type of mitigation
-     * @param value Mitigation cooldown in seconds
-     */
-    public void applyCooldown(CooldownType cd, double value) {
-        cooldownMap.applyCooldown(cd.name(), value);
-    }
-
-    /**
-     * @param cd Cooldown type
-     * @return If the mechanic is currently on cooldown for the player
-     */
-    public boolean isOnCooldown(CooldownType cd) {
-        return cooldownMap.isOnCooldown(cd.name());
-    }
-
-    /**
      * Cooldown maps centralize cooldowns in MythicLib for easier use.
      * Can be used for item cooldows, item abilities, MMOCore player
      * skills or any other external plugin
@@ -559,6 +541,22 @@ public class MMOPlayerData {
     public void triggerSkills(@NotNull TriggerType triggerType, @Nullable PlayerMetadata caster, @NotNull Iterable<PassiveSkill> skills, @Nullable Entity target, @Nullable AttackMetadata attack) {
         final TriggerMetadata meta = new TriggerMetadata(this, triggerType, caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand(), null, target, null, attack, caster);
         triggerSkills(meta, skills);
+    }
+
+    /**
+     * @deprecated CooldownType now extends CooldownObject
+     */
+    @Deprecated
+    public void applyCooldown(CooldownType cd, double value) {
+        cooldownMap.applyCooldown(cd.name(), value);
+    }
+
+    /**
+     * @deprecated CooldownType now extends CooldownObject
+     */
+    @Deprecated
+    public boolean isOnCooldown(CooldownType cd) {
+        return cooldownMap.isOnCooldown(cd.name());
     }
 
     //endregion
