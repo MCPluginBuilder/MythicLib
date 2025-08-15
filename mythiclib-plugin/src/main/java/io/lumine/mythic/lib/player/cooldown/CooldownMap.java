@@ -1,10 +1,12 @@
 package io.lumine.mythic.lib.player.cooldown;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CooldownMap {
     private final Map<String, CooldownInfo> map = new HashMap<>();
@@ -105,5 +107,14 @@ public class CooldownMap {
      */
     public void resetCooldown(String path) {
         map.remove(UtilityMethods.enumName(path));
+    }
+
+    @NotNull
+    public Set<String> getCooldownKeys() {
+        return this.map.keySet();
+    }
+
+    public void clearAllCooldowns() {
+        map.clear();
     }
 }
