@@ -2,25 +2,30 @@ package io.lumine.mythic.lib.message;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
+import io.lumine.mythic.lib.util.annotation.NotUsed;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-/*
- * TODO
+/**
+ * TODO centralize messages in MythicLib
+ *
+ * @deprecated Not used yet
  */
+@NotUsed
+@Deprecated
 public class ConfigMessage {
     private final String format;
     private final boolean actionBar;
+    private final int actionBarPriority = ActionBarPriority.NORMAL; // TODO
 
     @Nullable(value = "optional")
     private final SoundReader sound;
@@ -61,11 +66,11 @@ public class ConfigMessage {
         return actionBar;
     }
 
-    public void send(@NotNull Player player, @NotNull Object... toReplace) {
+    public void send(@NotNull MMOPlayerData player, @NotNull Object... toReplace) {
         send(player, null, toReplace);
     }
 
-    public void send(@NotNull Player player, @Nullable ChatColor colorPrefix, @NotNull Object... toReplace) {
+    public void send(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @NotNull Object... toReplace) {
 
         // Format message
         String message = this.format;
@@ -76,24 +81,16 @@ public class ConfigMessage {
         // Cast script if provided
         if (ranOnMessage != null) {
             Skill skill = new SimpleSkill(ranOnMessage);
-            skill.cast(MMOPlayerData.get(player), TriggerType.PLUGIN);
+            skill.cast(player, TriggerType.PLUGIN);
         }
 
         // Play sound
-        if (sound != null) sound.play(player);
+        if (sound != null) sound.play(player.getPlayer());
 
         // Send to action bar
-        if (actionBar) {
-            // TODO
-            if (MythicLib.plugin.getActionBarProvider() != null)
-                MythicLib.plugin.getActionBarProvider().registerMessage();
-            //if (Bukkit.getPluginManager().isPluginEnabled("MMOCore"))
-            //    PlayerData.get(player).setLastActivity(PlayerActivity.ACTION_BAR_MESSAGE);
-            VersionWrapper.get().sendActionBar(player, format);
-            MythicLib.plugin.getVersion().getWrapper().sendActionBar(player, message);
-        }
+        if (actionBar) player.getActionBar().show(actionBarPriority, format);
 
         // Send to chat
-        else player.sendMessage(message);
+        else player.getPlayer().sendMessage(message);
     }
 }

@@ -15,7 +15,6 @@ import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -85,7 +84,7 @@ public class MitigationMechanics extends Module implements Listener {
             if (mitigationEvent.isCancelled())
                 return;
 
-            sendMessage(player, dodgeMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
+            sendMessage(playerData, dodgeMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
             playerData.getCooldownMap().applyCooldown(CooldownType.DODGE, calculateCooldown(dodgeDefaultCooldown, stats.getStat("DODGE_COOLDOWN_REDUCTION")));
             event.setCancelled(true);
             player.setNoDamageTicks(10);
@@ -108,7 +107,7 @@ public class MitigationMechanics extends Module implements Listener {
             playerData.getCooldownMap().applyCooldown(CooldownType.PARRY, calculateCooldown(parryDefaultCooldown, stats.getStat("PARRY_COOLDOWN_REDUCTION")));
             event.setCancelled(true);
             player.setNoDamageTicks(10);
-            sendMessage(player, parryMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
+            sendMessage(playerData, parryMessage, "damage", MythicLib.plugin.getMMOConfig().decimal.format(event.getDamage().getDamage()));
             player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDER_DRAGON_FLAP, 2, 1);
             player.getWorld().spawnParticle(VParticle.EXPLOSION.get(), player.getLocation(), 16, 0, 0, 0, .06);
             if (parryKnockback > 0 && event.toBukkit() instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) event.toBukkit()).getDamager() instanceof LivingEntity) {
@@ -129,7 +128,7 @@ public class MitigationMechanics extends Module implements Listener {
                 return;
 
             playerData.getCooldownMap().applyCooldown(CooldownType.BLOCK, calculateCooldown(blockDefaultCooldown, stats.getStat("BLOCK_COOLDOWN_REDUCTION")));
-            sendMessage(player, blockMessage,
+            sendMessage(playerData, blockMessage,
                     "damage", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getDamageBlocked()),
                     "power", MythicLib.plugin.getMMOConfig().decimal.format(mitigationEvent.getPower() * 100.));
             event.getDamage().multiplicativeModifier(1 - mitigationEvent.getPower());
@@ -144,7 +143,7 @@ public class MitigationMechanics extends Module implements Listener {
         }
     }
 
-    private void sendMessage(Player player, String format, Object... placeholders) {
+    private void sendMessage(MMOPlayerData playerData, String format, Object... placeholders) {
         if (format == null || format.isEmpty())
             return;
 
@@ -152,10 +151,8 @@ public class MitigationMechanics extends Module implements Listener {
         for (int i = 0; i < placeholders.length; i += 2)
             format = format.replace("#" + placeholders[i].toString() + "#", placeholders[i + 1].toString());
 
-        if (actionBarMessage)
-            VersionWrapper.get().sendActionBar(player, format);
-        else
-            player.sendMessage(format);
+        if (actionBarMessage) playerData.getActionBar().show(format);
+        else playerData.getPlayer().sendMessage(format);
     }
 
     /**
