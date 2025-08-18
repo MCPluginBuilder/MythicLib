@@ -4,6 +4,7 @@ package io.lumine.mythic.lib.gui.editable.placeholder;
 import io.lumine.mythic.lib.MythicLib;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +33,9 @@ public class Placeholders {
         // Apply internal placeholders
         int openIndex, closeIndex;
         while (((openIndex = str.indexOf("{")) != -1) && (closeIndex = str.substring(openIndex).indexOf("}")) != -1) {
-            final String key = str.substring(openIndex + 1, openIndex + closeIndex);
-            final String value = parsePlaceholder(key);
-            str = str.replace("{" + key + "}", value);
+            final var key = str.substring(openIndex + 1, openIndex + closeIndex);
+            final var value = parsePlaceholder(key);
+            if (value != null) str = str.replace("{" + key + "}", value);
         }
 
         // Only then apply PAPI external placeholders
@@ -44,8 +45,10 @@ public class Placeholders {
         return str;
     }
 
-    @NotNull
+    @Nullable
     public String parsePlaceholder(@NotNull String key) {
-        return placeholders.getOrDefault(key, "NotFound");
+        // [Bugfix] if placeholder is not retrieved, do NOT change it.
+        // Improves compatibility with PAPI math extension
+        return placeholders.get(key);
     }
 }
