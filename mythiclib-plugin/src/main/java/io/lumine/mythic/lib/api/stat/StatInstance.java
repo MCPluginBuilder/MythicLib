@@ -127,8 +127,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @Override
     public void registerModifier(@NotNull StatModifier modifier) {
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
-        if (modifier.equals(current)) return; // Safeguard, that should never happen tho
-
+        // TODO change "Closeable". add one interface Openable and have code run here instead. improved security.
+        // DO NOT TEST IF MODIFIER IS ALREADY IN THE MAP.
         if (current instanceof Closeable) ((Closeable) current).close();
         update();
     }
