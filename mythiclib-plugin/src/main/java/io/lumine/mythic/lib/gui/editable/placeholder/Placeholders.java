@@ -31,12 +31,24 @@ public class Placeholders {
     public String apply(@NotNull OfflinePlayer player, @NotNull String str) {
 
         // Apply internal placeholders
-        int openIndex, closeIndex;
-        while (((openIndex = str.indexOf("{")) != -1) && (closeIndex = str.substring(openIndex).indexOf("}")) != -1) {
-            final var key = str.substring(openIndex + 1, openIndex + closeIndex);
-            final var value = parsePlaceholder(key);
-            if (value != null) str = str.replace("{" + key + "}", value);
+        var sb = new StringBuilder(str);
+        int start = 0;
+        while (true) {
+            int begin = sb.indexOf("{", start);
+            if (begin == -1) break;
+            int end = sb.indexOf("}", begin + 1);
+            if (end == -1) break;
+
+            String key = sb.substring(begin + 1, end);
+            String value = parsePlaceholder(key);
+            if (value != null) {
+                sb.replace(begin, end + 1, value);
+                start = begin + value.length();
+            } else {
+                start = end + 1;
+            }
         }
+        str = sb.toString();
 
         // Only then apply PAPI external placeholders
         // [BUGFIX] MMOCore has no self contained placeholders so it's safer to apply them first.
