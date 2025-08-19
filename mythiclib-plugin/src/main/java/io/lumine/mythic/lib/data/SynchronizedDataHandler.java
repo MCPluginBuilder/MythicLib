@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.data;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,6 +21,11 @@ public interface SynchronizedDataHandler<H extends SynchronizedDataHolder, O ext
      * to initialize database tables, and make sure they are up to date.
      */
     public void setup();
+
+    /**
+     * Retrieves all existing player UUIDs from the database.
+     */
+    public List<UUID> retrieveAllPlayerIds();
 
     /**
      * Called when player data must be saved in database.

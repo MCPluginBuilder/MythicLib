@@ -1,19 +1,15 @@
 package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.util.FileUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * Used to:
@@ -60,11 +56,6 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
             return false;
         }
 
-        // Collect IDs from flat storage
-        final List<UUID> playerIds = Arrays.stream(FileUtils.getFile(manager.getOwningPlugin(), "userdata").listFiles())
-                .map(file -> UUID.fromString(file.getName().split("\\.", 2)[0]))
-                .collect(Collectors.toList());
-
         // Initialize fake SQL & YAML data provider
         final SynchronizedDataHandler<H, O> targetHandler;
         final SynchronizedDataHandler<H, O> sourceHandler;
@@ -81,6 +72,7 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
             return false;
         }
 
+        final var playerIds = sourceHandler.retrieveAllPlayerIds();
         final double timeEstimation = (double) playerIds.size() / BATCH_AMOUNT * BATCH_PERIOD / 20;
         output.sendMessage("Processing " + playerIds.size() + " player data(s).. See console for details");
         output.sendMessage("ETA: " + DECIMAL_FORMAT.format(timeEstimation) + "s");
