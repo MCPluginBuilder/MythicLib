@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.gui.editable.item;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.placeholder.EmptyPlaceholders;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
@@ -29,7 +30,7 @@ public class SimpleItem<T extends GeneratedInventory> extends PhysicalItem<T> {
 
     @Override
     public @NotNull Placeholders getPlaceholders(T inv, int n) {
-        return new Placeholders();
+        return new EmptyPlaceholders();
     }
 
     @Override

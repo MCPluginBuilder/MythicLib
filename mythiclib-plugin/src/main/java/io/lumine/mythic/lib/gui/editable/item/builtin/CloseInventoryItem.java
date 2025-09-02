@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.gui.editable.item.builtin;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.EmptyPlaceholders;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Sound;
@@ -21,7 +22,7 @@ public class CloseInventoryItem<T extends GeneratedInventory> extends PhysicalIt
 
     @Override
     public @NotNull Placeholders getPlaceholders(T inv, int n) {
-        return new Placeholders();
+        return new EmptyPlaceholders();
     }
 
     @Override

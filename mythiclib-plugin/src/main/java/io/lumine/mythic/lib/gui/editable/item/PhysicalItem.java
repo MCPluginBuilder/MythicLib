@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.gui.editable.item;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.gui.util.IconOptions;
@@ -11,7 +10,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,6 +44,10 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
         return id;
     }
 
+    public void preprocessMeta(@NotNull T inv, int index, @NotNull ItemMeta meta) {
+        // Nothing
+    }
+
     /**
      * Preprocesses item lore before PAPI placeholders, coloring
      * are applied. Made to be overrided by subclasses.
@@ -61,10 +63,6 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
     public String preprocessName(@NotNull T inv, int index, @NotNull String name) {
         // Nothing
         return name;
-    }
-
-    public void preprocessItem(@NotNull T inv, int index, @NotNull ItemStack item) {
-        // Nothing
     }
 
     @Nullable
@@ -87,6 +85,9 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
         // Meta can sometimes be null (when material is AIR)
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
+
+            // Preprocess item meta
+            preprocessMeta(inv, options.index(), meta);
 
             // Display name
             if (name != null) {

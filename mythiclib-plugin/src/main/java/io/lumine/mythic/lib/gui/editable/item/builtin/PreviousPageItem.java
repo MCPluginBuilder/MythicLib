@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.EmptyPlaceholders;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Sounds;
@@ -30,7 +31,7 @@ public class PreviousPageItem<T extends GeneratedInventory> extends PhysicalItem
 
     @Override
     public @NotNull Placeholders getPlaceholders(T inv, int n) {
-        return new Placeholders();
+        return new EmptyPlaceholders();
     }
 
     @Override
