@@ -29,6 +29,7 @@ public class PermissionMap extends ModifierMap<PermissionModifier> {
     }
 
     public void flushAttachment() {
+        if (attachment != null) getPlayerData().getPlayer().removeAttachment(attachment);
         attachment = null;
     }
 

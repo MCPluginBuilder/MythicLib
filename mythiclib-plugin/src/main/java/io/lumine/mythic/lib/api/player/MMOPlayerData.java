@@ -16,12 +16,13 @@ import io.lumine.mythic.lib.player.potion.PermanentPotionEffectMap;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
+import io.lumine.mythic.lib.profile.ProfileMode;
+import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.util.MMOPlugin;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
@@ -45,31 +46,12 @@ public class MMOPlayerData {
     private final UUID entityId;
     private final boolean lookup;
 
-    @Nullable
-    private UUID profileId, officialId;
-
-    @Nullable
-    private Player player;
-
-    /**
-     * Last time the player either logged in or logged out.
-     */
-    private long lastLogActivity;
-
     /**
      * This fixes a very specific issue with recent versions of Spigot (1.19+).
      * Bukkit interact events are called when a player drops an item. In specific
      * scenarios, dropping an item triggers left-click abilities, which sucks.
      */
     public long lastDrop;
-
-    /**
-     * When logging in, MythicLib waits for all MMO plugins
-     * to fill in the empty player's StatMap before performing
-     * stat updates.
-     */
-    @Nullable
-    private List<MMOPlugin> pluginLoadQueue = new LinkedList<>();
 
     // Temporary player data
     private final CooldownMap cooldownMap = new CooldownMap();
@@ -95,6 +77,7 @@ public class MMOPlayerData {
     private MMOPlayerData(@NotNull Player player) {
         this.lookup = false;
         this.entityId = Objects.requireNonNull(player, "Player cannot be null").getUniqueId();
+        this.officialId = player.getUniqueId();
     }
 
     /**
@@ -108,7 +91,6 @@ public class MMOPlayerData {
         this.lookup = true;
         this.entityId = Objects.requireNonNull(uniqueId, "UUID cannot be null");
         this.officialId = uniqueId;
-        this.profileId = uniqueId;
     }
 
     /**
@@ -127,6 +109,92 @@ public class MMOPlayerData {
         return entityId;
     }
 
+    //region Player session
+
+    @Nullable
+    private Player player;
+    @Nullable
+    private String playerName;
+
+    /**
+     * Last time the player either logged in or logged out.
+     */
+    private long lastLogActivity;
+
+    /**
+     * @return The last time, in millis, the player logged in or out
+     */
+    public long getLastLogActivity() {
+        return lastLogActivity;
+    }
+
+    @NotNull
+    public String getPlayerName() {
+        return Objects.requireNonNull(playerName, "Player object never provided");
+    }
+
+    /**
+     * When a player logs off, MythicLib player data is temporarily saved
+     * for 24 hours before it is eventually flushed from memory.
+     */
+    private static final long TIME_OUT_MILLIS = 1000 * 60 * 60 * 24;
+
+    public boolean isTimedOut() {
+        return !isOnline() && lastLogActivity + TIME_OUT_MILLIS < System.currentTimeMillis();
+    }
+
+    /**
+     * This method simply checks if the cached Player instance is null
+     * because MythicLib uncaches it when the player leaves for memory purposes.
+     *
+     * @return If the player is currently online.
+     */
+    public boolean isOnline() {
+        return player != null;
+    }
+
+    /**
+     * Throws an exception if the player is currently not online
+     * OR if the Player object has not been provided yet.
+     * <p>
+     * MythicLib updates the Player instance on event priority LOW
+     * using {@link PlayerJoinEvent} in class {@link PlayerListener}
+     *
+     * @return Returns the corresponding Player instance.
+     */
+    @NotNull
+    public Player getPlayer() {
+        return Objects.requireNonNull(player, "Player is offline");
+    }
+
+    /**
+     * Caches a new Player instance and refreshes the last log activity.
+     * Provided player can be null if the player is disconnecting
+     *
+     * @param player Player instance to cache (null if logging off)
+     */
+    public void updatePlayer(@Nullable Player player) {
+        this.player = player;
+        if (player != null) this.playerName = player.getName();
+        this.lastLogActivity = System.currentTimeMillis();
+
+        // When logging off (called AFTER all MMO plugins)
+        if (player == null) {
+            permissionMap.flushAttachment();
+            statMap.flushCache();
+        }
+    }
+
+    //endregion
+
+    //region Profile session
+
+    @NotNull
+    private UUID officialId;
+
+    @NotNull
+    private ProfileSession profileSession = new ProfileSession(this);
+
     /**
      * This method will throw an error if the player hasn't chosen a profile
      * yet. It is also guaranteed to throw an error if proxy-based profiles
@@ -138,15 +206,12 @@ public class MMOPlayerData {
      */
     @NotNull
     public UUID getOfficialId() {
-        return Objects.requireNonNull(officialId, "No official ID provided");
+        return officialId;
     }
 
     public void setOfficialId(@NotNull UUID officialId) {
+        Validate.isTrue(MythicLib.plugin.getProfileMode() == ProfileMode.PROXY, "Player official IDs can only change in proxy profile mode");
         this.officialId = Objects.requireNonNull(officialId, "Official ID cannot be null");
-    }
-
-    public boolean hasOfficialId() {
-        return officialId != null;
     }
 
     /**
@@ -160,37 +225,44 @@ public class MMOPlayerData {
      */
     @NotNull
     public UUID getProfileId() {
-        return Objects.requireNonNull(profileId, "No profile has been chosen yet");
+        return profileSession.getProfileId();
     }
 
-    public void setProfileId(@Nullable UUID profileId) {
-        this.profileId = profileId;
+    public void invalidateProfileSession() {
+        Validate.isTrue(this.profileSession.isAlive(), "Internal error, kept a reference to invalidated profile session");
+        // Could be a non-ready profile session if the player logs off while loading data.
+        // Don't care.
+
+        this.profileSession.invalidate(); // Invalidate all references to this object
+        this.profileSession = new ProfileSession(this); // Construct new object
     }
 
     public boolean hasProfile() {
-        return profileId != null;
+        return profileSession.hasProfile();
     }
+
+    @NotNull
+    public ProfileSession getProfileSession() {
+        return profileSession;
+    }
+
+    public void startPlaying() {
+
+        // ONLY RAN FOR NON-LOOKUP PLAYER DATAS
+        if (lookup) return;
+
+        // Ran when all plugin data has finished loading
+        statMap.updateAll();
+    }
+
+    //endregion
 
     public boolean isLookup() {
         return lookup;
     }
 
     public boolean hasFullySynchronized() {
-        return pluginLoadQueue == null;
-    }
-
-    public void markAsSynchronized(@NotNull MMOPlugin plugin, @NotNull SynchronizedDataHolder holder) {
-        Validate.notNull(pluginLoadQueue, "Player is offline or MMO player data already synchronized");
-        Validate.isTrue(pluginLoadQueue.remove(plugin), "Player data already marked synchronized");
-
-        // Full MMO plugin synchronization
-        if (pluginLoadQueue.isEmpty()) {
-            pluginLoadQueue = null;
-            if (lookup) return;
-
-            // Ran when all plugin data has finished loading
-            statMap.updateAll();
-        }
+        return profileSession.isReady();
     }
 
     /**
@@ -240,6 +312,23 @@ public class MMOPlayerData {
         return actionBar;
     }
 
+    /**
+     * Cooldown maps centralize cooldowns in MythicLib for easier use.
+     * Can be used for item cooldows, item abilities, MMOCore player
+     * skills or any other external plugin
+     *
+     * @return The main player's cooldown map
+     */
+    @NotNull
+    public CooldownMap getCooldownMap() {
+        return cooldownMap;
+    }
+
+    @NotNull
+    public VariableList getVariableList() {
+        return variableList;
+    }
+
     @NotNull
     public Collection<PassiveSkill> isolateSkills(@NotNull TriggerMetadata triggerMetadata) {
         return triggerMetadata.getTriggerType().isActionHandSpecific() ? passiveSkillMap.isolateModifiers(triggerMetadata.getActionHand()) : passiveSkillMap.getModifiers();
@@ -275,92 +364,6 @@ public class MMOPlayerData {
         permEffectMap.applyPermanentPotionEffects();
     }
 
-    @NotNull
-    public VariableList getVariableList() {
-        return variableList;
-    }
-
-    /**
-     * @return The last time, in millis, the player logged in or out
-     */
-    public long getLastLogActivity() {
-        return lastLogActivity;
-    }
-
-    /**
-     * When a player logs off, the MythicLib player data is cached for
-     * an extra delay which is set to 24 hours before it is finally removed
-     * from the memory.
-     * <p>
-     * Cache time out is set to one full day. If the player does NOT reconnect
-     * after one day, the temporary player data will be completely lost.
-     */
-    private static final long CACHE_TIME_OUT = 1000 * 60 * 60 * 24;
-
-    public boolean isTimedOut() {
-        return !isOnline() && lastLogActivity + CACHE_TIME_OUT < System.currentTimeMillis();
-    }
-
-    /**
-     * This method simply checks if the cached Player instance is null
-     * because MythicLib uncaches it when the player leaves for memory purposes.
-     *
-     * @return If the player is currently online.
-     */
-    public boolean isOnline() {
-        return player != null;
-    }
-
-    /**
-     * Throws an IAE if the player is currently not online
-     * OR if the Player instance was not cached in yet.
-     * <p>
-     * MythicLib updates the Player instance on event priority LOW
-     * using {@link PlayerJoinEvent} here: {@link PlayerListener}
-     *
-     * @return Returns the corresponding Player instance.
-     */
-    @NotNull
-    public Player getPlayer() {
-        return Objects.requireNonNull(player, "Player is offline");
-    }
-
-    /**
-     * Caches a new Player instance and refreshes the last log activity.
-     * Provided player can be null if the player is disconnecting
-     *
-     * @param player Player instance to cache (null if logging off)
-     */
-    public void updatePlayer(@Nullable Player player) {
-        this.player = player;
-        this.lastLogActivity = System.currentTimeMillis();
-
-        // When logging in (called BEFORE all MMO plugins)
-        if (player != null) {
-            pluginLoadQueue = new ArrayList<>();
-            for (MMOPlugin mmoPlugin : MythicLib.plugin.getMMOPlugins())
-                if (mmoPlugin.hasData()) pluginLoadQueue.add(mmoPlugin);
-        }
-
-        // When logging off (called AFTER all MMO plugins)
-        else {
-            permissionMap.flushAttachment();
-            statMap.flushCache();
-        }
-    }
-
-    /**
-     * Cooldown maps centralize cooldowns in MythicLib for easier use.
-     * Can be used for item cooldows, item abilities, MMOCore player
-     * skills or any other external plugin
-     *
-     * @return The main player's cooldown map
-     */
-    @NotNull
-    public CooldownMap getCooldownMap() {
-        return cooldownMap;
-    }
-
     @Nullable
     public <T> T getExternalData(String key, Class<T> objectType) {
         final @Nullable Object found = externalData.get(key);
@@ -388,6 +391,8 @@ public class MMOPlayerData {
     public int hashCode() {
         return getUniqueId().hashCode();
     }
+
+    //region Static methods
 
     private static final Map<UUID, MMOPlayerData> PLAYER_DATA = new WeakHashMap<>();
 
@@ -494,7 +499,20 @@ public class MMOPlayerData {
         PLAYER_DATA.values().removeIf(MMOPlayerData::isTimedOut);
     }
 
+    //endregion
+
     //region Deprecated API
+
+    @Deprecated
+    public boolean hasOfficialId() {
+        return true;
+    }
+
+    @Deprecated
+    public void setProfileId(@Nullable UUID profileId) {
+        if (profileId == null) invalidateProfileSession();
+        else getProfileSession().applyProfileId(profileId);
+    }
 
     @Deprecated
     public long getLastLogin() {

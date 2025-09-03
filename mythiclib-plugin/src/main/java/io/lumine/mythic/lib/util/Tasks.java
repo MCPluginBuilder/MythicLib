@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Tasks {
     private static final List<Integer> ASYNC_SAFE_TASKS = new ArrayList<>();
@@ -157,5 +158,17 @@ public class Tasks {
      */
     public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
         return t -> Bukkit.getScheduler().runTask(plugin, () -> syncTask.accept(t));
+    }
+
+    /**
+     * Wraps a task inside a sync block to make sure the task runs
+     * in sync. Handy util when working with completable futures.
+     *
+     * @param plugin   Plugin performing the sync task
+     * @param syncTask Task to be performed sync
+     * @return Runnable wrapping another runnable in a sync block.
+     */
+    public static Runnable sync(@NotNull Plugin plugin, @NotNull Runnable syncTask) {
+        return () -> Bukkit.getScheduler().runTask(plugin, syncTask);
     }
 }

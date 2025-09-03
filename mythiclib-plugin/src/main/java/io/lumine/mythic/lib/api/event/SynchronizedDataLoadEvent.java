@@ -22,7 +22,7 @@ public class SynchronizedDataLoadEvent extends Event {
         this(manager, holder, null);
     }
 
-    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder, @NotNull Event profileEvent) {
+    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder, @Nullable Event profileEvent) {
         this.holder = holder;
         this.manager = manager;
         this.profileEvent = profileEvent;

@@ -33,6 +33,10 @@ public class Parameter {
     public static final Parameter STAT = new Parameter("stat", false, (explorer, list) -> {
         list.addAll(MythicLib.plugin.getStats().getRegisteredStats());
     });
+    public static final Parameter BOOLEAN = new Parameter("boolean", false, (explorer, list) -> {
+        list.add("true");
+        list.add("false");
+    });
 
     @Deprecated
     public Parameter(@NotNull String key, @NotNull BiConsumer<CommandTreeExplorer, List<String>> autoComplete) {

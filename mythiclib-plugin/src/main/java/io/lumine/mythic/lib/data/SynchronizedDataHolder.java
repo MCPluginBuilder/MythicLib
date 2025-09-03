@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.profile.ProfileMode;
 import io.lumine.mythic.lib.util.MMOPlugin;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,12 +23,6 @@ import java.util.UUID;
 public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     private final MMOPlayerData playerData;
     private final MMOPlugin mmoPlugin;
-
-    /**
-     * This boolean dictates whether the player data was loaded
-     * and if it can be saved again in the remote/local database.
-     */
-    private boolean sync;
 
     /**
      * @param mmoPlugin  If the plugin creating the player data is a profile plugin
@@ -66,7 +60,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     }
 
     /**
-     * @return The UUID used to save player data inside the database.
+     * @return The UUID used to save player data inside a database.
      */
     @NotNull
     public UUID getEffectiveId() {
@@ -74,31 +68,44 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         // No profiles => All IDs match
         if (MythicLib.plugin.getProfileMode() == null) return getUniqueId();
 
-        // Profile plugin => take official ID (if proxy-based profiles are enabled), unique ID otherwise (legacy profiles)
-        if (mmoPlugin.hasProfiles())
-            return playerData.hasOfficialId() ? getOfficialId() : getUniqueId();
+        // Profile plugin
+        if (mmoPlugin.hasProfiles()) {
+            // Proxy mode => take official Mojang ID
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) return getOfficialId();
+            // Legacy profiles, all UUIDs match, take entity ID
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY) return getUniqueId();
+            throw new RuntimeException("Unhandled profile mode");
+        }
 
         // Otherwise, take profile ID if it exists
+        // TODO validate a profile has been chosen??? #getUniqueID() should not be used
         return playerData.hasProfile() ? getProfileId() : getUniqueId();
+    }
+
+    public boolean isSessionReady() {
+        return playerData.getProfileSession().isReady(mmoPlugin);
+    }
+
+    public void markSessionReady() {
+        playerData.getProfileSession().markAsReady(mmoPlugin);
+    }
+
+    //region Deprecated
+
+    @Deprecated
+    public boolean isSynchronized() {
+        return isSessionReady();
+    }
+
+    @Deprecated
+    public void markAsSynchronized() {
+        markSessionReady();
     }
 
     @Deprecated
     public boolean shouldBeSaved() {
-        return isSynchronized();
+        return isSessionReady();
     }
 
-    /**
-     * @return If the synchronized data has already been loaded.
-     */
-    public boolean isSynchronized() {
-        return sync;
-    }
-
-    public void markAsSynchronized() {
-        Validate.isTrue(!sync, "Data holder already synchronized");
-        Validate.isTrue(playerData.isOnline() || playerData.isLookup(), "Cannot synchronize non-lookup offline player data");
-
-        sync = true;
-        playerData.markAsSynchronized(mmoPlugin, this);
-    }
+    //endregion
 }

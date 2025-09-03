@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.data.sql;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
+import io.lumine.mythic.lib.profile.ProfileSession;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     private final UUID effectiveId;
     private final String tableName, uuidFieldName;
     private final long start = System.currentTimeMillis();
+    private final ProfileSession session;
 
     private int tries;
 
@@ -58,6 +60,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
         this.playerData = playerData;
         this.dataSource = dataSource;
         this.effectiveId = playerData.getEffectiveId();
+        this.session = playerData.getMMOPlayerData().getProfileSession();
     }
 
     public H getData() {
@@ -88,8 +91,8 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
             UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Trying to load data of " + effectiveId);
             result = prepared.executeQuery(); // Freezes thread
 
-            // Check if player went offline
-            if (playerWentOffline()) {
+            // If player went offline
+            if (isInvalidated()) {
                 UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Stopped data retrieval as '" + effectiveId + "' went offline");
                 return false;
             }
@@ -128,7 +131,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
                 if (prepared != null) prepared.close();
                 if (connection != null) connection.close();
             } catch (SQLException exception) {
-                dataSource.getPlugin().getLogger().log(Level.WARNING, "Could not load player data of '" + effectiveId + "':");
+                dataSource.getPlugin().getLogger().log(Level.WARNING, "Error while loading player data of '" + effectiveId + "':");
                 exception.printStackTrace();
             }
         }
@@ -146,7 +149,11 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
         return success;
     }
 
-    private boolean playerWentOffline() {
+    private boolean isInvalidated() {
+
+        // Session should not be null 
+        if (session!=null && !session.isAlive()) return true;
+
         return !playerData.getMMOPlayerData().isLookup() && !playerData.getMMOPlayerData().isOnline();
     }
 

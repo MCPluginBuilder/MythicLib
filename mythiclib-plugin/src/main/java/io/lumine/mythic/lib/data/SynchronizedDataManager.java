@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.comp.profile.LegacyProfiles;
-import io.lumine.mythic.lib.comp.profile.ProfileMode;
+import io.lumine.mythic.lib.profile.LegacyProfiles;
+import io.lumine.mythic.lib.profile.ProfileMode;
 import io.lumine.mythic.lib.util.Autosaveable;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
@@ -221,13 +221,16 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             // No success, do nothing
             if (!success.get()) return;
 
+            // TODO SESSION CHECKS.
+            // TODO PROPER SESSION CHECKS
             // If player has logged off in the meantime, save data and do not complete
             if (!playerData.getMMOPlayerData().isLookup() && !playerData.getMMOPlayerData().isOnline()) {
                 saveData(playerData);
                 return;
             }
 
-            future.complete(null);
+            playerData.markSessionReady(); // Mark as ready
+            future.complete(null); // Complete future
         }));
         return future;
     }
@@ -258,7 +261,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Schedule data loading
         if (requiresSynchronizationOnLogin(playerData))
             loadData(playerData).thenAccept(Tasks.sync(owning, v -> {
-                playerData.markAsSynchronized();
                 Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData));
             }));
 

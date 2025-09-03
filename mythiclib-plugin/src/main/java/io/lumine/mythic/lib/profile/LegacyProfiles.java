@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.comp.profile;
+package io.lumine.mythic.lib.profile;
 
 import fr.phoenixdevt.profiles.ProfileDataModule;
 import fr.phoenixdevt.profiles.ProfileProvider;
@@ -27,8 +27,8 @@ public class LegacyProfiles implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void updateProfileId(ProfileSelectEvent event) {
-        MMOPlayerData.get(event.getPlayer()).setProfileId(event.getProfile().getUniqueId());
+    public void openProfileSession(ProfileSelectEvent event) {
+        MMOPlayerData.get(event.getPlayer()).getProfileSession().applyProfileId(event.getProfile().getUniqueId());
     }
 
     /**
@@ -58,7 +58,6 @@ public class LegacyProfiles implements Listener {
             else
                 manager.loadData(data).thenAccept(Tasks.sync(manager.getOwningPlugin(), v -> {
                     event.validate(module);
-                    data.markAsSynchronized();
                     Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, data, event));
                 }));
         }, manager.getOwningPlugin(), false);

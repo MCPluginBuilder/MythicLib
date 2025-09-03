@@ -6,15 +6,15 @@ public class MMOPlugin extends JavaPlugin {
 
     /**
      * Does this plugin store data? This determines if MythicLib
-     * must wait for this plugin to mark his data as synchronized
-     * before marking the MMOPlayerData instance as fully synchronized.
+     * must wait for this plugin to load their player data before
+     * MythicLib marks the player session as alive and ready.
      */
     public boolean hasData() {
         return true;
     }
 
     /**
-     * It is plugin a profile plugin
+     * @return If this plugin is a profile plugin
      */
     public boolean hasProfiles() {
         return false;

@@ -28,6 +28,7 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
 
     @Override
     public void saveData(@NotNull H playerData, boolean autosave) {
+        // TODO YML object is loaded in memory, useless
         final ConfigFile configFile = getUserFile(playerData);
         saveInSection(playerData, configFile.getConfig());
         configFile.save();
