@@ -54,7 +54,7 @@ public class LegacyProfiles implements Listener {
         // Load data on profile select
         UtilityMethods.registerEvent(ProfileSelectEvent.class, fictiveListener, joinEventPriority, event -> {
             final @NotNull H data = manager.get(event.getPlayer());
-            if (data.isSynchronized()) event.validate(module); // More resilience
+            if (data.isSessionReady()) event.validate(module); // More resilience
             else
                 manager.loadData(data).thenAccept(Tasks.sync(manager.getOwningPlugin(), v -> {
                     event.validate(module);

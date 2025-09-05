@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.profile;
+package io.lumine.mythic.lib.comp.profile;
 
 public enum ProfileMode {
 

@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.profile.LegacyProfiles;
-import io.lumine.mythic.lib.profile.ProfileMode;
+import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.util.Autosaveable;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
@@ -120,7 +120,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     public void autosave() {
         for (H holder : getLoaded())
-            if (holder.isSynchronized()) {
+            if (holder.isSessionReady()) {
                 if (holder instanceof Autosaveable) ((Autosaveable) holder).prepareSaving(true);
                 // TODO Batching
                 Tasks.runAsync(owning, () -> getDataHandler().saveData(holder, true));
@@ -188,7 +188,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
         // Save data SYNCHRONOUSLY of online players (not called with /restart)
         for (H holder : getLoaded())
-            if (holder.isSynchronized()) {
+            if (holder.isSessionReady()) {
                 if (holder instanceof Closeable) ((Closeable) holder).close();
                 getDataHandler().saveData(holder, false);
             }
@@ -237,7 +237,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     /**
      * @param playerData Player data to be saved.
-     * @return Completable future that completes when the data is loaded.
+     * @return Completable future that completes when the data is saved.
      */
     public CompletableFuture<Void> saveData(@NotNull H playerData) {
         return Tasks.runSafeAsync(owning, () -> dataHandler.saveData(playerData, false));
@@ -270,7 +270,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     private boolean requiresSynchronizationOnLogin(@NotNull H holder) {
 
         // Safety - should never happen
-        if (holder.isSynchronized()) return false;
+        if (holder.isSessionReady()) return false;
 
         // Profile plugins already require sync
         if (profilePlugin) return true;
@@ -298,14 +298,17 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player) {
+        Bukkit.broadcastMessage("Plugin " + owning.getName() + " unregistering data of " + player.getName());
         final H playerData = activeData.remove(player.getUniqueId());
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
         // Close and unregister data instantly if no error occurred
         if (playerData instanceof Closeable) ((Closeable) playerData).close();
 
+        Bukkit.broadcastMessage("session rdy = " + playerData.isSessionReady());
+
         // Save data if required
-        return playerData.isSynchronized() ? saveData(playerData) : CompletableFuture.completedFuture(null);
+        return playerData.isSessionReady() ? saveData(playerData) : CompletableFuture.completedFuture(null);
     }
 
     /**
@@ -328,6 +331,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         return activeData.values();
     }
 
+    //region Deprecated
+
     @Deprecated
     public void saveAll(boolean autosave) {
         if (autosave) autosave();
@@ -338,4 +343,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     public void unregisterSafely(H playerData) {
         unregister(playerData.getPlayer());
     }
+
+    //endregion
 }

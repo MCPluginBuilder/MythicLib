@@ -26,7 +26,7 @@ import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsAttackHandler;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHook;
 import io.lumine.mythic.lib.comp.placeholder.*;
 import io.lumine.mythic.lib.profile.LegacyProfiles;
-import io.lumine.mythic.lib.profile.ProfileMode;
+import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
 import io.lumine.mythic.lib.glow.GlowModule;
 import io.lumine.mythic.lib.glow.provided.MythicGlowModule;

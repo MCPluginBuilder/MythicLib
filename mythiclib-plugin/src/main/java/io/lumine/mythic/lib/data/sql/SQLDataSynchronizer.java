@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.data.sql;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
-import io.lumine.mythic.lib.profile.ProfileSession;
+import io.lumine.mythic.lib.profile.PlayerSession;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     private final UUID effectiveId;
     private final String tableName, uuidFieldName;
     private final long start = System.currentTimeMillis();
-    private final ProfileSession session;
+    private final PlayerSession session;
 
     private int tries;
 

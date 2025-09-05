@@ -37,7 +37,7 @@ public class SynchronizedDataLoadEvent extends Event {
     }
 
     public boolean syncIsFull() {
-        return holder.getMMOPlayerData().hasFullySynchronized();
+        return holder.getMMOPlayerData().hasStartedPlaying();
     }
 
     @NotNull

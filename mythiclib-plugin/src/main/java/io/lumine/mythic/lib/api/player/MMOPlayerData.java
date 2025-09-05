@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.api.player;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
+import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.listener.PlayerListener;
@@ -16,8 +17,7 @@ import io.lumine.mythic.lib.player.potion.PermanentPotionEffectMap;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
-import io.lumine.mythic.lib.profile.ProfileMode;
-import io.lumine.mythic.lib.profile.ProfileSession;
+import io.lumine.mythic.lib.profile.PlayerSession;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -193,7 +193,7 @@ public class MMOPlayerData {
     private UUID officialId;
 
     @NotNull
-    private ProfileSession profileSession = new ProfileSession(this);
+    private PlayerSession playerSession = new PlayerSession(this);
 
     /**
      * This method will throw an error if the player hasn't chosen a profile
@@ -225,25 +225,21 @@ public class MMOPlayerData {
      */
     @NotNull
     public UUID getProfileId() {
-        return profileSession.getProfileId();
+        return playerSession.getProfileId();
     }
 
-    public void invalidateProfileSession() {
-        Validate.isTrue(this.profileSession.isAlive(), "Internal error, kept a reference to invalidated profile session");
-        // Could be a non-ready profile session if the player logs off while loading data.
-        // Don't care.
-
-        this.profileSession.invalidate(); // Invalidate all references to this object
-        this.profileSession = new ProfileSession(this); // Construct new object
+    public void initialiazeNextProfileSession() {
+        Validate.isTrue(this.playerSession.isDead(), "Current profile session is still alive");
+        this.playerSession = new PlayerSession(this); // Construct new object
     }
 
     public boolean hasProfile() {
-        return profileSession.hasProfile();
+        return playerSession.hasProfile();
     }
 
     @NotNull
-    public ProfileSession getProfileSession() {
-        return profileSession;
+    public PlayerSession getProfileSession() {
+        return playerSession;
     }
 
     public void startPlaying() {
@@ -255,14 +251,14 @@ public class MMOPlayerData {
         statMap.updateAll();
     }
 
+    public boolean hasStartedPlaying() {
+        return playerSession.isReady();
+    }
+
     //endregion
 
     public boolean isLookup() {
         return lookup;
-    }
-
-    public boolean hasFullySynchronized() {
-        return profileSession.isReady();
     }
 
     /**
@@ -510,8 +506,14 @@ public class MMOPlayerData {
 
     @Deprecated
     public void setProfileId(@Nullable UUID profileId) {
-        if (profileId == null) invalidateProfileSession();
-        else getProfileSession().applyProfileId(profileId);
+        if (profileId == null) {
+            // anything to do here?
+        } else getProfileSession().applyProfileId(profileId);
+    }
+
+    @Deprecated
+    public boolean hasFullySynchronized() {
+        return hasStartedPlaying();
     }
 
     @Deprecated

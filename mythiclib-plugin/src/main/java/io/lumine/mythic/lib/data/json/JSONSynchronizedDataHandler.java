@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Jsonable;
 import io.lumine.mythic.lib.util.config.JsonFile;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +32,7 @@ public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHold
     public void saveData(@NotNull H playerData, boolean autosave) {
         // TODO json object is uselessly loaded into memory
         final JsonFile file = getUserFile(playerData);
+        Bukkit.broadcastMessage("Saving userdata of " + playerData.getMMOPlayerData().getPlayerName() +" for plugin "  +owning.getName());
         file.setContent(playerData.toJson());
         file.save();
     }

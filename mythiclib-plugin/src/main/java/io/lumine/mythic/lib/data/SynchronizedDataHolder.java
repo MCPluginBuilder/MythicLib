@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.profile.ProfileMode;
+import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.util.MMOPlugin;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -82,6 +82,11 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         return playerData.hasProfile() ? getProfileId() : getUniqueId();
     }
 
+    /**
+     * @return True if this particular player data has been successfully loaded
+     * from the database
+     * @see MMOPlayerData#hasStartedPlaying()
+     */
     public boolean isSessionReady() {
         return playerData.getProfileSession().isReady(mmoPlugin);
     }
