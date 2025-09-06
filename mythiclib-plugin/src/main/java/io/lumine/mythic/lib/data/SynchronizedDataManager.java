@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.profile.LegacyProfiles;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
+import io.lumine.mythic.lib.profile.LegacyProfiles;
 import io.lumine.mythic.lib.util.Autosaveable;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
@@ -191,6 +191,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             if (holder.isSessionReady()) {
                 if (holder instanceof Closeable) ((Closeable) holder).close();
                 getDataHandler().saveData(holder, false);
+                holder.markSessionClosed();
             }
 
         // Wait for completion of safe tasks
@@ -239,8 +240,13 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @param playerData Player data to be saved.
      * @return Completable future that completes when the data is saved.
      */
+    @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData) {
-        return Tasks.runSafeAsync(owning, () -> dataHandler.saveData(playerData, false));
+        Bukkit.broadcastMessage("saving data for plugin " + owning.getName() + " player " + playerData.getMMOPlayerData().getPlayerName() + ".....");
+        return Tasks.runSafeAsync(owning, () -> {
+            dataHandler.saveData(playerData, false);
+            playerData.markSessionClosed();
+        });
     }
 
     /**
@@ -278,14 +284,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // No profile plugin - sync like usual
         if (MythicLib.plugin.getProfileMode() == null) return true;
 
-        // Wait for the player to choose their profile
-        if (MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY) return false;
-
-        // Only if the player has chosen their profile
-        if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) return holder.getMMOPlayerData().hasProfile();
-
-        // Unhandled profile mode
-        throw new RuntimeException("Unhandled profile mode");
+        // Profile plugin detected => load if profile is provided!
+        // In proxy mode, profile is loaded right on login
+        // In legacy mode, depends on option "quit-profile-on-logout"
+        return holder.getMMOPlayerData().hasProfile();
     }
 
     /**
@@ -305,7 +307,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Close and unregister data instantly if no error occurred
         if (playerData instanceof Closeable) ((Closeable) playerData).close();
 
-        Bukkit.broadcastMessage("session rdy = " + playerData.isSessionReady());
+        Bukkit.broadcastMessage(playerData.getMMOPlayerData().getProfileSession().toString());
 
         // Save data if required
         return playerData.isSessionReady() ? saveData(playerData) : CompletableFuture.completedFuture(null);

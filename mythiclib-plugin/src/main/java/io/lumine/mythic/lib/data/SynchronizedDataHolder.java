@@ -95,6 +95,10 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         playerData.getProfileSession().markAsReady(mmoPlugin);
     }
 
+    public void markSessionClosed() {
+        playerData.getProfileSession().markAsClosed(mmoPlugin);
+    }
+
     //region Deprecated
 
     @Deprecated

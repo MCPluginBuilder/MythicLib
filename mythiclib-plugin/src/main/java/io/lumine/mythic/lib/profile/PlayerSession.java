@@ -44,14 +44,18 @@ public class PlayerSession {
      * of this session object
      */
     @NotNull
-    private final List<String> ready = new LinkedList<>();
-    private final int expectedReadyCount;
+    private final List<String> waiting = new LinkedList<>();
 
     public PlayerSession(@NotNull MMOPlayerData playerData) {
         this.playerData = playerData;
-        this.expectedReadyCount = MythicLib.plugin.getMMOPlugins().size();
+        initializeWaitingList();
 
         MythicLib.plugin.getLogger().log(Level.INFO, "====================== CREATING SESSION " + this.toString());
+    }
+
+    private void initializeWaitingList() {
+        for (var mmoPlugin : MythicLib.plugin.getMMOPlugins())
+            if (mmoPlugin.hasData()) this.waiting.add(mmoPlugin.getName());
     }
 
     @NotNull
@@ -88,28 +92,32 @@ public class PlayerSession {
     public boolean isReady(@NotNull MMOPlugin mmoPlugin) {
 
         // If session is globally ready, all plugins loaded their data
-        if (state == PlayerSessionState.READY) return true;
+        // If session is closing, means it was ready before.
+        if (state == PlayerSessionState.READY || state == PlayerSessionState.CLOSING) return true;
 
-        Bukkit.broadcastMessage(mmoPlugin.getName() + " :: " + this.state + " / " + this.ready);
-
-        return this.ready.contains(Objects.requireNonNull(mmoPlugin, "Plugin cannot be null").getName());
+        return !this.waiting.contains(Objects.requireNonNull(mmoPlugin, "Plugin cannot be null").getName());
     }
 
     public void startClosing() {
         Validate.isTrue(state == PlayerSessionState.READY, "Cannot close a non ready session");
 
+        Bukkit.broadcastMessage("========== START CLOSING SESSION");
+
         this.state = PlayerSessionState.CLOSING;
+        initializeWaitingList();
     }
 
     public void markAsClosed(@NotNull MMOPlugin mmoPlugin) {
         Validate.isTrue(mmoPlugin.hasData(), "This plugin has no data");
         Validate.isTrue(state == PlayerSessionState.CLOSING, "Session is not closing (in state " + this.state.name() + ")");
 
-        final var found = this.ready.remove(mmoPlugin.getName());
+        final var found = this.waiting.remove(mmoPlugin.getName());
         Validate.isTrue(found, String.format("Plugin data %s already marked as closed", mmoPlugin.getName()));
 
+        Bukkit.broadcastMessage("Marked as closed plugin " + mmoPlugin.getName() + " " + this.toString());
+
         // Wait for all plugins to load their data
-        if (!this.ready.isEmpty()) return;
+        if (!this.waiting.isEmpty()) return;
 
         ////////////////////////////////
         // Session invalidated
