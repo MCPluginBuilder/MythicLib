@@ -25,7 +25,6 @@ import io.lumine.mythic.lib.comp.formula.FormulaParser;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsAttackHandler;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHook;
 import io.lumine.mythic.lib.comp.placeholder.*;
-import io.lumine.mythic.lib.profile.LegacyProfiles;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
 import io.lumine.mythic.lib.glow.GlowModule;
@@ -40,8 +39,11 @@ import io.lumine.mythic.lib.listener.option.FixMovementSpeed;
 import io.lumine.mythic.lib.listener.option.HealthScale;
 import io.lumine.mythic.lib.listener.option.VanillaDamageModifiers;
 import io.lumine.mythic.lib.manager.*;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
-import io.lumine.mythic.lib.util.MMOPlugin;
+import io.lumine.mythic.lib.profile.listener.LegacyProfileListener;
+import io.lumine.mythic.lib.profile.listener.NoProfileListener;
+import io.lumine.mythic.lib.profile.listener.ProxyProfileListener;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -57,10 +59,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 
 public class MythicLib extends MMOPluginImpl {
@@ -392,8 +391,12 @@ public class MythicLib extends MMOPluginImpl {
         Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
         profileMode = ProfileMode.LEGACY;
 
-        Bukkit.getPluginManager().registerEvents(new LegacyProfiles(), this);
+        Bukkit.getPluginManager().registerEvents(new LegacyProfileListener(), this);
         getLogger().log(Level.INFO, "Hooked onto spigot-based ProfileAPI");
+    }
+
+    private void useNoProfiles() {
+        Bukkit.getPluginManager().registerEvents(new NoProfileListener(), this);
     }
 
     /**
@@ -403,16 +406,17 @@ public class MythicLib extends MMOPluginImpl {
         Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
         profileMode = ProfileMode.PROXY;
 
+        Bukkit.getPluginManager().registerEvents(new ProxyProfileListener(), this);
         getLogger().log(Level.INFO, "Hooked onto proxy-based ProfileAPI");
     }
 
     public boolean hasProfiles() {
-        return profileMode != null;
+        return profileMode != null && profileMode != ProfileMode.NONE;
     }
 
-    @Nullable
+    @NotNull
     public ProfileMode getProfileMode() {
-        return profileMode;
+        return Objects.requireNonNullElse(profileMode, ProfileMode.NONE);
     }
 
     @Deprecated

@@ -5,6 +5,8 @@ package io.lumine.mythic.lib.profile;
  */
 public enum PlayerSessionState {
 
+    INITIALIZED,
+
     /**
      * Player just logged in. If a profile plugin is installed,
      * the MMO plugins will NOT load data yet so player session
@@ -12,8 +14,8 @@ public enum PlayerSessionState {
      * <p>
      * Possible transitions:
      * - {@link #DEAD} if the player logs off before the player
-     * session as been marked {@link #READY}.
-     * - {@link #READY} if all MMO plugins successfully loaded their
+     * session as been marked {@link #OPEN}.
+     * - {@link #OPEN} if all MMO plugins successfully loaded their
      * data. For MythicLib the player has officially "started playing".
      */
     OPENING,
@@ -25,7 +27,7 @@ public enum PlayerSessionState {
      * Possible transitions:
      * - {@link #CLOSING} when the player logs off or switches profile.
      */
-    READY,
+    OPEN,
 
     /**
      * If the same player logs in again, they need to wait for

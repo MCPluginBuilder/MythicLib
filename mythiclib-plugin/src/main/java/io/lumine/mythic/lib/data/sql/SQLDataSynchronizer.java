@@ -152,7 +152,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     private boolean isInvalidated() {
 
         // Session should not be null 
-        if (session!=null && !session.isAlive()) return true;
+        if (session != null && session.isDead()) return true;
 
         return !playerData.getMMOPlayerData().isLookup() && !playerData.getMMOPlayerData().isOnline();
     }

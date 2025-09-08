@@ -4,5 +4,7 @@ public enum ProfileMode {
 
     LEGACY,
 
-    PROXY;
+    PROXY,
+
+    NONE
 }

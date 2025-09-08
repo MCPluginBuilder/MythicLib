@@ -31,13 +31,11 @@ public interface SynchronizedDataHandler<H extends SynchronizedDataHolder, O ext
      * Called when player data must be saved in database.
      *
      * @param playerData Player data to save
-     * @param autosave   When logging out, is_saved is switched back to 1. This behaviour
-     *                   must be skipped when autosaving otherwise this will mess with
-     *                   the database.
+     * @param reason     Reason of saving, behaviour might differ.
      * @implNote This method should be called async so there is no need
-     * to run async tasks inside of this method implementation.
+     *         to run async tasks inside of this method implementation.
      */
-    public void saveData(@NotNull H playerData, boolean autosave);
+    public void saveData(@NotNull H playerData, @NotNull SaveReason reason);
 
     /**
      * This method is always called ASYNC inside of a newly created thread. It should

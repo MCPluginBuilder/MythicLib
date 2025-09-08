@@ -33,7 +33,9 @@ public class PlayerListener implements Listener {
         final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
         if (playerData != null) {
             playerData.getStatMap().bufferUpdates();
-            if (playerData.hasStartedPlaying()) playerData.getProfileSession().startClosing();
+
+            // Start closing profile session on logout
+            if (playerData.hasStartedPlaying()) playerData.getProfileSession().startClosing(null);
         }
     }
 

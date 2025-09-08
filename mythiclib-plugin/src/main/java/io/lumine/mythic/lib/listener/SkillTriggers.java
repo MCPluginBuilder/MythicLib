@@ -99,15 +99,6 @@ public class SkillTriggers implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void login(PlayerJoinEvent event) {
-        // Most likely useless as data is loaded async after join event.
-        if (MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY) return;
-
-        final MMOPlayerData caster = MMOPlayerData.get(event.getPlayer());
-        caster.triggerSkills(new TriggerMetadata(caster, TriggerType.LOGIN));
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     private void shootBow(EntityShootBowEvent event) {
         final MMOPlayerData caster;
         if (event.getEntity() instanceof Player && (caster = MMOPlayerData.online((Player) event.getEntity())) != null) {

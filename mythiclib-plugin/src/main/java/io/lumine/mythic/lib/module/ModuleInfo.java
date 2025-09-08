@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.module;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ModuleInfo {
 

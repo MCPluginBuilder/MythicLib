@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class Tasks {
     private static final List<Integer> ASYNC_SAFE_TASKS = new ArrayList<>();

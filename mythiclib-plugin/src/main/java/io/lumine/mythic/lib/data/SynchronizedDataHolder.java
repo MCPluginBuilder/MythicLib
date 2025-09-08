@@ -3,7 +3,9 @@ package io.lumine.mythic.lib.data;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
-import io.lumine.mythic.lib.util.MMOPlugin;
+import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +25,8 @@ import java.util.UUID;
 public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     private final MMOPlayerData playerData;
     private final MMOPlugin mmoPlugin;
+
+    private boolean profileSessionReady;
 
     /**
      * @param mmoPlugin  If the plugin creating the player data is a profile plugin
@@ -66,10 +70,10 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     public UUID getEffectiveId() {
 
         // No profiles => All IDs match
-        if (MythicLib.plugin.getProfileMode() == null) return getUniqueId();
+        if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) return getUniqueId();
 
         // Profile plugin
-        if (mmoPlugin.hasProfiles()) {
+        if (mmoPlugin.isProfilePlugin()) {
             // Proxy mode => take official Mojang ID
             if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) return getOfficialId();
             // Legacy profiles, all UUIDs match, take entity ID
@@ -83,20 +87,42 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     }
 
     /**
+     * Called before the player data is autosaved to the database.
+     */
+    public void onAutosave() {
+        // Nothing by default
+    }
+
+    public void onClose(@NotNull SaveReason reason) {
+        // Nothing by default
+    }
+
+    /**
      * @return True if this particular player data has been successfully loaded
-     * from the database
+     *         from the database
      * @see MMOPlayerData#hasStartedPlaying()
      */
     public boolean isSessionReady() {
-        return playerData.getProfileSession().isReady(mmoPlugin);
+        if (mmoPlugin.isProfilePlugin()) {
+            return profileSessionReady;
+        }
+
+        return playerData.getProfileSession().isReady(mmoPlugin.getNamespacedKey());
     }
 
     public void markSessionReady() {
-        playerData.getProfileSession().markAsReady(mmoPlugin);
+        Bukkit.broadcastMessage("marking session ready for plugin " + mmoPlugin.getName() + " for player " + playerData.getPlayer().getName() + " :: " + mmoPlugin.getNamespacedKey() + " / " + mmoPlugin.isProfilePlugin());
+        if (mmoPlugin.isProfilePlugin()) {
+            Validate.isTrue(!this.profileSessionReady, "Profile session already ready");
+            this.profileSessionReady = true;
+            return;
+        }
+
+        playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
     }
 
     public void markSessionClosed() {
-        playerData.getProfileSession().markAsClosed(mmoPlugin);
+        playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
     }
 
     //region Deprecated

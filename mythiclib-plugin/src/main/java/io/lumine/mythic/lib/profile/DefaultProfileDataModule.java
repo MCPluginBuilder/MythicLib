@@ -3,11 +3,11 @@ package io.lumine.mythic.lib.profile;
 import fr.phoenixdevt.profiles.ProfileDataModule;
 import fr.phoenixdevt.profiles.event.ProfileCreateEvent;
 import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
+import io.lumine.mythic.lib.module.MMOPlugin;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,22 +22,24 @@ import org.jetbrains.annotations.NotNull;
  * @author Jules
  */
 public class DefaultProfileDataModule implements ProfileDataModule {
-    private final JavaPlugin plugin;
-    private final String id;
+    private final MMOPlugin plugin;
+    private final NamespacedKey namespacedKey;
 
-    public DefaultProfileDataModule(@NotNull JavaPlugin plugin) {
+    public DefaultProfileDataModule(@NotNull MMOPlugin plugin) {
         this.plugin = plugin;
-        this.id = UtilityMethods.enumName(plugin.getName()).toLowerCase();
+        this.namespacedKey = plugin.getNamespacedKey();
     }
 
+    @NotNull
     @Override
-    public JavaPlugin getOwningPlugin() {
+    public MMOPlugin getOwningPlugin() {
         return plugin;
     }
 
+    @NotNull
     @Override
-    public String getIdentifier() {
-        return id;
+    public NamespacedKey getNamespacedKey() {
+        return namespacedKey;
     }
 
     @EventHandler

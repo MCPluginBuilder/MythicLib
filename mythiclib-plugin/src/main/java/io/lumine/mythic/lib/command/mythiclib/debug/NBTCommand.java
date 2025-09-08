@@ -87,7 +87,7 @@ public class NBTCommand extends CommandTreeNode {
                         break;
                     case 9:
                         try {
-                            JsonElement json = MythicLib.plugin.getJson().parse(compound.get(tag).toString(), JsonElement.class);
+                            JsonElement json = MythicLib.plugin.getGson().fromJson(compound.get(tag).toString(), JsonElement.class);
                             if (json.isJsonNull()) nbtData.add("null_list", json.getAsJsonNull());
                             else if (json.isJsonPrimitive()) nbtData.add("primitive_list", json.getAsJsonPrimitive());
                             else if (json.isJsonArray()) nbtData.add("array_list", json.getAsJsonArray());
@@ -138,7 +138,7 @@ public class NBTCommand extends CommandTreeNode {
                         break;
                     case 8:
                         try {
-                            JsonElement json = MythicLib.plugin.getJson().parse(nbt.get(tag).toString(), JsonElement.class);
+                            JsonElement json = MythicLib.plugin.getGson().fromJson(nbt.get(tag).toString(), JsonElement.class);
                             if (json.isJsonNull()) nbtData.add("null_string", json.getAsJsonNull());
                             else if (json.isJsonPrimitive()) nbtData.add("string", json.getAsJsonPrimitive());
                             else if (json.isJsonArray()) nbtData.add("string_list", json.getAsJsonArray());
@@ -149,7 +149,7 @@ public class NBTCommand extends CommandTreeNode {
                         break;
                     case 9:
                         try {
-                            JsonElement json = MythicLib.plugin.getJson().parse(nbt.get(tag).toString(), JsonElement.class);
+                            JsonElement json = MythicLib.plugin.getGson().fromJson(nbt.get(tag).toString(), JsonElement.class);
                             if (json.isJsonNull()) nbtData.add("null_list", json.getAsJsonNull());
                             else if (json.isJsonPrimitive()) nbtData.add("primitive_list", json.getAsJsonPrimitive());
                             else if (json.isJsonArray()) nbtData.add("array_list", json.getAsJsonArray());

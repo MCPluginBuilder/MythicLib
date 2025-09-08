@@ -107,7 +107,7 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                         final UUID playerId = playerIds.get(index);
                         final H offlinePlayerData = manager.newPlayerData(new MMOPlayerData(playerId));
                         sourceHandler.loadData(offlinePlayerData);
-                        targetHandler.saveData(offlinePlayerData, false);
+                        targetHandler.saveData(offlinePlayerData, SaveReason.LOG_OUT);
                     } catch (RuntimeException exception) {
                         errorCount++;
                         exception.printStackTrace();

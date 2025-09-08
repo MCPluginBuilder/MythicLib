@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.data.yaml;
 
 import io.lumine.mythic.lib.data.OfflineDataHolder;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHandler;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.util.ConfigFile;
@@ -27,7 +28,7 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
     }
 
     @Override
-    public void saveData(@NotNull H playerData, boolean autosave) {
+    public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         // TODO YML object is loaded in memory, useless
         final ConfigFile configFile = getUserFile(playerData);
         saveInSection(playerData, configFile.getConfig());

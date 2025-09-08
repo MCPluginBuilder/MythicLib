@@ -17,6 +17,7 @@ import java.util.List;
  * depend on other modules to operate, and can be disabled/enabled
  * at runtime based on configuration files.
  */
+@Deprecated
 @NotUsed
 public abstract class Module {
     protected final MMOPluginImpl plugin;

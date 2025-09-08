@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.data.sql;
 
 import io.lumine.mythic.lib.data.OfflineDataHolder;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHandler;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +40,7 @@ public abstract class SQLSynchronizedDataHandler<H extends SynchronizedDataHolde
     }
 
     @Override
-    public abstract void saveData(@NotNull H playerData, boolean autosave);
+    public abstract void saveData(@NotNull H playerData, @NotNull SaveReason reason);
 
     @Override
     public void close() {

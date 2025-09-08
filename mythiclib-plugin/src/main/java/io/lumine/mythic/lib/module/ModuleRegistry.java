@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @NotUsed
+@Deprecated
 public class ModuleRegistry {
     private final Map<String, MMOPluginImpl> plugins = new HashMap<>();
     private final Map<String, Module> registry = new HashMap<>();
