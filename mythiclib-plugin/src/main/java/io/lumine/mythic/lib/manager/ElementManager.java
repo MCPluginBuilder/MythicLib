@@ -6,9 +6,8 @@ import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +43,7 @@ public class ElementManager extends Module {
         UtilityMethods.loadDefaultFile("", "elements.yml");
 
         // Load elements
-        FileConfiguration config = new ConfigFile("elements").getConfig();
+        var config = new YamlFile("elements").getContent();
         for (String key : config.getKeys(false))
             try {
                 register(new Element(config.getConfigurationSection(key)));
