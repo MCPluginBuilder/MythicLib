@@ -34,6 +34,10 @@ public abstract class ConfigFile<T> {
         this.content = Objects.requireNonNull(t, "Content cannot be null");
     }
 
+    public boolean exists() {
+        return file.exists();
+    }
+
     @NotNull
     public Plugin getPlugin() {
         return plugin;
@@ -64,7 +68,7 @@ public abstract class ConfigFile<T> {
 
         // File name
         Validate.notNull(fileName, "File name cannot be null");
-        builder.append(fileName);
+        builder.append("/").append(fileName);
 
         return builder.toString();
     }
