@@ -30,14 +30,14 @@ public class MultiLineChatMessage extends PlayerMessage {
     @Override
     public @NotNull ReadyMessage prepare(@Nullable ChatColor color, @Nullable Object... placeholders) {
         var list = new ArrayList<String>(this.rawFormat.size());
-        for (var line : rawFormat) list.add(this.parsePlaceholders(line, color, placeholders));
+        for (var line : rawFormat) list.add(this.parsePlaceholders(null, line, color, placeholders));
         return new Ready(list);
     }
 
     @Override
     protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @Nullable Object... placeholders) {
         for (var line : rawFormat)
-            this.sendPlayerMessage(player.getPlayer(), parsePlaceholders(line, colorPrefix, placeholders));
+            this.sendPlayerMessage(player.getPlayer(), parsePlaceholders(player.getPlayer(), line, colorPrefix, placeholders));
     }
 
     class Ready extends ReadyMessage {

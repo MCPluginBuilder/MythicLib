@@ -61,11 +61,14 @@ public abstract class PlayerMessage {
     @NotNull
     public abstract ReadyMessage prepare(@Nullable ChatColor color, @Nullable Object... placeholders);
 
-    protected String parsePlaceholders(@NotNull String input, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders) {
+    protected String parsePlaceholders(@Nullable Player player, @NotNull String input, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders) {
         // TODO improve?
 
         // Apply color prefix
         if (colorPrefix != null) input = colorPrefix + input;
+
+        // Apply PAPI placeholders
+        if (player != null) input = MythicLib.plugin.getPlaceholderParser().parse(player, input);
 
         // Parse placeholders
         for (int j = 0; j < placeholders.length; j += 2)

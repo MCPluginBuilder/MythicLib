@@ -25,12 +25,12 @@ public class SingleLineChatMessage extends PlayerMessage {
 
     @Override
     public @NotNull ReadyMessage prepare(@Nullable ChatColor color, @Nullable Object... placeholders) {
-        return new Ready(parsePlaceholders(rawFormat, color, placeholders));
+        return new Ready(parsePlaceholders(null, rawFormat, color, placeholders));
     }
 
     @Override
     protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @Nullable Object... placeholders) {
-        var parsed = parsePlaceholders(rawFormat, colorPrefix, placeholders);
+        var parsed = parsePlaceholders(player.getPlayer(), rawFormat, colorPrefix, placeholders);
         this.sendPlayerMessage(player.getPlayer(), parsed);
     }
 
