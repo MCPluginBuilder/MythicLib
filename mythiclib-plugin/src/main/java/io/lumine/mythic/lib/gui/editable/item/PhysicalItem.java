@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.gui.editable.item;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.gui.util.IconOptions;
@@ -8,10 +7,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,8 +20,6 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
     private final IconOptions iconOptions;
     private final String name;
     private final List<String> lore;
-    // TODO move these to class IconOptions
-    private final boolean hideFlags, hideTooltip;
 
     public PhysicalItem(@NotNull ConfigurationSection config) {
         this(null, config);
@@ -37,8 +32,6 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
         this.iconOptions = IconOptions.from(config);
         this.name = config.getString("name");
         this.lore = config.getStringList("lore");
-        this.hideFlags = config.getBoolean("hide-flags");
-        this.hideTooltip = config.getBoolean("hide-tooltip");
     }
 
     @NotNull
@@ -90,10 +83,6 @@ public abstract class PhysicalItem<T extends GeneratedInventory> extends Invento
                 rawName = placeholders.apply(effectivePlayer, rawName); // Apply placeholders (+ color codes)
                 meta.setDisplayName(rawName); // Set
             }
-
-            // Hide flags
-            if (hideFlags) meta.addItemFlags(ItemFlag.values());
-            if (hideTooltip) meta.setHideTooltip(true);
 
             // Apply icon options (custom model data, item model...)
             iconOptions.applyToItemMeta(meta);

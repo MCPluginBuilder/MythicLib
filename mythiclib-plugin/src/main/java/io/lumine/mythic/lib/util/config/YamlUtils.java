@@ -17,14 +17,37 @@ public class YamlUtils {
         return null;
     }
 
+    @Nullable
+    public static Integer getInteger(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getInt(candidate);
+        return null;
+    }
+
     public static int getInt(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         for (var candidate : candidates)
             if (config.contains(candidate)) return config.getInt(candidate);
         return 0;
     }
 
-    public static float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
-        return (float) getDouble(config, candidates);
+    @Nullable
+    public static Boolean getBoolean(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getBoolean(candidate);
+        return null;
+    }
+
+    public static boolean getBool(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getBoolean(candidate);
+        return false;
+    }
+
+    @Nullable
+    public static Float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return (float) config.getDouble(candidate);
+        return null;
     }
 
     public static double getDouble(@NotNull ConfigurationSection config, @NotNull String... candidates) {
