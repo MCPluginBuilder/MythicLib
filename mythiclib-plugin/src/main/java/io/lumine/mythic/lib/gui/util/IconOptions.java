@@ -202,8 +202,8 @@ public class IconOptions {
         // Read from config
         if (object instanceof ConfigurationSection) {
             final var config = (ConfigurationSection) object;
-            final var rawMaterial = config.getString("item", "BARRIER");
-            final var material = UtilityMethods.prettyValueOf(Material::valueOf, rawMaterial, "Could not find material with ID '%s'");
+            final var rawMaterial = YamlUtils.getString(config, "item", "material");
+            final var material = rawMaterial == null ? null : UtilityMethods.prettyValueOf(Material::valueOf, rawMaterial, "Could not find material with ID '%s'");
 
             // Mix of backwards compatibility and trying to be flexible
             // Inevitably messy so it's better to support everything even if it
