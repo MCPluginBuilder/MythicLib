@@ -17,6 +17,12 @@ public class YamlUtils {
         return null;
     }
 
+    public static int getInt(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getInt(candidate);
+        return 0;
+    }
+
     public static float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         return (float) getDouble(config, candidates);
     }

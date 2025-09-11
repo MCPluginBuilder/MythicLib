@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.gui.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.version.ServerVersion;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -197,11 +198,11 @@ public class IconOptions {
             final var material = UtilityMethods.prettyValueOf(Material::valueOf, rawMaterial, "Could not find material with ID '%s'");
 
             // [Backwards compatibility] MMOCore 'model-data'
-            final var customModelDataInt = config.getInt("custom-model-data", config.getInt("model-data"));
-            final var customModelDataString = config.getString("custom-model-data-string");
-            final var itemModelRaw = config.getString("model", config.getString("item-model"));
+            final var customModelDataInt = YamlUtils.getInt(config, "custom-model-data", "custom_model_data", "model-data", "cmd", "model_data");
+            final var customModelDataString = YamlUtils.getString(config, "custom-model-data-string", "custom_model_data_string", "cmd-string", "cmd_string", "cmds");
+            final var itemModelRaw = YamlUtils.getString(config, "model", "item_model", "item-model");
             final @Nullable var itemModel = itemModelRaw == null || itemModelRaw.isEmpty() ? null : NamespacedKey.fromString(itemModelRaw);
-            final var skullTexture = config.getString("texture", config.getString("skull-texture"));
+            final var skullTexture = YamlUtils.getString(config, "texture", "skull_texture", "skull-texture");
 
             return new IconOptions(material, toInteger(customModelDataInt), customModelDataString, itemModel, skullTexture);
         }
