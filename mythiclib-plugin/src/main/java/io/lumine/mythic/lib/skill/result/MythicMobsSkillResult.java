@@ -59,7 +59,7 @@ public class MythicMobsSkillResult implements SkillResult {
              */
         else targetLocations = List.of();
 
-        mmSkillMeta = new SkillMetadataImpl(SkillTriggers.API, caster, trigger, BukkitAdapter.adapt(skillMeta.getCaster().getPlayer().getEyeLocation()), targetEntities, targetLocations, 1);
+        mmSkillMeta = new SkillMetadataImpl(SkillTriggers.API, caster, trigger, BukkitAdapter.adapt(skillMeta.getCaster().getPlayer().getLocation()), targetEntities, targetLocations, 1);
 
         /*
          * All MMO skill metadata (stats, cast skill, modifiers.....) are
