@@ -41,9 +41,10 @@ import io.lumine.mythic.lib.listener.option.VanillaDamageModifiers;
 import io.lumine.mythic.lib.manager.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
-import io.lumine.mythic.lib.profile.listener.LegacyProfileListener;
-import io.lumine.mythic.lib.profile.listener.NoProfileListener;
-import io.lumine.mythic.lib.profile.listener.ProxyProfileListener;
+import io.lumine.mythic.lib.profile.handler.LegacyProfileHandler;
+import io.lumine.mythic.lib.profile.handler.NoProfileHandler;
+import io.lumine.mythic.lib.profile.handler.ProfileHandler;
+import io.lumine.mythic.lib.profile.handler.ProxyProfileHandler;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -86,6 +87,7 @@ public class MythicLib extends MMOPluginImpl {
     private PlaceholderParser placeholderParser;
     private GlowModule glowModule;
     private @Nullable ProfileMode profileMode;
+    private @Nullable ProfileHandler profileHandler;
 
     @Override
     public void onLoad() {
@@ -223,6 +225,9 @@ public class MythicLib extends MMOPluginImpl {
             getLogger().log(Level.INFO, "Hooked onto DualWield");
         }
 
+        // Force no profile mode
+        if (profileMode == null && !detectOneMMOProfilePlugin()) useNoProfiles();
+
         // Look for plugin dependency cycles
         final Stack<DependencyNode> dependencyCycle = new DependencyCycleCheck().checkCycle();
         if (dependencyCycle != null) {
@@ -289,6 +294,12 @@ public class MythicLib extends MMOPluginImpl {
         // Flush outdated data
         for (MMOPlayerData online : MMOPlayerData.getLoaded())
             online.getStatMap().flushCache();
+    }
+
+    private boolean detectOneMMOProfilePlugin() {
+        for (var mmoPlugin : mmoPlugins)
+            if (mmoPlugin.isProfilePlugin()) return true;
+        return false;
     }
 
     @Override
@@ -391,12 +402,16 @@ public class MythicLib extends MMOPluginImpl {
         Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
         profileMode = ProfileMode.LEGACY;
 
-        Bukkit.getPluginManager().registerEvents(new LegacyProfileListener(), this);
+        Bukkit.getPluginManager().registerEvents(this.profileHandler = new LegacyProfileHandler(), this);
         getLogger().log(Level.INFO, "Hooked onto spigot-based ProfileAPI");
     }
 
-    private void useNoProfiles() {
-        Bukkit.getPluginManager().registerEvents(new NoProfileListener(), this);
+    public void useNoProfiles() {
+        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
+        profileMode = ProfileMode.NONE;
+
+        Bukkit.getPluginManager().registerEvents(this.profileHandler = new NoProfileHandler(), this);
+        // No console log if no profile plugin installed
     }
 
     /**
@@ -406,17 +421,22 @@ public class MythicLib extends MMOPluginImpl {
         Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
         profileMode = ProfileMode.PROXY;
 
-        Bukkit.getPluginManager().registerEvents(new ProxyProfileListener(), this);
+        Bukkit.getPluginManager().registerEvents(this.profileHandler = new ProxyProfileHandler(), this);
         getLogger().log(Level.INFO, "Hooked onto proxy-based ProfileAPI");
     }
 
     public boolean hasProfiles() {
-        return profileMode != null && profileMode != ProfileMode.NONE;
+        return getProfileMode() != ProfileMode.NONE;
     }
 
     @NotNull
     public ProfileMode getProfileMode() {
-        return Objects.requireNonNullElse(profileMode, ProfileMode.NONE);
+        return Objects.requireNonNull(profileMode, "No profile mode");
+    }
+
+    @NotNull
+    public ProfileHandler getProfileHandler() {
+        return Objects.requireNonNull(profileHandler, "No profile handler");
     }
 
     @Deprecated

@@ -8,7 +8,6 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,7 +36,7 @@ public class PlayerSession {
     /**
      * State of player session.
      */
-    private PlayerSessionState state = PlayerSessionState.INITIALIZED;
+    private PlayerSessionState state = PlayerSessionState.INIT;
 
     @Nullable
     private Consumer<PlayerSession> onReadyCallback;
@@ -48,7 +47,6 @@ public class PlayerSession {
      * of this session object
      */
     private List<NamespacedKey> waiting;
-    private List<NamespacedKey> waitingSnapshot;
 
     public PlayerSession(@NotNull MMOPlayerData playerData) {
         this.playerData = playerData;
@@ -84,30 +82,31 @@ public class PlayerSession {
         if (state == PlayerSessionState.OPEN || state == PlayerSessionState.CLOSING) return true;
 
         // If session is not opened yet, no way it's ready
-        if (state == PlayerSessionState.INITIALIZED) return false;
+        if (state == PlayerSessionState.INIT) return false;
 
         return !this.waiting.contains(Objects.requireNonNull(key, "Key cannot be null"));
     }
 
-    public void startOpening(@Nullable UUID profileId,
-                             @Nullable NamespacedKey profilePluginNsk,
-                             @NotNull List<NamespacedKey> modules,
-                             @Nullable Consumer<PlayerSession> onReadyCallback) {
-        Validate.isTrue(this.state == PlayerSessionState.INITIALIZED, "Session already initialized");
+    private void checkInitialization() {
+        if (this.state != PlayerSessionState.INIT) return;
+        //Validate.isTrue(this.state == PlayerSessionState.INIT, "Session already initialized");
 
         this.state = PlayerSessionState.OPENING;
-        this.waiting = Objects.requireNonNull(modules, "Modules cannot be null");
-        this.waitingSnapshot = new ArrayList<>(modules);
-        this.onReadyCallback = onReadyCallback;
-        this.profileId = profileId;
+        this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
 
         Bukkit.broadcastMessage("========== START OPENING SESSION " + this.toString());
+    }
 
-        checkReadiness(); // In case there are no plugins
+    public void chooseProfile(@Nullable UUID profileId, @Nullable Consumer<PlayerSession> onReadyCallback) {
+        Validate.isTrue(this.profileId == null, "Profile already selected");
+
+        this.onReadyCallback = onReadyCallback;
+        this.profileId = profileId;
     }
 
     public void markAsReady(@NotNull NamespacedKey key) {
         Validate.isTrue(playerData.isOnline() || playerData.isLookup(), "Player went offline");
+        checkInitialization();
         Validate.isTrue(state == PlayerSessionState.OPENING, "Profile session not opening (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
@@ -128,7 +127,10 @@ public class PlayerSession {
         ////////////////////////////////
         this.state = PlayerSessionState.OPEN;
         this.playerData.startPlaying();
-        if (this.onReadyCallback != null) this.onReadyCallback.accept(this);
+        if (this.onReadyCallback != null) {
+            this.onReadyCallback.accept(this);
+            this.onReadyCallback = null;
+        }
 
         Bukkit.broadcastMessage("========= START PLAYING " + this.toString());
     }
@@ -137,7 +139,7 @@ public class PlayerSession {
         Validate.isTrue(state == PlayerSessionState.OPEN, "Cannot close a non ready session");
 
         this.state = PlayerSessionState.CLOSING;
-        this.waiting = waitingSnapshot;
+        this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
         this.onReadyCallback = onReadyCallback;
 
         Bukkit.broadcastMessage("========== START CLOSING SESSION " + toString());
@@ -171,7 +173,10 @@ public class PlayerSession {
         ////////////////////////////////
         this.state = PlayerSessionState.DEAD;
         this.playerData.initialiazeNextProfileSession();
-        if (this.onReadyCallback != null) this.onReadyCallback.accept(this);
+        if (this.onReadyCallback != null) {
+            this.onReadyCallback.accept(this);
+            this.onReadyCallback = null;
+        }
 
         Bukkit.broadcastMessage("========= SESSION INVALIDATED " + this.toString());
     }

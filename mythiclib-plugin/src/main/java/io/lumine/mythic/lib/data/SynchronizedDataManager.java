@@ -9,7 +9,6 @@ import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.module.MMOPlugin;
-import io.lumine.mythic.lib.profile.listener.LegacyProfileListener;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -160,18 +159,19 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SaveReason.LOG_OUT), owning, false);
 
         // ProfileAPI compatibility
-        if (!profilePlugin && MythicLib.plugin.hasProfiles()) {
+        if (MythicLib.plugin.hasProfiles()) {
             owning.getLogger().log(Level.INFO, "Hooked onto ProfileAPI");
 
             // Placeholders for MMOProfiles
             final ProfileProvider profilePlugin = Bukkit.getServicesManager().getRegistration(ProfileProvider.class).getProvider();
             final ProfileDataModule module = (ProfileDataModule) newProfileDataModule();
+
+            // Register profile data module
+            profilePlugin.registerModule(module);
+
+            // Register placeholders
             if (module instanceof PlaceholderProcessor)
                 profilePlugin.registerPlaceholders((PlaceholderProcessor) module);
-
-            // Support for legacy profiles
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY)
-                LegacyProfileListener.hook(profilePlugin, module, this, FICTIVE_LISTENER, joinEventPriority, quitEventPriority);
         }
     }
 
@@ -287,7 +287,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Safety - should never happen
         if (holder.isSessionReady()) return false;
 
-        // Profile plugins already require sync
+        // Profile plugins always require on-login sync
         if (profilePlugin) return true;
 
         // No profile plugin - sync like usual

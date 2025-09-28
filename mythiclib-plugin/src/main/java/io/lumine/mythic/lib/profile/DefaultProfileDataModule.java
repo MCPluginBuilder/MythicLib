@@ -3,8 +3,14 @@ package io.lumine.mythic.lib.profile;
 import fr.phoenixdevt.profiles.ProfileDataModule;
 import fr.phoenixdevt.profiles.event.ProfileCreateEvent;
 import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
+import fr.phoenixdevt.profiles.event.ProfileSelectEvent;
+import fr.phoenixdevt.profiles.event.ProfileUnloadEvent;
+import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.util.Tasks;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,19 +42,57 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         return plugin;
     }
 
-    @NotNull
     @Override
-    public NamespacedKey getNamespacedKey() {
+    public @NotNull NamespacedKey getId() {
         return namespacedKey;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @EventHandler
+    public void onProfileSelect(ProfileSelectEvent event) {
+        final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
+        final var playerData = manager.get(event.getPlayer());
+
+        manager.loadData(playerData).thenAccept(Tasks.sync(manager.getOwningPlugin(), v -> {
+            Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, playerData, event));
+        }));
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    @EventHandler
+    public void onProfileUnload(ProfileUnloadEvent event) {
+        final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
+
+        manager.unregister(event.getPlayer(), adapt(event.getReason()));
     }
 
     @EventHandler
     public void onProfileCreate(ProfileCreateEvent event) {
+        // Nothing is needed really
         event.validate(this);
     }
 
     @EventHandler
     public void onProfileDelete(ProfileRemoveEvent event) {
+        // TODO empty database
         event.validate(this);
+    }
+
+    /*
+    private boolean isLegacyProfileMode() {
+        return MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY;
+    }
+    */
+
+    @NotNull
+    private static SaveReason adapt(ProfileUnloadEvent.Reason reason) {
+        switch (reason) {
+            case QUIT_PROFILE:
+                return SaveReason.QUIT_PROFILE;
+            case LOG_OUT:
+                return SaveReason.LOG_OUT;
+            default:
+                throw new IllegalArgumentException("Cannot adapt reason " + reason);
+        }
     }
 }

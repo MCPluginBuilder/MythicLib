@@ -5,7 +5,7 @@ package io.lumine.mythic.lib.profile;
  */
 public enum PlayerSessionState {
 
-    INITIALIZED,
+    INIT,
 
     /**
      * Player just logged in. If a profile plugin is installed,
