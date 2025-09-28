@@ -236,8 +236,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
                 return;
             }
 
-            playerData.markSessionReady(); // Mark as ready
-            future.complete(null); // Complete future
+            // Complete sync
+            Bukkit.getScheduler().runTask(owning, () -> {
+                playerData.markSessionReady(); // Mark as ready
+                future.complete(null); // Complete future
+            });
         });
         return future;
     }
