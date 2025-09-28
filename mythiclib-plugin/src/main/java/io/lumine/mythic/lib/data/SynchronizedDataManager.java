@@ -159,7 +159,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SaveReason.LOG_OUT), owning, false);
 
         // ProfileAPI compatibility
-        if (MythicLib.plugin.hasProfiles()) {
+        if (!profilePlugin && MythicLib.plugin.hasProfiles()) {
             owning.getLogger().log(Level.INFO, "Hooked onto ProfileAPI");
 
             // Placeholders for MMOProfiles
@@ -237,7 +237,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             }
 
             // Complete sync
-            Bukkit.getScheduler().runTask(owning, () -> {
+            Tasks.runSync(owning, () -> {
+                playerData.onSessionReady();
                 playerData.markSessionReady(); // Mark as ready
                 future.complete(null); // Complete future
             });
@@ -252,12 +253,20 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         Bukkit.broadcastMessage("saving data for plugin " + owning.getName() + " player " + playerData.getMMOPlayerData().getPlayerName() + ".....");
-        return Tasks.runSafeAsync(owning, () -> {
-            MythicLib.plugin.getLogger().log(Level.INFO, "From plugin async save data of " + playerData.getMMOPlayerData().getPlayerName() + " :: " + playerData.getMMOPlayerData().getProfileSession().toString() + " " + playerData.isSessionReady());
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        Tasks.runAsync(owning, () -> {
+            MythicLib.plugin.getLogger().log(Level.INFO, "From plugin " + owning.getName() + " async save data of " + playerData.getMMOPlayerData().getPlayerName() + " :: " + playerData.getMMOPlayerData().getProfileSession().toString() + " " + playerData.isSessionReady());
+
+            // Save data
             dataHandler.saveData(playerData, reason);
-            playerData.markSessionClosed();
-            MythicLib.plugin.getLogger().log(Level.INFO, "Session marked closed");
+
+            // Complete sync
+            Tasks.runSync(owning, () -> {
+                playerData.markSessionClosed();
+                future.complete(null);
+            });
         });
+        return future;
     }
 
     /**
@@ -313,7 +322,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {
         Validate.isTrue(reason != SaveReason.AUTOSAVE, "Invalid save reason");
-        final H playerData = activeData.remove(player.getUniqueId());
+        final H playerData = reason == SaveReason.QUIT_PROFILE ? activeData.get(player.getUniqueId()) : activeData.remove(player.getUniqueId());
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
         // Close and unregister data instantly if no error occurred

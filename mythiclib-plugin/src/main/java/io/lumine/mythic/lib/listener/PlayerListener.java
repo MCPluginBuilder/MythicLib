@@ -35,7 +35,7 @@ public class PlayerListener implements Listener {
             playerData.getStatMap().bufferUpdates();
 
             // Start closing profile session on logout
-            if (playerData.hasStartedPlaying()) playerData.getProfileSession().startClosing(null);
+            if (playerData.hasStartedPlaying()) playerData.getProfileSession().startClosing();
         }
     }
 

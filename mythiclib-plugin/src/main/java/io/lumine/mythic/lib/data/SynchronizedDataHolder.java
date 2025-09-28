@@ -89,6 +89,10 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         // Nothing by default
     }
 
+    public void onSessionReady() {
+        // Nothing by default
+    }
+
     public void onClose(@NotNull SaveReason reason) {
         // Nothing by default
     }

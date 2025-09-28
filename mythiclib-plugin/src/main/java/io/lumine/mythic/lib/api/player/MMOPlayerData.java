@@ -24,6 +24,7 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -247,6 +248,8 @@ public class MMOPlayerData {
         // ONLY RAN FOR NON-LOOKUP PLAYER DATAS
         if (lookup) return;
 
+        Bukkit.broadcastMessage("======= PLAYER STARTED PLAYING");
+        Bukkit.broadcastMessage("Updating stats");
         statMap.updateAll(); // Ran when all plugin data has finished loading
         triggerSkills(new TriggerMetadata(this, TriggerType.LOGIN)); // Trigger on-join skills
     }

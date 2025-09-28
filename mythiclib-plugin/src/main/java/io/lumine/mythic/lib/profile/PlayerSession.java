@@ -8,11 +8,10 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 
 /**
  * One session object per player profile switch. When the player
@@ -38,8 +37,8 @@ public class PlayerSession {
      */
     private PlayerSessionState state = PlayerSessionState.INIT;
 
-    @Nullable
-    private Consumer<PlayerSession> onReadyCallback;
+    @NotNull
+    private final List<PlayerSessionCallback> callbacks = new ArrayList<>();
 
     /**
      * When logging in, MythicLib waits for all MMO plugins
@@ -50,8 +49,6 @@ public class PlayerSession {
 
     public PlayerSession(@NotNull MMOPlayerData playerData) {
         this.playerData = playerData;
-
-        MythicLib.plugin.getLogger().log(Level.INFO, "====================== CREATING SESSION " + this.toString());
     }
 
     @NotNull
@@ -63,6 +60,10 @@ public class PlayerSession {
         return this.profileId != null;
     }
 
+    /**
+     * @return If the player has started playing
+     * @see MMOPlayerData#hasStartedPlaying()
+     */
     public boolean isReady() {
         return state == PlayerSessionState.OPEN || state == PlayerSessionState.CLOSING;
     }
@@ -87,32 +88,39 @@ public class PlayerSession {
         return !this.waiting.contains(Objects.requireNonNull(key, "Key cannot be null"));
     }
 
-    private void checkInitialization() {
+    public void startOpening() {
         if (this.state != PlayerSessionState.INIT) return;
-        //Validate.isTrue(this.state == PlayerSessionState.INIT, "Session already initialized");
+
+        Bukkit.broadcastMessage("========== START OPENING SESSION " + this.toString());
 
         this.state = PlayerSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
-
-        Bukkit.broadcastMessage("========== START OPENING SESSION " + this.toString());
+        this.callbacks.clear();
     }
 
-    public void chooseProfile(@Nullable UUID profileId, @Nullable Consumer<PlayerSession> onReadyCallback) {
+    public void addCallback(@NotNull PlayerSessionCallback callback) {
+        Validate.notNull(callback, "Callback cannot be null");
+        Validate.isTrue(this.state == PlayerSessionState.OPENING || this.state == PlayerSessionState.CLOSING, "Cannot add callback to a non opening/closing session");
+
+        this.callbacks.add(callback);
+    }
+
+    public void chooseProfile(@Nullable UUID profileId) {
         Validate.isTrue(this.profileId == null, "Profile already selected");
 
-        this.onReadyCallback = onReadyCallback;
+        startOpening();
         this.profileId = profileId;
     }
 
-    public void markAsReady(@NotNull NamespacedKey key) {
+    public synchronized void markAsReady(@NotNull NamespacedKey key) {
         Validate.isTrue(playerData.isOnline() || playerData.isLookup(), "Player went offline");
-        checkInitialization();
+        startOpening();
         Validate.isTrue(state == PlayerSessionState.OPENING, "Profile session not opening (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already synced", key));
 
-        Bukkit.broadcastMessage("data loaded, marking as rdy plugin " + key);
+        Bukkit.broadcastMessage("data loaded, marking as rdy module " + key);
 
         checkReadiness(); // Check if all plugins have loaded their data
     }
@@ -122,37 +130,29 @@ public class PlayerSession {
         // Wait for all plugins to load their data
         if (!this.waiting.isEmpty()) return;
 
+        Bukkit.broadcastMessage("========= START PLAYING " + this.toString());
+
         ////////////////////////////////
         // Player can start playing
         ////////////////////////////////
         this.state = PlayerSessionState.OPEN;
         this.playerData.startPlaying();
-        if (this.onReadyCallback != null) {
-            this.onReadyCallback.accept(this);
-            this.onReadyCallback = null;
-        }
-
-        Bukkit.broadcastMessage("========= START PLAYING " + this.toString());
+        this.callbacks.forEach(callback -> callback.callback(this));
     }
 
-    public void startClosing(@Nullable Consumer<PlayerSession> onReadyCallback) {
+    public void startClosing() {
         Validate.isTrue(state == PlayerSessionState.OPEN, "Cannot close a non ready session");
+
+        Bukkit.broadcastMessage("========== START CLOSING SESSION " + toString());
 
         this.state = PlayerSessionState.CLOSING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
-        this.onReadyCallback = onReadyCallback;
-
-        Bukkit.broadcastMessage("========== START CLOSING SESSION " + toString());
+        this.callbacks.clear();
 
         checkClosed(); // In case there are no plugins
     }
 
-    public void setCallback(@NotNull Consumer<PlayerSession> onReadyCallback) {
-        Validate.isTrue(this.onReadyCallback == null, "Callback already set");
-        this.onReadyCallback = onReadyCallback;
-    }
-
-    public void markAsClosed(@NotNull NamespacedKey key) {
+    public synchronized void markAsClosed(@NotNull NamespacedKey key) {
         Validate.isTrue(state == PlayerSessionState.CLOSING, "Session is not closing (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
@@ -168,17 +168,16 @@ public class PlayerSession {
         // Wait for all plugins to store their data
         if (!this.waiting.isEmpty()) return;
 
+        Bukkit.broadcastMessage("========= SESSION INVALIDATED " + this.toString());
+
         ////////////////////////////////
         // Session invalidated
         ////////////////////////////////
-        this.state = PlayerSessionState.DEAD;
-        this.playerData.initialiazeNextProfileSession();
-        if (this.onReadyCallback != null) {
-            this.onReadyCallback.accept(this);
-            this.onReadyCallback = null;
-        }
-
-        Bukkit.broadcastMessage("========= SESSION INVALIDATED " + this.toString());
+        Bukkit.getScheduler().runTask(MythicLib.plugin, () -> {
+            this.state = PlayerSessionState.DEAD;
+            this.playerData.initialiazeNextProfileSession();
+            this.callbacks.forEach(callback -> callback.callback(this));
+        });
     }
 
     @Override
