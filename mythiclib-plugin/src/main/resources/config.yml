@@ -104,13 +104,9 @@ mitigation:
 
   # Edit mitigation messages here. Leave to blank for no message.
   message:
-
-    # Whether or not they should display on action bar instead of chat
-    action-bar: true
-
-    parry: '&cYou just parried #damage# damage.'
-    block: '&cYou just blocked #damage# damage.' # Use #power# to display block power.
-    dodge: '&cYou just dodged #damage# damage.'
+    parry: '&cYou just parried {damage} damage.'
+    block: '&cYou just blocked {damage} damage.' # Use {power} to display block power.
+    dodge: '&cYou just dodged {damage} damage.'
 
   block:
     cooldown: 5.0

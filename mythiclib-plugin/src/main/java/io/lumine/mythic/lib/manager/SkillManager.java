@@ -131,6 +131,7 @@ public class SkillManager extends Module {
         registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
         registerMechanic("delay", DelayMechanic::new);
         registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
+        registerMechanic("close_inventory", CloseInventoryMechanic::new, "close_inv");
         registerMechanic("entity_effect", EntityEffectMechanic::new);
         registerMechanic("lightning", LightningStrikeMechanic::new);
         registerMechanic("script", ScriptMechanic::new, "skill", "cast");

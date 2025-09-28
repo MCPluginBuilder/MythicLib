@@ -13,7 +13,7 @@ import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.VMaterial;
 import org.bukkit.Material;
@@ -46,7 +46,7 @@ public class StatManager extends Module {
         UtilityMethods.loadDefaultFile("", "stats.yml");
 
         // Register default stats
-        final ConfigurationSection statsConfig = new ConfigFile("stats").getConfig();
+        final var statsConfig = new YamlFile("stats").getContent();
 
         // Default stat handlers
         try {

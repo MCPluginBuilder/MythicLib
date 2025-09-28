@@ -590,6 +590,10 @@ public class UtilityMethods {
         return Tasks.sync(plugin, syncTask);
     }
 
+    public static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     @NotNull
     public static <T extends Enum<?>> String kebabCase(T element) {
         return element.name().toLowerCase().replace("_", "-");

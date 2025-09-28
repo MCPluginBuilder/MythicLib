@@ -15,7 +15,7 @@ public class ItemBuilder extends ItemStack {
 
         ItemMeta meta = getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-        meta.addItemFlags(ItemFlag.values());
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         setItemMeta(meta);
     }
 

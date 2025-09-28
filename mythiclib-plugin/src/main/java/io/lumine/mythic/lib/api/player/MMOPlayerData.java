@@ -114,7 +114,7 @@ public class MMOPlayerData {
     @Nullable
     private Player player;
     @Nullable
-    private String playerName;
+    private String lastPlayerName;
 
     /**
      * Last time the player either logged in or logged out.
@@ -130,7 +130,7 @@ public class MMOPlayerData {
 
     @NotNull
     public String getPlayerName() {
-        return Objects.requireNonNull(playerName, "Player object never provided");
+        return Objects.requireNonNull(lastPlayerName, "Player object never provided");
     }
 
     /**
@@ -175,7 +175,7 @@ public class MMOPlayerData {
      */
     public void updatePlayer(@Nullable Player player) {
         this.player = player;
-        if (player != null) this.playerName = player.getName();
+        if (player != null) this.lastPlayerName = player.getName();
         this.lastLogActivity = System.currentTimeMillis();
 
         // When logging off (called AFTER all MMO plugins)

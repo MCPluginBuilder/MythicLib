@@ -9,13 +9,13 @@ import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.players.PlayerData;
 import io.lumine.mythic.core.skills.SkillMetadataImpl;
 import io.lumine.mythic.core.skills.SkillTriggers;
+import io.lumine.mythic.core.utils.MythicUtil;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler;
-import io.lumine.mythic.lib.util.RayTrace;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,29 +34,38 @@ public class MythicMobsSkillResult implements SkillResult {
         List<AbstractEntity> targetEntities;
         List<AbstractLocation> targetLocations;
 
-        // Add target entity
+        // Interfacing ML-MM: Add target entity
         if (skillMeta.hasTargetEntity())
             targetEntities = List.of(BukkitAdapter.adapt(skillMeta.getTargetEntityOrNull()));
 
             /*
-             * If none is found, provide a default entity target. This takes
-             * the entity is the player is looking at if there is any. This
-             * is purely for simplicity so that skills cast within MythicLib
-             * match the /mm test cast command.
+             * If none is found, provide a default entity target using
+             * MythicMobs util function, to keep consistence with
+             * skill cast command
              */
         else {
-            final RayTrace res = new RayTrace(player, 32, entity -> !entity.equals(player) && entity instanceof LivingEntity);
-            targetEntities = res.hasHit() ? List.of(BukkitAdapter.adapt(res.getHit())) : List.of();
+            // Let MythicMobs handle target entity
+            var targetEntity = MythicUtil.getTargetedEntity(player);
+            targetEntities = targetEntity == null ? Collections.emptyList() : Collections.singletonList(BukkitAdapter.adapt(targetEntity));
         }
 
-        // Add target location
+        // Interfacing ML-MM: Add target location
         if (skillMeta.hasTargetLocation())
             targetLocations = List.of(BukkitAdapter.adapt(skillMeta.getTargetLocationOrNull()));
+
+            /*
+             * If none is found, the default MythicMobs behaviour
+             * is to provide none
+             */
         else targetLocations = List.of();
 
-        mmSkillMeta = new SkillMetadataImpl(SkillTriggers.API, caster, trigger, BukkitAdapter.adapt(skillMeta.getCaster().getPlayer().getEyeLocation()), targetEntities, targetLocations, 1);
+        mmSkillMeta = new SkillMetadataImpl(SkillTriggers.API, caster, trigger, BukkitAdapter.adapt(skillMeta.getCaster().getPlayer().getLocation()), targetEntities, targetLocations, 1);
 
-        // Stats & cast skill are cached inside a variable
+        /*
+         * All MMO skill metadata (stats, cast skill, modifiers.....) are
+         * cached inside a MM variable. Small workaround, in theory the user
+         * could OVERRIDE that MM variable but it is unlikely.
+         */
         mmSkillMeta.getVariables().putObject(MMO_SKILLMETADATA_TAG, skillMeta);
 
         success = behaviour.getSkill().isUsable(mmSkillMeta);

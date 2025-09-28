@@ -45,7 +45,6 @@ public class AttributeExplorer extends PluginInventory {
      * Explored attribute
      */
     private Attribute explored;
-    private List<AttributeModifier> modifiers;
     private int modifierOffset, attributeOffset;
 
     private static final int[]
@@ -98,7 +97,7 @@ public class AttributeExplorer extends PluginInventory {
             ItemStack item = new ItemStack(handler.getMaterial());
             ItemMeta meta = item.getItemMeta();
             meta.setDisplayName(ChatColor.GOLD + getName(handler.getAttribute()));
-            meta.addItemFlags(ItemFlag.values());
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             if (MythicLib.plugin.getVersion().isAbove(1, 20, 5)) VersionUtils.addEmptyAttributeModifier(meta);
 
             List<String> lore = new ArrayList<>();
@@ -131,6 +130,9 @@ public class AttributeExplorer extends PluginInventory {
             inv.setItem(45, new ItemBuilder(Material.ARROW, "&6Previous Attributes"));
 
         if (explored != null) {
+
+            // Collect player modifiers
+            var modifiers = new ArrayList<>(target.getAttribute(explored).getModifiers());
 
             inv.setItem(1, new ItemBuilder(Material.WRITABLE_BOOK, "&6New Modifier.."));
             inv.setItem(7, new ItemBuilder(Material.BARRIER, "&6" + AltChar.rightArrow + " Back"));
@@ -184,11 +186,6 @@ public class AttributeExplorer extends PluginInventory {
 
     private static final Method AttributeModifier_getUniqueId = ReflectionUtils.getDeclaredMethod(AttributeModifier.class, "getUniqueId");
 
-    public void setExplored(Attribute attribute) {
-        explored = attribute;
-        modifiers = explored != null ? new ArrayList<>(target.getAttribute(explored).getModifiers()) : null;
-    }
-
     private String getName(Attribute attribute) {
         return UtilityMethods.caseOnWords(Attributes.name(attribute)
                 .replace("GENERIC_", "")
@@ -210,13 +207,12 @@ public class AttributeExplorer extends PluginInventory {
             return;
 
         if (item.getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Refresh " + ChatColor.DARK_GRAY + "(Click)")) {
-            setExplored(explored);
             open();
             return;
         }
 
         if (item.getItemMeta().getDisplayName().equals(ChatColor.GOLD + AltChar.rightArrow + " Back")) {
-            setExplored(null);
+            this.explored = null;
             open();
             return;
         }
@@ -258,7 +254,6 @@ public class AttributeExplorer extends PluginInventory {
             Validate.notNull(mod, "Could not find attribute modifier with tag '" + tag + "'");
             target.getAttribute(explored).removeModifier(mod);
             getPlayer().sendMessage(ChatColor.YELLOW + "> Modifier successfully removed.");
-            setExplored(explored);
             open();
             return;
         }
@@ -268,7 +263,7 @@ public class AttributeExplorer extends PluginInventory {
             final Attribute attribute = Attributes.fromName(tag);
 
             if (event.getAction() == InventoryAction.PICKUP_ALL) {
-                setExplored(attribute);
+                this.explored = attribute;
                 open();
             } else if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                 target.getAttribute(attribute).setBaseValue(target.getAttribute(attribute).getDefaultValue());

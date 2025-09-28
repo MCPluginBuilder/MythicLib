@@ -1,11 +1,10 @@
 package io.lumine.mythic.lib.command.api;
 
 import io.lumine.mythic.lib.manager.MMOManager;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -25,14 +24,14 @@ public abstract class MMOCommandManager implements MMOManager {
 
         // Load default config file
         if (!new File(getPlugin().getDataFolder(), "commands.yml").exists()) {
-            final ConfigFile config = new ConfigFile(getPlugin(), "", "commands");
+            final var config = new YamlFile(getPlugin(), "commands");
 
             for (ToggleableCommand cmd : commands) {
                 final String path = cmd.getConfigPath();
-                config.getConfig().set(path + ".main", cmd.getName());
-                config.getConfig().set(path + ".permission", cmd.getPermission());
-                config.getConfig().set(path + ".aliases", cmd.getAliases());
-                config.getConfig().set(path + ".description", cmd.getDescription());
+                config.getContent().set(path + ".main", cmd.getName());
+                config.getContent().set(path + ".permission", cmd.getPermission());
+                config.getContent().set(path + ".aliases", cmd.getAliases());
+                config.getContent().set(path + ".description", cmd.getDescription());
             }
 
             config.save();
@@ -46,7 +45,7 @@ public abstract class MMOCommandManager implements MMOManager {
             final CommandMap commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
 
             // Enable commands individually
-            final FileConfiguration config = new ConfigFile(getPlugin(), "", "commands").getConfig();
+            final var config = new YamlFile(getPlugin(), "commands").getContent();
             for (ToggleableCommand toggleable : commands)
                 if (toggleable.isEnabled() && (toggleable.isForced() || config.contains(toggleable.getConfigPath())))
                     commandMap.register(getPlugin().getName(), toggleable.toBukkit(config.getConfigurationSection(toggleable.getConfigPath())));

@@ -2,10 +2,10 @@ package io.lumine.mythic.lib.gui.builtin;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.util.ChatInput;
-import io.lumine.mythic.lib.util.ItemBuilder;
 import io.lumine.mythic.lib.api.util.AltChar;
 import io.lumine.mythic.lib.gui.PluginInventory;
+import io.lumine.mythic.lib.util.ChatInput;
+import io.lumine.mythic.lib.util.ItemBuilder;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Bukkit;
@@ -14,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.Inventory;
@@ -41,7 +40,8 @@ public class AttributeCreator extends PluginInventory {
     private EquipmentSlot legacySlot;
 
     public AttributeCreator(AttributeExplorer inv) {
-        super(inv.getPlayer());
+        super(inv.getNavigator());
+
         explorer = inv;
         legacy = inv.isLegacy();
     }
@@ -82,7 +82,7 @@ public class AttributeCreator extends PluginInventory {
             return;
 
         if (item.getItemMeta().getDisplayName().equals(ChatColor.GOLD + AltChar.rightArrow + " Back"))
-            explorer.open();
+            getNavigator().popOpen();
 
         else if (item.getItemMeta().getDisplayName().equals(ChatColor.GREEN + "Add Attribute!")) {
 
@@ -104,7 +104,7 @@ public class AttributeCreator extends PluginInventory {
             }
 
             explorer.getTarget().getAttribute(explorer.getExplored()).addModifier(modifier);
-            explorer.open();
+            getNavigator().popOpen();
             getPlayer().sendMessage(ChatColor.YELLOW + "> Attribute successfully added.");
         }
 

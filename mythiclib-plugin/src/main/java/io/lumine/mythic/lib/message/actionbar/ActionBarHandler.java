@@ -23,7 +23,7 @@ public class ActionBarHandler {
      * Action bar messages take 1.5s to disappear
      * in vanilla Minecraft, equivalent to 30 ticks
      */
-    private static final long DEFAULT_TIME_OUT = 30;
+    public static final long DEFAULT_TIME_OUT = 30;
 
     public ActionBarHandler(MMOPlayerData playerData) {
         this.playerData = playerData;

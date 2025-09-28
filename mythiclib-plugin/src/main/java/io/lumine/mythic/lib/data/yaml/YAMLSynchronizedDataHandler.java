@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.data.OfflineDataHolder;
 import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHandler;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
-import io.lumine.mythic.lib.util.ConfigFile;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -30,8 +30,8 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
     @Override
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         // TODO YML object is loaded in memory, useless
-        final ConfigFile configFile = getUserFile(playerData);
-        saveInSection(playerData, configFile.getConfig());
+        final YamlFile configFile = getUserFile(playerData);
+        saveInSection(playerData, configFile.getContent());
         configFile.save();
     }
 
@@ -39,14 +39,15 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
 
     @Override
     public boolean loadData(@NotNull H playerData) {
-        loadFromSection(playerData, getUserFile(playerData).getConfig());
+        loadFromSection(playerData, getUserFile(playerData).getContent());
         return true;
     }
 
     public abstract void loadFromSection(@NotNull H playerData, @NotNull ConfigurationSection config);
 
-    private ConfigFile getUserFile(@NotNull H playerData) {
-        return new ConfigFile(owning, "/userdata", playerData.getEffectiveId().toString());
+    @NotNull
+    private YamlFile getUserFile(@NotNull H playerData) {
+        return new YamlFile(owning, "userdata", playerData.getEffectiveId().toString());
     }
 
     @Override
