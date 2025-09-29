@@ -251,7 +251,6 @@ public class MMOPlayerData {
         if (lookup) return;
 
         Bukkit.broadcastMessage("======= PLAYER STARTED PLAYING");
-        Bukkit.broadcastMessage("Updating stats");
         statMap.updateAll(); // Ran when all plugin data has finished loading
         triggerSkills(new TriggerMetadata(this, TriggerType.LOGIN)); // Trigger on-join skills
     }

@@ -35,11 +35,7 @@ public class FlushableRegistry<K, V> implements Closeable, Listener {
 
         @Override
         public void run() {
-            final Iterator<Map.Entry<K, V>> iterator = registry.entrySet().iterator();
-            while (iterator.hasNext()) {
-                final Map.Entry<K, V> next = iterator.next();
-                if (condition.test(next.getKey(), next.getValue())) iterator.remove();
-            }
+            registry.entrySet().removeIf(next -> condition.test(next.getKey(), next.getValue()));
         }
     };
 

@@ -121,7 +121,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
                 Tasks.runAsync(owning, () -> {
-                    holder.onAutosave();
+                    holder.onSaved(SaveReason.AUTOSAVE);
                     dataHandler.saveData(holder, SaveReason.AUTOSAVE);
                 });
             }
@@ -190,7 +190,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Save data SYNCHRONOUSLY of online players (not called with /restart)
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
-                holder.onClose(SaveReason.LOG_OUT);
+                holder.onSaved(SaveReason.LOG_OUT);
                 dataHandler.saveData(holder, SaveReason.LOG_OUT);
                 holder.markSessionClosed();
             }
@@ -238,7 +238,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
             // Complete sync
             Tasks.runSync(owning, () -> {
-                playerData.onSessionReady();
                 playerData.markSessionReady(); // Mark as ready
                 future.complete(null); // Complete future
             });
@@ -252,10 +251,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
-        Bukkit.broadcastMessage("saving data for plugin " + owning.getName() + " player " + playerData.getMMOPlayerData().getPlayerName() + ".....");
+        Bukkit.broadcastMessage(owning.getName() + "> saving data of player " + playerData.getMMOPlayerData().getPlayerName() + ".....");
         final CompletableFuture<Void> future = new CompletableFuture<>();
         Tasks.runAsync(owning, () -> {
-            MythicLib.plugin.getLogger().log(Level.INFO, "From plugin " + owning.getName() + " async save data of " + playerData.getMMOPlayerData().getPlayerName() + " :: " + playerData.getMMOPlayerData().getProfileSession().toString() + " " + playerData.isSessionReady());
+            Bukkit.broadcastMessage(owning.getName() + "> async save data of " + playerData.getMMOPlayerData().getPlayerName());
 
             // Save data
             dataHandler.saveData(playerData, reason);
@@ -285,7 +284,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         final @NotNull H playerData = activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
 
         // Schedule data loading
-        Bukkit.broadcastMessage("setting up player data for plugin " + owning.getName() + " player " + player.getName() + " :: " + requiresSynchronizationOnLogin(playerData));
+        Bukkit.broadcastMessage(owning.getName() + "> setting up player data " + player.getName() + " :: " + requiresSynchronizationOnLogin(playerData));
         if (requiresSynchronizationOnLogin(playerData))
             loadData(playerData).thenAccept(Tasks.sync(owning, v -> {
                 Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData));
@@ -312,26 +311,39 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     /**
+     * @deprecated Avoid using TODO find better
+     */
+    @Deprecated(forRemoval = true)
+    public void garbageCollect(@NotNull Player player) {
+        activeData.remove(player.getUniqueId());
+    }
+
+    /**
      * Safely unregisters the player data from the map.
      * This saves the player data either through SQL or YAML,
      * then closes the player data and clears it from the data map.
      *
      * @param player Player whose data needs to be unregistered
+     * @param reason Reason why the data is being saved
      * @return Completable future of the data being saved
      */
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {
         Validate.isTrue(reason != SaveReason.AUTOSAVE, "Invalid save reason");
-        final H playerData = reason == SaveReason.QUIT_PROFILE ? activeData.get(player.getUniqueId()) : activeData.remove(player.getUniqueId());
+        final H playerData;
+        if (reason == SaveReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
+        else if (reason == SaveReason.QUIT_PROFILE)
+            playerData = activeData.put(player.getUniqueId(), newPlayerData(MMOPlayerData.get(player.getUniqueId())));
+        else throw new IllegalArgumentException("Unhandled save reason " + reason);
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
         // Close and unregister data instantly if no error occurred
-        Bukkit.broadcastMessage("Plugin " + owning.getName() + " unregistering data of " + player.getName() + " :: " + playerData.getMMOPlayerData().getProfileSession().toString() + " " + playerData.isSessionReady());
+        Bukkit.broadcastMessage(owning.getName() + "> unregistering data of " + player.getName() + " " + reason.name());
 
         // Session not ready
         if (!playerData.isSessionReady()) return CompletableFuture.completedFuture(null);
 
-        playerData.onClose(reason);
+        playerData.onSaved(reason);
         return saveData(playerData, reason);
     }
 

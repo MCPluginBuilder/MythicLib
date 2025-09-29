@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -58,12 +59,9 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         }));
     }
 
-    @SuppressWarnings({"rawtypes"})
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
-        final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
-
-        manager.unregister(event.getPlayer(), adapt(event.getReason()));
+        plugin.getRawPlayerDataManager().unregister(event.getPlayer(), adapt(event.getReason()));
     }
 
     @EventHandler
@@ -83,6 +81,12 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         return MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY;
     }
     */
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onLogout(PlayerQuitEvent event) {
+        // garbage collect player data
+        plugin.getRawPlayerDataManager().garbageCollect(event.getPlayer());
+    }
 
     @NotNull
     private static SaveReason adapt(ProfileUnloadEvent.Reason reason) {

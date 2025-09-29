@@ -91,7 +91,7 @@ public class PlayerSession {
     public void startOpening() {
         if (this.state != PlayerSessionState.INIT) return;
 
-        Bukkit.broadcastMessage("========== START OPENING SESSION " + this.toString());
+        Bukkit.broadcastMessage("========== START OPENING SESSION " + hashCode());
 
         this.state = PlayerSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
@@ -120,7 +120,7 @@ public class PlayerSession {
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already synced", key));
 
-        Bukkit.broadcastMessage("data loaded, marking as rdy module " + key);
+        Bukkit.broadcastMessage(key + "> data loaded, marking as rdy");
 
         checkReadiness(); // Check if all plugins have loaded their data
     }
@@ -130,7 +130,7 @@ public class PlayerSession {
         // Wait for all plugins to load their data
         if (!this.waiting.isEmpty()) return;
 
-        Bukkit.broadcastMessage("========= START PLAYING " + this.toString());
+        Bukkit.broadcastMessage("========= START PLAYING");
 
         ////////////////////////////////
         // Player can start playing
@@ -143,7 +143,7 @@ public class PlayerSession {
     public void startClosing() {
         Validate.isTrue(state == PlayerSessionState.OPEN, "Cannot close a non ready session");
 
-        Bukkit.broadcastMessage("========== START CLOSING SESSION " + toString());
+        Bukkit.broadcastMessage("========== START CLOSING SESSION");
 
         this.state = PlayerSessionState.CLOSING;
         this.playerData.clearTemporaryHandlers();
@@ -159,7 +159,7 @@ public class PlayerSession {
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already marked as closed", key));
 
-        Bukkit.broadcastMessage("Module " + key + " marked as closed :: " + this.toString());
+        Bukkit.broadcastMessage(key + "> marked as closed");
 
         checkClosed(); // Check if all plugins have saved their data
     }
@@ -169,7 +169,7 @@ public class PlayerSession {
         // Wait for all plugins to store their data
         if (!this.waiting.isEmpty()) return;
 
-        Bukkit.broadcastMessage("========= SESSION INVALIDATED " + this.toString());
+        Bukkit.broadcastMessage("========= SESSION INVALIDATED");
 
         ////////////////////////////////
         // Session invalidated

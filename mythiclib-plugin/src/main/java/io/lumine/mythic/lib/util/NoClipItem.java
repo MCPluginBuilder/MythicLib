@@ -2,7 +2,6 @@ package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;

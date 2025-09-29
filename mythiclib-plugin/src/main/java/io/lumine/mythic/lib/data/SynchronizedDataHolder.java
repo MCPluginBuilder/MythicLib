@@ -4,6 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -83,17 +85,23 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     }
 
     /**
-     * Called before the player data is autosaved to the database.
+     * Called before the player data is saved to the database.
      */
-    public void onAutosave() {
+    public void onSaved(@NotNull SaveReason reason) {
         // Nothing by default
     }
 
-    public void onSessionReady() {
+    /**
+     * Called after the player data is loaded from the database.
+     */
+    protected void onSessionReady() {
         // Nothing by default
     }
 
-    public void onClose(@NotNull SaveReason reason) {
+    /**
+     * Called after the player data is saved to database.
+     */
+    protected void onSessionClosed() {
         // Nothing by default
     }
 
@@ -106,11 +114,29 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         return playerData.getProfileSession().isReady(mmoPlugin.getNamespacedKey());
     }
 
+    /**
+     * Marks the player data as ready, meaning it has been loaded from the database.
+     * <p>
+     * Must be called on main server thread
+     */
     public void markSessionReady() {
+        if (playerData.isLookup()) return; // Skip TODO improve?
+        Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
+
+        onSessionReady();
         playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
     }
 
+    /**
+     * Marks the player data as closed, meaning it has been saved to the database.
+     * <p>
+     * Must be called on main server thread
+     */
     public void markSessionClosed() {
+        if (playerData.isLookup()) return; // Skip TODO improve?
+        Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
+
+        onSessionClosed();
         playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
     }
 

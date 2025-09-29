@@ -8,8 +8,6 @@ import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -198,12 +196,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     public void releaseUpdates() {
         Validate.isTrue(!map.isBufferingUpdates(), "StatMap is still in buffer mode");
         if (updateRequired) {
-            Bukkit.broadcastMessage("Releasing required update for " + stat);
             handler.get().ifPresent(handler -> handler.runUpdate(this));
             updateRequired = false;
-
-            if (stat.equals("MAX_HEALTH"))
-                Bukkit.broadcastMessage("Update released for MAX_HEALTH -> " + getMap().getPlayer().getAttribute(Attribute.MAX_HEALTH).getValue());
         }
     }
 

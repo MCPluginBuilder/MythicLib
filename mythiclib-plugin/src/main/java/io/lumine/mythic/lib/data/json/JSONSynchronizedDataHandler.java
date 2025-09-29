@@ -33,7 +33,7 @@ public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHold
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         // TODO json object is uselessly loaded into memory
         final JsonFile file = getUserFile(playerData);
-        Bukkit.broadcastMessage("Saving userdata of " + playerData.getMMOPlayerData().getPlayerName() +" for plugin "  +owning.getName());
+        Bukkit.broadcastMessage(owning.getName() + "> saving userdata of " + playerData.getMMOPlayerData().getPlayerName());
         file.setContent(playerData.toJson());
         file.save();
     }
