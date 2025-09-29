@@ -15,13 +15,13 @@ import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Vampirism extends SkillHandler<AttackSkillResult> implements Listener {
     public Vampirism() {
@@ -30,7 +30,7 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
     }
 
     @Override
-    public AttackSkillResult getResult(SkillMetadata meta) {
+    public @NotNull AttackSkillResult getResult(SkillMetadata meta) {
         return new AttackSkillResult(meta);
     }
 
@@ -39,8 +39,13 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
+        playParticleEffect(target.getLocation());
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITCH_DRINK, 1, 2);
+        UtilityMethods.heal(caster, skillMeta.getAttackSource().getDamage().getDamage() * skillMeta.getParameter("drain") / 100);
+    }
+
+    private static void playParticleEffect(Location loc) {
         new BukkitRunnable() {
-            final Location loc = target.getLocation();
             double ti = 0;
             double dis = 0;
 
@@ -54,14 +59,10 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
                                 loc.clone().add(Math.cos(j + (ti / 20)) * dis, 0, Math.sin(j + (ti / 20)) * dis), 1,
                                 new Particle.DustOptions(Color.RED, 1));
                 }
-                if (ti >= 17)
-                    cancel();
+                if (ti >= 17) cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITCH_DRINK, 1, 2);
-        UtilityMethods.heal(caster, skillMeta.getAttackSource().getDamage().getDamage() * skillMeta.getParameter("drain") / 100);
     }
-
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void a(PlayerAttackEvent event) {

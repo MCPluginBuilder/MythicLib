@@ -1,22 +1,22 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
     public Fire_Meteor() {
@@ -26,7 +26,7 @@ public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -35,15 +35,16 @@ public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Location loc = caster.getLocation().clone().add(0, 10, 0);
             final Vector vec = result.getTarget().multiply(1.3).setY(-1).normalize();
             double ti = 0;
 
             public void run() {
-                ti++;
-                if (ti > 40)
-                    cancel();
+                if (++ti > 40) {
+                    handler.close();
+                    return;
+                }
 
                 loc.add(vec);
                 loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
@@ -62,9 +63,10 @@ public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
                             skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             entity.setVelocity(entity.getLocation().toVector().subtract(loc.toVector()).multiply(.1 * knockback).setY(.4 * knockback));
                         }
-                    cancel();
+
+                    handler.close();
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

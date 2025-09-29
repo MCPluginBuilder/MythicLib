@@ -5,13 +5,14 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Sparkle extends SkillHandler<TargetSkillResult> {
     public Sparkle() {
@@ -21,7 +22,7 @@ public class Sparkle extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 

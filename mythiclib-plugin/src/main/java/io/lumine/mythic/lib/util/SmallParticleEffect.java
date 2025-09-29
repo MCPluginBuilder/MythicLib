@@ -26,8 +26,7 @@ public class SmallParticleEffect extends BukkitRunnable {
     }
 
     public void run() {
-        if (t > Math.PI * 2)
-            cancel();
+        if (t > Math.PI * 2) cancel();
 
         for (int k = 0; k < 3; k++) {
             t += Math.PI / 10;

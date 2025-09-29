@@ -9,11 +9,11 @@ import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Wither extends SkillHandler<TargetSkillResult> {
     public Wither() {
@@ -23,7 +23,7 @@ public class Wither extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -31,13 +31,18 @@ public class Wither extends SkillHandler<TargetSkillResult> {
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
 
+        playParticleEffect(target.getLocation());
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
+        target.addPotionEffect(
+                new PotionEffect(PotionEffectType.WITHER, (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
+    }
+
+    private void playParticleEffect(Location loc) {
         new BukkitRunnable() {
-            final Location loc = target.getLocation();
             double y = 0;
 
             public void run() {
-                if (y > 3)
-                    cancel();
+                if (y > 3) cancel();
 
                 for (int j1 = 0; j1 < 3; j1++) {
                     y += .07;
@@ -50,8 +55,5 @@ public class Wither extends SkillHandler<TargetSkillResult> {
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
-        target.addPotionEffect(
-                new PotionEffect(PotionEffectType.WITHER, (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
     }
 }

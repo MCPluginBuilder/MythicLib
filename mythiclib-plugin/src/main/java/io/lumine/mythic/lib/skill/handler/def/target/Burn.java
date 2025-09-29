@@ -7,9 +7,9 @@ import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Burn extends SkillHandler<TargetSkillResult> {
     public Burn() {
@@ -19,7 +19,7 @@ public class Burn extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -27,8 +27,19 @@ public class Burn extends SkillHandler<TargetSkillResult> {
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
 
+        playParticleEffect(target.getLocation());
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_BLAZE_HURT, 1, 2);
+
+        /*
+         * Entity#getFireTicks() does NOT always return a positive
+         * value. For players it returns -20 which reduce the apparent
+         * skill duration by one second, hence Math#max(...)
+         */
+        target.setFireTicks((int) (Math.max(0, target.getFireTicks()) + skillMeta.getParameter("duration") * 20));
+    }
+
+    private void playParticleEffect(Location loc) {
         new BukkitRunnable() {
-            final Location loc = target.getLocation();
             double y = 0;
 
             public void run() {
@@ -40,17 +51,8 @@ public class Burn extends SkillHandler<TargetSkillResult> {
                         loc.getWorld().spawnParticle(Particle.FLAME, loc1, 0);
                     }
                 }
-                if (y >= 1.7)
-                    cancel();
+                if (y >= 1.7) cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_BLAZE_HURT, 1, 2);
-
-        /*
-         * Entity#getFireTicks() does NOT always return a positive
-         * value. For players it returns -20 which reduce the apparent
-         * skill duration by one second, hence Math#max(...)
-         */
-        target.setFireTicks((int) (Math.max(0, target.getFireTicks()) + skillMeta.getParameter("duration") * 20));
     }
 }

@@ -1,24 +1,24 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -39,21 +39,25 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = result.getTarget().multiply(.45);
             final Location loc = caster.getEyeLocation().clone().add(0, -.3, 0);
             int ti = 0;
 
             public void run() {
-                if (ti++ > 25)
-                    cancel();
+                if (ti++ > 25) {
+                    handler.close();
+                    return;
+                }
 
                 loc.getWorld().playSound(loc, Sounds.BLOCK_GLASS_BREAK, 2, 1);
                 List<Entity> entities = UtilityMethods.getNearbyChunkEntities(loc);
                 for (int j = 0; j < 3; j++) {
                     loc.add(vec);
-                    if (loc.getBlock().getType().isSolid())
-                        cancel();
+                    if (loc.getBlock().getType().isSolid()) {
+                        handler.close();
+                        return;
+                    }
 
                     /*
                      * has a different particle effect since SNOW_DIG is not the
@@ -77,11 +81,11 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
                             skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(),
                                     (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
-                            cancel();
+                            handler.close();
                             return;
                         }
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

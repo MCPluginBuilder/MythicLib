@@ -1,17 +1,16 @@
 package io.lumine.mythic.lib.skill.handler.def.location;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.util.Line3D;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -43,14 +42,14 @@ public class Ice_Spikes extends SkillHandler<LocationSkillResult> {
         double damage = skillMeta.getParameter("damage");
         int slow = (int) (20 * skillMeta.getParameter("slow"));
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 5, handler -> new BukkitRunnable() {
             int j = 0;
 
             @Override
             public void run() {
 
                 if (j++ > 8) {
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -66,7 +65,7 @@ public class Ice_Spikes extends SkillHandler<LocationSkillResult> {
                         ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), slow, 0));
                     }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 5);
+        });
     }
 
     private double offset() {

@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class NoClipItem extends TemporaryListener {
+public class NoClipItem extends TemporaryHandler {
     private final Item item;
 
     /**
@@ -43,7 +43,7 @@ public class NoClipItem extends TemporaryListener {
     }
 
     @Override
-    public void whenClosed() {
+    public void onClose() {
         item.remove();
     }
 

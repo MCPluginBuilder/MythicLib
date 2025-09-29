@@ -5,16 +5,16 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.jetbrains.annotations.NotNull;
 
 public class Overload extends SkillHandler<SimpleSkillResult> {
     public Overload() {
@@ -24,7 +24,7 @@ public class Overload extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 

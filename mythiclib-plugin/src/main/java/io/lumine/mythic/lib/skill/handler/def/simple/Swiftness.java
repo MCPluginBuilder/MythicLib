@@ -3,12 +3,13 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 public class Swiftness extends SkillHandler<SimpleSkillResult> {
     public Swiftness() {
@@ -18,7 +19,7 @@ public class Swiftness extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 

@@ -1,25 +1,23 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.Sounds;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Control extends SkillHandler<TargetSkillResult> {
     public Control() {
@@ -29,7 +27,7 @@ public class Control extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -38,10 +36,10 @@ public class Control extends SkillHandler<TargetSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
         caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_END_PORTAL_FRAME_FILL, 1, 1);
         result.getTarget().addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 20 * 2, 0));
-        new TelekinesyRunnable(skillMeta.getCaster(), result.getTarget(), skillMeta.getParameter("knockback") / 100, skillMeta.getParameter("duration"));
+        new Handler(skillMeta.getCaster(), result.getTarget(), skillMeta.getParameter("knockback") / 100, skillMeta.getParameter("duration"));
     }
 
-    public static class TelekinesyRunnable extends BukkitRunnable implements Listener {
+    static class Handler extends TemporaryHandler {
         private final LivingEntity entity;
         private final PlayerMetadata caster;
 
@@ -49,15 +47,32 @@ public class Control extends SkillHandler<TargetSkillResult> {
 
         private int j;
 
-        public TelekinesyRunnable(PlayerMetadata caster, LivingEntity entity, double force, double duration) {
+        public Handler(PlayerMetadata caster, LivingEntity entity, double force, double duration) {
+            super(caster.getData());
+
             this.entity = entity;
             this.caster = caster;
 
             d = duration * 20;
             f = force;
 
-            runTaskTimer(MythicLib.plugin, 0, 1);
-            Bukkit.getPluginManager().registerEvents(this, MythicLib.plugin);
+            runTask(r -> r.runTaskTimer(MythicLib.plugin, 0, 1));
+        }
+
+        @Override
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (entity.isDead() || j++ >= d) {
+                        Handler.this.close();
+                        return;
+                    }
+
+                    double a = (double) j / 3;
+                    entity.getWorld().spawnParticle(VParticle.WITCH.get(), entity.getLocation().add(Math.cos(a), entity.getHeight() / 2, Math.sin(a)), 0);
+                }
+            };
         }
 
         @EventHandler
@@ -76,22 +91,6 @@ public class Control extends SkillHandler<TargetSkillResult> {
                 entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 2, 1);
                 close();
             }
-        }
-
-        @Override
-        public void run() {
-            if (UtilityMethods.isInvalidated(caster) || entity.isDead() || j++ >= d) {
-                close();
-                return;
-            }
-
-            double a = (double) j / 3;
-            entity.getWorld().spawnParticle(VParticle.WITCH.get(), entity.getLocation().add(Math.cos(a), entity.getHeight() / 2, Math.sin(a)), 0);
-        }
-
-        private void close() {
-            cancel();
-            HandlerList.unregisterAll(this);
         }
     }
 }

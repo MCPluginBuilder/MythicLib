@@ -5,8 +5,8 @@ import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,11 +20,13 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO remove listener.
 public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Listener {
     private static final Map<UUID, Double> MARKED_ENTITIES = new HashMap<>();
 
@@ -35,7 +37,7 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -51,8 +53,12 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
          * display particles until the entity is hit again and eventually remove
          * the mark from the entity
          */
+        playParticleEffect(target, skillMeta.getParameter("duration"));
+    }
+
+    private void playParticleEffect(Entity target, double duration) {
         new BukkitRunnable() {
-            final long expire = System.currentTimeMillis() + (long) (skillMeta.getParameter("duration") * 1000);
+            final long expire = System.currentTimeMillis() + (long) (duration * 1000);
 
             public void run() {
                 if (!MARKED_ENTITIES.containsKey(target.getUniqueId()) || expire < System.currentTimeMillis()) {
@@ -106,8 +112,7 @@ public class Weaken_Target extends SkillHandler<TargetSkillResult> implements Li
                                         Math.sin(y * Math.PI + (k * Math.PI * 2 / 3)) * (3 - y) / 2.5),
                                 1, new Particle.DustOptions(Color.BLACK, 1));
                 }
-                if (y > 3)
-                    cancel();
+                if (y > 3) cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
     }

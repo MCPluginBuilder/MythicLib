@@ -8,17 +8,17 @@ import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Human_Shield extends SkillHandler<TargetSkillResult> {
     public Human_Shield() {
@@ -28,7 +28,7 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         TargetSkillResult result = new TargetSkillResult(meta, 7, InteractionType.SUPPORT_SKILL);
         return result.isSuccessful() && result.getTarget() instanceof Player ? result : new TargetSkillResult((LivingEntity) null);
     }
@@ -37,17 +37,19 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_BLAZE_AMBIENT, 1, 1);
-        new HumanShield(skillMeta.getCaster().getData(), (Player) result.getTarget(), skillMeta.getParameter("reduction"), skillMeta.getParameter("redirect"), skillMeta.getParameter("duration"), skillMeta.getParameter("low"));
+        new Handler(skillMeta.getCaster().getData(), (Player) result.getTarget(), skillMeta.getParameter("reduction"), skillMeta.getParameter("redirect"), skillMeta.getParameter("duration"), skillMeta.getParameter("low"));
     }
 
-    public static class HumanShield extends BukkitRunnable implements Listener {
+    static class Handler extends TemporaryHandler {
         private final MMOPlayerData caster;
         private final Player target;
         private final double damageCoefficient, redirectRate, duration, minimumHealthPercentage;
 
         private int j;
 
-        public HumanShield(MMOPlayerData caster, Player target, double reduction, double redirect, double duration, double low) {
+        public Handler(MMOPlayerData caster, Player target, double reduction, double redirect, double duration, double low) {
+            super(caster);
+
             this.target = target;
             this.caster = caster;
 
@@ -56,8 +58,24 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
             this.duration = duration * 20;
             minimumHealthPercentage = low / 100;
 
-            runTaskTimer(MythicLib.plugin, 0, 1);
-            Bukkit.getPluginManager().registerEvents(this, MythicLib.plugin);
+            runTask(r -> r.runTaskTimer(MythicLib.plugin, 0, 1));
+        }
+
+        @Override
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    if (UtilityMethods.isInvalidated(target) || j++ >= duration) {
+                        Handler.this.close();
+                        return;
+                    }
+
+                    double a = (double) j / 5;
+                    target.getWorld().spawnParticle(VParticle.HAPPY_VILLAGER.get(), target.getLocation().add(Math.cos(a), 1 + Math.sin(a / 3) / 1.3, Math.sin(a)), 0);
+                }
+            };
         }
 
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -75,22 +93,6 @@ public class Human_Shield extends SkillHandler<TargetSkillResult> {
                     close();
                 }
             }
-        }
-
-        @Override
-        public void run() {
-            if (UtilityMethods.isInvalidated(caster) || UtilityMethods.isInvalidated(target) || j++ >= duration) {
-                close();
-                return;
-            }
-
-            double a = (double) j / 5;
-            target.getWorld().spawnParticle(VParticle.HAPPY_VILLAGER.get(), target.getLocation().add(Math.cos(a), 1 + Math.sin(a / 3) / 1.3, Math.sin(a)), 0);
-        }
-
-        private void close() {
-            cancel();
-            HandlerList.unregisterAll(this);
         }
     }
 }

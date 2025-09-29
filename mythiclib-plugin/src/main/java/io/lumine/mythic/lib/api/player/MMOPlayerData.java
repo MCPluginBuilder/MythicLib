@@ -23,6 +23,7 @@ import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -64,6 +65,7 @@ public class MMOPlayerData {
     private final PermissionMap permissionMap = new PermissionMap(this);
     private final VariableList variableList = new VariableList(VariableScope.PLAYER);
     private final ActionBarHandler actionBar = new ActionBarHandler(this);
+    private final List<TemporaryHandler> tempHandlers = new ArrayList<>();
 
     /**
      * Map used by other plugins to save any type of data. This
@@ -252,6 +254,20 @@ public class MMOPlayerData {
         Bukkit.broadcastMessage("Updating stats");
         statMap.updateAll(); // Ran when all plugin data has finished loading
         triggerSkills(new TriggerMetadata(this, TriggerType.LOGIN)); // Trigger on-join skills
+    }
+
+    public void addTemporaryHandler(@NotNull TemporaryHandler handler) {
+        Validate.notNull(handler, "Handler cannot be null");
+        tempHandlers.add(handler);
+    }
+
+    public void removeTemporaryListener(@NotNull TemporaryHandler handler) {
+        Validate.notNull(tempHandlers.remove(handler), "Handler is not registered");
+    }
+
+    public void clearTemporaryHandlers() {
+        tempHandlers.forEach(handler -> handler.closeNow(true));
+        tempHandlers.clear();
     }
 
     public boolean hasStartedPlaying() {

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class YamlUtils {
 
@@ -72,5 +73,17 @@ public class YamlUtils {
             if (found != null) return found;
         }
         return null;
+    }
+
+    public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {
+        for (var value : values)
+            if (config.contains(value.toString())) return true;
+        return false;
+    }
+
+    public static <T extends Enum<?>> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull T[] enumValues, @NotNull Function<T, String> name) {
+        for (var value : enumValues)
+            if (config.contains(name.apply(value))) return true;
+        return false;
     }
 }

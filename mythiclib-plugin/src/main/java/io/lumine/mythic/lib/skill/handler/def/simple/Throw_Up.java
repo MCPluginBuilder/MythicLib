@@ -7,17 +7,18 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Throw_Up extends SkillHandler<SimpleSkillResult> {
     public Throw_Up() {
@@ -27,7 +28,7 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 
@@ -38,18 +39,20 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 2, handler -> new BukkitRunnable() {
             int j = 0;
 
             public void run() {
-                j++;
-                if (j > duration)
-                    cancel();
+                if (++j > duration) {
+                    handler.close();
+                    return;
+                }
 
                 Location loc = caster.getEyeLocation();
                 loc.setPitch((float) (loc.getPitch() + (RANDOM.nextDouble() - .5) * 30));
                 loc.setYaw((float) (loc.getYaw() + (RANDOM.nextDouble() - .5) * 30));
 
+                // Deal damage every 10 ticks
                 if (j % 5 == 0)
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (entity.getLocation().distanceSquared(loc) < 40 && caster.getEyeLocation().getDirection().angle(entity.getLocation().toVector().subtract(caster.getLocation().toVector())) < Math.PI / 6 && UtilityMethods.canTarget(caster, entity))
@@ -62,6 +65,6 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
                 item.getEntity().setVelocity(loc.getDirection().multiply(.8));
                 caster.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), caster.getLocation().add(0, 1.2, 0), 0, loc.getDirection().getX(), loc.getDirection().getY(), loc.getDirection().getZ(), 1);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 2);
+        });
     }
 }

@@ -1,17 +1,21 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VMaterial;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Hoearthquake extends SkillHandler<SimpleSkillResult> {
     public Hoearthquake() {
@@ -19,7 +23,7 @@ public class Hoearthquake extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult(meta.getCaster().getPlayer().isOnGround());
     }
 
@@ -27,14 +31,16 @@ public class Hoearthquake extends SkillHandler<SimpleSkillResult> {
     public void whenCast(SimpleSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = caster.getEyeLocation().getDirection().setY(0);
             final Location loc = caster.getLocation();
             int ti = 0;
 
             public void run() {
-                if (ti++ > 20)
-                    cancel();
+                if (ti++ > 20) {
+                    handler.close();
+                    return;
+                }
 
                 loc.add(vec);
                 loc.getWorld().playSound(loc, Sounds.BLOCK_GRAVEL_BREAK, 2, 1);
@@ -51,6 +57,6 @@ public class Hoearthquake extends SkillHandler<SimpleSkillResult> {
                         }
                     }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

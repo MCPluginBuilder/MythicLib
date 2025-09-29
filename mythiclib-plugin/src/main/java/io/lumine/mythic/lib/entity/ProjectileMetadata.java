@@ -5,11 +5,11 @@ import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.damage.ProjectileAttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author indyuce
  */
-public class ProjectileMetadata extends TemporaryListener {
+public class ProjectileMetadata extends TemporaryHandler {
     private final int entityId;
     private final ProjectileType projectileType;
 
@@ -53,6 +53,7 @@ public class ProjectileMetadata extends TemporaryListener {
      */
     private final List<PassiveSkill> cachedSkills;
     private final PlayerMetadata shooter;
+    private final TriggerMetadata tickTriggerMetadata;
 
     @Nullable
     private NBTItem sourceItem;
@@ -90,19 +91,24 @@ public class ProjectileMetadata extends TemporaryListener {
         // Cache important stuff
         this.shooter = shooter;
         this.cachedSkills = shooter.getData().getPassiveSkillMap().isolateModifiers(shooter.getActionHand());
+        this.tickTriggerMetadata = new TriggerMetadata(shooter, projectileType.getTickTrigger(), projectile, null);
 
         // Trigger skills
-        registerRunnable(new BukkitRunnable() {
-            final TriggerMetadata tickTriggerMetadata = new TriggerMetadata(shooter, projectileType.getTickTrigger(), projectile, null);
+        runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+
+        // Register
+        projectile.setMetadata(METADATA_KEY, new FixedMetadataValue(MythicLib.plugin, this));
+    }
+
+    @Override
+    protected @Nullable BukkitRunnable newTask() {
+        return new BukkitRunnable() {
 
             @Override
             public void run() {
                 shooter.getData().triggerSkills(tickTriggerMetadata, cachedSkills);
             }
-        }, runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
-
-        // Register
-        projectile.setMetadata(METADATA_KEY, new FixedMetadataValue(MythicLib.plugin, this));
+        };
     }
 
     @NotNull
@@ -183,10 +189,7 @@ public class ProjectileMetadata extends TemporaryListener {
         if (event.getPlayer().getUniqueId().equals(shooter.getData().getUniqueId())) close();
     }
 
-    @Deprecated
-    public static ProjectileMetadata getCustomData(Entity proj) {
-        return get(proj);
-    }
+    //region Static methods
 
     @Nullable
     public static ProjectileMetadata get(@NotNull Entity projectile) {
@@ -208,4 +211,15 @@ public class ProjectileMetadata extends TemporaryListener {
         if (found != null) return found;
         return new ProjectileMetadata(data.getStatMap().cache(actionHand), projectileType, projectile);
     }
+
+    //endregion
+
+    //region Deprecated
+
+    @Deprecated
+    public static ProjectileMetadata getCustomData(Entity proj) {
+        return get(proj);
+    }
+
+    //endregion
 }

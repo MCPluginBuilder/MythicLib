@@ -1,21 +1,21 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class Firebolt extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -36,22 +36,25 @@ public class Firebolt extends SkillHandler<VectorSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = result.getTarget().multiply(.8);
             final Location loc = caster.getEyeLocation();
             int ti = 0;
 
             public void run() {
-                ti++;
-                if (ti > 20)
-                    cancel();
+                if (++ti > 20) {
+                    handler.close();
+                    return;
+                }
 
                 List<Entity> entities = UtilityMethods.getNearbyChunkEntities(loc);
                 loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_AMBIENT, 2, 1);
                 for (int j = 0; j < 2; j++) {
                     loc.add(vec);
-                    if (loc.getBlock().getType().isSolid())
-                        cancel();
+                    if (loc.getBlock().getType().isSolid()) {
+                        handler.close();
+                        return;
+                    }
 
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 5, .12, .12, .12, 0);
                     if (RANDOM.nextDouble() < .3)
@@ -64,11 +67,11 @@ public class Firebolt extends SkillHandler<VectorSkillResult> {
                             loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 3, 1);
                             skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             target.setFireTicks((int) skillMeta.getParameter("ignite") * 20);
-                            cancel();
+                            handler.close();
                             return;
                         }
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

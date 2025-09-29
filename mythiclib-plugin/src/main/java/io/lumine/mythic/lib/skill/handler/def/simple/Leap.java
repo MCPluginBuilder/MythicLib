@@ -1,15 +1,16 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Leap extends SkillHandler<SimpleSkillResult> {
     public Leap() {
@@ -19,7 +20,7 @@ public class Leap extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult(meta.getCaster().getPlayer().isOnGround());
     }
 
@@ -32,16 +33,16 @@ public class Leap extends SkillHandler<SimpleSkillResult> {
         Vector vec = caster.getEyeLocation().getDirection().multiply(2 * skillMeta.getParameter("force"));
         vec.setY(vec.getY() / 2);
         caster.setVelocity(vec);
-        new BukkitRunnable() {
+
+        // Temporary handler bc particle effect needs to stop
+        // if the player leaves
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             double ti = 0;
 
             public void run() {
-                ti++;
-                if (ti > 20)
-                    cancel();
-
-                caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation().add(0, 1, 0), 0);
+                if (++ti > 20) handler.close();
+                else caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation().add(0, 1, 0), 0);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

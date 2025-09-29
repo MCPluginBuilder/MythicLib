@@ -5,13 +5,14 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
     public Lightning_Beam() {
@@ -21,7 +22,7 @@ public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 
@@ -45,6 +46,7 @@ public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
             loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc.add(vec), 6, .1, .1, .1, .01);
     }
 
+    /*
     private Location getFirstNonSolidBlock(Location loc) {
         Location initial = loc.clone();
         for (int j = 0; j < 5; j++)
@@ -52,4 +54,5 @@ public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
                 return loc;
         return initial;
     }
+    */
 }

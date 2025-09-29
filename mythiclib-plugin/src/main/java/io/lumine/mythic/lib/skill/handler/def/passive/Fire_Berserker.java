@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 public class Fire_Berserker extends SkillHandler<AttackSkillResult> implements Listener {
     public Fire_Berserker() {
@@ -20,7 +21,7 @@ public class Fire_Berserker extends SkillHandler<AttackSkillResult> implements L
     }
 
     @Override
-    public AttackSkillResult getResult(SkillMetadata meta) {
+    public @NotNull AttackSkillResult getResult(SkillMetadata meta) {
         return new AttackSkillResult(meta);
     }
 

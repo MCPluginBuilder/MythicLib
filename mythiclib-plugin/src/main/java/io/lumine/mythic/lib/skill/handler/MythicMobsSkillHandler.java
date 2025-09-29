@@ -13,6 +13,7 @@ import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
     }
 
     @Override
-    public MythicMobsSkillResult getResult(SkillMetadata meta) {
+    public @NotNull MythicMobsSkillResult getResult(SkillMetadata meta) {
         return new MythicMobsSkillResult(meta, this);
     }
 

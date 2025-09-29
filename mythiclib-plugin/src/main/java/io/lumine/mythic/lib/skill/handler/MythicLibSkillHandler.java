@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicLibSkillResult;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A skill behaviour based on a custom MythicLib script
@@ -25,7 +26,7 @@ public class MythicLibSkillHandler extends SkillHandler<MythicLibSkillResult> {
     }
 
     @Override
-    public MythicLibSkillResult getResult(SkillMetadata meta) {
+    public @NotNull MythicLibSkillResult getResult(SkillMetadata meta) {
         return new MythicLibSkillResult(meta, script);
     }
 

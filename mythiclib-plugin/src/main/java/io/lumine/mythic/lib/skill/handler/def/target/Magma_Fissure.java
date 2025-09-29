@@ -1,19 +1,19 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
     public Magma_Fissure() {
@@ -23,7 +23,7 @@ public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -32,14 +32,13 @@ public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Location loc = caster.getLocation().add(0, .2, 0);
             int j = 0;
 
             public void run() {
-                j++;
-                if (target.isDead() || !target.getWorld().equals(loc.getWorld()) || j > 200) {
-                    cancel();
+                if (target.isDead() || !target.getWorld().equals(loc.getWorld()) || ++j > 200) {
+                    handler.close();
                     return;
                 }
 
@@ -55,9 +54,9 @@ public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
                     loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
                     skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
-                    cancel();
+                    handler.close();
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

@@ -19,25 +19,10 @@ import java.util.Set;
 
 @ModuleInfo(key = "entities")
 public class EntityManager extends Module {
-    private final Set<TargetRestriction> restrictions = new HashSet<>();
     private final Set<RelationshipHandler> relHandlers = new HashSet<>();
 
     public EntityManager() {
         super(MythicLib.plugin);
-    }
-
-    /**
-     * See {@link TargetRestriction} for more information. This should be
-     * called as soon as MythicLib enables by plugins implementing player sets
-     * like parties, friends, factions.... any set that could support friendly fire.
-     * <p>
-     * This is also helpful to prevent players from interacting with
-     * specific invulnerable entities like NPCs
-     *
-     * @param restriction New restriction for entities
-     */
-    public void registerRestriction(TargetRestriction restriction) {
-        restrictions.add(restriction);
     }
 
     /**
@@ -46,38 +31,14 @@ public class EntityManager extends Module {
      * two players may or may not be able to pvp/cast spells onto each other.
      *
      * @param relationHandler New handler for player relations
-     * @see {@link RelationshipHandler}
+     * @see RelationshipHandler
      */
-    public void registerRelationHandler(RelationshipHandler relationHandler) {
+    public void registerRelationHandler(@NotNull RelationshipHandler relationHandler) {
         relHandlers.add(relationHandler);
     }
 
     public Set<RelationshipHandler> getRelationHandlers() {
         return relHandlers;
-    }
-
-    /**
-     * @see {@link ProjectileMetadata#get(Entity)}
-     * @deprecated
-     */
-    @Nullable
-    @Deprecated
-    public ProjectileMetadata getCustomProjectile(Entity entity) {
-        return ProjectileMetadata.get(entity);
-    }
-
-    /**
-     * Registers a custom projectile. This is used for bows, crossbows and tridents.
-     *
-     * @deprecated Automatically registers on class instanciation
-     */
-    @Deprecated
-    public void registerCustomProjectile(Entity entity, ProjectileMetadata projectileData) {
-    }
-
-    @Deprecated
-    public boolean canTarget(@NotNull Player source, @NotNull Entity target, @NotNull InteractionType interactionType) {
-        return canInteract(source, target, interactionType);
     }
 
     /**
@@ -98,9 +59,10 @@ public class EntityManager extends Module {
         if (source.equals(target) || target.isDead() || !(target instanceof LivingEntity) || target instanceof ArmorStand)
             return false;
 
+        // [Backwards compatibility]
         // Specific plugin checks (Not used anymore)
         final LivingEntity livingTarget = (LivingEntity) target;
-        for (TargetRestriction restriction : restrictions)
+        for (TargetRestriction restriction : bcRestrictions)
             if (!restriction.canTarget(source, livingTarget, interactionType))
                 return false;
 
@@ -140,7 +102,7 @@ public class EntityManager extends Module {
      * @param pvpEnabled      Is PvP enabled between the two players. It should be computed in advance
      * @return If the two players can interact
      */
-    public boolean checkPvpInteractionRules(@NotNull Player source, @NotNull Player target, @NotNull InteractionType interactionType, @NotNull boolean pvpEnabled) {
+    public boolean checkPvpInteractionRules(@NotNull Player source, @NotNull Player target, @NotNull InteractionType interactionType, boolean pvpEnabled) {
 
         // Self harm
         if (source.equals(target))
@@ -154,8 +116,48 @@ public class EntityManager extends Module {
         return true;
     }
 
+    //region Deprecated
+
+    private final Set<TargetRestriction> bcRestrictions = new HashSet<>();
+
+    /**
+     * See {@link TargetRestriction} for more information. This should be
+     * called as soon as MythicLib enables by plugins implementing player sets
+     * like parties, friends, factions.... any set that could support friendly fire.
+     * <p>
+     * This is also helpful to prevent players from interacting with
+     * specific invulnerable entities like NPCs
+     *
+     * @param restriction New restriction for entities
+     */
+    @Deprecated
+    public void registerRestriction(TargetRestriction restriction) {
+        bcRestrictions.add(restriction);
+    }
+
     @Deprecated
     public void unregisterCustomProjectile(Projectile projectile) {
         projectile.removeMetadata(ProjectileMetadata.METADATA_KEY, MythicLib.plugin);
     }
+
+    /**
+     * @see ProjectileMetadata#get(Entity)
+     * @deprecated
+     */
+    @Nullable
+    @Deprecated
+    public ProjectileMetadata getCustomProjectile(Entity entity) {
+        return ProjectileMetadata.get(entity);
+    }
+
+    @Deprecated
+    public void registerCustomProjectile(Entity entity, ProjectileMetadata projectileData) {
+    }
+
+    @Deprecated
+    public boolean canTarget(@NotNull Player source, @NotNull Entity target, @NotNull InteractionType interactionType) {
+        return canInteract(source, target, interactionType);
+    }
+
+    //endregion
 }

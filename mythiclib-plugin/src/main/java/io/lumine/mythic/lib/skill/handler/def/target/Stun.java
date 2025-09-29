@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Effect;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 
 public class Stun extends SkillHandler<TargetSkillResult> {
     public Stun() {
@@ -18,7 +18,7 @@ public class Stun extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 

@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.skill.handler;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.FabledSkillResult;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 import studio.magemonkey.fabled.Fabled;
 import studio.magemonkey.fabled.api.skills.Skill;
 import studio.magemonkey.fabled.api.skills.SkillShot;
@@ -28,7 +29,7 @@ public class FabledSkillHandler extends SkillHandler<FabledSkillResult> {
     }
 
     @Override
-    public FabledSkillResult getResult(SkillMetadata meta) {
+    public @NotNull FabledSkillResult getResult(SkillMetadata meta) {
         return new FabledSkillResult(meta, skill);
     }
 

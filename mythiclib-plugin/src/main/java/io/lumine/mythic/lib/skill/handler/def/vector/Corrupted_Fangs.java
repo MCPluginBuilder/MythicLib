@@ -2,15 +2,14 @@ package io.lumine.mythic.lib.skill.handler.def.vector;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
@@ -20,6 +19,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -41,35 +42,51 @@ public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
-        new BukkitRunnable() {
-            final Vector vec = result.getTarget().setY(0).multiply(2);
-            final Location loc = caster.getLocation();
-            final FangsHandler handler = new FangsHandler(skillMeta.getCaster(), skillMeta.getParameter("damage"));
-            final double fangAmount = skillMeta.getParameter("fangs");
-            double ti = 0;
-
-            public void run() {
-                if (ti++ >= fangAmount) {
-                    handler.close(3 * 20);
-                    cancel();
-                    return;
-                }
-
-                loc.add(vec);
-                EvokerFangs evokerFangs = (EvokerFangs) caster.getWorld().spawnEntity(loc, EntityType.EVOKER_FANGS);
-                handler.entities.add(evokerFangs.getEntityId());
-            }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        new Handler(skillMeta, result.getTarget());
     }
 
-    public static class FangsHandler extends TemporaryListener {
-        private final Set<Integer> entities = new HashSet<>();
-        private final PlayerMetadata caster;
-        private final double skillDamage;
+    static class Handler extends TemporaryHandler {
+        final Set<Integer> entities = new HashSet<>();
+        final PlayerMetadata caster;
+        final double skillDamage;
+        final Location loc;
+        final int fangAmount;
+        final Vector dir;
 
-        public FangsHandler(PlayerMetadata caster, double skillDamage) {
-            this.caster = caster;
-            this.skillDamage = skillDamage;
+        public Handler(SkillMetadata skillMetadata, Vector dir) {
+            super(skillMetadata.getCaster().getData());
+
+            this.loc = skillMetadata.getCaster().getPlayer().getLocation();
+            this.caster = skillMetadata.getCaster();
+            this.skillDamage = skillMetadata.getParameter("damage");
+            this.fangAmount = (int) skillMetadata.getParameter("fangs");
+            this.dir = normalize(dir.setY(0)).multiply(2);
+
+            runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+        }
+
+        private Vector normalize(Vector vec) {
+            final var lengthSquared = vec.lengthSquared();
+            if (lengthSquared == 0) return new Vector(1, 0, 0);
+            return vec.multiply(1 / Math.sqrt(lengthSquared));
+        }
+
+        @Override
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
+                double ti = 0;
+
+                public void run() {
+                    if (ti++ >= fangAmount) {
+                        Handler.this.closeAfter(3 * 20);
+                        return;
+                    }
+
+                    loc.add(dir);
+                    EvokerFangs evokerFangs = (EvokerFangs) loc.getWorld().spawnEntity(loc, EntityType.EVOKER_FANGS);
+                    Handler.this.entities.add(evokerFangs.getEntityId());
+                }
+            };
         }
 
         @EventHandler(priority = EventPriority.LOWEST)

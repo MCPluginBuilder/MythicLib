@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Effect;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class Bloodbath extends SkillHandler<TargetSkillResult> {
     public Bloodbath() {
@@ -16,7 +17,7 @@ public class Bloodbath extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 

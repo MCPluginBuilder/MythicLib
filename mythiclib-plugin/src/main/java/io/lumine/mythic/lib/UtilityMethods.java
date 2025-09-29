@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.util.DelayFormat;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.*;
@@ -59,15 +60,6 @@ public class UtilityMethods {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
     }
 
-    @Deprecated
-    public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
-        try {
-            return evaluate.apply(enumName(rawInput));
-        } catch (Throwable throwable) {
-            throw new RuntimeException(String.format(errorMessage, params));
-        }
-    }
-
     public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
         try {
             return evaluate.apply(enumName(rawInput));
@@ -95,11 +87,6 @@ public class UtilityMethods {
         return vec.multiply(1d / Math.sqrt(normSquared));
     }
 
-    @Deprecated
-    public static int getPageNumber(int elements, int perPage) {
-        return Math.ceilDiv(Math.max(1, elements), perPage);
-    }
-
     public static void forcePotionEffect(LivingEntity entity, PotionEffectType type, double duration, int amplifier) {
         entity.removePotionEffect(type);
         entity.addPotionEffect(new PotionEffect(type, (int) (duration * 20), amplifier));
@@ -113,7 +100,7 @@ public class UtilityMethods {
      *
      * @param type Potion effect type
      * @return The duration that MythicLib should be using to give player
-     * "permanent" potion effects, depending on the potion effect type
+     *         "permanent" potion effects, depending on the potion effect type
      */
     public static int getPermanentEffectDuration(PotionEffectType type) {
         return type.equals(PotionEffectType.NIGHT_VISION) || type.equals(VPotionEffectType.NAUSEA.get()) ? 260
@@ -123,15 +110,6 @@ public class UtilityMethods {
     @NotNull
     public static Pattern internalPlaceholderPattern(char start, char end) {
         return Pattern.compile(start + "[^&|!=" + start + end + "]*?" + end);
-    }
-
-    private static final Listener PRIVATE_LISTENER = new Listener() {
-    };
-
-    public static <T extends Event> void registerEvent(@NotNull Class<T> eventClass,
-                                                       @NotNull EventPriority priority,
-                                                       @NotNull Consumer<T> executor) {
-        registerEvent(eventClass, PRIVATE_LISTENER, priority, executor, MythicLib.plugin, false);
     }
 
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
@@ -162,6 +140,15 @@ public class UtilityMethods {
 
     public static boolean isUndead(@NotNull Entity entity) {
         return UNDEAD_ENTITY_TYPES.get().contains(entity.getType());
+    }
+
+    private static final Listener PRIVATE_LISTENER = new Listener() {
+    };
+
+    public static <T extends Event> void registerEvent(@NotNull Class<T> eventClass,
+                                                       @NotNull EventPriority priority,
+                                                       @NotNull Consumer<T> executor) {
+        registerEvent(eventClass, PRIVATE_LISTENER, priority, executor, MythicLib.plugin, false);
     }
 
     /**
@@ -198,14 +185,14 @@ public class UtilityMethods {
     }
 
     public static boolean isInvalidated(@NotNull MMOPlayerData playerData) {
-        return !playerData.isOnline() || isInvalidated(playerData.getPlayer());
+        return !playerData.isOnline() || playerData.getPlayer().isDead();
     }
 
     public static boolean isInvalidated(@NotNull Player player) {
         return !player.isOnline() || player.isDead();
     }
 
-    @Nullable
+    @NotNull
     public static ItemStack getHandItem(@NotNull LivingEntity entity, @NotNull EquipmentSlot hand) {
         switch (hand) {
             case MAIN_HAND:
@@ -217,7 +204,7 @@ public class UtilityMethods {
         }
     }
 
-    @Nullable
+    @NotNull
     public static ItemStack getHandItem(@NotNull LivingEntity entity, @NotNull org.bukkit.inventory.EquipmentSlot hand) {
         switch (hand) {
             case HAND:
@@ -229,11 +216,6 @@ public class UtilityMethods {
         }
     }
 
-    @Deprecated
-    public static void setTextureValue(@NotNull ItemMeta meta, @NotNull String textureValue) {
-        if (meta instanceof SkullMeta) setTextureValue((SkullMeta) meta, textureValue, UUID.randomUUID());
-    }
-
     public static void setTextureValue(@NotNull SkullMeta meta, @NotNull String textureValue) {
         setTextureValue(meta, textureValue, UUID.randomUUID());
     }
@@ -243,42 +225,12 @@ public class UtilityMethods {
         VersionWrapper.get().setProfile(meta, profile);
     }
 
-    @Deprecated
-    public static boolean isFakeEvent(@NotNull EntityDamageEvent event) {
-        return isFake(event);
-    }
-
     public static boolean isFake(@NotNull Event event) {
         return MythicLib.plugin.getFakeEvents().isFake(event);
     }
 
-    @NotNull
-    @Deprecated
-    public static Runnable serverThreadCatch(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Throwable throwable) {
-                Bukkit.getScheduler().runTask(plugin, () -> throwable.printStackTrace());
-            }
-        };
-    }
-
     public static boolean isAir(@Nullable ItemStack item) {
         return item == null || item.getType() == Material.AIR;
-    }
-
-    private static final DelayFormat DELAY_FORMAT_SECONDS = new DelayFormat("smhdMy");
-    private static final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
-
-    @Deprecated
-    public static String formatDelay(long millis) {
-        return DELAY_FORMAT_MINUTES.format(millis);
-    }
-
-    @Deprecated
-    public static String formatDelay(long millis, boolean seconds) {
-        return (seconds ? DELAY_FORMAT_SECONDS : DELAY_FORMAT_MINUTES).format(millis);
     }
 
     private static final int PTS_PER_BLOCK = 10;
@@ -295,10 +247,10 @@ public class UtilityMethods {
     /**
      * @param loc Where we are looking for nearby entities
      * @return List of all entities surrounding a location. This method loops
-     * through the 9 surrounding chunks and collect all entities from
-     * them. This list can be cached and used multiple times in the same
-     * tick for projectile based spells which need to run entity
-     * checkups
+     *         through the 9 surrounding chunks and collect all entities from
+     *         them. This list can be cached and used multiple times in the same
+     *         tick for projectile based spells which need to run entity
+     *         checkups
      */
     public static List<Entity> getNearbyChunkEntities(Location loc) {
         final List<Entity> entities = new ArrayList<>();
@@ -530,27 +482,6 @@ public class UtilityMethods {
         loc.getWorld().dropItem(loc.clone().add(xs, ys, zs), stack);
     }
 
-    /**
-     * Used to find players in chunks around some location. This is
-     * used when displaying individual holograms to a list of players.
-     *
-     * @param loc Target location
-     * @return Players in chunks around the location
-     */
-    @Deprecated
-    public static List<Player> getNearbyPlayers(Location loc) {
-        final List<Player> players = new ArrayList<>();
-
-        final int cx = loc.getChunk().getX(), cz = loc.getChunk().getZ();
-
-        for (int x = -1; x < 2; x++)
-            for (int z = -1; z < 2; z++)
-                for (Entity target : loc.getWorld().getChunkAt(cx + x, cz + z).getEntities())
-                    if (target instanceof Player) players.add((Player) target);
-
-        return players;
-    }
-
     public static void loadDefaultFile(String path, String name) {
         final String newPath = path.isEmpty() ? "" : "/" + path;
         final File folder = new File(MythicLib.plugin.getDataFolder() + newPath);
@@ -585,11 +516,6 @@ public class UtilityMethods {
         return str.toUpperCase().replace("-", "_").replace(" ", "_");
     }
 
-    @Deprecated
-    public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
-        return Tasks.sync(plugin, syncTask);
-    }
-
     public static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
@@ -604,30 +530,13 @@ public class UtilityMethods {
         return input.toLowerCase().replace("_", "-").replace(" ", "-");
     }
 
-    public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {
-        for (var value : values)
-            if (config.contains(value.toString())) return true;
-        return false;
-    }
-
-    public static <T extends Enum<?>> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull T[] enumValues, @NotNull Function<T, String> name) {
-        for (var value : enumValues)
-            if (config.contains(name.apply(value))) return true;
-        return false;
-    }
-
-    @Deprecated
-    public static String ymlName(String str) {
-        return kebabCase(str);
-    }
-
     /**
      * Useful when dealing with Pvp stuff. If a VANILLA attack is due to
      * a player, this method will return the damage source ie the player.
      *
      * @param event Some damage event
      * @return The player, if this event is due to him. It is the player which
-     * is taken into account when PvP is toggled on.
+     *         is taken into account when PvP is toggled on.
      */
     @Nullable
     public static Player getPlayerDamager(EntityDamageByEntityEvent event) {
@@ -733,11 +642,6 @@ public class UtilityMethods {
             plugin.getLogger().log(Level.INFO, colorPrefix + "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
     }
 
-    @Deprecated
-    public static String getFontSpace(int size) {
-        return getSpaceFont(size);
-    }
-
     private static final int NEGATIVE_SPACE_BASE_CHAR = 0xD0000;
 
     /**
@@ -753,4 +657,124 @@ public class UtilityMethods {
         final int codePoint = NEGATIVE_SPACE_BASE_CHAR + width;
         return new String(Character.toChars(codePoint));
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {
+        return YamlUtils.containsOneKey(config, values);
+    }
+
+    @Deprecated
+    public static <T extends Enum<?>> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull T[] enumValues, @NotNull Function<T, String> name) {
+        return YamlUtils.containsOneKey(config, enumValues, name);
+    }
+
+    /**
+     * @see io.lumine.mythic.lib.gui.editable.GeneratedInventory#computeMaxPage(int)
+     * @deprecated
+     */
+    @Deprecated
+    public static int getPageNumber(int elements, int perPage) {
+        return Math.ceilDiv(Math.max(1, elements), perPage);
+    }
+
+    @Deprecated
+    public static void setTextureValue(@NotNull ItemMeta meta, @NotNull String textureValue) {
+        if (meta instanceof SkullMeta) setTextureValue((SkullMeta) meta, textureValue, UUID.randomUUID());
+    }
+
+    @Deprecated
+    public static boolean isFakeEvent(@NotNull EntityDamageEvent event) {
+        return isFake(event);
+    }
+
+    /**
+     * @see #kebabCase(String)
+     * @deprecated
+     */
+    @Deprecated
+    public static String ymlName(String str) {
+        return kebabCase(str);
+    }
+
+    @NotNull
+    @Deprecated
+    public static Runnable serverThreadCatch(@NotNull Plugin plugin, @NotNull Runnable runnable) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable throwable) {
+                Bukkit.getScheduler().runTask(plugin, () -> throwable.printStackTrace());
+            }
+        };
+    }
+
+    @Deprecated
+    public static String formatDelay(long millis) {
+        final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
+        return DELAY_FORMAT_MINUTES.format(millis);
+    }
+
+    @Deprecated
+    public static String formatDelay(long millis, boolean seconds) {
+        final DelayFormat DELAY_FORMAT_SECONDS = new DelayFormat("smhdMy");
+        final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
+        return (seconds ? DELAY_FORMAT_SECONDS : DELAY_FORMAT_MINUTES).format(millis);
+    }
+
+    /**
+     * @see Tasks#sync(Plugin, Runnable)
+     * @deprecated
+     */
+    @Deprecated
+    public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
+        return Tasks.sync(plugin, syncTask);
+    }
+
+    /**
+     * Used to find players in chunks around some location. This is
+     * used when displaying individual holograms to a list of players.
+     *
+     * @param loc Target location
+     * @return Players in chunks around the location
+     * @deprecated
+     */
+    @Deprecated
+    public static List<Player> getNearbyPlayers(Location loc) {
+        final List<Player> players = new ArrayList<>();
+
+        final int cx = loc.getChunk().getX(), cz = loc.getChunk().getZ();
+
+        for (int x = -1; x < 2; x++)
+            for (int z = -1; z < 2; z++)
+                for (Entity target : loc.getWorld().getChunkAt(cx + x, cz + z).getEntities())
+                    if (target instanceof Player) players.add((Player) target);
+
+        return players;
+    }
+
+    /**
+     * @see #getSpaceFont(int)
+     * @deprecated
+     */
+    @Deprecated
+    public static String getFontSpace(int size) {
+        return getSpaceFont(size);
+    }
+
+    /**
+     * @see #prettyValueOf(Function, String, String)
+     * @deprecated
+     */
+    @Deprecated
+    public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
+        try {
+            return evaluate.apply(enumName(rawInput));
+        } catch (Throwable throwable) {
+            throw new RuntimeException(String.format(errorMessage, params));
+        }
+    }
+
+    //endregion
 }

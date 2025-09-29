@@ -146,6 +146,7 @@ public class PlayerSession {
         Bukkit.broadcastMessage("========== START CLOSING SESSION " + toString());
 
         this.state = PlayerSessionState.CLOSING;
+        this.playerData.clearTemporaryHandlers();
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
         this.callbacks.clear();
 

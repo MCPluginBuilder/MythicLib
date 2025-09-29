@@ -1,20 +1,19 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
-import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Fire_Storm extends SkillHandler<TargetSkillResult> {
     public Fire_Storm() {
@@ -24,7 +23,7 @@ public class Fire_Storm extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -37,13 +36,13 @@ public class Fire_Storm extends SkillHandler<TargetSkillResult> {
         final int ignite = (int) (20 * skillMeta.getParameter("ignite"));
 
         caster.getPlayer().getWorld().playSound(caster.getPlayer().getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 4, handler -> new BukkitRunnable() {
             int j = 0;
 
             @Override
             public void run() {
-                if (j++ > 5 || UtilityMethods.isInvalidated(caster) || target.isDead() || !caster.getPlayer().getWorld().equals(target.getWorld())) {
-                    cancel();
+                if (j++ > 5 || target.isDead() || !caster.getPlayer().getWorld().equals(target.getWorld())) {
+                    handler.close();
                     return;
                 }
 
@@ -59,7 +58,7 @@ public class Fire_Storm extends SkillHandler<TargetSkillResult> {
 
                 }, 2, Particle.FLAME);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 4);
+        });
     }
 
     private Vector randomVector(Player player) {

@@ -9,12 +9,12 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Thrust extends SkillHandler<VectorSkillResult> {
     public Thrust() {
@@ -24,7 +24,7 @@ public class Thrust extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
