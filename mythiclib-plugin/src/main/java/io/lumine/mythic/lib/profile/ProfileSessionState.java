@@ -3,9 +3,9 @@ package io.lumine.mythic.lib.profile;
 /**
  * Different states of a player session.
  */
-public enum PlayerSessionState {
+public enum ProfileSessionState {
 
-    INIT,
+    CREATED,
 
     /**
      * Player just logged in. If a profile plugin is installed,

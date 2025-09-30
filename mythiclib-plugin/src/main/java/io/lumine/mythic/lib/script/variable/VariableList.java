@@ -12,6 +12,8 @@ public class VariableList implements VariableContainer {
     private final VariableScope scope;
     private final Map<String, Variable> vars = new HashMap<>();
 
+    public static final VariableList SERVER = new VariableList(VariableScope.SERVER);
+
     public VariableList(@NotNull VariableScope scope) {
         this.scope = scope;
     }

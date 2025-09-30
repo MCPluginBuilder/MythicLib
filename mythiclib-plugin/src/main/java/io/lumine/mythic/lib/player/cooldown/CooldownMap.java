@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.player.cooldown;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.player.PlayerDataMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class CooldownMap {
+public class CooldownMap extends PlayerDataMap {
     private final Map<String, CooldownInfo> map = new HashMap<>();
 
     /**

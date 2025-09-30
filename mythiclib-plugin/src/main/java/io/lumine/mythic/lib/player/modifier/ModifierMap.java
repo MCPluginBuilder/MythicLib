@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.player.modifier;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +10,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class ModifierMap<T extends PlayerModifier> {
+public abstract class ModifierMap<T extends PlayerModifier> extends PlayerDataMap {
     protected final MMOPlayerData playerData;
     protected final Map<UUID, T> modifiers = new HashMap<>();
 

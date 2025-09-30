@@ -108,10 +108,9 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     /**
      * @return True if this particular player data has been successfully loaded
      *         from the database
-     * @see MMOPlayerData#hasStartedPlaying()
      */
     public boolean isSessionReady() {
-        return playerData.getProfileSession().isReady(mmoPlugin.getNamespacedKey());
+        return playerData.hasProfileSession() && playerData.getProfileSession().isReady(mmoPlugin.getNamespacedKey());
     }
 
     /**

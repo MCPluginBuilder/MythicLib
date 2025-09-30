@@ -18,6 +18,16 @@ public class PermissionMap extends ModifierMap<PermissionModifier> {
         super(playerData);
     }
 
+    @Override
+    protected void onSessionOpen() {
+        // TODO
+    }
+
+    @Override
+    protected void onSessionClose() {
+        // TODO
+    }
+
     /**
      * If plugins are not using permissions, simply don't
      * instantiate a useless permission attachment

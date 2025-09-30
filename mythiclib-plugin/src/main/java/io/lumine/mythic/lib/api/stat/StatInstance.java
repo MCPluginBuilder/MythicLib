@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
-import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -127,7 +127,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @Override
     public void registerModifier(@NotNull StatModifier modifier) {
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
-        // TODO change "Closeable". add one interface Openable and have code run here instead. improved security.
+        // TODO change "Closeable". add one interface Openable and have code run here instead
         // DO NOT TEST IF MODIFIER IS ALREADY IN THE MAP.
         if (current instanceof Closeable) ((Closeable) current).close();
         update();
@@ -190,66 +190,21 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      */
     public void update() {
         if (map.isBufferingUpdates()) updateRequired = true;
-        else handler.get().ifPresent(handler -> handler.runUpdate(this));
+        else {
+            if (this.stat.equals("MAX_HEALTH"))
+                Bukkit.broadcastMessage("Updating max health for " + map.getPlayer().getName());
+            handler.get().ifPresent(handler -> handler.runUpdate(this));
+        }
     }
 
     public void releaseUpdates() {
-        Validate.isTrue(!map.isBufferingUpdates(), "StatMap is still in buffer mode");
-        if (updateRequired) {
+        if (updateRequired && !map.isBufferingUpdates()) {
             handler.get().ifPresent(handler -> handler.runUpdate(this));
             updateRequired = false;
         }
     }
 
     //endregion
-
-    //region Deprecated
-
-    @Deprecated
-    public ModifierPacket newPacket() {
-        return new ModifierPacket();
-    }
-
-    @Deprecated
-    public class ModifierPacket {
-        private final boolean previousBuffer;
-
-        @Deprecated
-        public ModifierPacket() {
-            previousBuffer = map.isBufferingUpdates();
-            map.bufferUpdates();
-        }
-
-        @Deprecated
-        public void addModifier(StatModifier modifier) {
-            StatInstance.this.registerModifier(modifier);
-        }
-
-        @Deprecated
-        public void remove(@NotNull UUID uniqueId) {
-            StatInstance.this.removeModifier(uniqueId);
-        }
-
-        @Deprecated
-        public void remove(@NotNull String key) {
-            StatInstance.this.removeIf(str -> str.equals(key));
-        }
-
-        @Deprecated
-        public void removeIf(@NotNull Predicate<String> condition) {
-            StatInstance.this.removeIf(condition);
-        }
-
-        @Deprecated
-        public void update() {
-            if (!previousBuffer) StatInstance.this.releaseUpdates();
-        }
-
-        @Deprecated
-        public void runUpdate() {
-            update();
-        }
-    }
 
     @Override
     @Deprecated

@@ -3,7 +3,7 @@ package io.lumine.mythic.lib.data.sql;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
-import io.lumine.mythic.lib.profile.PlayerSession;
+import io.lumine.mythic.lib.profile.DataSession;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     private final UUID effectiveId;
     private final String tableName, uuidFieldName;
     private final long start = System.currentTimeMillis();
-    private final PlayerSession session;
+    private final DataSession dataSession;
 
     private int tries;
 
@@ -60,7 +60,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
         this.playerData = playerData;
         this.dataSource = dataSource;
         this.effectiveId = playerData.getEffectiveId();
-        this.session = playerData.getMMOPlayerData().getProfileSession();
+        this.dataSession = playerData.getMMOPlayerData().getProfileSession().getDataSession();
     }
 
     public H getData() {
@@ -150,11 +150,10 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     }
 
     private boolean isInvalidated() {
-
-        // Session should not be null 
-        if (session != null && session.isDead()) return true;
-
-        return !playerData.getMMOPlayerData().isLookup() && !playerData.getMMOPlayerData().isOnline();
+        // This method should check if the player is offline.
+        // The data session `alive` flag is set to false if the player logs out
+        // or if for any reason the profile session closes
+        return !dataSession.isAlive();
     }
 
     /**

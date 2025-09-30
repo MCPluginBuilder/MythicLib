@@ -36,6 +36,7 @@ public class SynchronizedDataLoadEvent extends Event {
         return holder;
     }
 
+    @Deprecated
     public boolean syncIsFull() {
         return holder.getMMOPlayerData().hasStartedPlaying();
     }

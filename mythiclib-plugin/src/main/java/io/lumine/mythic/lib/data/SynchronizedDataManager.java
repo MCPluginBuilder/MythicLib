@@ -311,7 +311,9 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     /**
-     * @deprecated Avoid using TODO find better
+     * @deprecated TODO find better alternative. the #unregister only calls on profileunload
+     *         when using legacy profiles. if the player logs out without choosing a profile
+     *         this event will not call, and the data will remain in memory => LEAK
      */
     @Deprecated(forRemoval = true)
     public void garbageCollect(@NotNull Player player) {

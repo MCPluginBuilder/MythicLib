@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.player.potion;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.player.modifier.ModifierMap;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -31,6 +32,7 @@ public class PermanentPotionEffectMap extends ModifierMap<PermanentPotionEffect>
     }
 
     public void applyPermanentPotionEffects() {
+        Validate.isTrue(sessionOpen, "Session not open");
         bukkitEffectCache.forEach(effect -> playerData.getPlayer().addPotionEffect(effect));
     }
 

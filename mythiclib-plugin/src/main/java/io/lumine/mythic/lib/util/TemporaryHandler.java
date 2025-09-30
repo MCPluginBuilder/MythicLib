@@ -103,7 +103,7 @@ public abstract class TemporaryHandler implements Listener {
         if (!open) return false;
 
         open = false;
-        if (!fromSession && this.attachedPlayer != null) this.attachedPlayer.removeTemporaryListener(this);
+        if (!fromSession && this.attachedPlayer != null) this.attachedPlayer.removeTemporaryHandler(this);
         onClose();
         if (runnable != null && !runnable.isCancelled()) {
             runnable.cancel();
