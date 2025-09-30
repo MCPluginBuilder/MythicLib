@@ -23,6 +23,8 @@ import io.lumine.mythic.lib.script.mechanic.buff.ReduceCooldownMechanic;
 import io.lumine.mythic.lib.script.mechanic.buff.SaturateMechanic;
 import io.lumine.mythic.lib.script.mechanic.buff.stat.AddStatModifierMechanic;
 import io.lumine.mythic.lib.script.mechanic.buff.stat.RemoveStatModifierMechanic;
+import io.lumine.mythic.lib.script.mechanic.gui.CloseInventoryMechanic;
+import io.lumine.mythic.lib.script.mechanic.gui.GoBackMechanic;
 import io.lumine.mythic.lib.script.mechanic.misc.*;
 import io.lumine.mythic.lib.script.mechanic.movement.TeleportMechanic;
 import io.lumine.mythic.lib.script.mechanic.movement.VelocityMechanic;
@@ -31,8 +33,6 @@ import io.lumine.mythic.lib.script.mechanic.player.GiveItemMechanic;
 import io.lumine.mythic.lib.script.mechanic.player.SudoMechanic;
 import io.lumine.mythic.lib.script.mechanic.projectile.ShootArrowMechanic;
 import io.lumine.mythic.lib.script.mechanic.projectile.ShulkerBulletMechanic;
-import io.lumine.mythic.lib.script.mechanic.raytrace.RayTraceBlocksMechanic;
-import io.lumine.mythic.lib.script.mechanic.raytrace.RayTraceEntitiesMechanic;
 import io.lumine.mythic.lib.script.mechanic.shaped.*;
 import io.lumine.mythic.lib.script.mechanic.variable.*;
 import io.lumine.mythic.lib.script.mechanic.variable.vector.*;
@@ -118,99 +118,118 @@ public class SkillManager extends Module {
     public SkillManager(MMOPluginImpl plugin) {
         super(plugin);
 
-        // Default mechanics
-        registerMechanic("add_stat", config -> new AddStatModifierMechanic(config));
-        registerMechanic("remove_stat", config -> new RemoveStatModifierMechanic(config));
+        //////////////////////////////////
+        // Mechanics
+        //////////////////////////////////
 
-        registerMechanic("feed", config -> new FeedMechanic(config));
-        registerMechanic("heal", config -> new HealMechanic(config));
+        // Buffs
+        registerMechanic("add_stat", AddStatModifierMechanic::new);
+        registerMechanic("remove_stat", RemoveStatModifierMechanic::new);
+        registerMechanic("feed", FeedMechanic::new);
+        registerMechanic("heal", HealMechanic::new);
         registerMechanic("reduce_cooldown", ReduceCooldownMechanic::new, "reduce_cd", "decrease_cooldown", "decrease_cd");
-        registerMechanic("saturate", config -> new SaturateMechanic(config));
+        registerMechanic("saturate", SaturateMechanic::new);
 
+        // Misc
         registerMechanic("apply_cooldown", ApplyCooldownMechanic::new, "apply_cd");
         registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
         registerMechanic("delay", DelayMechanic::new);
         registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
-        registerMechanic("close_inventory", CloseInventoryMechanic::new, "close_inv");
         registerMechanic("entity_effect", EntityEffectMechanic::new);
         registerMechanic("lightning", LightningStrikeMechanic::new);
         registerMechanic("script", ScriptMechanic::new, "skill", "cast");
 
+        // Inventory
+        registerMechanic("close_inventory", config -> new CloseInventoryMechanic(), "close_inv");
+        registerMechanic("go_back", config -> new GoBackMechanic(), "goback");
+
+        // Move
         registerMechanic("teleport", TeleportMechanic::new, "tp", "set_position", "set_pos", "setpos", "setposition", "set_location", "setlocation", "set_loc", "setloc", "move", "moveto", "move_to");
         registerMechanic("set_velocity", VelocityMechanic::new, "setvel", "set_vel", "setvelocity");
 
+        // Offense
         registerMechanic("additive_damage_buff", AdditiveDamageBuffMechanic::new);
         registerMechanic("damage", DamageMechanic::new, "deal_damage", "dmg", "deal_dmg", "dealdamage", "dealdmg", "attack", "atk");
         registerMechanic("multiply_damage", MultiplyDamageMechanic::new);
-        registerMechanic("potion", config -> new PotionMechanic(config));
-        registerMechanic("remove_potion", config -> new RemovePotionMechanic(config));
-        registerMechanic("set_on_fire", config -> new SetOnFireMechanic(config));
+        registerMechanic("potion", PotionMechanic::new, "peffect", "potion_effect", "p_effect", "apply_potion", "apply_potion_effect", "apply_peffect");
+        registerMechanic("remove_potion", RemovePotionMechanic::new);
+        registerMechanic("set_on_fire", SetOnFireMechanic::new);
 
+        // Player
         registerMechanic("give_item", GiveItemMechanic::new);
-        registerMechanic("sudo", config -> new SudoMechanic(config));
+        registerMechanic("sudo", SudoMechanic::new);
 
-        registerMechanic("shoot_arrow", config -> new ShootArrowMechanic(config), "fire_arrow", "bowshoot", "bow_shoot", "shoot_bow");
-        registerMechanic("shulker_bullet", config -> new ShulkerBulletMechanic(config));
+        // Projectile
+        registerMechanic("shoot_arrow", ShootArrowMechanic::new, "fire_arrow", "bowshoot", "bow_shoot", "shoot_bow");
+        registerMechanic("shulker_bullet", ShulkerBulletMechanic::new);
 
-        registerMechanic("raytrace_blocks", config -> new RayTraceBlocksMechanic(config));
-        registerMechanic("raytrace_entities", config -> new RayTraceEntitiesMechanic(config));
-
-        registerMechanic("draw_helix", config -> new HelixMechanic(config), "helix");
+        // Shaped
+        registerMechanic("draw_helix", HelixMechanic::new, "helix");
         registerMechanic("draw_line", LineMechanic::new, "line");
         registerMechanic("draw_parabola", ParabolaMechanic::new, "parabola", "spawn_parabola");
-        registerMechanic("projectile", config -> new ProjectileMechanic(config));
-        registerMechanic("ray_trace", config -> new RayTraceMechanic(config), "cast_ray", "raytrace", "ray_cast", "raycast");
-        registerMechanic("slash", config -> new SlashMechanic(config));
-        registerMechanic("draw_sphere", config -> new SphereMechanic(config), "sphere");
+        registerMechanic("projectile", ProjectileMechanic::new);
+        registerMechanic("raytrace_blocks", RayTraceBlocksMechanic::new);
+        registerMechanic("raytrace_entities", RayTraceEntitiesMechanic::new);
+        registerMechanic("ray_trace", RayTraceMechanic::new, "cast_ray", "raytrace", "ray_cast", "raycast");
+        registerMechanic("slash", SlashMechanic::new);
+        registerMechanic("draw_sphere", SphereMechanic::new, "sphere");
 
-        registerMechanic("add_vector", config -> new AddVectorMechanic(config), "add_vec");
-        registerMechanic("cross_product", config -> new CrossProductMechanic(config));
-        registerMechanic("dot_product", config -> new DotProductMechanic(config));
-        registerMechanic("hadamard_product", config -> new HadamardProductMechanic(config));
-        registerMechanic("multiply_vector", config -> new MultiplyVectorMechanic(config));
-        registerMechanic("normalize_vector", config -> new NormalizeVectorMechanic(config), "normalize");
-        registerMechanic("orient_vector", config -> new OrientVectorMechanic(config), "orient_vec");
-        registerMechanic("save_vector", config -> new CopyVectorMechanic(config), "save_vec", "copy_vec", "copy_vector");
-        registerMechanic("set_x", config -> new SetXMechanic(config));
-        registerMechanic("set_y", config -> new SetYMechanic(config));
-        registerMechanic("set_z", config -> new SetZMechanic(config));
-        registerMechanic("subtract_vector", config -> new SubtractVectorMechanic(config), "sub_vec", "sub_vector", "subvec");
+        // Variables
+        registerMechanic("add_vector", AddVectorMechanic::new, "add_vec");
+        registerMechanic("cross_product", CrossProductMechanic::new);
+        registerMechanic("dot_product", DotProductMechanic::new);
+        registerMechanic("hadamard_product", HadamardProductMechanic::new);
+        registerMechanic("multiply_vector", MultiplyVectorMechanic::new);
+        registerMechanic("normalize_vector", NormalizeVectorMechanic::new, "normalize");
+        registerMechanic("orient_vector", OrientVectorMechanic::new, "orient_vec");
+        registerMechanic("save_vector", CopyVectorMechanic::new, "save_vec", "copy_vec", "copy_vector");
+        registerMechanic("set_x", SetXMechanic::new);
+        registerMechanic("set_y", SetYMechanic::new);
+        registerMechanic("set_z", SetZMechanic::new);
+        registerMechanic("subtract_vector", SubtractVectorMechanic::new, "sub_vec", "sub_vector", "subvec");
 
-        registerMechanic("increment", config -> new IncrementMechanic(config), "incr");
-        registerMechanic("set_boolean", config -> new SetBooleanMechanic(config), "set_bool");
-        registerMechanic("set_double", config -> new SetDoubleMechanic(config), "set_float");
-        registerMechanic("set_integer", config -> new SetIntegerMechanic(config), "set_int");
-        registerMechanic("set_string", config -> new SetStringMechanic(config), "set_str");
-        registerMechanic("set_vector", config -> new SetVectorMechanic(config), "set_vec");
+        registerMechanic("increment", IncrementMechanic::new, "incr");
+        registerMechanic("set_boolean", SetBooleanMechanic::new, "set_bool");
+        registerMechanic("set_double", SetDoubleMechanic::new, "set_float");
+        registerMechanic("set_integer", SetIntegerMechanic::new, "set_int");
+        registerMechanic("set_string", SetStringMechanic::new, "set_str");
+        registerMechanic("set_vector", SetVectorMechanic::new, "set_vec");
 
-        registerMechanic("particle", config -> new ParticleMechanic(config), "spawn_particle", "par");
-        registerMechanic("sound", config -> new SoundMechanic(config), "play_world_sound", "play_sound", "world_sound");
-        registerMechanic("player_sound", config -> new PlayerSoundMechanic(config), "play_player_sound");
-        registerMechanic("tell", config -> new TellMechanic(config), "message", "msg", "send", "send_message", "send_msg");
+        // Visual
+        registerMechanic("particle", ParticleMechanic::new, "spawn_particle", "par");
+        registerMechanic("sound", SoundMechanic::new, "play_world_sound", "play_sound", "world_sound");
+        registerMechanic("player_sound", PlayerSoundMechanic::new, "play_player_sound");
+        registerMechanic("tell", TellMechanic::new, "message", "msg", "send", "send_message", "send_msg");
 
-        // Default targeters
+        //////////////////////////////////
+        // Targeters
+        //////////////////////////////////
+
         registerEntityTargeter("caster", config -> new CasterTargeter());
-        registerEntityTargeter("cone", config -> new ConeTargeter(config));
-        registerEntityTargeter("nearby_entities", config -> new NearbyEntitiesTargeter(config));
-        registerEntityTargeter("nearest_entity", config -> new NearestEntityTargeter(config));
+        registerEntityTargeter("cone", ConeTargeter::new);
+        registerEntityTargeter("nearby_entities", NearbyEntitiesTargeter::new);
+        registerEntityTargeter("nearest_entity", NearestEntityTargeter::new);
         registerEntityTargeter("target", config -> new TargetTargeter());
-        registerEntityTargeter("variable", config -> new VariableEntityTargeter(config));
-        registerEntityTargeter("looking_at", config -> new io.lumine.mythic.lib.script.targeter.entity.LookingAtTargeter(config));
+        registerEntityTargeter("variable", VariableEntityTargeter::new);
+        registerEntityTargeter("looking_at", io.lumine.mythic.lib.script.targeter.entity.LookingAtTargeter::new);
 
-        registerLocationTargeter("caster", config -> new CasterLocationTargeter(config));
-        registerLocationTargeter("circle", config -> new CircleLocationTargeter(config));
-        registerLocationTargeter("custom", config -> new CustomLocationTargeter(config));
-        registerLocationTargeter("looking_at", config -> new LookingAtTargeter(config));
+        registerLocationTargeter("caster", CasterLocationTargeter::new);
+        registerLocationTargeter("circle", CircleLocationTargeter::new);
+        registerLocationTargeter("custom", CustomLocationTargeter::new);
+        registerLocationTargeter("looking_at", LookingAtTargeter::new);
         registerLocationTargeter("source_location", config -> new SourceLocationTargeter());
-        registerLocationTargeter("target", config -> new TargetEntityLocationTargeter(config));
+        registerLocationTargeter("target", TargetEntityLocationTargeter::new);
         registerLocationTargeter("target_location", config -> new TargetLocationTargeter());
-        registerLocationTargeter("variable", config -> new VariableLocationTargeter(config));
+        registerLocationTargeter("variable", VariableLocationTargeter::new);
 
-        // Default conditions
-        registerCondition("boolean", config -> new BooleanCondition(config));
-        registerCondition("compare", config -> new CompareCondition(config));
-        registerCondition("in_between", config -> new InBetweenCondition(config));
-        registerCondition("string_equals", config -> new StringEqualsCondition(config));
+        //////////////////////////////////
+        // Conditions
+        //////////////////////////////////
+
+        registerCondition("boolean", BooleanCondition::new);
+        registerCondition("compare", CompareCondition::new);
+        registerCondition("in_between", InBetweenCondition::new);
+        registerCondition("string_equals", StringEqualsCondition::new);
 
         registerCondition("biome", BiomeCondition::new);
         registerCondition("cuboid", CuboidCondition::new);
@@ -227,7 +246,10 @@ public class SkillManager extends Module {
         registerCondition("permission", PermissionCondition::new);
         registerCondition("time", TimeCondition::new);
 
-        // Default skill handler types
+        //////////////////////////////////
+        // Skill handler types
+        //////////////////////////////////
+
         registerSkillHandlerType(config -> config.contains("mythiclib-skill-id"), config -> new MythicLibSkillHandler(config, getScriptOrThrow(config.getString("mythiclib-skill-id"))));
         registerSkillHandlerType(config -> config.contains("mechanics"), config -> new MythicLibSkillHandler(new Script(config)));
     }

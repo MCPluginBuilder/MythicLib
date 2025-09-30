@@ -1,9 +1,8 @@
-package io.lumine.mythic.lib.script.mechanic.raytrace;
+package io.lumine.mythic.lib.script.mechanic.shaped;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
-import io.lumine.mythic.lib.script.mechanic.shaped.RayTraceMechanic;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;

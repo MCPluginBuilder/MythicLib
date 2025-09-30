@@ -151,10 +151,16 @@ public class Navigator implements Listener {
 
     /**
      * Pops upmost inventory and opens the second-in-order
+     *
+     * @return The new upmost inventory, or null if inventory stack is empty
      */
-    @NotNull
+    @Nullable
     public PluginInventory popOpen() {
         openedInventories.pop();
+        if (openedInventories.isEmpty()) {
+            player.closeInventory();
+            return null;
+        }
         return openLast();
     }
 
@@ -212,7 +218,7 @@ public class Navigator implements Listener {
         Validate.isTrue(!closed, "Already closed");
         closed = true;
 
-        openedInventories.peek().onClose();
+        if (!openedInventories.isEmpty()) openedInventories.peek().onClose();
 
         InventoryCloseEvent.getHandlerList().unregister(this);
         InventoryClickEvent.getHandlerList().unregister(this);

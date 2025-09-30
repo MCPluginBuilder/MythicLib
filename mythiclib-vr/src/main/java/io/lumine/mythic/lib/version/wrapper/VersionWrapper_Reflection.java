@@ -606,7 +606,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
             return view.getTopInventory();
         }
 
-
         @Override
         public Inventory getBottomInventory() {
             return view.getBottomInventory();

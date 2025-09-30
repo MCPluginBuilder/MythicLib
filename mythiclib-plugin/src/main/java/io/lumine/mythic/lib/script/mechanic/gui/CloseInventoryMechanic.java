@@ -1,13 +1,12 @@
-package io.lumine.mythic.lib.script.mechanic.misc;
+package io.lumine.mythic.lib.script.mechanic.gui;
 
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 @MechanicMetadata
 public class CloseInventoryMechanic extends Mechanic {
-    public CloseInventoryMechanic(ConfigObject config) {
+    public CloseInventoryMechanic() {
     }
 
     @Override
