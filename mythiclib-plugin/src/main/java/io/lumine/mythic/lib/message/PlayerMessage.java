@@ -122,6 +122,11 @@ public abstract class PlayerMessage {
             // Action bar !! single line only !!
             else if (config.getBoolean("action-bar")) {
                 Validate.isInstanceOf(String.class, format, "Action bar messages only support single line strings");
+                var string = (String) format;
+
+                // Empty string => empty message
+                if (string.isEmpty()) return new EmptyMessage(config);
+
                 return new ActionBarMessage(config, (String) format);
             }
 
