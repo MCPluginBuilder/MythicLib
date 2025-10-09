@@ -435,6 +435,16 @@ public class UtilityMethods {
             player.setHealth(Math.min(player.getAttribute(Attributes.MAX_HEALTH).getValue(), player.getHealth() + heal));
     }
 
+    /**
+     * Used by MMOProfiles and MMOCore to re-apply health after
+     * profile session opens
+     */
+    public static void setHealth(@NotNull LivingEntity entity, double health) {
+        final double maxHealth = entity.getAttribute(Attributes.MAX_HEALTH).getValue();
+        // 0.001d to avoid death on #setHealth
+        entity.setHealth(Math.max(0.001d, Math.min(maxHealth, health)));
+    }
+
     public static void closeOpenViewsOfType(Class<?> inventoryHolderClass) {
         for (Player online : Bukkit.getOnlinePlayers()) {
             final VInventoryView view = VersionUtils.getOpen(online);

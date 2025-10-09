@@ -85,7 +85,16 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     }
 
     /**
-     * Called before the player data is saved to the database.
+     * Called before ANY plugin closes or modifies any resource related to any
+     * plugin player data, when a player switches profiles or logs out. This method
+     * is also called when a player data gets periodically auto-saved.
+     * <p>
+     * This method is called on the main server thread before scheduling the async
+     * data save schedule to ensure plugins can access player data before any
+     * player data save async logic.
+     * <p>
+     * This notably fixes an issue where MMOCore cannot access the player's
+     * entity health anymore after MMOProfiles has reset it due to profile change.
      */
     public void onSaved(@NotNull SaveReason reason) {
         // Nothing by default

@@ -120,10 +120,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // TODO Batching
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
-                Tasks.runAsync(owning, () -> {
-                    holder.onSaved(SaveReason.AUTOSAVE);
-                    dataHandler.saveData(holder, SaveReason.AUTOSAVE);
-                });
+                holder.onSaved(SaveReason.AUTOSAVE);
+                Tasks.runAsync(owning, () -> dataHandler.saveData(holder, SaveReason.AUTOSAVE));
             }
     }
 
@@ -331,7 +329,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {
-        Validate.isTrue(reason != SaveReason.AUTOSAVE, "Invalid save reason");
         final H playerData;
         if (reason == SaveReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
         else if (reason == SaveReason.QUIT_PROFILE)

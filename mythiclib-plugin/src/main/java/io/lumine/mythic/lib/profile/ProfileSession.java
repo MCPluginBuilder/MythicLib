@@ -94,7 +94,7 @@ public class ProfileSession {
         return state == ProfileSessionState.DEAD;
     }
 
-    public boolean isReady(@NotNull NamespacedKey key) {
+    public synchronized boolean isReady(@NotNull NamespacedKey key) {
 
         // If session is globally ready, all plugins loaded their data
         // If session is closing, means it was ready before.
@@ -116,10 +116,10 @@ public class ProfileSession {
         this.callbacks.clear();
     }
 
-    public void addCallback(@NotNull ProfileSessionCallback callback) {
+    public synchronized void addOpenCallback(@NotNull ProfileSessionCallback callback) {
         Validate.notNull(callback, "Callback cannot be null");
         initialize();
-        Validate.isTrue(this.state == ProfileSessionState.OPENING || this.state == ProfileSessionState.CLOSING, "Cannot add callback to a non opening/closing session");
+        Validate.isTrue(this.state == ProfileSessionState.OPENING, "Session is not opening");
 
         this.callbacks.add(callback);
     }
@@ -156,32 +156,53 @@ public class ProfileSession {
         this.dataSession.markActive();
     }
 
-    public void startClosing() {
+    private void abortOpening() {
+        this.state = ProfileSessionState.DEAD;
+        this.playerData.clearTemporaryHandlers();
+        this.waiting = null;
+        this.callbacks.clear();
+        this.incrementDataSession();
+    }
 
-        Bukkit.broadcastMessage("========== START CLOSING SESSION");
+    public synchronized void startClosing() {
 
+        // Abort opening
         if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
-            this.state = ProfileSessionState.DEAD;
-            this.playerData.clearTemporaryHandlers();
-            this.waiting = null;
-            this.callbacks.clear();
-            this.incrementDataSession();
-            return;
+            Bukkit.broadcastMessage("========== ABORT OPENING SESSION");
+            abortOpening();
         }
 
-        Validate.isTrue(state == ProfileSessionState.OPEN, "Cannot close session in state " + this.state.name());
+        // Open
+        else if (state == ProfileSessionState.OPEN) {
 
-        this.state = ProfileSessionState.CLOSING;
-        this.playerData.clearTemporaryHandlers();
-        this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
-        this.callbacks.clear();
-        this.closeDataSession();
-        incrementDataSession();
+            Bukkit.broadcastMessage("========== START CLOSING SESSION");
 
-        checkClosed();
+            this.state = ProfileSessionState.CLOSING;
+            this.playerData.clearTemporaryHandlers();
+            this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
+            this.callbacks.clear();
+            this.closeDataSession();
+            incrementDataSession();
+
+            checkClosed();
+        }
+
+        // Already closing
+        else if (state != ProfileSessionState.CLOSING) {
+            Validate.isTrue(state == ProfileSessionState.DEAD, "Cannot close a dead session");
+        }
+    }
+
+    public synchronized void addCloseCallback(@NotNull ProfileSessionCallback callback) {
+        Validate.notNull(callback, "Callback cannot be null");
+        startClosing();
+        Validate.isTrue(this.state == ProfileSessionState.CLOSING, "Session is not closing");
+
+        this.callbacks.add(callback);
     }
 
     public synchronized void markAsClosed(@NotNull NamespacedKey key) {
+        startClosing();
         Validate.isTrue(state == ProfileSessionState.CLOSING, "Session is not closing (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
