@@ -30,6 +30,7 @@ import io.lumine.mythic.lib.script.mechanic.movement.TeleportMechanic;
 import io.lumine.mythic.lib.script.mechanic.movement.VelocityMechanic;
 import io.lumine.mythic.lib.script.mechanic.offense.*;
 import io.lumine.mythic.lib.script.mechanic.player.GiveItemMechanic;
+import io.lumine.mythic.lib.script.mechanic.player.KickMechanic;
 import io.lumine.mythic.lib.script.mechanic.player.SudoMechanic;
 import io.lumine.mythic.lib.script.mechanic.projectile.ShootArrowMechanic;
 import io.lumine.mythic.lib.script.mechanic.projectile.ShulkerBulletMechanic;
@@ -157,6 +158,7 @@ public class SkillManager extends Module {
 
         // Player
         registerMechanic("give_item", GiveItemMechanic::new);
+        registerMechanic("kick_player", KickMechanic::new, "kick", "kickplayer");
         registerMechanic("sudo", SudoMechanic::new);
 
         // Projectile
