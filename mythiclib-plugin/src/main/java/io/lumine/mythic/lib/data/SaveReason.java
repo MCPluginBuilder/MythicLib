@@ -13,7 +13,8 @@ public enum SaveReason {
     LOG_OUT,
 
     /**
-     * Player is switching live to another profile
+     * Player is quiting a profile to either stop playing
+     * or switch to another profile
      */
     QUIT_PROFILE
 }

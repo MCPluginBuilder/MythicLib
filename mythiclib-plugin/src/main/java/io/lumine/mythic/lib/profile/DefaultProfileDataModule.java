@@ -92,6 +92,7 @@ public class DefaultProfileDataModule implements ProfileDataModule {
     private static SaveReason adapt(ProfileUnloadEvent.Reason reason) {
         switch (reason) {
             case QUIT_PROFILE:
+            case SWITCH_PROFILE:
                 return SaveReason.QUIT_PROFILE;
             case LOG_OUT:
                 return SaveReason.LOG_OUT;
