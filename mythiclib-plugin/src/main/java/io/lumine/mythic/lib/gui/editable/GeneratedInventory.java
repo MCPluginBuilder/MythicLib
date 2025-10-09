@@ -205,6 +205,15 @@ public abstract class GeneratedInventory extends PluginInventory {
         });
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void asyncUpdate(InventoryItem<?> item, int n) {
+        Bukkit.getScheduler().runTaskAsynchronously(MythicLib.plugin, () -> {
+            if (lastOpened == null) return;
+            final var placed = ((InventoryItem) item).getDisplayedItem(this, n);
+            lastOpened.setItem(item.getSlots().get(n), placed);
+        });
+    }
+
     public <T> void asyncUpdate(CompletableFuture<T> future, InventoryItem<?> item, int n, ItemStack placed, BiConsumer<T, ItemStack> update) {
         future.thenAccept(t -> {
             if (lastOpened == null) return;

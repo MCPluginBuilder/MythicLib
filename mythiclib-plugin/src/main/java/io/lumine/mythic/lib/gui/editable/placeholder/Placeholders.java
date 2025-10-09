@@ -18,8 +18,15 @@ import java.util.Map;
 public class Placeholders {
     private final Map<String, String> placeholders = new HashMap<>();
 
+    @Nullable
+    private String fallback;
+
     public void register(@NotNull String path, @NotNull Object obj) {
         placeholders.put(path, obj.toString());
+    }
+
+    public void setFallback(@Nullable String fallback) {
+        this.fallback = fallback;
     }
 
     /**
@@ -39,8 +46,9 @@ public class Placeholders {
             int end = sb.indexOf("}", begin + 1);
             if (end == -1) break;
 
-            String key = sb.substring(begin + 1, end);
-            String value = parsePlaceholder(key);
+            var key = sb.substring(begin + 1, end);
+            var value = parsePlaceholder(key);
+            if (value == null && fallback != null) value = fallback;
             if (value != null) {
                 sb.replace(begin, end + 1, value);
                 start = begin + value.length();
