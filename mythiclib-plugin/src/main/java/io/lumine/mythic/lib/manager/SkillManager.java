@@ -484,9 +484,9 @@ public class SkillManager extends Module {
         // mkdir script folder
         File scriptFolder = new File(MythicLib.plugin.getDataFolder() + "/script");
         if (!scriptFolder.exists()) {
-            UtilityMethods.loadDefaultFile("script", "elemental_attacks.yml");
-            UtilityMethods.loadDefaultFile("script", "mmoitems_scripts.yml");
-            UtilityMethods.loadDefaultFile("script", "example_skills.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/elemental_attacks.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmoitems_scripts.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/example_skills.yml");
         }
 
         // Load default skills

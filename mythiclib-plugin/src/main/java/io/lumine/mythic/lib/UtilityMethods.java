@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.util.DelayFormat;
+import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
@@ -44,9 +45,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -482,19 +480,6 @@ public class UtilityMethods {
         loc.getWorld().dropItem(loc.clone().add(xs, ys, zs), stack);
     }
 
-    public static void loadDefaultFile(String path, String name) {
-        final String newPath = path.isEmpty() ? "" : "/" + path;
-        final File folder = new File(MythicLib.plugin.getDataFolder() + newPath);
-        if (!folder.exists()) folder.mkdir();
-
-        final File file = new File(MythicLib.plugin.getDataFolder() + newPath, name);
-        if (!file.exists()) try {
-            Files.copy(MythicLib.plugin.getResource("default/" + (path.isEmpty() ? "" : path + "/") + name), file.getAbsoluteFile().toPath());
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-    }
-
     /**
      * The 'vanished' meta data should be supported by vanish plugins
      * to let all the plugins knows when a player is vanished.
@@ -659,6 +644,21 @@ public class UtilityMethods {
     }
 
     //region Deprecated
+
+    /**
+     * @see FileUtils#copyDefaultFile(Plugin, String)
+     * @deprecated
+     */
+    @Deprecated
+    public static void loadDefaultFile(String path, String name) {
+        var sb = new StringBuilder();
+        if (path != null && !path.isEmpty()) {
+            sb.append(path);
+            if (!path.endsWith("/")) sb.append("/");
+        }
+        sb.append(name);
+        FileUtils.copyDefaultFile(MythicLib.plugin, sb.toString());
+    }
 
     @Deprecated
     public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {

@@ -126,8 +126,8 @@ public class FileUtils {
     }
 
     private static void mkdirFolders(@NotNull Plugin plugin, @NotNull String fullPath) {
-        String currentPath = "";
-        final String[] subpaths = fullPath.split("/");
+        var currentPath = "";
+        final var subpaths = fullPath.split("/");
         for (int i = 0; i < subpaths.length - 1; i++) {
             currentPath += "/" + subpaths[i];
             getFile(plugin, currentPath).mkdir();
@@ -137,7 +137,7 @@ public class FileUtils {
     public static void copyDefaultFile(@NotNull Plugin plugin, @NotNull String path) {
         mkdirFolders(plugin, path);
 
-        final File file = new File(plugin.getDataFolder(), path);
+        final var file = new File(plugin.getDataFolder(), path);
         if (!file.exists()) try {
             Files.copy(plugin.getResource("default/" + path), file.getAbsoluteFile().toPath());
         } catch (Throwable throwable) {
