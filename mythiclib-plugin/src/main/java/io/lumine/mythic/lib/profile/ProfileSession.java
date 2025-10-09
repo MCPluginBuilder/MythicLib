@@ -12,7 +12,6 @@ import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -109,8 +108,6 @@ public class ProfileSession {
     private void initialize() {
         if (this.state != ProfileSessionState.CREATED && this.state != ProfileSessionState.DEAD) return;
 
-        Bukkit.broadcastMessage("========== OPENING SESSION " + hashCode());
-
         this.state = ProfileSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
         this.callbacks.clear();
@@ -141,8 +138,6 @@ public class ProfileSession {
         // Wait for all plugins to load their data
         if (!this.waiting.isEmpty()) return;
 
-        Bukkit.broadcastMessage("========= START PLAYING");
-
         ////////////////////////////////
         // Session opened
         ////////////////////////////////
@@ -166,14 +161,11 @@ public class ProfileSession {
 
         // Abort opening
         if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
-            Bukkit.broadcastMessage("========== ABORT OPENING SESSION");
             abortOpening();
         }
 
         // Open
         else if (state == ProfileSessionState.OPEN) {
-
-            Bukkit.broadcastMessage("========== START CLOSING SESSION");
 
             this.state = ProfileSessionState.CLOSING;
             this.playerData.clearTemporaryHandlers();
@@ -213,8 +205,6 @@ public class ProfileSession {
 
         // Wait for all plugins to store their data
         if (!this.waiting.isEmpty()) return;
-
-        Bukkit.broadcastMessage("========= SESSION INVALIDATED");
 
         ////////////////////////////////
         // Session closed
