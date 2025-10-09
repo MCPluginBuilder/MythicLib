@@ -16,6 +16,7 @@ import java.util.List;
 
 public class MultiLineChatMessage extends PlayerMessage {
     private final List<String> rawFormat;
+    private final boolean jsonFormat;
 
     public MultiLineChatMessage(@NotNull List<String> rawFormat) {
         this(new YamlConfiguration(), rawFormat);
@@ -25,6 +26,7 @@ public class MultiLineChatMessage extends PlayerMessage {
         super(config);
 
         this.rawFormat = format;
+        this.jsonFormat = config.getBoolean("json", !this.rawFormat.isEmpty() && inferIsRawJson(this.rawFormat.get(0)));
     }
 
     @Override
@@ -37,7 +39,7 @@ public class MultiLineChatMessage extends PlayerMessage {
     @Override
     protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @Nullable Object... placeholders) {
         for (var line : rawFormat)
-            this.sendPlayerMessage(player.getPlayer(), parsePlaceholders(player.getPlayer(), line, colorPrefix, placeholders));
+            this.sendPlayerMessage(player.getPlayer(), parsePlaceholders(player.getPlayer(), line, colorPrefix, placeholders), this.jsonFormat);
     }
 
     class Ready extends ReadyMessage {
@@ -54,7 +56,8 @@ public class MultiLineChatMessage extends PlayerMessage {
 
         @Override
         public void send(@NotNull Player player) {
-            for (var line : format) MultiLineChatMessage.this.sendPlayerMessage(player, line);
+            for (var line : format)
+                MultiLineChatMessage.this.sendPlayerMessage(player, line, MultiLineChatMessage.this.jsonFormat);
         }
 
         @Override

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SingleLineChatMessage extends PlayerMessage {
     private final String rawFormat;
+    private final boolean jsonFormat;
 
     public SingleLineChatMessage(@NotNull String line) {
         this(new YamlConfiguration(), line);
@@ -21,6 +22,7 @@ public class SingleLineChatMessage extends PlayerMessage {
         super(config);
 
         this.rawFormat = format;
+        this.jsonFormat = config.getBoolean("json", this.inferIsRawJson(format));
     }
 
     @Override
@@ -31,7 +33,7 @@ public class SingleLineChatMessage extends PlayerMessage {
     @Override
     protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @Nullable Object... placeholders) {
         var parsed = parsePlaceholders(player.getPlayer(), rawFormat, colorPrefix, placeholders);
-        this.sendPlayerMessage(player.getPlayer(), parsed);
+        this.sendPlayerMessage(player.getPlayer(), parsed, this.jsonFormat);
     }
 
     class Ready extends ReadyMessage {
@@ -48,7 +50,7 @@ public class SingleLineChatMessage extends PlayerMessage {
 
         @Override
         public void send(@NotNull Player player) {
-            SingleLineChatMessage.this.sendPlayerMessage(player, format);
+            SingleLineChatMessage.this.sendPlayerMessage(player, format, SingleLineChatMessage.this.jsonFormat);
         }
 
         @Override

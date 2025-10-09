@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.ChatColor;
@@ -77,9 +78,14 @@ public abstract class PlayerMessage {
         return ChatColor.translateAlternateColorCodes('&', input);
     }
 
-    protected void sendPlayerMessage(@NotNull Player player, @NotNull String message) {
-        if (message.startsWith("{")) MythicLib.plugin.getVersion().getWrapper().sendJson(player, message);
+    protected void sendPlayerMessage(@NotNull Player player, @NotNull String message, boolean rawJson) {
+        if (rawJson) MythicLib.plugin.getVersion().getWrapper().sendJson(player, message);
         else player.sendMessage(message);
+    }
+
+    @BackwardsCompatibility(version = "1.13 snapshots player message update")
+    protected boolean inferIsRawJson(@NotNull String format) {
+        return format.startsWith("{\"") || format.startsWith("[{\"");
     }
 
     @NotNull
