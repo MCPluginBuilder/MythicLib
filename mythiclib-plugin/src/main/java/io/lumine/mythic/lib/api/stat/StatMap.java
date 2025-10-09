@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatMap extends PlayerDataMap implements PlayerStatProvider {
     private final MMOPlayerData data;
@@ -88,21 +89,25 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      * <p>
      * This flag {@link #sessionOpen} also presents stat updates but for a different reason
      * (stat maps are disabled when profile session is not alive).
+     * <p>
+     * Multi-thread safe implementation of updates buffered using
+     * an atomic integer to count the number of simultaneous threads
+     * buffering updates.
      */
-    // TODO support multi-threading for this variable
-    private boolean bufferUpdates = true;
+    private final AtomicInteger updatesBuffered = new AtomicInteger(0);
 
     public boolean isBufferingUpdates() {
-        return bufferUpdates || !sessionOpen;
+        return updatesBuffered.get() > 0 || !sessionOpen;
     }
 
     public void bufferUpdates(@NotNull Runnable runnable) {
-
-        bufferUpdates = true;
-        runnable.run();
-        bufferUpdates = false;
-
-        stats.values().forEach(StatInstance::releaseUpdates);
+        updatesBuffered.incrementAndGet();
+        try {
+            runnable.run();
+        } finally {
+            var current = updatesBuffered.decrementAndGet();
+            if (current == 0) stats.values().forEach(StatInstance::releaseUpdates);
+        }
     }
 
     //endregion

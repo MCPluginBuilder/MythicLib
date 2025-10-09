@@ -7,13 +7,13 @@ import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -35,7 +35,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @NotNull
     private final Lazy<Optional<StatHandler>> handler;
 
-    public boolean updateRequired;
+    public final AtomicBoolean updateRequired = new AtomicBoolean(false);
 
     public StatInstance(@NotNull StatMap map, @NotNull String stat) {
         this.map = map;
@@ -189,19 +189,13 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Max Health, Movement Speed.
      */
     public void update() {
-        if (map.isBufferingUpdates()) updateRequired = true;
-        else {
-            if (this.stat.equals("MAX_HEALTH"))
-                Bukkit.broadcastMessage("Updating max health for " + map.getPlayer().getName());
-            handler.get().ifPresent(handler -> handler.runUpdate(this));
-        }
+        if (map.isBufferingUpdates()) updateRequired.set(true);
+        else handler.get().ifPresent(handler -> handler.runUpdate(this));
     }
 
     public void releaseUpdates() {
-        if (updateRequired && !map.isBufferingUpdates()) {
+        if (updateRequired.getAndSet(false) && !map.isBufferingUpdates())
             handler.get().ifPresent(handler -> handler.runUpdate(this));
-            updateRequired = false;
-        }
     }
 
     //endregion

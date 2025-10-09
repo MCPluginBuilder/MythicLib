@@ -133,8 +133,6 @@ public class ProfileSession {
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already synced", key));
 
-        Bukkit.broadcastMessage(key + "> data loaded, marking as rdy");
-
         checkReadiness(); // Check if all plugins have loaded their data
     }
 
@@ -207,8 +205,6 @@ public class ProfileSession {
 
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already marked as closed", key));
-
-        Bukkit.broadcastMessage(key + "> marked as closed");
 
         checkClosed(); // Check if all plugins have saved their data
     }
