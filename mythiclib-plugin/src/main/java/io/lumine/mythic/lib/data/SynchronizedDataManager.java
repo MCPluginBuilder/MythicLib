@@ -15,6 +15,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -202,7 +203,16 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         dataHandler.close();
     }
 
+    @NotNull
+    public CompletableFuture<Void> loadData(@NotNull H playerData) {
+        return loadData(playerData, null);
+    }
+
     /**
+     * Loads data asynchronously from the data source and populates the provided
+     * player data instance. If loaded, the player data is marked as ready, the
+     * corresponding Bukkit event is called.
+     *
      * @param playerData Empty player data which will be populated.
      * @return Completable future that completes when the data is loaded.
      *         It will only complete if the following conditions are met:
@@ -211,10 +221,12 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *         <li>player is still online when the worked thread is done loading data</li>
      *         </ul>
      *         If the player left the server while data was being loaded, player data will be re-saved if necessary.
+     * @see #saveData(SynchronizedDataHolder, SaveReason)
      */
     @NotNull
-    public CompletableFuture<Void> loadData(@NotNull H playerData) {
-        final CompletableFuture<Void> future = new CompletableFuture<>();
+    public CompletableFuture<Void> loadData(@NotNull H playerData, @Nullable Event parentProfileEvent) {
+        final var future = new CompletableFuture<Void>();
+        final var lookup = playerData.getMMOPlayerData().isLookup();
         Tasks.runAsync(owning, () -> {
 
             // Load player data
@@ -226,17 +238,19 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
                 return;
             }
 
-            // TODO SESSION CHECKS.
-            // TODO PROPER SESSION CHECKS
+            // TODO PROPER SESSION CHECKS?? not multi thread safe
             // If player has logged off in the meantime, save data and do not complete
-            if (!playerData.getMMOPlayerData().isLookup() && !playerData.getMMOPlayerData().isOnline()) {
+            if (!lookup && !playerData.getMMOPlayerData().isOnline()) {
                 future.complete(null);
+                // TODO save again!!
                 return;
             }
 
             // Complete sync
             Tasks.runSync(owning, () -> {
                 playerData.markSessionReady(); // Mark as ready
+                if (!lookup)
+                    Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData, parentProfileEvent));
                 future.complete(null); // Complete future
             });
         });
@@ -246,6 +260,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     /**
      * @param playerData Player data to be saved.
      * @return Completable future that completes when the data is saved.
+     * @see #loadData(SynchronizedDataHolder, Event)
      */
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
@@ -273,6 +288,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *
      * @param player Player UUID (not profile)
      * @return The empty player data, which will be loaded in a near future.
+     * @see #unregister(Player, SaveReason)
      */
     public H setup(@NotNull Player player) {
 
@@ -280,10 +296,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         final @NotNull H playerData = activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
 
         // Schedule data loading
-        if (requiresSynchronizationOnLogin(playerData))
-            loadData(playerData).thenAccept(Tasks.sync(owning, v -> {
-                Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData));
-            }));
+        if (requiresSynchronizationOnLogin(playerData)) loadData(playerData, null);
 
         return playerData;
     }
@@ -323,6 +336,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @param player Player whose data needs to be unregistered
      * @param reason Reason why the data is being saved
      * @return Completable future of the data being saved
+     * @see #setup(Player)
      */
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {

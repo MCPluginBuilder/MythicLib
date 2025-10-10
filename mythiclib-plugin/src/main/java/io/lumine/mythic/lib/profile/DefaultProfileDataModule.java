@@ -5,12 +5,9 @@ import fr.phoenixdevt.profiles.event.ProfileCreateEvent;
 import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
 import fr.phoenixdevt.profiles.event.ProfileSelectEvent;
 import fr.phoenixdevt.profiles.event.ProfileUnloadEvent;
-import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.module.MMOPlugin;
-import io.lumine.mythic.lib.util.Tasks;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -54,9 +51,7 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
         final var playerData = manager.get(event.getPlayer());
 
-        manager.loadData(playerData).thenAccept(Tasks.sync(manager.getOwningPlugin(), v -> {
-            Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, playerData, event));
-        }));
+        manager.loadData(playerData, event);
     }
 
     @EventHandler

@@ -18,6 +18,7 @@ public class SynchronizedDataLoadEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
+    @Deprecated
     public SynchronizedDataLoadEvent(SynchronizedDataManager<?, ?> manager, SynchronizedDataHolder holder) {
         this(manager, holder, null);
     }
