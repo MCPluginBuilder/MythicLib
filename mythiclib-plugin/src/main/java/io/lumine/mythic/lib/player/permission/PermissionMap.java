@@ -20,12 +20,15 @@ public class PermissionMap extends ModifierMap<PermissionModifier> {
 
     @Override
     protected void onSessionOpen() {
-        // TODO
+        // Lazy initialization of the attachment
     }
 
     @Override
     protected void onSessionClose() {
-        // TODO
+        if (attachment != null) {
+            getPlayerData().getPlayer().removeAttachment(attachment);
+            attachment = null;
+        }
     }
 
     /**
@@ -34,13 +37,8 @@ public class PermissionMap extends ModifierMap<PermissionModifier> {
      */
     @NotNull
     private PermissionAttachment attachment() {
-        if (attachment != null) return attachment;
-        return attachment = getPlayerData().getPlayer().addAttachment(MythicLib.plugin);
-    }
-
-    public void flushAttachment() {
-        if (attachment != null) getPlayerData().getPlayer().removeAttachment(attachment);
-        attachment = null;
+        if (attachment == null) attachment = getPlayerData().getPlayer().addAttachment(MythicLib.plugin);
+        return attachment;
     }
 
     @Override

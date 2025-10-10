@@ -25,7 +25,6 @@ import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -167,12 +166,6 @@ public class MMOPlayerData {
         this.player = player;
         if (player != null) this.lastPlayerName = player.getName();
         this.lastLogActivity = System.currentTimeMillis();
-
-        // When logging off (called AFTER all MMO plugins)
-        if (player == null) {
-            getPermissionMap().flushAttachment();
-            getStatMap().flushCache();
-        }
     }
 
     //endregion

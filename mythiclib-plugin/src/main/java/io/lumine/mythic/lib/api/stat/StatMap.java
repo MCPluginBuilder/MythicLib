@@ -76,6 +76,11 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
         }
     }
 
+    @Override
+    protected void onSessionClose() {
+        flushCache();
+    }
+
     public void flushCache() {
         stats.values().forEach(StatInstance::flushCache);
     }
