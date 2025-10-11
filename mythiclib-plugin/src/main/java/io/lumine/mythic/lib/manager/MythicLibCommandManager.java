@@ -1,9 +1,9 @@
 package io.lumine.mythic.lib.manager;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.command.api.MMOCommandManager;
-import io.lumine.mythic.lib.command.api.ToggleableCommand;
-import io.lumine.mythic.lib.command.mythiclib.MythicLibCommand;
+import io.lumine.mythic.lib.command.MMOCommandManager;
+import io.lumine.mythic.lib.command.ToggleableCommand;
+import io.lumine.mythic.lib.command.builtin.mythiclib.MythicLibCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
