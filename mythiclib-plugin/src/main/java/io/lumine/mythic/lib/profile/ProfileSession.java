@@ -213,7 +213,6 @@ public class ProfileSession {
         this.setLastActivity();
         this.state = ProfileSessionState.DEAD;
         this.playerData.saveCurrentProfileSession();
-        this.playerData.updatePlayer(null);
         this.callbacks.forEach(callback -> callback.callback(this));
     }
 
