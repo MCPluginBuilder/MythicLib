@@ -127,7 +127,7 @@ public abstract class GeneratedInventory extends PluginInventory {
          */
         loaded.clear();
 
-        Inventory inv = Bukkit.createInventory(this, editable.getVanillaSlots(), bakeName());
+        lastOpened = Bukkit.createInventory(this, editable.getVanillaSlots(), bakeName());
 
         // Place items
         for (InventoryItem<?> item : editable.getItems()) {
@@ -135,12 +135,10 @@ public abstract class GeneratedInventory extends PluginInventory {
             if (!raw.isDisplayed(this)) continue; // Hide item if necessary
 
             addLoaded(raw); // Register item in list
-            displayItem(inv, item); // Display item
+            displayItem(lastOpened, item); // Display item
         }
 
-        lastOpened = inv; // Store inventory for later
-
-        return inv;
+        return lastOpened;
     }
 
     public void displayItem(Inventory inv, InventoryItem<?> item) {

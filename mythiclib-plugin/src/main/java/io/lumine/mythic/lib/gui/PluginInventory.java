@@ -116,10 +116,14 @@ public abstract class PluginInventory implements InventoryHolder {
     /**
      * Called when the inventory is closed. No instance of event
      * is provided, because it can either be triggered by the player
-     * closing the UI, or the player leaving the server
+     * closing the UI, leaving the server, or navigating to another UI.
      */
     public void onClose() {
-        // Default implementation does nothing
+        // Empty default implementation
+    }
+
+    public void onOpen() {
+        // Empty default implementation
     }
 
     private static MMOPlayerData retrievePlayerData(Player player) {
