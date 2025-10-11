@@ -94,7 +94,6 @@ public class CastingDelayHandler extends TemporaryHandler {
                 // Terminate and cast
                 if (counter <= 0) {
                     close();
-                    if (hasBossbar()) Bukkit.removeBossBar(bossbarKey);
 
                     metadata.getCast().castInstantly(metadata, CastingDelayHandler.this.skillResult);
                 }
@@ -146,7 +145,10 @@ public class CastingDelayHandler extends TemporaryHandler {
 
     @Override
     protected void onClose() {
-        if (hasBossbar()) Bukkit.removeBossBar(bossbarKey);
+        if (hasBossbar()) {
+            bossbar.removeAll();
+            Bukkit.removeBossBar(bossbarKey);
+        }
 
         // Clear slowness
         if (slowness > 0)
