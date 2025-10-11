@@ -35,8 +35,6 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @NotNull
     private final Lazy<Optional<StatHandler>> handler;
 
-    public final AtomicBoolean updateRequired = new AtomicBoolean(false);
-
     public StatInstance(@NotNull StatMap map, @NotNull String stat) {
         this.map = map;
         this.stat = stat;
@@ -55,6 +53,10 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     public double getBase() {
         return handler.get().map(handler -> handler.getBaseValue(this)).orElse(0d);
+    }
+
+    public double getDefaultBase() {
+        return handler.get().map(StatHandler::getPlayerDefaultBase).orElse(0d);
     }
 
     /**
@@ -180,6 +182,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     }
 
     //region Updating and Buffering
+
+    public final AtomicBoolean updateRequired = new AtomicBoolean(false);
 
     /**
      * Forces an update on this stat instance. An important convention

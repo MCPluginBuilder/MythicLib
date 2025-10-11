@@ -41,8 +41,6 @@ public class TempStatCommand extends CommandTreeNode {
 
         @Override
         public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-            if (args.length < 4) return CommandResult.THROW_USAGE;
-
             final var target = explorer.parse(argPlayer);
             final var statName = explorer.parse(argStat);
 
@@ -83,8 +81,6 @@ public class TempStatCommand extends CommandTreeNode {
 
         @Override
         public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-            if (args.length < 5) return CommandResult.THROW_USAGE;
-
             final var target = explorer.parse(argPlayer);
             final var statName = explorer.parse(argStat);
 

@@ -345,6 +345,22 @@ public class UtilityMethods {
         throw new IllegalArgumentException("Could not find enum field given candidates " + Arrays.asList(candidates));
     }
 
+    /**
+     * Another major fuckup with Minecraft. The issue addressed by this method
+     * is the fact that AttributeInstance#getDefaultValue does not return the
+     * default value of the attribute for players. For 95% attributes, these
+     * values are the same, but for "Movement speed" (0.1 vs 0.7) and "Attack damage"
+     * (1 vs 2) they are not.
+     * <p>
+     * The only way to fix that is to hardcode a map, and only use #getDefaultValue
+     * as a fallback for unknown attributes or non-player entities, to handle recently
+     * added Minecraft attributes.
+     *
+     * @param attribute The attribute to get the default value of
+     * @param instance  The instance of the attribute for the player, as fallback
+     * @return Default value of base player attribute value.
+     * @author Jules
+     */
     public static double getPlayerDefaultBaseValue(@NotNull Attribute attribute, @Nullable AttributeInstance instance) {
         final Double found = MythicLib.plugin.getStats().getPlayerDefaultBaseValue(attribute);
         return found != null ? found : (instance != null ? instance.getDefaultValue() : 0);

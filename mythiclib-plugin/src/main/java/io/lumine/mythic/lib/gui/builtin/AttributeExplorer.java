@@ -266,7 +266,8 @@ public class AttributeExplorer extends PluginInventory {
                 this.explored = attribute;
                 open();
             } else if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-                target.getAttribute(attribute).setBaseValue(target.getAttribute(attribute).getDefaultValue());
+                final var instance = target.getAttribute(attribute);
+                instance.setBaseValue(UtilityMethods.getPlayerDefaultBaseValue(attribute, instance));
                 getPlayer().sendMessage(ChatColor.YELLOW + "> Base value of " + ChatColor.GOLD + Attributes.name(attribute) + ChatColor.YELLOW + " successfully reset.");
                 open();
 

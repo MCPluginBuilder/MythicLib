@@ -34,7 +34,7 @@ public class StatManager extends Module {
     /**
      * Cached values for MMOProfiles
      */
-    private final Map<org.bukkit.attribute.Attribute, Double> playerDefaultBaseValues = new HashMap<>();
+    private final Map<org.bukkit.attribute.Attribute, Double> vanillaDefaultBaseValues = new HashMap<>();
 
     public StatManager(MMOPluginImpl plugin) {
         super(plugin);
@@ -110,7 +110,7 @@ public class StatManager extends Module {
     @Override
     public void onReset() {
         handlers.clear();
-        playerDefaultBaseValues.clear();
+        vanillaDefaultBaseValues.clear();
     }
 
     @NotNull
@@ -147,12 +147,12 @@ public class StatManager extends Module {
             handlers.put(alias, handler);
 
         if (handler instanceof AttributeStatHandler)
-            playerDefaultBaseValues.put(((AttributeStatHandler) handler).getAttribute(), ((AttributeStatHandler) handler).getPlayerDefaultBase());
+            vanillaDefaultBaseValues.put(((AttributeStatHandler) handler).getAttribute(), handler.getPlayerDefaultBase());
     }
 
     @Nullable
     public Double getPlayerDefaultBaseValue(@NotNull Attribute attribute) {
-        return playerDefaultBaseValues.get(attribute);
+        return vanillaDefaultBaseValues.get(attribute);
     }
 
     @NotNull

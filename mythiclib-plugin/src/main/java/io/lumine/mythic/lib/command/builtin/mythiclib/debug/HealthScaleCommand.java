@@ -29,11 +29,6 @@ public class HealthScaleCommand extends CommandTreeNode {
 
         @Override
         public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-            if (!(sender instanceof Player) && args.length < 5) {
-                sender.sendMessage("Please specify a player.");
-                return CommandResult.FAILURE;
-            }
-
             final double scale = explorer.parse(argAmount);
             Arguments.isTrue(scale > 0, "Scale must be positive");
             final var target = explorer.parse(argPlayer);
@@ -57,12 +52,10 @@ public class HealthScaleCommand extends CommandTreeNode {
 
         @Override
         public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-            if (args.length < 2) return CommandResult.THROW_USAGE;
-
             final var target = explorer.parse(argPlayer);
 
             // Disable health scale
-            target.setHealthScaled(true);
+            target.setHealthScaled(false);
             sender.sendMessage("Health scale disabled for player " + target.getName());
             return CommandResult.SUCCESS;
         }

@@ -34,12 +34,11 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
     public void whenCast(VectorSkillResult result, SkillMetadata skillMeta) {
         Player caster = skillMeta.getCaster().getPlayer();
 
-        Vector vec = result.getTarget().normalize().multiply(.6);
-        Chicken chicken = (Chicken) caster.getWorld().spawnEntity(caster.getLocation().add(0, 1.3, 0).add(vec),
-                EntityType.CHICKEN);
-        new Handler(chicken, vec, skillMeta);
+        final var vec = result.getTarget().normalize().multiply(.6);
+        final var chicken = (Chicken) caster.getWorld().spawnEntity(caster.getLocation().add(0, 1.3, 0).add(vec), EntityType.CHICKEN);
         chicken.setInvulnerable(true);
         chicken.setSilent(true);
+        new Handler(chicken, vec, skillMeta);
 
         /*
          * Sets the health to 2048 (Default max Spigot value) which stops the

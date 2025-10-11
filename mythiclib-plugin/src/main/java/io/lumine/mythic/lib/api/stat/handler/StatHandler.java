@@ -82,6 +82,10 @@ public class StatHandler {
         return baseValue;
     }
 
+    public double getPlayerDefaultBase() {
+        return 0;
+    }
+
     public boolean forcesUpdates() {
         return forceUpdate;
     }

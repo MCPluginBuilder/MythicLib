@@ -71,6 +71,11 @@ public class AttributeStatHandler extends StatHandler {
     }
 
     @Override
+    public double getPlayerDefaultBase() {
+        return playerDefaultBase;
+    }
+
+    @Override
     public double getFinalValue(@NotNull StatInstance instance) {
         return instance.getMap().getData().getPlayer().getAttribute(attribute).getValue();
     }
@@ -93,9 +98,5 @@ public class AttributeStatHandler extends StatHandler {
     @NotNull
     public String getDescription() {
         return description;
-    }
-
-    public double getPlayerDefaultBase() {
-        return playerDefaultBase;
     }
 }
