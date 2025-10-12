@@ -72,7 +72,24 @@ public class UtilityMethods {
      */
     @NotNull
     public static CommandMap getCommandMap() {
-        return Bukkit.getCommandMap();
+
+        // Works on Spigot, not Paper
+        try {
+            return Bukkit.getCommandMap();
+        } catch (Exception ignored) {
+        }
+
+        // Works on Paper
+        try {
+            final var commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            commandMapField.setAccessible(true);
+            final var commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
+            commandMapField.setAccessible(false);
+            return commandMap;
+        } catch (Throwable ignored) {
+        }
+
+        throw new IllegalStateException("Could not find command map");
     }
 
     public static Vector safeNormalize(@NotNull Vector vec) {
