@@ -14,7 +14,6 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -28,8 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public interface VersionWrapper {
-
-    static final String PLAYER_PROFILE_NAME = "SkullTexture";
 
     public static VersionWrapper get() {
         return MythicLib.plugin.getVersion().getWrapper();
@@ -178,7 +175,7 @@ public interface VersionWrapper {
 
     String getSkullValue(Block block);
 
-    void setSkullValue(Block block, String value);
+    void setSkullValue(Block block, String textureValue);
 
     void setUUID(Player player, UUID uniqueId);
 

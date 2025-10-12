@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.WrapperUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -33,7 +34,9 @@ import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
+import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_21_R6.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -115,8 +118,8 @@ public class VersionWrapper_Reflection implements VersionWrapper {
 
     @Override
     public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
-        final String stringUrl = textureValue.startsWith("http") ? textureValue : extractUrl(new String(Base64.getDecoder().decode(textureValue)));
+        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
+        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
         final URL url;
         try {
             url = new URL(stringUrl);
@@ -125,17 +128,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
         }
         profile.getTextures().setSkin(url);
         return profile;
-    }
-
-    private static final String URL_PREFIX = "\"url\":\"";
-    private static final String URL_SUFFIX = "\"";
-
-    private String extractUrl(String str) {
-        int start = str.indexOf(URL_PREFIX);
-        Validate.isTrue(start >= 0, "Could not find prefix in decoded skull value");
-        start += URL_PREFIX.length();
-        final int end = str.indexOf(URL_SUFFIX, start);
-        return str.substring(start, end);
     }
 
     @Override
@@ -287,7 +279,7 @@ public class VersionWrapper_Reflection implements VersionWrapper {
 
             nms = _CraftItemStack_asNMSCopy(item);
             final CustomData customDataTag = nms.get(DataComponents.CUSTOM_DATA);
-            compound = customDataTag == null ? new CompoundTag() : customDataTag.getUnsafe(); // F*ck
+            compound = customDataTag == null ? new CompoundTag() : customDataTag.copyTag();
         }
 
         @Override
@@ -502,24 +494,16 @@ public class VersionWrapper_Reflection implements VersionWrapper {
 
     @Override
     public String getSkullValue(Block block) {
-        ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
-        SkullBlockEntity skull = (SkullBlockEntity) nmsWorld.getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         if (skull.getOwnerProfile() == null) return "";
-        return skull.getOwnerProfile()
-                .gameProfile()
-                .getProperties()
-                .get("textures").iterator().next().value();
+        return skull.getOwnerProfile().partialProfile().getProperties().get("textures").iterator().next().value();
     }
 
     @Override
-    public void setSkullValue(Block block, String value) {
-        ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
-        SkullBlockEntity skull = (SkullBlockEntity) nmsWorld.getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
-        GameProfile profile = new GameProfile(uuid, PLAYER_PROFILE_NAME);
-        profile.getProperties().put("textures", new Property("textures", value));
-        skull.setOwner(new ResolvableProfile(profile));
-        skull.setChanged();
+    public void setSkullValue(Block block, String textureValue) {
+        final var state = (Skull) block.getState();
+        final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
+        state.setOwnerProfile(newProfile(uniqueId, textureValue));
     }
 
     @Override

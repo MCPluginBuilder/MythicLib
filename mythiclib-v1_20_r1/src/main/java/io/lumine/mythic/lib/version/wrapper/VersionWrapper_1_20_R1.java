@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.WrapperUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -83,8 +84,8 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
 
     @Override
     public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
-        final String stringUrl = extractUrl(new String(Base64.getDecoder().decode(textureValue)));
+        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
+        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
         final URL url;
         try {
             url = new URL(stringUrl);
@@ -93,17 +94,6 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
         }
         profile.getTextures().setSkin(url);
         return profile;
-    }
-
-    private static final String URL_PREFIX = "\"url\":\"";
-    private static final String URL_SUFFIX = "\"";
-
-    private String extractUrl(String str) {
-        int start = str.indexOf(URL_PREFIX);
-        Validate.isTrue(start >= 0, "Could not find prefix in decoded skull value");
-        start += URL_PREFIX.length();
-        final int end = str.indexOf(URL_SUFFIX, start);
-        return str.substring(start, end);
     }
 
     @Override
@@ -441,7 +431,7 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper {
     public void setSkullValue(Block block, String value) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
-        GameProfile profile = new GameProfile(uuid, PLAYER_PROFILE_NAME);
+        GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();

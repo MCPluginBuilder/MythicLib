@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.WrapperUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -93,7 +94,7 @@ public class VersionWrapper_1_17_R1 implements VersionWrapper {
 
     @Override
     public Object newProfile(UUID uniqueId, String textureValue) {
-        final GameProfile profile = new GameProfile(uniqueId, PLAYER_PROFILE_NAME);
+        final GameProfile profile = new GameProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", textureValue));
         return profile;
     }

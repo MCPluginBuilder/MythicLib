@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.WrapperUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -92,7 +93,7 @@ public class VersionWrapper_1_19_R3 implements VersionWrapper {
 
     @Override
     public Object newProfile(UUID uniqueId, String textureValue) {
-        final GameProfile profile = new GameProfile(uniqueId, PLAYER_PROFILE_NAME);
+        final GameProfile profile = new GameProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", textureValue));
         return profile;
     }
