@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,37 +33,54 @@ import java.util.Set;
  * @author jules
  */
 public interface ConfigObject {
-    String getString(String key);
 
-    String getString(String key, String defaultValue);
+    //region Getters
 
-    double getDouble(String key);
+    @NotNull String getString(@NotNull String key);
 
-    double getDouble(String key, double defaultValue);
+    @Nullable String getString(@NotNull String key, @Nullable String defaultValue);
 
-    int getInt(String key);
+    double getDouble(@NotNull String key);
 
-    int getInt(String key, int defaultValue);
+    double getDouble(@NotNull String key, double defaultValue);
 
-    boolean getBoolean(String key);
+    int getInt(@NotNull String key);
 
-    boolean getBoolean(String key, boolean defaultValue);
+    int getInt(@NotNull String key, int defaultValue);
 
-    float getFloat(String key);
+    boolean getBoolean(@NotNull String key);
 
-    float getFloat(String key, float defaultValue);
+    boolean getBoolean(@NotNull String key, boolean defaultValue);
 
-    @NotNull
-    Optional<Float> flpt(String... aliases);
+    float getFloat(@NotNull String key);
 
-    @NotNull
-    Optional<String> string(String... aliases);
+    float getFloat(@NotNull String key, float defaultValue);
 
-    @NotNull
-    Optional<Integer> integer(String... aliases);
+    //endregion
 
-    @NotNull
-    Optional<Double> dble(String... aliases);
+    //region Finders
+
+    String string(@NotNull String... aliases);
+
+    String stringFb(@NotNull String defaultValue, @NotNull String... aliases);
+
+    double dble(@NotNull String... aliases);
+
+    double dble(double defaultValue, @NotNull String... aliases);
+
+    float flpt(@NotNull String... aliases);
+
+    float flpt(float defaultValue, @NotNull String... aliases);
+
+    int integer(@NotNull String... aliases);
+
+    int integer(int defaultValue, @NotNull String... aliases);
+
+    boolean bool(@NotNull String... aliases);
+
+    boolean bool(boolean defaultValue, @NotNull String... aliases);
+
+    //endregion
 
     default DoubleFormula getDoubleFormula(String key) {
         return new DoubleFormula(getString(key));
@@ -94,8 +110,7 @@ public interface ConfigObject {
         return MythicLib.plugin.getSkills().loadLocationTargeter(adaptObject(key));
     }
 
-    @NotNull
-    ConfigObject getObject(String key);
+    @NotNull ConfigObject getObject(String key);
 
     /**
      * This either retrieves the object with given key if it exists,
@@ -105,13 +120,11 @@ public interface ConfigObject {
      * <p>
      * This is primarily used for targeters and condition shortcuts.
      */
-    @NotNull
-    ConfigObject adaptObject(String key);
+    @NotNull ConfigObject adaptObject(String key);
 
     boolean contains(String key);
 
-    @NotNull
-    Set<String> getKeys();
+    @NotNull Set<String> getKeys();
 
     @Nullable String getKey();
 
@@ -122,7 +135,14 @@ public interface ConfigObject {
     /**
      * Throws an IAE if any of the given key
      * is not found in the config object
+     * @deprecated 
+     * @see #flpt(String...)
+     * @see #bool( String...) 
+     * @see #string(String...)
+     * @see #integer(String...) 
+     * @see #dble(String...) 
      */
+    @Deprecated
     default void validateKeys(String... keys) {
         for (String key : keys)
             Validate.isTrue(contains(key), "Could not find key '" + key + "' in config");

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 public class ConfigSectionObject implements ConfigObject {
@@ -18,87 +17,137 @@ public class ConfigSectionObject implements ConfigObject {
         this.config = config;
     }
 
+    //region Getters
+
     @Override
-    public String getString(String key) {
-        return Objects.requireNonNull(config.getString(key), "Could not find string with key '" + key + "'");
+    public @NotNull String getString(@NotNull String key) {
+        final var obj = config.get(key);
+        if (obj == null) throw new MissingArgumentException(key);
+        return String.valueOf(obj);
     }
 
     @Override
-    public String getString(String key, String defaultValue) {
-        return config.getString(key, Objects.requireNonNull(defaultValue, "Default value cannot be null"));
+    public @Nullable String getString(@NotNull String key, @Nullable String defaultValue) {
+        return config.getString(key, defaultValue);
     }
 
     @Override
-    public double getDouble(String key) {
+    public double getDouble(@NotNull String key) {
+        if (!config.contains(key)) throw new MissingArgumentException(key);
         return config.getDouble(key);
     }
 
     @Override
-    public double getDouble(String key, double defaultValue) {
+    public double getDouble(@NotNull String key, double defaultValue) {
         return config.getDouble(key, defaultValue);
     }
 
     @Override
-    public float getFloat(String key) {
+    public float getFloat(@NotNull String key) {
+        if (!config.contains(key)) throw new MissingArgumentException(key);
         return (float) config.getDouble(key);
     }
 
-    //region Modern
-
     @Override
-    public float getFloat(String key, float defaultValue) {
+    public float getFloat(@NotNull String key, float defaultValue) {
         return (float) config.getDouble(key, defaultValue);
     }
 
     @Override
-    public @NotNull Optional<Float> flpt(String... aliases) {
-        for (var alias : aliases)
-            if (contains(alias)) return Optional.of((float) config.getDouble(alias));
-        return Optional.empty();
-    }
-
-    @Override
-    public @NotNull Optional<String> string(String... aliases) {
-        for (var alias : aliases)
-            if (contains(alias)) return Optional.of(config.getString(alias));
-        return Optional.empty();
-    }
-
-    @Override
-    public @NotNull Optional<Integer> integer(String... aliases) {
-        for (var alias : aliases)
-            if (contains(alias)) return Optional.of(config.getInt(alias));
-        return Optional.empty();
-    }
-
-    @Override
-    public @NotNull Optional<Double> dble(String... aliases) {
-        for (var alias : aliases)
-            if (contains(alias)) return Optional.of(config.getDouble(alias));
-        return Optional.empty();
-    }
-
-    //endregion
-
-    @Override
-    public int getInt(String key) {
+    public int getInt(@NotNull String key) {
+        if (!config.contains(key)) throw new MissingArgumentException(key);
         return config.getInt(key);
     }
 
     @Override
-    public int getInt(String key, int defaultValue) {
+    public int getInt(@NotNull String key, int defaultValue) {
         return config.getInt(key, defaultValue);
     }
 
     @Override
-    public boolean getBoolean(String key) {
+    public boolean getBoolean(@NotNull String key) {
+        if (!config.contains(key)) throw new MissingArgumentException(key);
         return config.getBoolean(key);
     }
 
     @Override
-    public boolean getBoolean(String key, boolean defaultValue) {
+    public boolean getBoolean(@NotNull String key, boolean defaultValue) {
         return config.getBoolean(key, defaultValue);
     }
+
+    //endregion
+
+    //region Finders
+
+    @Override
+    public String string(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getString(alias);
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public String stringFb(@NotNull String defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getString(alias);
+        return Objects.requireNonNull(defaultValue);
+    }
+
+    @Override
+    public double dble(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getDouble(alias);
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public double dble(double defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getDouble(alias);
+        return defaultValue;
+    }
+
+    @Override
+    public int integer(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getInt(alias);
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public int integer(int defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return getInt(alias);
+        return defaultValue;
+    }
+
+    @Override
+    public float flpt(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return (float) config.getDouble(alias);
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public float flpt(float defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return (float) config.getDouble(alias);
+        return defaultValue;
+    }
+
+    @Override
+    public boolean bool(@NotNull String... aliases) {
+        return false;
+    }
+
+    @Override
+    public boolean bool(boolean defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (config.contains(alias)) return config.getBoolean(alias);
+        return defaultValue;
+    }
+
+    //endregion
 
     @Nullable
     public Script getScriptOrNull(String key) {

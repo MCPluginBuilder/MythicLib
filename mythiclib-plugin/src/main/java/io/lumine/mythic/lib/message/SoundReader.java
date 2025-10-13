@@ -67,7 +67,7 @@ public class SoundReader {
     }
 
     public SoundReader(@NotNull ConfigObject config) {
-        final String stringInput = config.getString("sound");
+        final String stringInput = config.string("sound", "s", "name", "id");
         final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
         if (tryParse != null) {
             soundEnum = tryParse;
@@ -76,8 +76,8 @@ public class SoundReader {
             soundString = stringInput;
             soundEnum = null;
         }
-        vol = config.flpt("volume", "vol", "v").orElse(1f);
-        pitch = config.flpt("pitch", "p").orElse(1f);
+        vol = config.flpt(1f, "volume", "vol", "v");
+        pitch = config.flpt(1f, "pitch", "p");
     }
 
     @Nullable
