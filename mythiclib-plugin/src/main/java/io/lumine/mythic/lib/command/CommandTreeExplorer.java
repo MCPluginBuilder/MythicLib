@@ -2,7 +2,10 @@ package io.lumine.mythic.lib.command;
 
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.command.argument.MissingArgumentException;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,6 +54,57 @@ public class CommandTreeExplorer {
     public CommandTreeRoot getCommand() {
         return root;
     }
+
+    //region Verbose
+
+    /**
+     * Applies verbose rules relative to the current command as defined
+     * in {@link VerboseOption}
+     *
+     * @param message Command feedback
+     */
+    @NotNull
+    public CommandTreeNode.CommandResult fail(@Nullable String message) {
+        if (message != null) sendVerbose(ChatColor.RED + message);
+        return CommandTreeNode.CommandResult.FAILURE;
+    }
+
+    /**
+     * Applies verbose rules relative to the current command as defined
+     * in {@link VerboseOption}
+     *
+     * @param message Command feedback
+     */
+    @NotNull
+    public CommandTreeNode.CommandResult success(@Nullable String message) {
+        if (message != null) sendVerbose(ChatColor.YELLOW + message);
+        return CommandTreeNode.CommandResult.SUCCESS;
+    }
+
+    private void sendVerbose(@NotNull String message) {
+        message = ChatColor.translateAlternateColorCodes('&', message);
+        switch (root.getVerbose()) {
+            case ALL:
+                sender.sendMessage(message);
+                return;
+            case PLAYER:
+                if (sender instanceof Player) sender.sendMessage(message);
+                return;
+            case CONSOLE:
+                if (!(sender instanceof Player)) sender.sendMessage(message);
+                return;
+            case REDIRECT_TO_CONSOLE:
+                Bukkit.getConsoleSender().sendMessage(message);
+                return;
+            case NONE:
+                // Pass
+                return;
+            default:
+                throw new IllegalStateException("Unrecognized verbose option " + root.getVerbose());
+        }
+    }
+
+    //endregion
 
     @NotNull
     public CommandSender getSender() {

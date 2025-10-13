@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.command;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.command.argument.MissingArgumentException;
 import io.lumine.mythic.lib.command.argument.PermissionException;
 import io.lumine.mythic.lib.util.Lazy;
@@ -24,6 +25,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
     private final List<String> aliases;
     @Nullable
     private final String permission;
+    private final VerboseOption verbose;
 
     private boolean onlyForPlayers;
 
@@ -50,6 +52,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         this.usageMessage = "/" + name;
         this.aliases = List.of();
         this.permission = permission;
+        this.verbose = VerboseOption.ALL;
     }
 
     public CommandTreeRoot(@NotNull ConfigurationSection config) {
@@ -60,6 +63,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         this.usageMessage = config.getString("usage", "/" + this.name);
         this.aliases = config.getStringList("aliases");
         this.permission = config.getString("permission");
+        this.verbose = config.contains("verbose") ? VerboseOption.valueOf(UtilityMethods.enumName(config.getString("verbose"))) : VerboseOption.ALL;
     }
 
     public @Nullable String getPermission() {
@@ -68,6 +72,11 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
 
     protected void setOnlyForPlayers() {
         this.onlyForPlayers = true;
+    }
+
+    @NotNull
+    public VerboseOption getVerbose() {
+        return verbose;
     }
 
     @NotNull
