@@ -73,13 +73,12 @@ public class UtilityMethods {
     @NotNull
     public static CommandMap getCommandMap() {
 
-        // Works on Spigot, not Paper
         try {
             return Bukkit.getCommandMap();
-        } catch (Exception ignored) {
+        } catch (NoSuchMethodError ignored) {
+            // Does not work on Paper
         }
 
-        // Works on Paper
         try {
             final var commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
             commandMapField.setAccessible(true);
@@ -87,6 +86,7 @@ public class UtilityMethods {
             commandMapField.setAccessible(false);
             return commandMap;
         } catch (Throwable ignored) {
+            // Only works on Paper
         }
 
         throw new IllegalStateException("Could not find command map");

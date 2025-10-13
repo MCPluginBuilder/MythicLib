@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.command.builtin.mythiclib.debug;
+package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

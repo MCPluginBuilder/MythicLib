@@ -8,8 +8,9 @@ import io.lumine.mythic.lib.api.crafting.uifilters.MythicItemUIFilter;
 import io.lumine.mythic.lib.api.event.armorequip.ArmorEquipEvent;
 import io.lumine.mythic.lib.api.placeholders.MythicPlaceholders;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.command.builtin.HealthScaleCommand;
-import io.lumine.mythic.lib.command.builtin.MMOTempStatCommand;
+import io.lumine.mythic.lib.command.mythiclib.HealthScaleCommand;
+import io.lumine.mythic.lib.command.mythiclib.MMOTempStatCommand;
+import io.lumine.mythic.lib.command.mythiclib.MythicLibCommand;
 import io.lumine.mythic.lib.comp.FabledModule;
 import io.lumine.mythic.lib.comp.McMMOModule;
 import io.lumine.mythic.lib.comp.adventure.AdventureParser;
@@ -67,7 +68,6 @@ public class MythicLib extends MMOPluginImpl {
     public static MythicLib plugin;
 
     private final DamageManager damageManager = new DamageManager(this);
-    private final MythicLibCommandManager commandManager = new MythicLibCommandManager();
     private final EntityManager entityManager = new EntityManager();
     private final StatManager statManager = new StatManager(this);
     private final ConfigManager configManager = new ConfigManager(this);
@@ -247,7 +247,12 @@ public class MythicLib extends MMOPluginImpl {
             glowModule.enable();
         }
 
-        // Command executors
+        // Main command
+        final var mythicLibCommand = new MythicLibCommand();
+        getCommand("mythiclib").setExecutor(mythicLibCommand);
+        getCommand("mythiclib").setTabCompleter(mythicLibCommand);
+
+        // Other commands
         getCommand("mmotempstat").setExecutor(new MMOTempStatCommand());
         getCommand("healthscale").setExecutor(new HealthScaleCommand());
 
@@ -258,9 +263,6 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
         damageManager.enable();
-
-        // Loads commands
-        commandManager.initialize(false);
 
         // Load local skills
         skillManager.enable();
@@ -334,15 +336,6 @@ public class MythicLib extends MMOPluginImpl {
 
     public FakeEventManager getFakeEvents() {
         return fakeEventManager;
-    }
-
-    @Deprecated
-    public MythicLibCommandManager getCommand() {
-        return getCommands();
-    }
-
-    public MythicLibCommandManager getCommands() {
-        return commandManager;
     }
 
     public DamageManager getDamage() {

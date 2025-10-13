@@ -12,6 +12,7 @@ import java.util.function.Function;
 public class CommandTreeExplorer {
     private final String[] args;
     private final CommandSender sender;
+    private final CommandTreeRoot root;
 
     private CommandTreeNode current;
     private int argCount;
@@ -25,6 +26,7 @@ public class CommandTreeExplorer {
      */
     public CommandTreeExplorer(@NotNull CommandSender sender, @NotNull CommandTreeRoot root, @NotNull String[] args) {
         this.current = root;
+        this.root = root;
         this.args = args;
         this.sender = sender;
 
@@ -43,6 +45,11 @@ public class CommandTreeExplorer {
              * current floor node "handle" the command
              */
             else argCount++;
+    }
+
+    @NotNull
+    public CommandTreeRoot getCommand() {
+        return root;
     }
 
     @NotNull

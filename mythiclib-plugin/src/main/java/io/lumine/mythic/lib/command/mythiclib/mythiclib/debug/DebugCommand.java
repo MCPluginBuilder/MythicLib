@@ -1,9 +1,6 @@
-package io.lumine.mythic.lib.command.builtin.mythiclib.debug;
+package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
-import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
 
 public class DebugCommand extends CommandTreeNode {
 

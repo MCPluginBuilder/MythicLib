@@ -106,6 +106,12 @@ public class Argument<T> {
         return new Argument<>(this.key, this.indexInNode, this.autoComplete, this.parser, fallback);
     }
 
+    @NotNull
+    public Argument<T> empty() {
+        return new Argument<>(this.key, this.indexInNode, (explorer, list) -> {
+        }, (explorer, input) -> null, explorer -> null);
+    }
+
     //endregion
 
     public void autoComplete(@NotNull CommandTreeExplorer explorer, @NotNull List<String> list) {

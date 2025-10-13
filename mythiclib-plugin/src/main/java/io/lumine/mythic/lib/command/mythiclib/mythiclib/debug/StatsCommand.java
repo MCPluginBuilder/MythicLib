@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.command.builtin.mythiclib.debug;
+package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatInstance;

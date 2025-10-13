@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.command;
 
 import io.lumine.mythic.lib.command.argument.MissingArgumentException;
+import io.lumine.mythic.lib.command.argument.PermissionException;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.ChatColor;
@@ -15,38 +16,62 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class CommandTreeRoot extends CommandTreeNode implements CommandExecutor, TabCompleter {
-    protected final String permission;
-    private final String description;
-    private final List<String> aliases = new ArrayList<>();
+    private final String name, description, usageMessage;
+    private final List<String> aliases;
+    @Nullable
+    private final String permission;
 
-    public CommandTreeRoot(@NotNull String id, @Nullable String permission) {
-        super(null, id);
-
-        this.permission = permission;
-        this.description = "No description provided";
+    /**
+     * Use this to create executors only
+     *
+     * @param name Command name
+     */
+    public CommandTreeRoot(@NotNull String name) {
+        this(name, null);
     }
 
-    public CommandTreeRoot(@Nullable ConfigurationSection config, @NotNull ToggleableCommand command) {
-        super(null, config == null ? command.getName() : config.getString("main"));
+    /**
+     * Use this to create executors only
+     *
+     * @param name       Command name
+     * @param permission Command permission (can be null)
+     */
+    public CommandTreeRoot(@NotNull String name, @Nullable String permission) {
+        super(null, Objects.requireNonNull(name, "Command name cannot be null"));
 
-        this.permission = config == null ? command.getPermission() : config.getString("permission", command.getPermission());
-        description = config == null ? command.getDescription() : config.getString("description", command.getDescription());
-        if (config != null)
-            this.aliases.addAll(config.getStringList("aliases"));
+        this.name = name;
+        this.description = "";
+        this.usageMessage = "/" + name;
+        this.aliases = List.of();
+        this.permission = permission;
+    }
+
+    public CommandTreeRoot(@NotNull ConfigurationSection config) {
+        super(null, Objects.requireNonNull(config.getString("main"), "Command name cannot be null"));
+
+        this.name = getId();
+        this.description = config.getString("description", "");
+        this.usageMessage = config.getString("usage", "/" + this.name);
+        this.aliases = config.getStringList("aliases");
+        this.permission = config.getString("permission");
+    }
+
+    public @Nullable String getPermission() {
+        return permission;
     }
 
     @NotNull
-    public BukkitCommand getCommand() {
-        return new BukkitCommand(getId(), description, "", aliases) {
+    public BukkitCommand toBukkit() {
+        return new BukkitCommand(this.name, this.description, this.usageMessage, this.aliases) {
 
             @NotNull
             @Override
             public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-                if (permission != null && !sender.hasPermission(permission))
-                    return new ArrayList<>();
+                if (permission != null && !sender.hasPermission(permission)) return new ArrayList<>();
 
                 List<String> list = new CommandTreeExplorer(sender, CommandTreeRoot.this, args).calculateTabCompletion();
                 return args[args.length - 1].isEmpty() ? list
@@ -66,7 +91,8 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
                     executionResult = targetNode.execute(explorer, sender, args);
                     Validate.notNull(executionResult, "Command execution result cannot be null");
                 } catch (CommandException exception) {
-                    sender.sendMessage(ChatColor.RED + exception.getMessage());
+                    if (!(exception instanceof PermissionException))
+                        sender.sendMessage(ChatColor.RED + exception.getMessage());
                     if (exception instanceof MissingArgumentException) sendCommandUsage(sender, targetNode);
                     return false;
                 }
@@ -85,28 +111,19 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         targetNode.calculateUsageList().forEach(str -> sender.sendMessage(ChatColor.YELLOW + "/" + str));
     }
 
-    @Deprecated
-    private final Lazy<BukkitCommand> bukkitCommandVm = Lazy.of(this::getCommand);
+    //region Use as executor
 
-    /**
-     * @see MMOCommandManager
-     * @deprecated To register a command you should use {@link MMOCommandManager} and register
-     *         a toggleable command in {@link MMOCommandManager#getAll()}.
-     */
-    @Deprecated
+    private final Lazy<BukkitCommand> bukkitCommandVm = Lazy.of(this::toBukkit);
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         return bukkitCommandVm.get().execute(sender, label, args);
     }
 
-    /**
-     * @see MMOCommandManager
-     * @deprecated To register a command you should use {@link MMOCommandManager}
-     *         and register a toggleable command in {@link MMOCommandManager#getAll()}.
-     */
-    @Deprecated
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         return bukkitCommandVm.get().tabComplete(sender, label, args);
     }
+
+    //endregion
 }

@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.command.builtin.mythiclib;
+package io.lumine.mythic.lib.command.mythiclib.mythiclib;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;

@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.command.builtin;
+package io.lumine.mythic.lib.command.mythiclib;
 
 import io.lumine.mythic.lib.MythicLib;
 import org.bukkit.Bukkit;

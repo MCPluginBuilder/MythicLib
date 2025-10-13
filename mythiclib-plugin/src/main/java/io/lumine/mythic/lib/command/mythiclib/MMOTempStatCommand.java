@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.command.builtin;
+package io.lumine.mythic.lib.command.mythiclib;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
