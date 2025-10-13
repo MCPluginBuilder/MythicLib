@@ -11,6 +11,7 @@ commands:
   mythiclib:
     description: 'Main command for MythicLib'
     permission: 'mythiclib.admin'
+    aliases: [ 'ml' ]
   healthscale:
     description: 'No longer maintained, see ''/ml debug healthscale'' instead'
     permission: mythiclib.command.healthscale
