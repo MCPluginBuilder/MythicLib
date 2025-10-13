@@ -8,86 +8,38 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageMetadata;
-import io.lumine.mythic.lib.player.PlayerMetadata;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.UUID;
 
 public class DamageCommand extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+    private final Argument<LivingEntity> argTarget;
+    private final Argument<Integer> argValue;
+
     public DamageCommand(CommandTreeNode parent) {
         super(parent, "damage");
 
-        addArgument(Argument.PLAYER.withKey("damager"));
-        addArgument(Argument.PLAYER.withKey("target"));
-        addArgument(Argument.AMOUNT_INT.withKey("value"));
+        argPlayer = addArgument(Argument.PLAYER.withKey("damager"));
+        argTarget = addArgument(Argument.LIVING_ENTITY.withKey("target"));
+        argValue = addArgument(Argument.AMOUNT_INT);
     }
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        final World world = sender instanceof Entity ? ((Entity) sender).getWorld() : null;
-
-        // Find damager
-        final LivingEntity damager = entity(world, args[1]);
-        if (!(damager instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Damager must be a player. Please provide either player name or UUID");
-            return CommandResult.FAILURE;
-        }
-
-        // Find target
-        final LivingEntity target = entity(world, args[2]);
-        if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Could not find target. Please provide either player name or UUID");
-            return CommandResult.FAILURE;
-        }
+        final var player = explorer.parse(argPlayer);
+        final var target = explorer.parse(argTarget);
 
         // Find value
-        final double value;
-        try {
-            value = Double.parseDouble(args[3]);
-        } catch (Throwable throwable) {
-            return CommandResult.FAILURE;
-        }
+        final double value = explorer.parse(argValue);
 
         // Register attack
-        final PlayerMetadata player = MMOPlayerData.get(damager.getUniqueId()).getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        final DamageMetadata damage = new DamageMetadata(value); // TODO damage types & elements
-        final AttackMetadata attack = new AttackMetadata(damage, target, player);
+        final var playerData = MMOPlayerData.get(player.getUniqueId()).getStatMap().cache(EquipmentSlot.MAIN_HAND);
+        final var damage = new DamageMetadata(value); // TODO damage types & elements
+        final var attack = new AttackMetadata(damage, target, playerData);
         MythicLib.plugin.getDamage().registerAttack(attack);
 
         return CommandResult.SUCCESS;
-    }
-
-    @Nullable
-    private LivingEntity entity(@Nullable World world, @NotNull String input) {
-
-        // By player name
-        final Player found = Bukkit.getPlayer(input);
-        if (found != null) return found;
-
-        // Try by UUID
-        try {
-            UUID uuid = UUID.fromString(input);
-
-            // Player by UUID
-            Entity temp = Bukkit.getPlayer(uuid);
-            if (temp != null) return (LivingEntity) temp;
-
-            // Entity by UUID
-            temp = Bukkit.getEntity(uuid);
-            if (temp instanceof LivingEntity) return (LivingEntity) temp;
-
-        } catch (Throwable ignored) {
-            // Ignore
-        }
-
-        return null;
     }
 }

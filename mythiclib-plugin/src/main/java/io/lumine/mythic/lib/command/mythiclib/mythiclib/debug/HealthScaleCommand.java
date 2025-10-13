@@ -36,8 +36,7 @@ public class HealthScaleCommand extends CommandTreeNode {
             // enable health scale
             target.setHealthScaled(true);
             target.setHealthScale(scale);
-            sender.sendMessage("Health scale of " + scale + " enabled for player " + target.getName());
-            return CommandResult.SUCCESS;
+            return explorer.success("Health scale of &6" + scale + "&e HP enabled for player &6" + target.getName());
         }
     }
 
@@ -56,8 +55,7 @@ public class HealthScaleCommand extends CommandTreeNode {
 
             // Disable health scale
             target.setHealthScaled(false);
-            sender.sendMessage("Health scale disabled for player " + target.getName());
-            return CommandResult.SUCCESS;
+            return explorer.success("Health scale disabled for player &6" + target.getName());
         }
     }
 }

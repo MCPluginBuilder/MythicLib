@@ -3,11 +3,13 @@ package io.lumine.mythic.lib.command.argument;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -121,6 +123,24 @@ public class Argument<T> {
 
     //region Ready to use parameters
 
+    public static final Argument<@NotNull LivingEntity> LIVING_ENTITY = new Argument<>("entity",
+            (explorer, list) -> Bukkit.getOnlinePlayers().forEach(online -> list.add(online.getName())), (explorer, input) -> {
+
+        // Also try by UUID
+        try {
+            final var asUniqueId = UUID.fromString(input); // If fails, fallback to name
+            final var entity = Bukkit.getEntity(asUniqueId);
+            Validate.notNull(entity, "Could not find entity with UUID " + input);
+            Validate.isTrue(entity instanceof LivingEntity, "Entity is not living");
+            return (LivingEntity) entity;
+        } catch (Throwable ignored) {
+        }
+
+        final var player = Bukkit.getPlayer(input);
+        Validate.notNull(player, "Could not find player " + input);
+        return player;
+    });
+
     public static final Argument<@NotNull Player> PLAYER = new Argument<>("player",
             (explorer, list) -> Bukkit.getOnlinePlayers().forEach(online -> list.add(online.getName())),
             (explorer, input) -> {
@@ -158,6 +178,14 @@ public class Argument<T> {
         } catch (NumberFormatException exception) {
             throw new ArgumentParseException(input + " is not a valid integer.", exception);
         }
+    });
+
+    public static final Argument<@NotNull SkillHandler<?>> SKILL_HANDLER = new Argument<>("skill_id", (explorer, list) -> {
+        MythicLib.plugin.getSkills().getHandlers().forEach(handler -> list.add(handler.getId()));
+    }, (explorer, input) -> {
+        final SkillHandler<?> found = MythicLib.plugin.getSkills().getHandler(UtilityMethods.enumName(input));
+        if (found == null) throw new ArgumentParseException("Could not find skill '" + input + "'");
+        return found;
     });
 
     public static final Argument<@NotNull Double> AMOUNT_DOUBLE = new Argument<>("amount", (explorer, list) -> {

@@ -24,8 +24,6 @@ public class VersionsCommand extends CommandTreeNode {
                     + " by " + String.join(",", plugin.getDescription().getAuthors())
                     + (Bukkit.getPluginManager().isPluginEnabled(plugin) ? "" : " (Disabled)"));
 
-        sender.sendMessage("Plugin versions pasted to your server console");
-
-        return CommandResult.SUCCESS;
+        return explorer.success("Plugin versions pasted to server console");
     }
 }

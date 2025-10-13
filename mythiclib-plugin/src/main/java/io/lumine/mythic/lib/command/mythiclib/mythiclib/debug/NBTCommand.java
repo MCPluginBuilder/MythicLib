@@ -24,8 +24,7 @@ public class NBTCommand extends CommandTreeNode {
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 
         if (!(sender instanceof Player)) {
-            sender.sendMessage("You can only use this command as a player");
-            return CommandResult.FAILURE;
+            return explorer.fail("This command is only for players");
         }
 
         Player player = (Player) sender;
@@ -46,9 +45,8 @@ public class NBTCommand extends CommandTreeNode {
         if (inventory.size() == 0) sender.sendMessage(ChatColor.RED + "No NBT items found");
         //else sender.spigot().sendMessage(upload(MythicLib.plugin.getJson().toString(inventory)));
         //TODO make the above line work
-        sender.sendMessage("Command is currently under maintenance.");
 
-        return CommandResult.SUCCESS;
+        return explorer.fail("Command currently disabled");
     }
 
     private boolean isValid(ItemStack stack) {

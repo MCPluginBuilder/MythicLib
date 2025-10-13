@@ -98,8 +98,7 @@ public class TempStatCommand extends CommandTreeNode {
             else
                 new TemporaryStatModifier(key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, duration);
 
-            sender.sendMessage("Modifier given to " + target.getName());
-            return CommandResult.SUCCESS;
+            return explorer.success("Modifier of &6" + value + type.toStringSuffix() + " " + statName + "&e for &6" + duration + "&e ticks given to &6" + target.getName());
         }
     }
 }

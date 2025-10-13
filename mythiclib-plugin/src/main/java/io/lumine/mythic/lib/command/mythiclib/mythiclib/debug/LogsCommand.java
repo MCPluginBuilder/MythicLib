@@ -1,10 +1,10 @@
 package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.comp.mclogs.APIResponse;
 import io.lumine.mythic.lib.comp.mclogs.MclogsAPI;
-import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -45,14 +45,12 @@ public class LogsCommand extends CommandTreeNode {
 
             APIResponse response = MclogsAPI.share(builder.toString());
             Validate.isTrue(response.success, "Custom error (" + response.id + "): " + response.error);
-            sender.sendMessage("Uploaded here: " + response.url);
             MythicLib.plugin.getLogger().log(Level.INFO, "Latest logs uploaded at " + response.url);
+            return explorer.success("Logs uploaded to: " + response.url);
 
         } catch (Exception exception) {
             exception.printStackTrace();
-            sender.sendMessage("Could not upload latest logs: " + exception.getMessage() + " (check console for stack strace)");
+            return explorer.fail("Could not upload latest logs (check console for stack strace): " + exception.getMessage());
         }
-
-        return CommandResult.SUCCESS;
     }
 }
