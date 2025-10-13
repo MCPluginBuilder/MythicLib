@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -123,6 +124,16 @@ public class Argument<T> {
     public static final Argument<@NotNull Player> PLAYER = new Argument<>("player",
             (explorer, list) -> Bukkit.getOnlinePlayers().forEach(online -> list.add(online.getName())),
             (explorer, input) -> {
+
+                // Also try by UUID
+                try {
+                    final var asUniqueId = UUID.fromString(input); // If fails, fallback to name
+                    final var player = Bukkit.getPlayer(asUniqueId);
+                    Validate.notNull(player, "Could not find player with UUID " + input);
+                    return player;
+                } catch (Throwable ignored) {
+                }
+
                 final var player = Bukkit.getPlayer(input);
                 Validate.notNull(player, "Could not find player " + input);
                 return player;
