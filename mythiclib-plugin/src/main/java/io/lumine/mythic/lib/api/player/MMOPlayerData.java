@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public class MMOPlayerData {
 
@@ -105,6 +106,7 @@ public class MMOPlayerData {
     private String lastPlayerName;
 
     private final boolean lookup;
+    private final boolean profilesEnabled = MythicLib.plugin.getProfileMode() != ProfileMode.NONE;
 
     /**
      * Last time the player either logged in or logged out.
@@ -163,8 +165,12 @@ public class MMOPlayerData {
      * @param player Player instance to cache (null if logging off)
      */
     public void updatePlayer(@Nullable Player player) {
+        MythicLib.plugin.getLogger().log(Level.INFO, "Player updated for " + getUniqueId());
         this.player = player;
-        if (player != null) this.lastPlayerName = player.getName();
+        if (player != null) {
+            this.lastPlayerName = player.getName();
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null);
+        }
         this.lastLogActivity = System.currentTimeMillis();
     }
 
@@ -259,7 +265,7 @@ public class MMOPlayerData {
 
     @NotNull
     public ProfileSession getProfileSession() {
-        return Objects.requireNonNull(profileSession, "No profile session assigned");
+        return Objects.requireNonNull(profileSession, "No profile chosen");
     }
 
     public void addTemporaryHandler(@NotNull TemporaryHandler handler) {
