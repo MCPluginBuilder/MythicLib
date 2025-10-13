@@ -88,16 +88,16 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
             public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
                 if (permission != null && !sender.hasPermission(permission)) return new ArrayList<>();
 
-                List<String> list = new CommandTreeExplorer(sender, CommandTreeRoot.this, args).calculateTabCompletion();
-                return args[args.length - 1].isEmpty() ? list
-                        : list.stream().filter(string -> string.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
+                final var lastArg = args[args.length - 1].toLowerCase();
+                final var candidates = new CommandTreeExplorer(sender, CommandTreeRoot.this, true, args).calculateTabCompletion();
+                return candidates.stream().filter(string -> string.toLowerCase().startsWith(lastArg)).collect(Collectors.toList());
             }
 
             @Override
             public boolean execute(@NotNull CommandSender sender, @NotNull String s, @NotNull String[] args) {
                 if (permission != null && !sender.hasPermission(permission)) return false;
 
-                final var explorer = new CommandTreeExplorer(sender, CommandTreeRoot.this, args);
+                final var explorer = new CommandTreeExplorer(sender, CommandTreeRoot.this, false, args);
                 final var targetNode = explorer.getNode();
                 final CommandResult executionResult;
 

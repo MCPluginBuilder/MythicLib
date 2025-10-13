@@ -23,31 +23,36 @@ public class CommandTreeExplorer {
     /**
      * Used to explore a command tree given a certain command
      *
-     * @param sender The command sender
-     * @param root   The command tree root to explore
-     * @param args   Given arguments, tells what direction to take at every tree node
+     * @param sender        The command sender
+     * @param root          The command tree root to explore
+     * @param tabCompletion Toggle on for tab completion
+     * @param args          Given arguments, tells what direction to take at every tree node
      */
-    public CommandTreeExplorer(@NotNull CommandSender sender, @NotNull CommandTreeRoot root, @NotNull String[] args) {
+    public CommandTreeExplorer(@NotNull CommandSender sender, @NotNull CommandTreeRoot root, boolean tabCompletion, @NotNull String[] args) {
         this.current = root;
         this.root = root;
         this.args = args;
         this.sender = sender;
 
-        for (String arg : args)
+        for (var i = 0; i < args.length; i++) {
+            final var arg = args[i];
 
             /*
-             * Check if current command floor has the corresponding arg, if so
-             * let the next floor handle the command.
+             * Check if current command floor has the corresponding arg,
+             * if so let the next floor handle the command.
+             *
+             * Small edge case - need to stop before the last one for tab completion
              */
-            if (argCount == 0 && current.hasChild(arg)) {
+            if (argCount == 0 && current.hasChild(arg) && (!tabCompletion || i < args.length - 1)) {
                 current = current.getChild(arg);
             }
 
             /*
-             * If the plugin cannot find a command tree node higher, then the
-             * current floor node "handle" the command
+             * If the plugin cannot find a command tree node higher,
+             * then the current tree level takes care of execution
              */
             else argCount++;
+        }
     }
 
     @NotNull
