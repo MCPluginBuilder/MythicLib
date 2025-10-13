@@ -44,6 +44,7 @@ public abstract class PlayerMessage {
     }
 
     public void send(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders) {
+        if (!player.isOnline()) return; // Safeguard
 
         // Cast script if provided
         if (ranOnMessage != null) {
@@ -58,9 +59,6 @@ public abstract class PlayerMessage {
     }
 
     protected abstract void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders);
-
-    @NotNull
-    public abstract ReadyMessage prepare(@Nullable ChatColor color, @Nullable Object... placeholders);
 
     protected String parsePlaceholders(@Nullable Player player, @NotNull String input, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders) {
         // TODO improve?
