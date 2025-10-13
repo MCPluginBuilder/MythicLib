@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class ConfigSectionObject implements ConfigObject {
@@ -36,6 +37,48 @@ public class ConfigSectionObject implements ConfigObject {
     public double getDouble(String key, double defaultValue) {
         return config.getDouble(key, defaultValue);
     }
+
+    @Override
+    public float getFloat(String key) {
+        return (float) config.getDouble(key);
+    }
+
+    //region Modern
+
+    @Override
+    public float getFloat(String key, float defaultValue) {
+        return (float) config.getDouble(key, defaultValue);
+    }
+
+    @Override
+    public @NotNull Optional<Float> flpt(String... aliases) {
+        for (var alias : aliases)
+            if (contains(alias)) return Optional.of((float) config.getDouble(alias));
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<String> string(String... aliases) {
+        for (var alias : aliases)
+            if (contains(alias)) return Optional.of(config.getString(alias));
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Integer> integer(String... aliases) {
+        for (var alias : aliases)
+            if (contains(alias)) return Optional.of(config.getInt(alias));
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Double> dble(String... aliases) {
+        for (var alias : aliases)
+            if (contains(alias)) return Optional.of(config.getDouble(alias));
+        return Optional.empty();
+    }
+
+    //endregion
 
     @Override
     public int getInt(String key) {

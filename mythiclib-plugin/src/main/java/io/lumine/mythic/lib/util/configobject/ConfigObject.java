@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -48,6 +49,22 @@ public interface ConfigObject {
     boolean getBoolean(String key);
 
     boolean getBoolean(String key, boolean defaultValue);
+
+    float getFloat(String key);
+
+    float getFloat(String key, float defaultValue);
+
+    @NotNull
+    Optional<Float> flpt(String... aliases);
+
+    @NotNull
+    Optional<String> string(String... aliases);
+
+    @NotNull
+    Optional<Integer> integer(String... aliases);
+
+    @NotNull
+    Optional<Double> dble(String... aliases);
 
     default DoubleFormula getDoubleFormula(String key) {
         return new DoubleFormula(getString(key));
@@ -93,7 +110,8 @@ public interface ConfigObject {
 
     boolean contains(String key);
 
-    @NotNull Set<String> getKeys();
+    @NotNull
+    Set<String> getKeys();
 
     @Nullable String getKey();
 

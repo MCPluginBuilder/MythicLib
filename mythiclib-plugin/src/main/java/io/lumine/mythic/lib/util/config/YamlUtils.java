@@ -18,6 +18,18 @@ public class YamlUtils {
         return null;
     }
 
+    /**
+     * @see #getInteger(ConfigurationSection, String...)
+     */
+    public static int getInt(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getInt(candidate);
+        return 0;
+    }
+
+    /**
+     * @see #getInt(ConfigurationSection, String...)
+     */
     @Nullable
     public static Integer getInteger(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         for (var candidate : candidates)
@@ -25,36 +37,61 @@ public class YamlUtils {
         return null;
     }
 
-    public static int getInt(@NotNull ConfigurationSection config, @NotNull String... candidates) {
-        for (var candidate : candidates)
-            if (config.contains(candidate)) return config.getInt(candidate);
-        return 0;
-    }
-
-    @Nullable
-    public static Boolean getBoolean(@NotNull ConfigurationSection config, @NotNull String... candidates) {
-        for (var candidate : candidates)
-            if (config.contains(candidate)) return config.getBoolean(candidate);
-        return null;
-    }
-
-    public static boolean getBool(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+    /**
+     * @see #getBooleanObj(ConfigurationSection, String...)
+     */
+    public static boolean getBoolean(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         for (var candidate : candidates)
             if (config.contains(candidate)) return config.getBoolean(candidate);
         return false;
     }
 
+    /**
+     * @see #getBoolean(ConfigurationSection, String...)
+     */
     @Nullable
-    public static Float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+    public static Boolean getBooleanObj(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getBoolean(candidate);
+        return null;
+    }
+
+    /**
+     * @see #getFloatObj(ConfigurationSection, String...)
+     */
+    public static float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return (float) config.getDouble(candidate);
+        return 0;
+    }
+
+    /**
+     * @see #getFloat(ConfigurationSection, String...)
+     */
+    @Nullable
+    public static Float getFloatObj(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         for (var candidate : candidates)
             if (config.contains(candidate)) return (float) config.getDouble(candidate);
         return null;
     }
 
+    /**
+     * @see #getDoubleObj(ConfigurationSection, String...)
+     */
     public static double getDouble(@NotNull ConfigurationSection config, @NotNull String... candidates) {
         for (var candidate : candidates)
             if (config.contains(candidate)) return config.getDouble(candidate);
-        return 0;
+        return 0d;
+    }
+
+    /**
+     * @see #getDouble(ConfigurationSection, String...)
+     */
+    @Nullable
+    public static Double getDoubleObj(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        for (var candidate : candidates)
+            if (config.contains(candidate)) return config.getDouble(candidate);
+        return null;
     }
 
     @Nullable

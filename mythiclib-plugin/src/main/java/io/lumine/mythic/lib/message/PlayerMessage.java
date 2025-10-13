@@ -36,7 +36,7 @@ public abstract class PlayerMessage {
 
     public PlayerMessage(@NotNull ConfigurationSection config) {
         ranOnMessage = config.contains("script") ? MythicLib.plugin.getSkills().loadScript(config.get("script")) : null;
-        sound = config.contains("sound") ? new SoundReader(config.get("sound")) : null;
+        sound = SoundReader.fromConfig(config.get("sound"));
     }
 
     public void send(@NotNull MMOPlayerData player, @NotNull Object... placeholders) {

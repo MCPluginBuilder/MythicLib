@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class JsonWrapper implements ConfigObject {
@@ -48,7 +49,8 @@ public class JsonWrapper implements ConfigObject {
 
     @Override
     public String getString(String key, String defaultValue) {
-        return object.has(key) ? getString(key) : defaultValue;
+        final var found = object.get(key);
+        return found != null ? found.getAsString() : defaultValue;
     }
 
     @Override
@@ -58,7 +60,8 @@ public class JsonWrapper implements ConfigObject {
 
     @Override
     public double getDouble(String key, double defaultValue) {
-        return object.has(key) ? getDouble(key) : defaultValue;
+        final var found = object.get(key);
+        return found != null ? found.getAsDouble() : defaultValue;
     }
 
     @Override
@@ -68,8 +71,52 @@ public class JsonWrapper implements ConfigObject {
 
     @Override
     public int getInt(String key, int defaultValue) {
-        return object.has(key) ? getInt(key) : defaultValue;
+        final var found = object.get(key);
+        return found != null ? found.getAsInt() : defaultValue;
     }
+
+    @Override
+    public float getFloat(String key) {
+        return object.get(key).getAsFloat();
+    }
+
+    @Override
+    public float getFloat(String key, float defaultValue) {
+        final var found = object.get(key);
+        return found == null ? defaultValue : found.getAsFloat();
+    }
+
+    //region Modern
+
+    @Override
+    public @NotNull Optional<String> string(String... aliases) {
+        for (String alias : aliases)
+            if (object.has(alias)) return Optional.of(object.get(alias).getAsString());
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Integer> integer(String... aliases) {
+        for (String alias : aliases)
+            if (object.has(alias)) return Optional.of(object.get(alias).getAsInt());
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Double> dble(String... aliases) {
+        for (String alias : aliases)
+            if (object.has(alias)) return Optional.of(object.get(alias).getAsDouble());
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Float> flpt(String... aliases) {
+        for (String alias : aliases)
+            if (object.has(alias)) return Optional.of((float) object.get(alias).getAsDouble());
+        return Optional.empty();
+    }
+
+    //endregion
 
     @NotNull
     @Override

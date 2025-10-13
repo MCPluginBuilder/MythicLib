@@ -1,10 +1,12 @@
 package io.lumine.mythic.lib.message;
 
 import io.lumine.mythic.lib.util.config.YamlUtils;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,61 +20,64 @@ public class SoundReader {
 
     private final float vol, pitch;
 
-    public SoundReader(Object object) {
+    public SoundReader(@NotNull ConfigurationSection config) {
+        final String stringInput = config.getString("sound");
+        final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
+        if (tryParse != null) {
+            soundEnum = tryParse;
+            soundString = null;
+        } else {
+            soundString = stringInput;
+            soundEnum = null;
+        }
+        vol = YamlUtils.getFloat(config, "volume", "vol", "v");
+        pitch = YamlUtils.getFloat(config, "pitch", "p");
+    }
 
-        // From string
-        if (object instanceof String) {
+    public SoundReader(@NotNull String stringInput) {
+        // From , separated string
+        if (stringInput.contains(",")) {
 
-            // From , separated string
-            final String stringInput = (String) object;
-            if (stringInput.contains(",")) {
-
-                final var split = stringInput.split(",");
-                final Sound tryParse = tryParseSoundEnum(split[0]);
-                if (tryParse != null) {
-                    soundEnum = tryParse;
-                    soundString = null;
-                } else {
-                    soundString = split[0];
-                    soundEnum = null;
-                }
-
-                var hasVol = split.length > 2;
-                vol = hasVol ? Float.parseFloat(split[1]) : 1;
-                pitch = Float.parseFloat(split[hasVol ? 2 : 1]);
-                return;
-            }
-
-            final Sound tryParse = tryParseSoundEnum(stringInput);
+            final var split = stringInput.split(",");
+            final Sound tryParse = tryParseSoundEnum(split[0]);
             if (tryParse != null) {
                 soundEnum = tryParse;
                 soundString = null;
             } else {
-                soundString = stringInput;
+                soundString = split[0];
                 soundEnum = null;
             }
-            vol = 1;
-            pitch = 1;
+
+            var hasVol = split.length > 2;
+            vol = hasVol ? Float.parseFloat(split[1]) : 1;
+            pitch = Float.parseFloat(split[hasVol ? 2 : 1]);
+            return;
         }
 
-        // From config section
-        else if (object instanceof ConfigurationSection) {
-            final ConfigurationSection config = (ConfigurationSection) object;
-            final String stringInput = config.getString("sound");
-            final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
-            if (tryParse != null) {
-                soundEnum = tryParse;
-                soundString = null;
-            } else {
-                soundString = stringInput;
-                soundEnum = null;
-            }
-            vol = YamlUtils.getFloat(config, "volume", "vol", "v");
-            pitch = YamlUtils.getFloat(config, "pitch", "p");
+        final Sound tryParse = tryParseSoundEnum(stringInput);
+        if (tryParse != null) {
+            soundEnum = tryParse;
+            soundString = null;
+        } else {
+            soundString = stringInput;
+            soundEnum = null;
         }
+        vol = 1;
+        pitch = 1;
+    }
 
-        // Error
-        else throw new IllegalArgumentException("Expected either a string or config section");
+    public SoundReader(@NotNull ConfigObject config) {
+        final String stringInput = config.getString("sound");
+        final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
+        if (tryParse != null) {
+            soundEnum = tryParse;
+            soundString = null;
+        } else {
+            soundString = stringInput;
+            soundEnum = null;
+        }
+        vol = config.flpt("volume", "vol", "v").orElse(1f);
+        pitch = config.flpt("pitch", "p").orElse(1f);
     }
 
     @Nullable
@@ -87,5 +92,23 @@ public class SoundReader {
     public void play(@NotNull Player player) {
         if (soundEnum != null) player.playSound(player.getLocation(), soundEnum, vol, pitch);
         else player.playSound(player.getLocation(), soundString, vol, pitch);
+    }
+
+    //region Static methods
+
+    @Nullable
+    @Contract("null -> null; !null -> !null")
+    public static SoundReader fromConfig(@Nullable Object configObject) {
+
+        if (configObject == null)
+            return null;
+
+        else if (configObject instanceof String)
+            return new SoundReader((String) configObject);
+
+        else if (configObject instanceof ConfigurationSection)
+            return new SoundReader((ConfigurationSection) configObject);
+
+        else throw new IllegalArgumentException("Expected either a string or config section");
     }
 }

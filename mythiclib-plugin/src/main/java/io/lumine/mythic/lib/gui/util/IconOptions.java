@@ -215,10 +215,10 @@ public class IconOptions {
             final var itemModel = itemModelRaw == null || itemModelRaw.isEmpty() ? null : NamespacedKey.fromString(itemModelRaw);
             final var skullTexture = YamlUtils.getString(config, "texture", "skull_texture", "skull-texture");
             final var tooltipStyle = YamlUtils.getString(config, "tooltip", "tooltip_style", "tooltip-style");
-            final var itemFlags = YamlUtils.getBool(config, "hide-flags", "hide_flags") ? ItemFlag.values() : parseItemFlagArray(YamlUtils.getStringList(config, "item_flags", "item-flags"));
-            final var hideTooltip = YamlUtils.getBoolean(config, "hide_tooltip", "hide-tooltip");
-            final var fakeAttribute = YamlUtils.getBoolean(config, "fake_attribute_modifier", "fake-attribute-modifier");
-            final var unbreakable = YamlUtils.getBoolean(config, "unbreakable");
+            final var itemFlags = YamlUtils.getBoolean(config, "hide-flags", "hide_flags") ? ItemFlag.values() : parseItemFlagArray(YamlUtils.getStringList(config, "item_flags", "item-flags"));
+            final var hideTooltip = YamlUtils.getBooleanObj(config, "hide_tooltip", "hide-tooltip");
+            final var fakeAttribute = YamlUtils.getBooleanObj(config, "fake_attribute_modifier", "fake-attribute-modifier");
+            final var unbreakable = YamlUtils.getBooleanObj(config, "unbreakable");
 
             return new IconOptions(material, customModelDataInt, customModelDataString, customModelDataFloat, itemModel, skullTexture, tooltipStyle, itemFlags, hideTooltip, fakeAttribute, unbreakable);
         }

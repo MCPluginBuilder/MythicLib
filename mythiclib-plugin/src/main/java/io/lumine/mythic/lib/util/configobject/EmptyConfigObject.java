@@ -3,10 +3,10 @@ package io.lumine.mythic.lib.util.configobject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class EmptyConfigObject implements ConfigObject {
-    public static final ConfigObject INSTANCE = new EmptyConfigObject();
 
     @Override
     public String getString(String key) {
@@ -38,6 +38,40 @@ public class EmptyConfigObject implements ConfigObject {
         return defaultValue;
     }
 
+    @Override
+    public float getFloat(String key, float defaultValue) {
+        return defaultValue;
+    }
+
+    //region Modern
+
+    @Override
+    public @NotNull Optional<Double> dble(String... aliases) {
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Float> flpt(String... aliases) {
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Integer> integer(String... aliases) {
+        return Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<String> string(String... aliases) {
+        return Optional.empty();
+    }
+
+    //endregion
+
+    @Override
+    public float getFloat(String key) {
+        throw new NullPointerException("Could not find float with key '" + key + "'");
+    }
+
     @NotNull
     @Override
     public ConfigObject adaptObject(String key) {
@@ -66,7 +100,7 @@ public class EmptyConfigObject implements ConfigObject {
     }
 
     @Override
-    public Set<String> getKeys() {
+    public @NotNull Set<String> getKeys() {
         return new HashSet<>();
     }
 
