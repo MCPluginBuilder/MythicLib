@@ -488,6 +488,7 @@ public class SkillManager extends Module {
         if (!scriptFolder.exists()) {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/elemental_attacks.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmoitems_scripts.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmocore_scripts.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/example_skills.yml");
         }
 
