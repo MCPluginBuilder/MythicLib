@@ -25,6 +25,8 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
     @Nullable
     private final String permission;
 
+    private boolean onlyForPlayers;
+
     /**
      * Use this to create executors only
      *
@@ -62,6 +64,10 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
 
     public @Nullable String getPermission() {
         return permission;
+    }
+
+    protected void setOnlyForPlayers() {
+        this.onlyForPlayers = true;
     }
 
     @NotNull
