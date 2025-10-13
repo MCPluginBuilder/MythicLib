@@ -513,11 +513,11 @@ public class SkillManager extends Module {
         }, "Could not load script '%s' from file '%s': '%s'");
 
         // Postload custom scripts and register a skill handler
-        for (Script script : scripts.values())
+        for (var script : scripts.values())
             try {
                 final ConfigurationSection config = script.getPostLoadAction().getCachedConfig();
                 script.getPostLoadAction().performAction();
-                registerSkillHandler(new MythicLibSkillHandler(config, script));
+                if (script.isPublic()) registerSkillHandler(new MythicLibSkillHandler(config, script));
             } catch (PostLoadException exception) {
                 // Trying to load an alias, ignore
             } catch (RuntimeException exception) {
