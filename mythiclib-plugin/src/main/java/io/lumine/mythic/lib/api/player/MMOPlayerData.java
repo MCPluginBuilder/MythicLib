@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 public class MMOPlayerData {
 
@@ -165,7 +164,6 @@ public class MMOPlayerData {
      * @param player Player instance to cache (null if logging off)
      */
     public void updatePlayer(@Nullable Player player) {
-        MythicLib.plugin.getLogger().log(Level.INFO, "Player updated for " + getUniqueId());
         this.player = player;
         if (player != null) {
             this.lastPlayerName = player.getName();
