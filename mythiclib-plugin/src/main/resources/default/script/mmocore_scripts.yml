@@ -8,7 +8,6 @@
 # Displays a helix of particles around the player
 # This is configured in MMOCore/messages.yml > level-up.script
 mmocore_level_up_effect:
-  public: true
   mechanics:
     - "helix{tick=mmocore_level_up_effect_tick;radius=1;height=2}"
 
@@ -20,7 +19,6 @@ mmocore_level_up_effect_tick:
 # Script ran when unlocking a waypoint
 # This is configured in MMOCore/messages.yml > waypoint.unlock.script
 mmocore_waypoint_unlock_effect:
-  public: true
   mechanics:
     - "helix{tick=mmocore_waypoint_unlock_effect_tick;radius=1;height=2}"
 
