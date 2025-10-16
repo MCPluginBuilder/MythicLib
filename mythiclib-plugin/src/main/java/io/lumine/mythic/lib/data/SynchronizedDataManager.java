@@ -230,27 +230,21 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         Tasks.runAsync(owning, () -> {
 
             // Load player data
-            final var success = dataHandler.loadData(playerData);
+            final var dataFetcher = new DataFetcher<>(this, playerData);
+            final var result = dataFetcher.run();
 
             // No success, do nothing
-            if (!success) {
+            if (result.type != DataLoadResult.Type.SUCCESS) {
                 future.complete(null);
-                return;
-            }
-
-            // TODO PROPER SESSION CHECKS?? not multi thread safe
-            // If player has logged off in the meantime, save data and do not complete
-            if (!lookup && !playerData.getMMOPlayerData().isOnline()) {
-                future.complete(null);
-                // TODO save again!!
                 return;
             }
 
             // Complete sync
             Tasks.runSync(owning, () -> {
-                playerData.markSessionReady(); // Mark as ready
-                if (!lookup)
+                if (!lookup) {
+                    playerData.markSessionReady(); // Mark as ready
                     Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData, parentProfileEvent));
+                }
                 future.complete(null); // Complete future
             });
         });
@@ -359,6 +353,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @return A new instance of player data
      */
     public abstract H newPlayerData(@NotNull MMOPlayerData playerData);
+
+    public abstract void loadEmptyPlayerData(@NotNull H playerData);
 
     /**
      * @return An object of type {@link fr.phoenixdevt.profiles.ProfileDataModule} which is an object

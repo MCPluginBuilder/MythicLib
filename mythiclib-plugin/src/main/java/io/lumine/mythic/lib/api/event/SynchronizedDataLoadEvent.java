@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.api.event;
 
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +25,8 @@ public class SynchronizedDataLoadEvent extends Event {
     }
 
     public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder, @Nullable Event profileEvent) {
+        Validate.isTrue(!holder.getMMOPlayerData().isLookup(), "Cannot call event with lookup player data");
+
         this.holder = holder;
         this.manager = manager;
         this.profileEvent = profileEvent;

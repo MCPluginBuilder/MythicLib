@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -29,8 +28,8 @@ public class SQLDataSource {
             DEFAULT_DATABASE = "minecraft";
     private static final int DEFAULT_PORT = 3306;
 
-    public SQLDataSource(@NotNull JavaPlugin plugin) {
-        this.plugin = (MMOPlugin) plugin;
+    public SQLDataSource(@NotNull MMOPlugin plugin) {
+        this.plugin = plugin;
 
         // Prepare Hikari config
         final ConfigurationSection config = plugin.getConfig().getConfigurationSection("mysql");

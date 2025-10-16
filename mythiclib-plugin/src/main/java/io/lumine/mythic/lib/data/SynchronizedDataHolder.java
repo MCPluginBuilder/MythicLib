@@ -128,7 +128,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * Must be called on main server thread
      */
     public void markSessionReady() {
-        if (playerData.isLookup()) return; // Skip TODO improve?
+        Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
         Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
 
         onSessionReady();
@@ -141,7 +141,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * Must be called on main server thread
      */
     public void markSessionClosed() {
-        if (playerData.isLookup()) return; // Skip TODO improve?
+        Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
         Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
 
         onSessionClosed();

@@ -1,14 +1,11 @@
 package io.lumine.mythic.lib.data.json;
 
 import com.google.gson.JsonObject;
-import io.lumine.mythic.lib.data.OfflineDataHolder;
-import io.lumine.mythic.lib.data.SaveReason;
-import io.lumine.mythic.lib.data.SynchronizedDataHandler;
-import io.lumine.mythic.lib.data.SynchronizedDataHolder;
+import io.lumine.mythic.lib.data.*;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Jsonable;
 import io.lumine.mythic.lib.util.config.JsonFile;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -17,15 +14,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHolder & Jsonable, O extends OfflineDataHolder> implements SynchronizedDataHandler<H, O> {
-    private final Plugin owning;
+    private final MMOPlugin owning;
 
-    public JSONSynchronizedDataHandler(Plugin owning) {
+    public JSONSynchronizedDataHandler(MMOPlugin owning) {
         this.owning = Objects.requireNonNull(owning, "Plugin cannot be null");
-    }
-
-    @Deprecated
-    public JSONSynchronizedDataHandler(Plugin owning, boolean profilePlugin) {
-        this(owning);
     }
 
     @Override
@@ -36,14 +28,19 @@ public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHold
         file.save();
     }
 
+    @NotNull
     @Override
-    public boolean loadData(@NotNull H playerData) {
-        // TODO support true/false
-        loadFromObject(playerData, getUserFile(playerData).getContent());
-        return true;
+    public DataLoadResult loadData(@NotNull H playerData, boolean force) {
+        return loadFromObject(playerData, getUserFile(playerData).getContent(), true);
     }
 
-    public abstract void loadFromObject(@NotNull H playerData, @NotNull JsonObject json);
+    @NotNull
+    protected abstract DataLoadResult loadFromObject(@NotNull H playerData, @NotNull JsonObject json, boolean isSaved);
+
+    @Override
+    public void confirmReception(@NotNull H playerData) {
+        // Nothing
+    }
 
     private JsonFile getUserFile(H playerData) {
         return new JsonFile(owning, "userdata", playerData.getEffectiveId().toString());

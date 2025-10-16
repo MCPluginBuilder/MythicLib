@@ -44,7 +44,10 @@ public interface SynchronizedDataHandler<H extends SynchronizedDataHolder, O ext
      * @param playerData Player data to be loaded
      * @return If loading was successful. If not, no event shall be called.
      */
-    public boolean loadData(@NotNull H playerData);
+    @NotNull
+    public DataLoadResult loadData(@NotNull H playerData, boolean force);
+
+    public void confirmReception(@NotNull H playerData);
 
     public O getOffline(@NotNull UUID profileId);
 }
