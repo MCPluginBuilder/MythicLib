@@ -1,11 +1,14 @@
 package io.lumine.mythic.lib.script.variable;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> {
 
@@ -14,6 +17,16 @@ public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> 
      * which takes as input the variable and returns the corresponding subvariable.
      */
     private final Map<String, Function<D, Variable<?>>> registered = new HashMap<>();
+
+    private final SimpleVariableRegistry<?> parent;
+
+    public SimpleVariableRegistry() {
+        this(null);
+    }
+
+    public SimpleVariableRegistry(@Nullable SimpleVariableRegistry<?> parent) {
+        this.parent = parent;
+    }
 
     /**
      * Called when retrieving a subvariable from a variable.
@@ -25,10 +38,21 @@ public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> 
      * @return The corresponding subvariable
      */
     @NotNull
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Variable<?> accessVariable(@NotNull Variable<D> d, @NotNull String name) {
-        final Function<D, ? extends Variable<?>> supplier = registered.get(name);
-        Validate.notNull(supplier, "Cannot find subvariable '" + name + "' in variable type '" + d.getClass().getAnnotation(VariableMetadata.class).name() + "'");
-        return supplier.apply(d.getStored());
+
+        // Fast code
+        final var supplier = registered.get(name);
+        if (supplier != null) return supplier.apply(d.getStored());
+
+        // Parent checkup
+        var current = this.parent;
+        while (current != null) {
+            Function parentSupplier = current.registered.get(name);
+            if (parentSupplier != null) return (Variable<?>) parentSupplier.apply(d.getStored());
+            current = current.parent;
+        }
+        throw new IllegalArgumentException("Cannot find subvariable '" + name + "' in variable type '" + d.getClass().getAnnotation(VariableMetadata.class).name() + "'");
     }
 
     /**
@@ -47,7 +71,10 @@ public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> 
      * @param registry Parent variable registry
      */
     public <E extends D> void transferTo(@NotNull SimpleVariableRegistry<E> registry) {
-        this.registered.forEach((key, getter) -> registry.registered.put(key, var -> getter.apply((E) var)));
+        MythicLib.plugin.getLogger().log(Level.INFO, "================");
+        MythicLib.plugin.getLogger().log(Level.INFO, "Transferring " + this.registered.keySet().toString() + " to " + registry.registered.keySet().toString());
+        MythicLib.plugin.getLogger().log(Level.INFO, "================");
+        this.registered.forEach((key, getter) -> registry.registered.put(key, getter::apply));
     }
 
     /**

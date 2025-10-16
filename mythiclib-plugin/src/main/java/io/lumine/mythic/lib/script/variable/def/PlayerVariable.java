@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 
 @VariableMetadata(name = "player")
 public class PlayerVariable extends Variable<Player> {
-    public static final SimpleVariableRegistry<Player> VARIABLE_REGISTRY = new SimpleVariableRegistry<>();
+    public static final SimpleVariableRegistry<Player> VARIABLE_REGISTRY = new SimpleVariableRegistry<>(EntityVariable.VARIABLE_REGISTRY);
 
     static {
         VARIABLE_REGISTRY.registerVariable("stat", var -> new StatsVariable("temp", MMOPlayerData.get(var).getStatMap()));

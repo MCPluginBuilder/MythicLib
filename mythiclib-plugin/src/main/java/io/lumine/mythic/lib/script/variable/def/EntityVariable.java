@@ -26,8 +26,6 @@ public class EntityVariable extends Variable<Entity> {
         VARIABLE_REGISTRY.registerVariable("height", var -> new DoubleVariable("temp", var.getHeight()));
         VARIABLE_REGISTRY.registerVariable("attribute", var -> new AttributesVariable("temp", (Attributable) var));
         VARIABLE_REGISTRY.registerVariable("fire_ticks", var -> new IntegerVariable("temp", var.getFireTicks()));
-
-        VARIABLE_REGISTRY.transferTo(PlayerVariable.VARIABLE_REGISTRY);
     }
 
     public EntityVariable(String name, Entity entity) {
