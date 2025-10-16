@@ -57,6 +57,15 @@ public class YamlUtils {
     }
 
     /**
+     * @see #getBoolean(ConfigurationSection, String...)
+     * @deprecated
+     */
+    @Deprecated
+    public static boolean getBool(@NotNull ConfigurationSection config, @NotNull String... candidates) {
+        return getBoolean(config, candidates);
+    }
+
+    /**
      * @see #getFloatObj(ConfigurationSection, String...)
      */
     public static float getFloat(@NotNull ConfigurationSection config, @NotNull String... candidates) {
