@@ -3,7 +3,9 @@ package io.lumine.mythic.lib.data.sql;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
-import io.lumine.mythic.lib.profile.DataSession;
+import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.ProfileSession;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -22,20 +24,18 @@ import java.util.logging.Level;
  */
 public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
     private final SQLDataSource dataSource;
+    private final MMOPlugin plugin;
     private final H playerData;
     private final UUID effectiveId;
     private final String tableName, uuidFieldName;
     private final long start = System.currentTimeMillis();
-    private final DataSession dataSession;
+
+    @Nullable(value = "null if profile plugin")
+    private final ProfileSession profileSession;
 
     private int tries;
 
     private static final int RETRIEVAL_PERIOD = 1000;
-
-    @Deprecated
-    public SQLDataSynchronizer(String tableName, String uuidFieldName, SQLDataSource dataSource, H playerData, boolean profilePlugin) {
-        this(tableName, uuidFieldName, dataSource, playerData);
-    }
 
     /**
      * The SQL data synchronizer will find the column in the database with
@@ -54,17 +54,27 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
      * @param dataSource    SQL connection being used
      * @param playerData    Player data being synchronized
      */
-    public SQLDataSynchronizer(String tableName, String uuidFieldName, SQLDataSource dataSource, H playerData) {
+    public SQLDataSynchronizer(@NotNull String tableName,
+                               @NotNull String uuidFieldName,
+                               @NotNull SQLDataSource dataSource,
+                               @NotNull H playerData) {
         this.tableName = tableName;
         this.uuidFieldName = uuidFieldName;
         this.playerData = playerData;
         this.dataSource = dataSource;
+        this.plugin = dataSource.getPlugin();
         this.effectiveId = playerData.getEffectiveId();
-        this.dataSession = playerData.getMMOPlayerData().getProfileSession().getDataSession();
+        this.profileSession = plugin.isProfilePlugin() ? null : playerData.getMMOPlayerData().getProfileSession();
     }
 
+    @NotNull
     public H getData() {
         return playerData;
+    }
+
+    @NotNull
+    public MMOPlugin getPlugin() {
+        return plugin;
     }
 
     /**
@@ -88,12 +98,12 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
             prepared = connection.prepareStatement("SELECT * FROM `" + tableName + "` WHERE `" + uuidFieldName + "` = ?;");
             prepared.setString(1, effectiveId.toString());
 
-            UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Trying to load data of " + effectiveId);
+            UtilityMethods.debug(this.plugin, "SQL", "Trying to load data of " + effectiveId);
             result = prepared.executeQuery(); // Freezes thread
 
             // If player went offline
             if (isInvalidated()) {
-                UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Stopped data retrieval as '" + effectiveId + "' went offline");
+                UtilityMethods.debug(this.plugin, "SQL", "Stopped data retrieval as '" + effectiveId + "' went offline");
                 return false;
             }
 
@@ -104,11 +114,11 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
                     success = true;
                     loadData(result);
                     if (tries > MythicLib.plugin.getMMOConfig().maxSyncTries)
-                        UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Maximum number of tries reached.");
-                    UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Found and loaded data of '" + effectiveId + "'");
-                    UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Time taken: " + (System.currentTimeMillis() - start) + "ms");
+                        UtilityMethods.debug(this.plugin, "SQL", "Maximum number of tries reached.");
+                    UtilityMethods.debug(this.plugin, "SQL", "Found and loaded data of '" + effectiveId + "'");
+                    UtilityMethods.debug(this.plugin, "SQL", "Time taken: " + (System.currentTimeMillis() - start) + "ms");
                 } else {
-                    UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Did not load data of '" + effectiveId + "' as 'is_saved' is set to 0, trying again in " + RETRIEVAL_PERIOD + "ms");
+                    UtilityMethods.debug(this.plugin, "SQL", "Did not load data of '" + effectiveId + "' as 'is_saved' is set to 0, trying again in " + RETRIEVAL_PERIOD + "ms");
                     retry = true;
                 }
             } else {
@@ -117,11 +127,11 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
                 confirmReception(connection);
                 success = true;
                 loadEmptyData();
-                UtilityMethods.debug(dataSource.getPlugin(), "SQL", "Found empty data for '" + effectiveId + "', loading default...");
+                UtilityMethods.debug(this.plugin, "SQL", "Found empty data for '" + effectiveId + "', loading default...");
             }
 
         } catch (Exception throwable) {
-            dataSource.getPlugin().getLogger().log(Level.WARNING, "Could not load player data of '" + effectiveId + "':");
+            this.plugin.getLogger().log(Level.WARNING, "Could not load player data of '" + effectiveId + "':");
             throwable.printStackTrace();
         } finally {
 
@@ -131,7 +141,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
                 if (prepared != null) prepared.close();
                 if (connection != null) connection.close();
             } catch (SQLException exception) {
-                dataSource.getPlugin().getLogger().log(Level.WARNING, "Error while loading player data of '" + effectiveId + "':");
+                this.plugin.getLogger().log(Level.WARNING, "Error while loading player data of '" + effectiveId + "':");
                 exception.printStackTrace();
             }
         }
@@ -153,7 +163,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
         // This method should check if the player is offline.
         // The data session `alive` flag is set to false if the player logs out
         // or if for any reason the profile session closes
-        return !dataSession.isAlive();
+        return profileSession == null ? !playerData.getMMOPlayerData().isOnline() : profileSession.isDead();
     }
 
     /**
@@ -171,7 +181,7 @@ public abstract class SQLDataSynchronizer<H extends SynchronizedDataHolder> {
             prepared.setString(1, effectiveId.toString());
             prepared.executeUpdate();
         } catch (Exception exception) {
-            dataSource.getPlugin().getLogger().log(Level.WARNING, "Could not confirm data sync of " + effectiveId);
+            this.plugin.getLogger().log(Level.WARNING, "Could not confirm data sync of " + effectiveId);
             exception.printStackTrace();
         } finally {
             if (prepared != null) prepared.close();

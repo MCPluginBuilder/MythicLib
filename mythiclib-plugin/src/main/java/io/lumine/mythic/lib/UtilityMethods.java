@@ -642,15 +642,6 @@ public class UtilityMethods {
         return loc.getY() - moving.getBlockY() - 1;
     }
 
-    private static final Map<String, String> DEBUG_COLOR_PREFIX = new HashMap<>();
-
-    static {
-        DEBUG_COLOR_PREFIX.put("MythicLib", "§a");
-        DEBUG_COLOR_PREFIX.put("MMOItems", "§c");
-        DEBUG_COLOR_PREFIX.put("MMOCore", "§6");
-        DEBUG_COLOR_PREFIX.put("RPGInventory", "§e");
-    }
-
     /**
      * Sends a debug message. All plugins depending on MythicLib must use this
      * function to send debug message, which is more convenient for users.
@@ -664,10 +655,8 @@ public class UtilityMethods {
         Validate.notNull(plugin, "Plugin cannot be null");
         Validate.notNull(message, "Message cannot be null");
 
-        final String colorPrefix = DEBUG_COLOR_PREFIX.getOrDefault(plugin.getName(), "");
-
         if (MythicLib.plugin.getMMOConfig().debugMode)
-            plugin.getLogger().log(Level.INFO, colorPrefix + "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
+            plugin.getLogger().log(Level.INFO, "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
     }
 
     private static final int NEGATIVE_SPACE_BASE_CHAR = 0xD0000;

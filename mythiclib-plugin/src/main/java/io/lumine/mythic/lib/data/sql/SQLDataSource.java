@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.data.sql;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,7 +19,7 @@ import java.util.logging.Level;
 
 // TODO clear methods and implement CompletableFutures
 public class SQLDataSource {
-    private final JavaPlugin plugin;
+    private final MMOPlugin plugin;
     private final HikariDataSource dataSource;
 
     private static final String
@@ -29,7 +30,7 @@ public class SQLDataSource {
     private static final int DEFAULT_PORT = 3306;
 
     public SQLDataSource(@NotNull JavaPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = (MMOPlugin) plugin;
 
         // Prepare Hikari config
         final ConfigurationSection config = plugin.getConfig().getConfigurationSection("mysql");
@@ -50,7 +51,7 @@ public class SQLDataSource {
     }
 
     @NotNull
-    public JavaPlugin getPlugin() {
+    public MMOPlugin getPlugin() {
         return plugin;
     }
 

@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.profile;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
@@ -90,7 +91,7 @@ public class ProfileSession {
     }
 
     public boolean isDead() {
-        return state == ProfileSessionState.DEAD;
+        return state.isDead();
     }
 
     public synchronized boolean isReady(@NotNull NamespacedKey key) {
@@ -106,8 +107,9 @@ public class ProfileSession {
     }
 
     private void initialize() {
-        if (this.state != ProfileSessionState.CREATED && this.state != ProfileSessionState.DEAD) return;
+        if (this.state != ProfileSessionState.CREATED && !this.state.isDead()) return;
 
+        UtilityMethods.debug(MythicLib.plugin, "PS", "Initialize session of " + profileId);
         this.state = ProfileSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
         this.callbacks.clear();
@@ -142,19 +144,21 @@ public class ProfileSession {
         // Session opened
         ////////////////////////////////
 
+        UtilityMethods.debug(MythicLib.plugin, "PS", "Open session of " + profileId);
         this.state = ProfileSessionState.OPEN;
         //this.playerData.startPlaying();
         this.callbacks.forEach(callback -> callback.callback(this));
         this.openDataSession();
-        this.dataSession.markActive();
     }
 
     private void abortOpening() {
-        this.state = ProfileSessionState.DEAD;
+        Validate.isTrue(state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING, "Cannot abort in state " + this.state);
+
+        UtilityMethods.debug(MythicLib.plugin, "PS", "Abort opening session of " + profileId);
+        this.state = ProfileSessionState.DEAD_EARLY;
         this.playerData.clearTemporaryHandlers();
         this.waiting = null;
         this.callbacks.clear();
-        this.incrementDataSession();
     }
 
     public synchronized void startClosing() {
@@ -166,20 +170,19 @@ public class ProfileSession {
 
         // Open
         else if (state == ProfileSessionState.OPEN) {
-
+            UtilityMethods.debug(MythicLib.plugin, "PS", "Start closing session of " + profileId);
             this.state = ProfileSessionState.CLOSING;
             this.playerData.clearTemporaryHandlers();
             this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
             this.callbacks.clear();
             this.closeDataSession();
-            incrementDataSession();
 
             checkClosed();
         }
 
         // Already closing
         else if (state != ProfileSessionState.CLOSING) {
-            Validate.isTrue(state == ProfileSessionState.DEAD, "Cannot close a dead session");
+            Validate.isTrue(state.isDead(), "Cannot close a dead session");
         }
     }
 
@@ -210,6 +213,7 @@ public class ProfileSession {
         // Session closed
         ////////////////////////////////
 
+        UtilityMethods.debug(MythicLib.plugin, "PS", "Close session of " + profileId);
         this.setLastActivity();
         this.state = ProfileSessionState.DEAD;
         this.playerData.saveCurrentProfileSession();
@@ -221,7 +225,7 @@ public class ProfileSession {
         return "PlayerSession{" + "user=" + this.playerData.getUniqueId() + ", profileId=" + profileId + ", state=" + state + ", waiting=" + waiting + '}';
     }
 
-    //region Player data session
+    //region Player data
 
     private final StatMap statMap;
     private final SkillModifierMap skillModifierMap;
@@ -292,19 +296,6 @@ public class ProfileSession {
         passiveSkillMap.closeSession();
         permissionMap.closeSession();
         //private final VariableList variableList = new VariableList(VariableScope.PLAYER);
-    }
-
-    @NotNull
-    private DataSession dataSession = new DataSession(this);
-
-    @NotNull
-    public DataSession getDataSession() {
-        return dataSession;
-    }
-
-    private void incrementDataSession() {
-        this.dataSession.markDead();
-        this.dataSession = new DataSession(this);
     }
 
     //endregion

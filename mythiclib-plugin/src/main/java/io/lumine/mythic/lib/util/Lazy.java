@@ -38,7 +38,7 @@ public class Lazy<T> implements Supplier<T> {
     }
 
     public static <T> Lazy<T> of(@NotNull Supplier<T> expression) {
-        return new Lazy<>(expression, true);
+        return new Lazy<>(expression, false);
     }
 
     public static <T> Lazy<T> of(@Nullable T value) {

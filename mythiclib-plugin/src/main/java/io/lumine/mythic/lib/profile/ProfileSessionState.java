@@ -5,6 +5,14 @@ package io.lumine.mythic.lib.profile;
  */
 public enum ProfileSessionState {
 
+    /**
+     * Player just logged in and no plugin has been marked
+     * as ready yet.
+     * <p>
+     * Possible transitions:
+     * - {@link #OPENING} if any plugin is marked as ready.
+     * - {@link #DEAD_EARLY} if the player logs off early.
+     */
     CREATED,
 
     /**
@@ -13,10 +21,10 @@ public enum ProfileSessionState {
      * will stay at this state.
      * <p>
      * Possible transitions:
-     * - {@link #DEAD} if the player logs off before the player
-     * session as been marked {@link #OPEN}.
      * - {@link #OPEN} if all MMO plugins successfully loaded their
      * data. For MythicLib the player has officially "started playing".
+     * - {@link #DEAD_EARLY} if the player logs off before the player
+     * session as been marked {@link #OPEN}.
      */
     OPENING,
 
@@ -47,5 +55,20 @@ public enum ProfileSessionState {
      * <p>
      * Possible transitions: None (final state).
      */
-    DEAD
+    DEAD,
+
+    /**
+     * If profile session never opened
+     *
+     * @see #DEAD
+     */
+    DEAD_EARLY;
+
+    public boolean wasReady() {
+        return this == OPEN || this == CLOSING || this == DEAD;
+    }
+
+    public boolean isDead() {
+        return this == DEAD || this == DEAD_EARLY;
+    }
 }

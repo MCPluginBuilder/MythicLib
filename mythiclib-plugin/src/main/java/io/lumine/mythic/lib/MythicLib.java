@@ -42,10 +42,7 @@ import io.lumine.mythic.lib.listener.option.VanillaDamageModifiers;
 import io.lumine.mythic.lib.manager.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
-import io.lumine.mythic.lib.profile.handler.LegacyProfileHandler;
-import io.lumine.mythic.lib.profile.handler.NoProfileHandler;
 import io.lumine.mythic.lib.profile.handler.ProfileHandler;
-import io.lumine.mythic.lib.profile.handler.ProxyProfileHandler;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -225,8 +222,8 @@ public class MythicLib extends MMOPluginImpl {
             getLogger().log(Level.INFO, "Hooked onto DualWield");
         }
 
-        // Force no profile mode
-        if (profileMode == null && !detectOneMMOProfilePlugin()) useNoProfiles();
+        // Initialize profile handler
+        initializeProfiles();
 
         // Look for plugin dependency cycles
         final Stack<DependencyNode> dependencyCycle = new DependencyCycleCheck().checkCycle();
@@ -296,12 +293,6 @@ public class MythicLib extends MMOPluginImpl {
         // Flush outdated data
         for (MMOPlayerData online : MMOPlayerData.getLoaded())
             online.getStatMap().flushCache();
-    }
-
-    private boolean detectOneMMOProfilePlugin() {
-        for (var mmoPlugin : mmoPlugins)
-            if (mmoPlugin.isProfilePlugin()) return true;
-        return false;
     }
 
     @Override
@@ -388,22 +379,26 @@ public class MythicLib extends MMOPluginImpl {
         return glowModule;
     }
 
+    //region Profile mode
+
+    private void validateNoProfileMode() {
+        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
+    }
+
     /**
      * Enables support for legacy (spigot-based) MMOProfiles.
      */
     public void useLegacyProfiles() {
-        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
-        profileMode = ProfileMode.LEGACY;
+        validateNoProfileMode();
 
-        Bukkit.getPluginManager().registerEvents(this.profileHandler = new LegacyProfileHandler(), this);
-        getLogger().log(Level.INFO, "Hooked onto spigot-based ProfileAPI");
+        this.profileMode = ProfileMode.LEGACY;
+        getLogger().log(Level.INFO, "Hooked onto classic ProfileAPI");
     }
 
     public void useNoProfiles() {
-        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
-        profileMode = ProfileMode.NONE;
+        validateNoProfileMode();
 
-        Bukkit.getPluginManager().registerEvents(this.profileHandler = new NoProfileHandler(), this);
+        this.profileMode = ProfileMode.NONE;
         // No console log if no profile plugin installed
     }
 
@@ -411,11 +406,19 @@ public class MythicLib extends MMOPluginImpl {
      * Enables support for proxy-based MMOProfiles
      */
     public void useProxyProfiles() {
-        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
-        profileMode = ProfileMode.PROXY;
+        validateNoProfileMode();
 
-        Bukkit.getPluginManager().registerEvents(this.profileHandler = new ProxyProfileHandler(), this);
+        this.profileMode = ProfileMode.PROXY;
         getLogger().log(Level.INFO, "Hooked onto proxy-based ProfileAPI");
+    }
+
+    private void initializeProfiles() {
+
+        // Disable profiles altogether
+        if (profileMode == null) useNoProfiles();
+
+        Validate.notNull(profileMode, "Internal error with profile mode");
+        Bukkit.getPluginManager().registerEvents(this.profileHandler = this.profileMode.newProfileHandler(), this);
     }
 
     public boolean hasProfiles() {
@@ -431,6 +434,8 @@ public class MythicLib extends MMOPluginImpl {
     public ProfileHandler getProfileHandler() {
         return Objects.requireNonNull(profileHandler, "No profile handler");
     }
+
+    //endregion
 
     @Deprecated
     public void handleFlags(FlagPlugin flagPlugin) {

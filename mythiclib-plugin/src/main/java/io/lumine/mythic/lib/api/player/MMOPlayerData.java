@@ -46,7 +46,7 @@ public class MMOPlayerData {
      */
     public long lastDrop;
 
-    // Information shared accross all sessions
+    // Information shared across all sessions
     private final ActionBarHandler actionBar = new ActionBarHandler(this);
     private final List<TemporaryHandler> tempHandlers = new ArrayList<>();
     private final Map<String, Object> externalData = new HashMap<>();
@@ -105,7 +105,6 @@ public class MMOPlayerData {
     private String lastPlayerName;
 
     private final boolean lookup;
-    private final boolean profilesEnabled = MythicLib.plugin.getProfileMode() != ProfileMode.NONE;
 
     /**
      * Last time the player either logged in or logged out.
