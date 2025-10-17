@@ -12,19 +12,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements SynchronizedDataHandler<H, O> {
+public abstract class YAMLFlatDatabase<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements Database<H, O> {
     private final MMOPlugin owning;
 
-    public YAMLSynchronizedDataHandler(MMOPlugin owning) {
+    public YAMLFlatDatabase(MMOPlugin owning) {
         this.owning = Objects.requireNonNull(owning, "Plugin cannot be null");
     }
 
     @Override
+    public @NotNull MMOPlugin getPlugin() {
+        return owning;
+    }
+
+    @Override
+    public boolean refreshConnection() {
+        return true;
+    }
+
+    @Override
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
-        // TODO YML object is loaded in memory, useless
-        final YamlFile configFile = getUserFile(playerData);
-        saveInSection(playerData, configFile.getContent());
-        configFile.save();
+        final var ymlFile = new YamlFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
+        saveInSection(playerData, ymlFile.getContent());
+        ymlFile.save();
     }
 
     public abstract void saveInSection(@NotNull H playerData, @NotNull ConfigurationSection config);
@@ -32,7 +41,8 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
     @NotNull
     @Override
     public DataLoadResult loadData(@NotNull H playerData, boolean force) {
-        return loadFromSection(playerData, getUserFile(playerData).getContent(), true);
+        final var ymlFile = new YamlFile(owning, "userdata", playerData.getEffectiveId().toString());
+        return loadFromSection(playerData, ymlFile.getContent(), true);
     }
 
     @Override
@@ -42,11 +52,6 @@ public abstract class YAMLSynchronizedDataHandler<H extends SynchronizedDataHold
 
     @NotNull
     protected abstract DataLoadResult loadFromSection(@NotNull H playerData, @NotNull ConfigurationSection config, boolean isSaved);
-
-    @NotNull
-    private YamlFile getUserFile(@NotNull H playerData) {
-        return new YamlFile(owning, "userdata", playerData.getEffectiveId().toString());
-    }
 
     @Override
     public List<UUID> retrieveAllPlayerIds() {

@@ -45,8 +45,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
         this.callback = callback;
     }
 
-    public boolean start(@NotNull Supplier<SynchronizedDataHandler<H, O>> source,
-                         @NotNull Supplier<SynchronizedDataHandler<H, O>> target) {
+    public boolean start(@NotNull Supplier<Database<H, O>> source,
+                         @NotNull Supplier<Database<H, O>> target) {
 
         // Make sure no players are online
         if (!manager.getLoaded().isEmpty()) {
@@ -57,8 +57,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
         }
 
         // Initialize fake SQL & YAML data provider
-        final SynchronizedDataHandler<H, O> targetHandler;
-        final SynchronizedDataHandler<H, O> sourceHandler;
+        final Database<H, O> targetHandler;
+        final Database<H, O> sourceHandler;
         try {
             targetHandler = target.get();
             sourceHandler = source.get();

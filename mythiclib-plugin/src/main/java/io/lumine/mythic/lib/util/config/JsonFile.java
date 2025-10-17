@@ -25,7 +25,13 @@ public class JsonFile extends ConfigFile<JsonObject> {
     }
 
     public JsonFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName) {
+        this(plugin, folderPath, fileName, true);
+    }
+
+    public JsonFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName, boolean read) {
         super(plugin, folderPath, fileName + ".json");
+
+        if (!read) return;
 
         // File does not exist
         if (!getFile().exists()) {

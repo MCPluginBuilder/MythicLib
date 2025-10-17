@@ -1,20 +1,18 @@
 package io.lumine.mythic.lib.data;
 
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
 
-/**
- * A data handler "handles" data, it decides what happens when
- * data is either saved OR loaded from either SQL or YAML. Remember
- * that a {@link SynchronizedDataManager} does not know if it is
- * using SQL or YAML.
- *
- * @author jules
- */
-public interface SynchronizedDataHandler<H extends SynchronizedDataHolder, O extends OfflineDataHolder> extends Closeable {
+public interface Database<H extends SynchronizedDataHolder, O extends OfflineDataHolder> extends Closeable {
+
+    @NotNull
+    public MMOPlugin getPlugin();
+
+    public boolean refreshConnection();
 
     /**
      * Called once on server startup. This can be used for SQL support

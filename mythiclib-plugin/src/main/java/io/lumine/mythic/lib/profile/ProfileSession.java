@@ -195,7 +195,6 @@ public class ProfileSession {
     }
 
     public synchronized void markAsClosed(@NotNull NamespacedKey key) {
-        startClosing();
         Validate.isTrue(state == ProfileSessionState.CLOSING, "Session is not closing (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);

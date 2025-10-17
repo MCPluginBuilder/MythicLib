@@ -5,9 +5,10 @@ import fr.phoenixdevt.profiles.ProfileProvider;
 import fr.phoenixdevt.profiles.placeholder.PlaceholderProcessor;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
+import io.lumine.mythic.lib.data.queue.DataLoadQueue;
+import io.lumine.mythic.lib.data.queue.DataSaveQueue;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
@@ -42,31 +43,38 @@ import java.util.logging.Level;
 public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements Closeable {
     private final MMOPlugin owning;
     private final Map<UUID, H> activeData = Collections.synchronizedMap(new HashMap<>());
-
     private final boolean profilePlugin;
 
-    @NotNull
-    private SynchronizedDataHandler<H, O> dataHandler;
+    private Database<H, O> database;
+    private DataSaveQueue<H> saveQueue;
+    private DataLoadQueue<H> loadQueue;
 
-    public SynchronizedDataManager(@NotNull MMOPlugin owning, @NotNull SynchronizedDataHandler<H, O> dataHandler) {
-        this(owning, dataHandler, false);
-    }
-
-    public SynchronizedDataManager(@NotNull MMOPlugin owning, @NotNull SynchronizedDataHandler<H, O> dataHandler, boolean profilePlugin) {
+    public SynchronizedDataManager(@NotNull MMOPlugin owning) {
         this.owning = Objects.requireNonNull(owning, "Plugin cannot be null");
-        this.dataHandler = Objects.requireNonNull(dataHandler, "Data handler cannot be null");
-        this.profilePlugin = profilePlugin;
+        this.profilePlugin = owning.isProfilePlugin();
     }
 
-    public void setDataHandler(@NotNull SynchronizedDataHandler<H, O> dataHandler) {
-        this.dataHandler = Objects.requireNonNull(dataHandler, "Data handler cannot be null");
-
-        dataHandler.setup();
+    @Deprecated
+    public SynchronizedDataManager(@NotNull MMOPlugin owning, boolean profilePlugin) {
+        this(owning);
     }
 
     @NotNull
-    public SynchronizedDataHandler<H, O> getDataHandler() {
-        return dataHandler;
+    public Database<H, O> getDatabase() {
+        return Objects.requireNonNull(database, "Database not setup");
+    }
+
+    public void setupDatabase(@NotNull Database<H, O> database) {
+        Validate.isTrue(this.database == null, "Database is already set");
+
+        this.database = Objects.requireNonNull(database, "Database cannot be null");
+        this.database.setup();
+
+        this.saveQueue = new DataSaveQueue<>(this);
+        this.loadQueue = new DataLoadQueue<>(this);
+
+        Bukkit.getScheduler().runTaskAsynchronously(owning, saveQueue);
+        Bukkit.getScheduler().runTaskAsynchronously(owning, loadQueue);
     }
 
     @NotNull
@@ -113,16 +121,14 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public O getOffline(UUID uuid) {
-        return isLoaded(uuid) ? (O) activeData.get(uuid) : dataHandler.getOffline(uuid);
+        return isLoaded(uuid) ? (O) activeData.get(uuid) : database.getOffline(uuid);
     }
 
     public void autosave() {
-
-        // TODO Batching
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
-                holder.onSaved(SaveReason.AUTOSAVE);
-                Tasks.runAsync(owning, () -> dataHandler.saveData(holder, SaveReason.AUTOSAVE));
+                holder.onSaved(SaveReason.AUTOSAVE); // TODO autosave on other threads.
+                saveData(holder, SaveReason.AUTOSAVE);
             }
     }
 
@@ -190,9 +196,13 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
                 holder.onSaved(SaveReason.LOG_OUT);
-                dataHandler.saveData(holder, SaveReason.LOG_OUT);
+                database.saveData(holder, SaveReason.LOG_OUT);
                 holder.markSessionClosed();
             }
+
+        // Stop queues
+        this.loadQueue.end();
+        this.saveQueue.end();
 
         // Wait for completion of safe tasks
         owning.getLogger().log(Level.INFO, "Waiting for other threads, please wait...");
@@ -200,7 +210,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         Tasks.waitSafe(owning);
 
         // Release resources from data handler
-        dataHandler.close();
+        database.close();
     }
 
     @NotNull
@@ -225,40 +235,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> loadData(@NotNull H playerData, @Nullable Event parentProfileEvent) {
-        final var future = new CompletableFuture<Void>();
-        final var lookup = playerData.getMMOPlayerData().isLookup();
-        Tasks.runAsync(owning, () -> {
-
-            // Load player data
-            final var dataFetcher = new DataFetcher<>(this, playerData);
-            final var result = dataFetcher.run();
-
-            // No success, do nothing
-            if (result.type != DataLoadResult.Type.SUCCESS) {
-                future.complete(null);
-                return;
-            }
-
-            // Complete sync
-            Tasks.runSync(owning, () -> {
-
-                if (!lookup) {
-
-                    // Player could go offline while transitioning to main thread
-                    // TODO improve thread safety
-                    if (!playerData.getMMOPlayerData().isOnline()) {
-                        future.complete(null); // Complete future
-                        return;
-                    }
-
-                    playerData.markSessionReady(); // Mark as ready
-                    Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData, parentProfileEvent));
-                }
-
-                future.complete(null); // Complete future
-            });
-        });
-        return future;
+        return this.loadQueue.enqueue(playerData, parentProfileEvent);
     }
 
     /**
@@ -268,19 +245,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
-        final CompletableFuture<Void> future = new CompletableFuture<>();
-        Tasks.runAsync(owning, () -> {
-
-            // Save data
-            dataHandler.saveData(playerData, reason);
-
-            // Complete sync
-            Tasks.runSync(owning, () -> {
-                playerData.markSessionClosed();
-                future.complete(null);
-            });
-        });
-        return future;
+        return this.saveQueue.enqueue(playerData, reason);
     }
 
     /**
@@ -344,6 +309,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {
+
         final H playerData;
         if (reason == SaveReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
         else if (reason == SaveReason.QUIT_PROFILE)
@@ -352,6 +318,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
         // Session not ready
+        Bukkit.broadcastMessage("unregistering " + player.getName() + " for reason " + reason+" " + playerData.isSessionReady());
         if (!playerData.isSessionReady()) return CompletableFuture.completedFuture(null);
 
         playerData.onSaved(reason);

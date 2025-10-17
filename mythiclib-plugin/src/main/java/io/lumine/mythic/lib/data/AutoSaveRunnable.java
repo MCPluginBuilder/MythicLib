@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.data;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.logging.Level;
@@ -16,15 +15,18 @@ public class AutoSaveRunnable extends BukkitRunnable {
 
     public AutoSaveRunnable(SynchronizedDataManager<?, ?> manager) {
         this.manager = manager;
-        final ConfigurationSection config = manager.getOwningPlugin().getConfig().getConfigurationSection("auto-save");
+
+        final var config = manager.getOwningPlugin().getConfig().getConfigurationSection("auto-save");
         log = config.getBoolean("log", false);
-        final long timer = Math.max(MINIMUM_INTERVAL, config.getLong("interval", 60 * 30)) * 20;
+        final var timer = Math.max(MINIMUM_INTERVAL, config.getLong("interval", 60 * 30)) * 20;
+        // This cannot run async because of events and player data loading.
         runTaskTimer(manager.getOwningPlugin(), timer, timer);
     }
 
     @Override
     public void run() {
-        if (log) manager.getOwningPlugin().getLogger().log(Level.INFO, "Autosaving player data, might take a while...");
+        if (log)
+            manager.getOwningPlugin().getLogger().log(Level.INFO, "Autosaving " + manager.getLoaded().size() + " player datas, might take a while...");
         manager.autosave();
     }
 }

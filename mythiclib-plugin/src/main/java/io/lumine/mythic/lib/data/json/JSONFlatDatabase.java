@@ -13,25 +13,35 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHolder & Jsonable, O extends OfflineDataHolder> implements SynchronizedDataHandler<H, O> {
+public abstract class JSONFlatDatabase<H extends SynchronizedDataHolder & Jsonable, O extends OfflineDataHolder> implements Database<H, O> {
     private final MMOPlugin owning;
 
-    public JSONSynchronizedDataHandler(MMOPlugin owning) {
+    public JSONFlatDatabase(MMOPlugin owning) {
         this.owning = Objects.requireNonNull(owning, "Plugin cannot be null");
     }
 
     @Override
+    public @NotNull MMOPlugin getPlugin() {
+        return owning;
+    }
+
+    @Override
+    public boolean refreshConnection() {
+        return true;
+    }
+
+    @Override
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
-        // TODO json object is uselessly loaded into memory
-        final JsonFile file = getUserFile(playerData);
-        file.setContent(playerData.toJson());
-        file.save();
+        final var jsonFile = new JsonFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
+        jsonFile.setContent(playerData.toJson());
+        jsonFile.save();
     }
 
     @NotNull
     @Override
     public DataLoadResult loadData(@NotNull H playerData, boolean force) {
-        return loadFromObject(playerData, getUserFile(playerData).getContent(), true);
+        final var jsonFile = new JsonFile(owning, "userdata", playerData.getEffectiveId().toString());
+        return loadFromObject(playerData, jsonFile.getContent(), true);
     }
 
     @NotNull
@@ -40,10 +50,6 @@ public abstract class JSONSynchronizedDataHandler<H extends SynchronizedDataHold
     @Override
     public void confirmReception(@NotNull H playerData) {
         // Nothing
-    }
-
-    private JsonFile getUserFile(H playerData) {
-        return new JsonFile(owning, "userdata", playerData.getEffectiveId().toString());
     }
 
     @Override

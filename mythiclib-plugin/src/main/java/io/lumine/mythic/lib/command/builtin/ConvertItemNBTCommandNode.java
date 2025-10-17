@@ -65,7 +65,7 @@ public class ConvertItemNBTCommandNode<H extends SynchronizedDataHolder, O exten
         sender.sendMessage("Converting data to NBTAPI...");
 
         // Export data from/to the same data source (ingenious!!)
-        Lazy<SynchronizedDataHandler<H, O>> dataHandlerLazy = Lazy.of(dataManager.getDataHandler());
+        Lazy<Database<H, O>> dataHandlerLazy = Lazy.of(dataManager.getDatabase());
         try {
             SafeBukkitObjectOutputStream.USE_NBT_API = toNbtApi;
             sender.sendMessage("Using NBTAPI: " + toNbtApi);

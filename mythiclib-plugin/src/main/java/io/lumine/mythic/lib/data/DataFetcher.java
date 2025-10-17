@@ -13,11 +13,12 @@ import java.util.UUID;
  * TODO write docs
  */
 public class DataFetcher<H extends SynchronizedDataHolder, O extends OfflineDataHolder> {
-    private final SynchronizedDataManager<H, O> dataManager;
+    private final SynchronizedDataManager<H, O> manager;
+    private final Database<H, O> database;
     private final MMOPlugin plugin;
     private final H playerData;
     private final UUID effectiveId;
-    private final long startTime = System.currentTimeMillis();
+    //private final long startTime = System.currentTimeMillis();
     private final int maxTries;
 
     private int tryCount;
@@ -30,10 +31,11 @@ public class DataFetcher<H extends SynchronizedDataHolder, O extends OfflineData
     /**
      * TODO write docs
      */
-    public DataFetcher(@NotNull SynchronizedDataManager<H, O> dataManager, @NotNull H playerData) {
+    public DataFetcher(@NotNull SynchronizedDataManager<H, O> manager, @NotNull H playerData) {
         this.playerData = playerData;
-        this.dataManager = dataManager;
-        this.plugin = dataManager.getOwningPlugin();
+        this.database = manager.getDatabase();
+        this.manager = manager;
+        this.plugin = manager.getOwningPlugin();
         this.effectiveId = playerData.getEffectiveId();
         this.profileSession = plugin.isProfilePlugin() || playerData.getMMOPlayerData().isLookup() ? null : playerData.getMMOPlayerData().getProfileSession();
         maxTries = MythicLib.plugin.getMMOConfig().maxSyncTries;
@@ -67,7 +69,7 @@ public class DataFetcher<H extends SynchronizedDataHolder, O extends OfflineData
 
             // Try to load player data
             final var force = this.tryCount >= this.maxTries;
-            final var result = this.dataManager.getDataHandler().loadData(this.playerData, force);
+            final var result = this.database.loadData(this.playerData, force);
 
             switch (result.type) {
 
@@ -102,9 +104,9 @@ public class DataFetcher<H extends SynchronizedDataHolder, O extends OfflineData
                     // Invalidate check
                     if (checkInvalidate()) return new DataLoadResult(DataLoadResult.Type.OFFLINE_PLAYER);
 
-                    if (result.empty) this.dataManager.loadEmptyPlayerData(this.playerData);
+                    if (result.empty) this.manager.loadEmptyPlayerData(this.playerData);
                     if (!playerData.getMMOPlayerData().isLookup()) // TODO call not safe!!!
-                        this.dataManager.getDataHandler().confirmReception(playerData);
+                        this.database.confirmReception(playerData);
 
                     return result;
 
@@ -113,16 +115,6 @@ public class DataFetcher<H extends SynchronizedDataHolder, O extends OfflineData
                     throw new IllegalStateException("Unhandled data fetch result");
             }
         }
-    }
-
-    private boolean lastTryCheck() {
-        final var lastTry = this.tryCount == this.maxTries;
-
-        if (lastTry) {
-            UtilityMethods.debug(this.plugin, "Data", "Max tries reached.");
-        }
-
-        return lastTry;
     }
 
     private void waitUntilNextTry() {

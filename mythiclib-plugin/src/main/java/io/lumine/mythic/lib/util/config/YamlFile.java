@@ -16,17 +16,21 @@ public class YamlFile extends ConfigFile<FileConfiguration> {
     }
 
     public YamlFile(@Nullable String folderPath, @NotNull String fileName) {
-        this(MythicLib.plugin, folderPath, fileName);
+        this(MythicLib.plugin, folderPath, fileName, true);
     }
 
     public YamlFile(@NotNull Plugin plugin, @NotNull String fileName) {
-        this(plugin, null, fileName);
+        this(plugin, null, fileName, true);
     }
 
     public YamlFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName) {
+        this(plugin, folderPath, fileName, true);
+    }
+
+    public YamlFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName, boolean read) {
         super(plugin, folderPath, fileName + ".yml");
 
-        setContent(YamlConfiguration.loadConfiguration(getFile()));
+        if (read) setContent(YamlConfiguration.loadConfiguration(getFile()));
     }
 
     @Override
