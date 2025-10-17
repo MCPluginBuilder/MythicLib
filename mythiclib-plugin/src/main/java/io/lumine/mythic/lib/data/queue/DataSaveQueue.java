@@ -28,7 +28,7 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         database.saveData(record.playerData, record.reason);
 
         // Data saved. Back to server thread.
-        Tasks.runSync(owning, () -> {
+        Tasks.runSync(plugin, () -> {
             if (record.reason != SaveReason.AUTOSAVE) record.playerData.markSessionClosed();
             record.future.complete(null);
         });
@@ -38,7 +38,7 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         public final SaveReason reason;
 
         public Record(H playerData, SaveReason reason) {
-            super(playerData);
+            super(playerData, playerData.getEffectiveId(), new CompletableFuture<>(), 0);
 
             this.reason = reason;
         }

@@ -26,11 +26,6 @@ public abstract class JSONFlatDatabase<H extends SynchronizedDataHolder & Jsonab
     }
 
     @Override
-    public boolean refreshConnection() {
-        return true;
-    }
-
-    @Override
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         final var jsonFile = new JsonFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
         jsonFile.setContent(playerData.toJson());

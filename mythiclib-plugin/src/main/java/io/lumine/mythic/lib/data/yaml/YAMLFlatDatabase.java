@@ -25,11 +25,6 @@ public abstract class YAMLFlatDatabase<H extends SynchronizedDataHolder, O exten
     }
 
     @Override
-    public boolean refreshConnection() {
-        return true;
-    }
-
-    @Override
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
         final var ymlFile = new YamlFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
         saveInSection(playerData, ymlFile.getContent());

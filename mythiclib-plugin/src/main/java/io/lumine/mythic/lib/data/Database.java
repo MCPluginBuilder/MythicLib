@@ -12,8 +12,6 @@ public interface Database<H extends SynchronizedDataHolder, O extends OfflineDat
     @NotNull
     public MMOPlugin getPlugin();
 
-    public boolean refreshConnection();
-
     /**
      * Called once on server startup. This can be used for SQL support
      * to initialize database tables, and make sure they are up to date.

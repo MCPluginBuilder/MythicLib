@@ -35,11 +35,6 @@ public class DataLoadResult {
         NOT_SYNC,
 
         /**
-         * Player went offline, data fetching stopped
-         */
-        OFFLINE_PLAYER,
-
-        /**
          * Failure to load player data due to SQL connection closed
          * or out-of-memory errors.
          */

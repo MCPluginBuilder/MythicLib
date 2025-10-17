@@ -30,7 +30,7 @@ public class YamlFile extends ConfigFile<FileConfiguration> {
     public YamlFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName, boolean read) {
         super(plugin, folderPath, fileName + ".yml");
 
-        if (read) setContent(YamlConfiguration.loadConfiguration(getFile()));
+        setContent(read ? YamlConfiguration.loadConfiguration(getFile()) : new YamlConfiguration());
     }
 
     @Override

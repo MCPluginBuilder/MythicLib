@@ -58,7 +58,7 @@ public class ConfigManager extends Module {
         elementalDefenseFormula = config.getString("defense-application.elemental");
         fixTooLargePackets = config.getBoolean("fix-too-large-packets");
         debugMode = config.getBoolean("debug");
-        maxSyncTries = config.getInt("max-sync-tries");
+        maxSyncTries = config.getInt("max-sync-tries", 7);
         ignoreShiftTriggers = config.getBoolean("ignore_shift_triggers");
         ignoreOffhandClickTriggers = config.getBoolean("ignore_offhand_click_triggers");
         skipElementalDamageApplication = config.getBoolean("skip_elemental_damage_application");

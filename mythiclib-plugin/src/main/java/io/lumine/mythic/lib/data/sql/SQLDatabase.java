@@ -8,9 +8,7 @@ import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.OfflineDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.module.MMOPlugin;
-import io.lumine.mythic.lib.util.Pair;
 import io.lumine.mythic.lib.util.Tasks;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,15 +30,13 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     protected final String userdataTableName, uuidFieldName;
     protected final String databaseName;
 
-    public SQLDatabase(@NotNull MMOPlugin plugin,
-                       @NotNull String userdataTableName,
-                       @NotNull String uuidFieldName) {
+    public SQLDatabase(@NotNull MMOPlugin plugin, @NotNull String uuidFieldName) {
         this.plugin = plugin;
         final var config = hikariFromConfig(plugin);
-        this.dataSource = new HikariDataSource(config.getRight());
+        this.dataSource = new HikariDataSource(config.hikariConfig);
 
-        this.databaseName = config.getLeft();
-        this.userdataTableName = userdataTableName;
+        this.databaseName = config.databaseName;
+        this.userdataTableName = config.userdataTableName;
         this.uuidFieldName = uuidFieldName;
     }
 
@@ -54,19 +50,13 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     }
 
     @NotNull
-    public String getDatabaseName() {
-        return databaseName;
+    public String getUserDataTableName() {
+        return userdataTableName;
     }
 
-    @Override
-    public boolean refreshConnection() {
-        try (Connection connection = getConnection()) {
-            Validate.isTrue(!connection.isClosed(), "Connection is closed");
-            executeQuery("SELECT 1;", r -> { /* nothing */ });
-            return true;
-        } catch (SQLException exception) {
-            return false;
-        }
+    @NotNull
+    public String getDatabaseName() {
+        return databaseName;
     }
 
     @NotNull
@@ -255,11 +245,12 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     private static final int DEFAULT_LEAK_DETECT_THRESHOLD = 10000;
 
     @NotNull
-    private static Pair<String, HikariConfig> hikariFromConfig(@NotNull MMOPlugin plugin) {
+    private static DatabaseConfig hikariFromConfig(@NotNull MMOPlugin plugin) {
 
         final var hikariConfig = new HikariConfig();
         final ConfigurationSection config;
         final String databaseName;
+        ;
 
         // MySQL
         if (plugin.getConfig().getBoolean("mysql.enabled")) {
@@ -288,9 +279,11 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         // Wth?
         else throw new IllegalArgumentException("No SQL option enabled");
 
+        final String userdataTableName = config.getString("userdata-table-name");
+
         hikariConfig.setUsername(config.getString("user", DEFAULT_USERNAME));
         hikariConfig.setPassword(config.getString("pass", DEFAULT_PASSWORD));
-        hikariConfig.setConnectionTestQuery("SELECT 1"); // Tx taner
+        hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setMaximumPoolSize(config.getInt("maxPoolSize", DEFAULT_MAX_POOL_SIZE));
         hikariConfig.setMaxLifetime(config.getLong("maxLifeTime", DEFAULT_MAX_LIFE_TIME));
         hikariConfig.setConnectionTimeout(config.getLong("connectionTimeOut", DEFAULT_CONNECTION_TIME_OUT));
@@ -299,7 +292,18 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
             for (String s : config.getConfigurationSection("properties").getKeys(false))
                 hikariConfig.addDataSourceProperty(s, config.getString("properties." + s));
 
-        return Pair.of(databaseName, hikariConfig);
+        return new DatabaseConfig(hikariConfig, databaseName, userdataTableName);
+    }
+
+    private static class DatabaseConfig {
+        public final HikariConfig hikariConfig;
+        public final String databaseName, userdataTableName;
+
+        public DatabaseConfig(HikariConfig hikariConfig, String databaseName, String userdataTableName) {
+            this.hikariConfig = hikariConfig;
+            this.databaseName = databaseName;
+            this.userdataTableName = userdataTableName;
+        }
     }
 
     //endregion
