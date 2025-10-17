@@ -138,7 +138,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     public void autosave() {
         for (H holder : getLoaded())
-            if (holder.isSessionReady()) {
+            if (holder.getMMOPlayerData().isPlaying()) {
                 holder.onSaved(SaveReason.AUTOSAVE); // TODO autosave on other threads.
                 saveData(holder, SaveReason.AUTOSAVE);
             }

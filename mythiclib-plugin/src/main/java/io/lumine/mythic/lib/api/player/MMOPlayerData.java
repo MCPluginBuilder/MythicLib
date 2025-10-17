@@ -253,6 +253,7 @@ public class MMOPlayerData {
         final ProfileSession restored = savedProfileSessions.remove(profileId);
         if (restored != null) {
             this.profileSession = restored;
+            this.profileSession.reset();
             return;
         }
 

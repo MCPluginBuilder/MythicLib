@@ -56,9 +56,13 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread
     public void run() {
 
         while (true) {
-            UtilityMethods.debug(this.plugin, "Data", "Checking queue ");
 
+            UtilityMethods.debug(plugin, getClass().getSimpleName(), " Entering queue ");
+
+            // Wait until queue not empty
             while (recordQueue.isEmpty()) {
+
+                UtilityMethods.debug(plugin, getClass().getSimpleName(), "queue is empty");
 
                 // Stop thread only if queue is empty
                 if (stopIfEmpty) {
@@ -66,7 +70,9 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread
                     return;
                 }
 
+                UtilityMethods.debug(plugin, getClass().getSimpleName(), "waiting");
                 waitFor(0);
+                UtilityMethods.debug(plugin, getClass().getSimpleName(), "done waiting");
             }
 
             // Pop record
@@ -75,7 +81,9 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread
             // Prevent flooding the database with requests for the same unavailable records
             if (record.effectiveId.equals(lastProcessedId) && !record.available()) {
                 enqueue(record);
+                UtilityMethods.debug(plugin, getClass().getSimpleName(), "flood waiting");
                 waitFor(WAIT_TIME / 2);
+                UtilityMethods.debug(plugin, getClass().getSimpleName(), "done flood waiting");
                 continue;
             }
 

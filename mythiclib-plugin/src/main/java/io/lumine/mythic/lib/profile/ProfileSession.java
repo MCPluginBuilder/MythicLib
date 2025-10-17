@@ -106,10 +106,16 @@ public class ProfileSession {
         return !this.waiting.contains(Objects.requireNonNull(key, "Key cannot be null"));
     }
 
+    public void reset() {
+        Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
+        this.state = ProfileSessionState.CREATED;
+        UtilityMethods.debug(MythicLib.plugin, "Session", "Reset session of " + profileId);
+    }
+
     private void initialize() {
         if (this.state != ProfileSessionState.CREATED && !this.state.isDead()) return;
 
-        UtilityMethods.debug(MythicLib.plugin, "PS", "Initialize session of " + profileId);
+        UtilityMethods.debug(MythicLib.plugin, "Session", "Init session of " + profileId);
         this.state = ProfileSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
         this.callbacks.clear();
@@ -144,7 +150,7 @@ public class ProfileSession {
         // Session opened
         ////////////////////////////////
 
-        UtilityMethods.debug(MythicLib.plugin, "PS", "Open session of " + profileId);
+        UtilityMethods.debug(MythicLib.plugin, "Session", "Open session of " + profileId);
         this.state = ProfileSessionState.OPEN;
         //this.playerData.startPlaying();
         this.callbacks.forEach(callback -> callback.callback(this));
@@ -154,7 +160,7 @@ public class ProfileSession {
     private void abortOpening() {
         Validate.isTrue(state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING, "Cannot abort in state " + this.state);
 
-        UtilityMethods.debug(MythicLib.plugin, "PS", "Abort opening session of " + profileId);
+        UtilityMethods.debug(MythicLib.plugin, "Session", "Abort opening session of " + profileId);
         this.state = ProfileSessionState.DEAD_EARLY;
         this.playerData.clearTemporaryHandlers();
         this.waiting = null;
@@ -170,7 +176,7 @@ public class ProfileSession {
 
         // Open
         else if (state == ProfileSessionState.OPEN) {
-            UtilityMethods.debug(MythicLib.plugin, "PS", "Start closing session of " + profileId);
+            UtilityMethods.debug(MythicLib.plugin, "Session", "Start closing session of " + profileId);
             this.state = ProfileSessionState.CLOSING;
             this.playerData.clearTemporaryHandlers();
             this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
@@ -212,7 +218,7 @@ public class ProfileSession {
         // Session closed
         ////////////////////////////////
 
-        UtilityMethods.debug(MythicLib.plugin, "PS", "Close session of " + profileId);
+        UtilityMethods.debug(MythicLib.plugin, "Session", "Close session of " + profileId);
         this.setLastActivity();
         this.state = ProfileSessionState.DEAD;
         this.playerData.saveCurrentProfileSession();
