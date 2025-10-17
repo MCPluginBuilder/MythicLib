@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -64,17 +65,28 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         return Objects.requireNonNull(database, "Database not setup");
     }
 
+    public void setupDatabase(@NotNull Supplier<Database<H, O>> sql, @NotNull Supplier<Database<H, O>> fallback) {
+        final var isSql = this.owning.getConfig().getBoolean("mysql.enabled") || this.owning.getConfig().getBoolean("sqlite.enabled");
+        if (isSql) setupDatabase(sql.get());
+        else setupDatabase(fallback.get());
+    }
+
     public void setupDatabase(@NotNull Database<H, O> database) {
         Validate.isTrue(this.database == null, "Database is already set");
 
         this.database = Objects.requireNonNull(database, "Database cannot be null");
-        this.database.setup();
 
         this.saveQueue = new DataSaveQueue<>(this);
         this.loadQueue = new DataLoadQueue<>(this);
 
-        Bukkit.getScheduler().runTaskAsynchronously(owning, saveQueue);
-        Bukkit.getScheduler().runTaskAsynchronously(owning, loadQueue);
+        Tasks.runAsync(owning, () -> {
+            UtilityMethods.debug(owning, "Data", "Applying database migrations...");
+            this.database.setup();
+
+            Bukkit.getScheduler().runTaskAsynchronously(owning, saveQueue);
+            Bukkit.getScheduler().runTaskAsynchronously(owning, loadQueue);
+            UtilityMethods.debug(owning, "Data", "Database ready");
+        });
     }
 
     @NotNull
@@ -134,6 +146,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     private static final Listener FICTIVE_LISTENER = new Listener() {
     };
+
 
     /**
      * This method is called when the plugin enables and does three things:
@@ -318,7 +331,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
         // Session not ready
-        Bukkit.broadcastMessage("unregistering " + player.getName() + " for reason " + reason+" " + playerData.isSessionReady());
         if (!playerData.isSessionReady()) return CompletableFuture.completedFuture(null);
 
         playerData.onSaved(reason);
@@ -347,7 +359,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         return activeData.values();
     }
 
-    //region Deprecated
+//region Deprecated
 
     @Deprecated
     public CompletableFuture<Void> saveData(@NotNull H playerData) {
@@ -374,5 +386,5 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         else close();
     }
 
-    //endregion
+//endregion
 }

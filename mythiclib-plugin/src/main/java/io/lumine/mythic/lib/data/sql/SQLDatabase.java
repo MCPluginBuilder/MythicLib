@@ -2,17 +2,19 @@ package io.lumine.mythic.lib.data.sql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.DataLoadResult;
 import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.OfflineDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.util.Pair;
 import io.lumine.mythic.lib.util.Tasks;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,50 +26,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-// TODO clear methods and implement CompletableFutures
 public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements Database<H, O> {
     private final MMOPlugin plugin;
     private final HikariDataSource dataSource;
-    private final String userdataTableName, uuidFieldName;
+    protected final String userdataTableName, uuidFieldName;
+    protected final String databaseName;
 
-    private static final String DEFAULT_HOST = "localhost";
-    private static final String DEFAULT_USERNAME = "root";
-    private static final String DEFAULT_PASSWORD = "";
-    private static final String DEFAULT_DATABASE = "minecraft";
-    private static final int DEFAULT_PORT = 3306;
-
-    public SQLDatabase(@NotNull MMOPlugin plugin, @NotNull String userdataTableName, @NotNull String uuidFieldName) {
+    public SQLDatabase(@NotNull MMOPlugin plugin,
+                       @NotNull String userdataTableName,
+                       @NotNull String uuidFieldName) {
         this.plugin = plugin;
+        final var config = hikariFromConfig(plugin);
+        this.dataSource = new HikariDataSource(config.getRight());
+
+        this.databaseName = config.getLeft();
         this.userdataTableName = userdataTableName;
         this.uuidFieldName = uuidFieldName;
-
-        // Prepare Hikari config
-        final ConfigurationSection config = plugin.getConfig().getConfigurationSection("mysql");
-        final HikariConfig hikari = new HikariConfig();
-        hikari.setPoolName("hikari-" + plugin.getName());
-        hikari.setJdbcUrl("jdbc:mysql://" + config.getString("host", DEFAULT_HOST) + ":" + config.getInt("port", DEFAULT_PORT) + "/" + config.getString("database", DEFAULT_DATABASE));
-        hikari.setUsername(config.getString("user", DEFAULT_USERNAME));
-        hikari.setPassword(config.getString("pass", DEFAULT_PASSWORD));
-        hikari.setMaximumPoolSize(config.getInt("maxPoolSize", 10));
-        hikari.setMaxLifetime(config.getLong("maxLifeTime", 300000));
-        hikari.setConnectionTimeout(config.getLong("connectionTimeOut", 10000));
-        hikari.setLeakDetectionThreshold(config.getLong("leakDetectionThreshold", 150000));
-        if (config.isConfigurationSection("properties"))
-            for (String s : config.getConfigurationSection("properties").getKeys(false))
-                hikari.addDataSourceProperty(s, config.getString("properties." + s));
-
-        dataSource = new HikariDataSource(hikari);
-    }
-
-    @Override
-    public boolean refreshConnection() {
-        // Connection pool
-        return true;
-    }
-
-    @NotNull
-    public MMOPlugin getPlugin() {
-        return plugin;
     }
 
     @NotNull
@@ -76,19 +50,40 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     }
 
     public void close() {
-        if (dataSource != null) dataSource.close();
+        dataSource.close();
+    }
+
+    @NotNull
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public boolean refreshConnection() {
+        try (Connection connection = getConnection()) {
+            Validate.isTrue(!connection.isClosed(), "Connection is closed");
+            executeQuery("SELECT 1;", r -> { /* nothing */ });
+            return true;
+        } catch (SQLException exception) {
+            return false;
+        }
+    }
+
+    @NotNull
+    public MMOPlugin getPlugin() {
+        return plugin;
     }
 
     //region Util methods
 
-    public void executeQuery(@NotNull String sql, @NotNull Consumer<ResultSet> callback, @NotNull String... params) {
+    public void executeQuery(@NotNull String sql, @NotNull SQLConsumer callback, @NotNull String... params) {
         try (Connection connection = getConnection()) {
             final var statement = connection.prepareStatement(sql);
             for (int i = 0; i < params.length; i++)
                 statement.setString(i + 1, params[i]);
             callback.accept(statement.executeQuery());
         } catch (Throwable throwable) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Could not open SQL result statement:");
+            this.plugin.getLogger().log(Level.WARNING, "Could not open SQL result statement:");
             throwable.printStackTrace();
         }
     }
@@ -100,26 +95,32 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
                 statement.setString(i + 1, params[i]);
             statement.executeUpdate();
         } catch (Throwable throwable) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Could not execute SQL update: " + throwable.getMessage());
+            this.plugin.getLogger().log(Level.WARNING, "Could not execute SQL update: " + throwable.getMessage());
             throwable.printStackTrace();
         }
     }
 
     @Deprecated
+    @NotNull
+    public CompletableFuture<Void> executeQueryAsync(@NotNull String sql, @NotNull Consumer<ResultSet> callback, @NotNull String... params) {
+        return Tasks.runAsync(plugin, () -> executeQuery(sql, callback::accept, params));
+    }
+
+    @Deprecated
+    @NotNull
+    public CompletableFuture<Void> executeUpdateAsync(@NotNull String sql, String... params) {
+        return Tasks.runAsync(plugin, () -> executeUpdate(sql, params));
+    }
+
+    @Deprecated
     public void getResult(@NotNull String sql, @NotNull Consumer<ResultSet> supplier) {
-        this.executeQuery(sql, supplier);
+        this.executeQuery(sql, supplier::accept);
     }
 
     @NotNull
     @Deprecated
     public CompletableFuture<Void> getResultAsync(String sql, Consumer<ResultSet> supplier) {
         return Tasks.runAsync(plugin, () -> getResult(sql, supplier));
-    }
-
-    @NotNull
-    @Deprecated
-    public CompletableFuture<Void> executeUpdateAsync(String sql) {
-        return Tasks.runAsync(plugin, () -> executeUpdate(sql));
     }
 
     /**
@@ -134,7 +135,7 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         try (Connection connection = getConnection()) {
             execute.accept(connection);
         } catch (Throwable throwable) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "SQL error: " + throwable.getMessage());
+            this.plugin.getLogger().log(Level.WARNING, "SQL error: " + throwable.getMessage());
             throwable.printStackTrace();
         }
     }
@@ -239,5 +240,68 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
 
         return uuids;
     }
+
+    //region Read Hikari from YAML config
+
+    private static final String DEFAULT_HOST = "localhost";
+    private static final String DEFAULT_USERNAME = "root";
+    private static final String DEFAULT_PASSWORD = "";
+    private static final String DEFAULT_DATABASE = "minecraft";
+    private static final String DEFAULT_SQLITE_PATH = "userdata.db";
+    private static final int DEFAULT_PORT = 3306;
+    private static final int DEFAULT_MAX_POOL_SIZE = 10;
+    private static final int DEFAULT_MAX_LIFE_TIME = 300000;
+    private static final int DEFAULT_CONNECTION_TIME_OUT = 10000;
+    private static final int DEFAULT_LEAK_DETECT_THRESHOLD = 10000;
+
+    @NotNull
+    private static Pair<String, HikariConfig> hikariFromConfig(@NotNull MMOPlugin plugin) {
+
+        final var hikariConfig = new HikariConfig();
+        final ConfigurationSection config;
+        final String databaseName;
+
+        // MySQL
+        if (plugin.getConfig().getBoolean("mysql.enabled")) {
+            config = plugin.getConfig().getConfigurationSection("mysql");
+            final var host = config.getString("host", DEFAULT_HOST);
+            final var port = config.getInt("port", DEFAULT_PORT);
+            databaseName = config.getString("database", DEFAULT_DATABASE);
+
+            hikariConfig.setPoolName("hikari-mysql-" + plugin.getName());
+            hikariConfig.setJdbcUrl(String.format("jdbc:mysql://%s:%d/%s", host, port, databaseName));
+        }
+
+        // SQLite
+        else if (plugin.getConfig().getBoolean("sqlite.enabled")) {
+            config = plugin.getConfig().getConfigurationSection("sqlite");
+            databaseName = config.getString("database", DEFAULT_DATABASE);
+            final var databasePath = config.getString("path", DEFAULT_SQLITE_PATH);
+            final var url = String.format("jdbc:sqlite:%s", Path.of(plugin.getDataFolder().toString(), databasePath));
+
+            plugin.getLogger().log(Level.INFO, "path= " + url);
+
+            hikariConfig.setPoolName("hikari-sqlite-" + plugin.getName());
+            hikariConfig.setJdbcUrl(url);
+        }
+
+        // Wth?
+        else throw new IllegalArgumentException("No SQL option enabled");
+
+        hikariConfig.setUsername(config.getString("user", DEFAULT_USERNAME));
+        hikariConfig.setPassword(config.getString("pass", DEFAULT_PASSWORD));
+        hikariConfig.setConnectionTestQuery("SELECT 1"); // Tx taner
+        hikariConfig.setMaximumPoolSize(config.getInt("maxPoolSize", DEFAULT_MAX_POOL_SIZE));
+        hikariConfig.setMaxLifetime(config.getLong("maxLifeTime", DEFAULT_MAX_LIFE_TIME));
+        hikariConfig.setConnectionTimeout(config.getLong("connectionTimeOut", DEFAULT_CONNECTION_TIME_OUT));
+        hikariConfig.setLeakDetectionThreshold(config.getLong("leakDetectionThreshold", DEFAULT_LEAK_DETECT_THRESHOLD));
+        if (config.isConfigurationSection("properties"))
+            for (String s : config.getConfigurationSection("properties").getKeys(false))
+                hikariConfig.addDataSourceProperty(s, config.getString("properties." + s));
+
+        return Pair.of(databaseName, hikariConfig);
+    }
+
+    //endregion
 }
 
