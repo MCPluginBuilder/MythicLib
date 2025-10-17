@@ -241,10 +241,20 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
             // Complete sync
             Tasks.runSync(owning, () -> {
+
                 if (!lookup) {
+
+                    // Player could go offline while transitioning to main thread
+                    // TODO improve thread safety
+                    if (!playerData.getMMOPlayerData().isOnline()) {
+                        future.complete(null); // Complete future
+                        return;
+                    }
+
                     playerData.markSessionReady(); // Mark as ready
                     Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(this, playerData, parentProfileEvent));
                 }
+
                 future.complete(null); // Complete future
             });
         });

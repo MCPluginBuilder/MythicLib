@@ -30,8 +30,8 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerQuitLowest(PlayerQuitEvent event) {
         final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
-        if (playerData != null && playerData.hasProfileSession()) {
-            playerData.getProfileSession().startClosing();
+        if (playerData != null) {
+            if (playerData.hasProfileSession()) playerData.getProfileSession().startClosing();
             Tasks.runSync(MythicLib.plugin, () -> playerData.updatePlayer(null));
         }
     }
