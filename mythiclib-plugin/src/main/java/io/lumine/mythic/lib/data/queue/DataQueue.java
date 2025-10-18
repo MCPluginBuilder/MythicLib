@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.data.queue;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
@@ -14,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread {
+public abstract class DataQueue<H extends SynchronizedDataHolder> implements Runnable {
 
     /**
      * Plugin owning the data queue
@@ -55,24 +54,19 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread
     @Override
     public void run() {
 
+        whileTrue:
         while (true) {
-
-            UtilityMethods.debug(plugin, getClass().getSimpleName(), " Entering queue ");
 
             // Wait until queue not empty
             while (recordQueue.isEmpty()) {
 
-                UtilityMethods.debug(plugin, getClass().getSimpleName(), "queue is empty");
-
                 // Stop thread only if queue is empty
                 if (stopIfEmpty) {
                     stopped = true;
-                    return;
+                    break whileTrue;
                 }
 
-                UtilityMethods.debug(plugin, getClass().getSimpleName(), "waiting");
                 waitFor(0);
-                UtilityMethods.debug(plugin, getClass().getSimpleName(), "done waiting");
             }
 
             // Pop record
@@ -81,9 +75,7 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> extends Thread
             // Prevent flooding the database with requests for the same unavailable records
             if (record.effectiveId.equals(lastProcessedId) && !record.available()) {
                 enqueue(record);
-                UtilityMethods.debug(plugin, getClass().getSimpleName(), "flood waiting");
                 waitFor(WAIT_TIME / 2);
-                UtilityMethods.debug(plugin, getClass().getSimpleName(), "done flood waiting");
                 continue;
             }
 

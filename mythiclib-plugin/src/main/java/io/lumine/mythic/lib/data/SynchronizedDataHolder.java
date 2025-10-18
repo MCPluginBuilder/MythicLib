@@ -84,6 +84,15 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         return playerData.hasProfile() ? getProfileId() : getUniqueId();
     }
 
+    //region Session
+
+    /**
+     * Was player data loaded from database
+     */
+    private boolean ready = false;
+
+    private final Object sessionLock = new Object();
+
     /**
      * Called before ANY plugin closes or modifies any resource related to any
      * plugin player data, when a player switches profiles or logs out. This method
@@ -119,7 +128,9 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      *         from the database
      */
     public boolean isSessionReady() {
-        return playerData.hasProfileSession() && playerData.getProfileSession().isReady(mmoPlugin.getNamespacedKey());
+        synchronized (sessionLock) {
+            return ready;
+        }
     }
 
     /**
@@ -128,11 +139,16 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * Must be called on main server thread
      */
     public void markSessionReady() {
-        Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
         Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
+        Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
 
-        onSessionReady();
-        playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
+        synchronized (sessionLock) {
+            Validate.isTrue(!this.ready, "Player data already ready");
+
+            this.ready = true;
+            onSessionReady();
+            playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
+        }
     }
 
     /**
@@ -144,8 +160,13 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
         Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
         Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
 
-        onSessionClosed();
-        playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
+        synchronized (sessionLock) {
+            Validate.isTrue(this.ready, "Player data not ready");
+
+            this.ready = false;
+            onSessionClosed();
+            playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
+        }
     }
 
     //region Deprecated
@@ -153,11 +174,6 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     @Deprecated
     public boolean isSynchronized() {
         return isSessionReady();
-    }
-
-    @Deprecated
-    public void markAsSynchronized() {
-        markSessionReady();
     }
 
     @Deprecated

@@ -11,7 +11,6 @@ public enum ProfileSessionState {
      * <p>
      * Possible transitions:
      * - {@link #OPENING} if any plugin is marked as ready.
-     * - {@link #DEAD_EARLY} if the player logs off early.
      */
     CREATED,
 
@@ -23,8 +22,8 @@ public enum ProfileSessionState {
      * Possible transitions:
      * - {@link #OPEN} if all MMO plugins successfully loaded their
      * data. For MythicLib the player has officially "started playing".
-     * - {@link #DEAD_EARLY} if the player logs off before the player
-     * session as been marked {@link #OPEN}.
+     * - {@link #ABORT} if all MMO plugins successfully loaded their
+     * data. For MythicLib the player has officially "started playing".
      */
     OPENING,
 
@@ -41,10 +40,26 @@ public enum ProfileSessionState {
      * If the same player logs in again, they need to wait for
      * the previous session to terminate.
      * <p>
+     * In this state, MythicLib is waiting for other plugins
+     * to write back their data to the database.o
+     * <p>
      * Possible transitions:
-     * - Player session transitions to
+     * - {@link #DEAD} when all MMO plugins have successfully
+     * written back their data to the database.
      */
     CLOSING,
+
+    /**
+     * Not all MMO plugins managed to read their player data
+     * before session was closed. MythicLib is waiting for
+     * answers from the MMO plugins which managed to load
+     * data from the database, but not the other ones.
+     * <p>
+     * Transitions:
+     * - {@link #DEAD_EARLY} when all MMO plugins have successfully
+     * written back their data to the database.
+     */
+    ABORT,
 
     /**
      * All MMO plugins have successfully written back their
@@ -53,19 +68,19 @@ public enum ProfileSessionState {
      * If the same player logs back, they can re-open a new session
      * at state {@link #OPENING}.
      * <p>
-     * Possible transitions: None (final state).
+     * Possible transitions:
+     * - {@link #CREATED} on session reset
      */
     DEAD,
 
-    /**
-     * If profile session never opened
-     *
-     * @see #DEAD
-     */
     DEAD_EARLY;
 
     public boolean wasReady() {
         return this == OPEN || this == CLOSING || this == DEAD;
+    }
+
+    public boolean isClosing() {
+        return this == CLOSING || this == ABORT;
     }
 
     public boolean isDead() {

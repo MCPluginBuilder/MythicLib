@@ -86,19 +86,13 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
                 Tasks.runSync(plugin, () -> {
 
+                    // Player could go offline while transitioning to main thread
+                    if (record.invalidate()) return;
+
                     if (!lookup) {
-
-                        // Player could go offline while transitioning to main thread
-                        // TODO improve thread safety
-                        if (!record.playerData.getMMOPlayerData().isOnline()) {
-                            record.future.complete(null); // Complete future
-                            return;
-                        }
-
                         record.playerData.markSessionReady(); // Mark as ready
                         Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData, record.reason));
                     }
-
                     record.future.complete(null); // Complete future
                 });
 

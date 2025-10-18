@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.util;
 
+import io.lumine.mythic.lib.module.MMOPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -56,14 +57,13 @@ public class Tasks {
      *
      * @param plugin Plugin owner
      */
-    public static void waitSafe(@NotNull Plugin plugin) {
-        while (Bukkit.getScheduler().getActiveWorkers().stream().anyMatch(worker -> worker.getOwner().equals(plugin))) {
+    public static void waitSafe(@NotNull MMOPlugin plugin) {
+        while (Bukkit.getScheduler().getActiveWorkers().stream().anyMatch(worker -> worker.getOwner().equals(plugin)))
             try {
                 Thread.sleep(ASYNC_TIME_OUT);
             } catch (InterruptedException exception) {
                 // Ignore
             }
-        }
     }
 
     /**

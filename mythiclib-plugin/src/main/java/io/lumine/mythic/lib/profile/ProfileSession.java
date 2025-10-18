@@ -52,9 +52,12 @@ public class ProfileSession {
     /**
      * When logging in, MythicLib waits for all MMO plugins
      * to load their data before toggling on readiness flag
-     * of this session object
+     * of this session object.
+     * <p>
+     * In case the opening of a session is aborted, the list
+     * of loaded modules is dumped
      */
-    private List<NamespacedKey> waiting;
+    private List<NamespacedKey> waiting, loaded;
 
     /**
      * @param parent    Session parent player data
@@ -81,17 +84,23 @@ public class ProfileSession {
         return Objects.requireNonNull(profileId, "No profile");
     }
 
+    //region Profile state machine
+
     /**
      * @return If the player is currently playing. This will return true,
      *         as soon as the player logs out or switches profile.
      * @see MMOPlayerData#isPlaying()
      */
-    public boolean isReady() {
+    public synchronized boolean isReady() {
         return state == ProfileSessionState.OPEN;
     }
 
-    public boolean isDead() {
+    public synchronized boolean isDead() {
         return state.isDead();
+    }
+
+    public synchronized boolean wasReady() {
+        return state.wasReady();
     }
 
     public synchronized boolean isReady(@NotNull NamespacedKey key) {
@@ -106,18 +115,19 @@ public class ProfileSession {
         return !this.waiting.contains(Objects.requireNonNull(key, "Key cannot be null"));
     }
 
-    public void reset() {
+    public synchronized void reset() {
         Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
         this.state = ProfileSessionState.CREATED;
         UtilityMethods.debug(MythicLib.plugin, "Session", "Reset session of " + profileId);
     }
 
     private void initialize() {
-        if (this.state != ProfileSessionState.CREATED && !this.state.isDead()) return;
+        if (this.state != ProfileSessionState.CREATED) return;
 
         UtilityMethods.debug(MythicLib.plugin, "Session", "Init session of " + profileId);
         this.state = ProfileSessionState.OPENING;
         this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
+        this.loaded = new ArrayList<>();
         this.callbacks.clear();
     }
 
@@ -130,13 +140,13 @@ public class ProfileSession {
     }
 
     public synchronized void markAsReady(@NotNull NamespacedKey key) {
-        // TODO move online check elsewhere
-        Validate.isTrue(playerData.isOnline() || playerData.isLookup(), "Player went offline");
+        Validate.notNull(key, "Module key cannot be null");
         initialize();
         Validate.isTrue(state == ProfileSessionState.OPENING, "Profile session not opening (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already synced", key));
+        this.loaded.add(key);
 
         checkReadiness(); // Check if all plugins have loaded their data
     }
@@ -157,51 +167,47 @@ public class ProfileSession {
         this.openDataSession();
     }
 
-    private void abortOpening() {
-        Validate.isTrue(state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING, "Cannot abort in state " + this.state);
-
-        UtilityMethods.debug(MythicLib.plugin, "Session", "Abort opening session of " + profileId);
-        this.state = ProfileSessionState.DEAD_EARLY;
-        this.playerData.clearTemporaryHandlers();
-        this.waiting = null;
-        this.callbacks.clear();
-    }
-
     public synchronized void startClosing() {
+
+        if (state.isClosing() || state.isDead()) return;
 
         // Abort opening
         if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
-            abortOpening();
+            UtilityMethods.debug(MythicLib.plugin, "Session", "Abort opening session of " + profileId);
+            this.state = ProfileSessionState.ABORT;
+            this.playerData.clearTemporaryHandlers();
+            this.waiting = this.loaded;
+            this.callbacks.clear();
         }
 
-        // Open
+        // Close normally
         else if (state == ProfileSessionState.OPEN) {
             UtilityMethods.debug(MythicLib.plugin, "Session", "Start closing session of " + profileId);
             this.state = ProfileSessionState.CLOSING;
             this.playerData.clearTemporaryHandlers();
-            this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
+            this.waiting = this.loaded;
             this.callbacks.clear();
             this.closeDataSession();
 
             checkClosed();
         }
 
-        // Already closing
-        else if (state != ProfileSessionState.CLOSING) {
-            Validate.isTrue(state.isDead(), "Cannot close a dead session");
-        }
+        // Wth
+        else throw new IllegalStateException("Unhandled session state " + this.state.name());
     }
 
     public synchronized void addCloseCallback(@NotNull ProfileSessionCallback callback) {
         Validate.notNull(callback, "Callback cannot be null");
         startClosing();
-        Validate.isTrue(this.state == ProfileSessionState.CLOSING, "Session is not closing");
+        Validate.isTrue(this.state.isClosing(), "Session is not closing");
 
         this.callbacks.add(callback);
     }
 
     public synchronized void markAsClosed(@NotNull NamespacedKey key) {
-        Validate.isTrue(state == ProfileSessionState.CLOSING, "Session is not closing (in state " + this.state.name() + ")");
+        Validate.notNull(key, "Module key cannot be null");
+        startClosing();
+        Validate.isTrue(state.isClosing(), "Session is not closing (in state " + this.state.name() + ")");
 
         final var found = this.waiting.remove(key);
         Validate.isTrue(found, String.format("Module %s already marked as closed", key));
@@ -220,10 +226,12 @@ public class ProfileSession {
 
         UtilityMethods.debug(MythicLib.plugin, "Session", "Close session of " + profileId);
         this.setLastActivity();
-        this.state = ProfileSessionState.DEAD;
+        this.state = state == ProfileSessionState.ABORT ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD;
         this.playerData.saveCurrentProfileSession();
         this.callbacks.forEach(callback -> callback.callback(this));
     }
+
+    //endregion
 
     @Override
     public String toString() {

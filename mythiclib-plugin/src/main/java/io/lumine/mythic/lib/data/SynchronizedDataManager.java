@@ -55,11 +55,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         this.profilePlugin = owning.isProfilePlugin();
     }
 
-    @Deprecated
-    public SynchronizedDataManager(@NotNull MMOPlugin owning, boolean profilePlugin) {
-        this(owning);
-    }
-
     @NotNull
     public Database<H, O> getDatabase() {
         return Objects.requireNonNull(database, "Database not setup");
@@ -132,6 +127,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @return Offline player data
      */
     @NotNull
+    @SuppressWarnings("unchecked")
     public O getOffline(UUID uuid) {
         return isLoaded(uuid) ? (O) activeData.get(uuid) : database.getOffline(uuid);
     }
@@ -146,7 +142,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     private static final Listener FICTIVE_LISTENER = new Listener() {
     };
-
 
     /**
      * This method is called when the plugin enables and does three things:
@@ -301,16 +296,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     /**
-     * @deprecated TODO find better alternative. the #unregister only calls on profileunload
-     *         when using legacy profiles. if the player logs out without choosing a profile
-     *         this event will not call, and the data will remain in memory => LEAK
-     */
-    @Deprecated(forRemoval = true)
-    public void garbageCollect(@NotNull Player player) {
-        activeData.remove(player.getUniqueId());
-    }
-
-    /**
      * Safely unregisters the player data from the map.
      * This saves the player data either through SQL or YAML,
      * then closes the player data and clears it from the data map.
@@ -359,7 +344,22 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         return activeData.values();
     }
 
-//region Deprecated
+    //region Deprecated
+
+    @Deprecated
+    public SynchronizedDataManager(@NotNull MMOPlugin owning, boolean profilePlugin) {
+        this(owning);
+    }
+
+    /**
+     * @deprecated TODO find better alternative. the #unregister only calls on profileunload
+     *         when using legacy profiles. if the player logs out without choosing a profile
+     *         this event will not call, and the data will remain in memory => LEAK
+     */
+    @Deprecated(forRemoval = true)
+    public void garbageCollect(@NotNull Player player) {
+        activeData.remove(player.getUniqueId());
+    }
 
     @Deprecated
     public CompletableFuture<Void> saveData(@NotNull H playerData) {
