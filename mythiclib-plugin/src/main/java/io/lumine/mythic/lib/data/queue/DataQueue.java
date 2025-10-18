@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 
 public abstract class DataQueue<H extends SynchronizedDataHolder> implements Runnable {
 
@@ -35,7 +36,7 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
      */
     protected final Queue<QueueRecord> recordQueue = new ConcurrentLinkedQueue<>();
 
-    private boolean stopIfEmpty = false, stopped;
+    private boolean stopIfEmpty = false, running = false;
     @Nullable
     private UUID lastProcessedId = null;
 
@@ -47,40 +48,44 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
         this.manager = manager;
     }
 
-    public boolean isStopped() {
-        return stopped;
+    public boolean isRunning() {
+        return running;
     }
 
     @Override
     public void run() {
 
-        whileTrue:
-        while (true) {
+        try {
+            running = true;
+            whileTrue:
+            while (true) {
 
-            // Wait until queue not empty
-            while (recordQueue.isEmpty()) {
+                // Wait until queue not empty
+                while (recordQueue.isEmpty()) {
 
-                // Stop thread only if queue is empty
-                if (stopIfEmpty) {
-                    stopped = true;
-                    break whileTrue;
+                    // Stop thread only if queue is empty
+                    if (stopIfEmpty) break whileTrue;
+
+                    waitFor(0);
                 }
 
-                waitFor(0);
+                // Pop record
+                final var record = Objects.requireNonNull(recordQueue.poll());
+
+                // Prevent flooding the database with requests for the same unavailable records
+                if (record.effectiveId.equals(lastProcessedId) && !record.available()) {
+                    enqueue(record);
+                    waitFor(WAIT_TIME / 2);
+                    continue;
+                }
+
+                lastProcessedId = record.effectiveId;
+                processRecord(record);
             }
-
-            // Pop record
-            final var record = Objects.requireNonNull(recordQueue.poll());
-
-            // Prevent flooding the database with requests for the same unavailable records
-            if (record.effectiveId.equals(lastProcessedId) && !record.available()) {
-                enqueue(record);
-                waitFor(WAIT_TIME / 2);
-                continue;
-            }
-
-            lastProcessedId = record.effectiveId;
-            processRecord(record);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        } finally {
+            running = false;
         }
     }
 
@@ -113,6 +118,21 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
         synchronized (this) {
             stopIfEmpty = true;
             notifyAll();
+        }
+    }
+
+    private static final long MESSAGE_INTERVAL = 3000;
+
+    public void sleepUntilCompletion() {
+        long lastMessage = System.currentTimeMillis();
+        while (running) try {
+            if (System.currentTimeMillis() > lastMessage + MESSAGE_INTERVAL) {
+                lastMessage = System.currentTimeMillis();
+                this.plugin.getLogger().log(Level.INFO, "Waiting " + getClass().getSimpleName() + " to process " + this.recordQueue.size() + " records");
+            }
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            this.plugin.getLogger().warning(getClass().getSimpleName() + " got interrupted!");
         }
     }
 

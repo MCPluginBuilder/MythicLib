@@ -438,10 +438,11 @@ public class MMOPlayerData {
      *
      * @param player Player whose data should be initialized
      */
+    @NotNull
     public static MMOPlayerData setup(@NotNull Player player) {
-        final MMOPlayerData found = PLAYER_DATA.computeIfAbsent(player.getUniqueId(), uuid -> new MMOPlayerData(player));
-        found.updatePlayer(player);
-        return found;
+        final var playerData = PLAYER_DATA.computeIfAbsent(player.getUniqueId(), uuid -> new MMOPlayerData(player));
+        playerData.updatePlayer(player);
+        return playerData;
     }
 
     @NotNull

@@ -643,6 +643,13 @@ public class UtilityMethods {
     }
 
     /**
+     * @see #debug(JavaPlugin, String, String)
+     */
+    public static void debug(@NotNull JavaPlugin plugin, @NotNull String message) {
+        debug(plugin, null, message);
+    }
+
+    /**
      * Sends a debug message. All plugins depending on MythicLib must use this
      * function to send debug message, which is more convenient for users.
      * MMOInventory has its own option, because it's standalone.

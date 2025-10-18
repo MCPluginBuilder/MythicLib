@@ -212,10 +212,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         this.loadQueue.end();
         this.saveQueue.end();
 
-        // Wait for completion of safe tasks
-        owning.getLogger().log(Level.INFO, "Waiting for other threads, please wait...");
-        Tasks.executePendingSafe(owning);
-        Tasks.waitSafe(owning);
+        // Wait for completion
+        // This might not be needed on all server software. Not sure about that.
+        this.loadQueue.sleepUntilCompletion();
+        this.saveQueue.sleepUntilCompletion();
 
         // Release resources from data handler
         database.close();
@@ -320,6 +320,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
         playerData.onSaved(reason);
         return saveData(playerData, reason);
+    }
+
+    public void fake(H data) {
+        activeData.put(data.getUniqueId(), data);
     }
 
     /**
