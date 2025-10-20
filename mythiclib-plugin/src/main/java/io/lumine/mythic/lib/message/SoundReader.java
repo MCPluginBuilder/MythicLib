@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.message;
 
-import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,18 +20,9 @@ public class SoundReader {
 
     private final float vol, pitch;
 
+    @Deprecated
     public SoundReader(@NotNull ConfigurationSection config) {
-        final String stringInput = config.getString("sound");
-        final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
-        if (tryParse != null) {
-            soundEnum = tryParse;
-            soundString = null;
-        } else {
-            soundString = stringInput;
-            soundEnum = null;
-        }
-        vol = YamlUtils.getFloat(config, "volume", "vol", "v");
-        pitch = YamlUtils.getFloat(config, "pitch", "p");
+        this(new ConfigSectionObject(config));
     }
 
     public SoundReader(@NotNull String stringInput) {
@@ -67,7 +58,7 @@ public class SoundReader {
     }
 
     public SoundReader(@NotNull ConfigObject config) {
-        final String stringInput = config.string("sound", "s", "name", "id");
+        final String stringInput = config.string("sound", "snd", "s", "name", "n", "id");
         final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
         if (tryParse != null) {
             soundEnum = tryParse;
@@ -107,7 +98,7 @@ public class SoundReader {
             return new SoundReader((String) configObject);
 
         else if (configObject instanceof ConfigurationSection)
-            return new SoundReader((ConfigurationSection) configObject);
+            return new SoundReader(new ConfigSectionObject((ConfigurationSection) configObject));
 
         else throw new IllegalArgumentException("Expected either a string or config section");
     }

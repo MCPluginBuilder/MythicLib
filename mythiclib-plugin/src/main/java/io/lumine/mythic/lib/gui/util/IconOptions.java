@@ -210,7 +210,7 @@ public class IconOptions {
             // takes 1 age of the universe to load one single item from config
             final var customModelDataInt = YamlUtils.getInteger(config, "custom_model_data", "custom-model-data", "model-data", "cmd", "model_data");
             final var customModelDataString = YamlUtils.getString(config, "custom_model_data_string", "custom-model-data-string", "cmd-string", "cmd_string", "cmds");
-            final var customModelDataFloat = YamlUtils.getFloat(config, "custom_model_data_float", "custom-model-data-float", "cmd-float", "cmd_float", "cmdf");
+            final var customModelDataFloat = YamlUtils.getFloatObj(config, "custom_model_data_float", "custom-model-data-float", "cmd-float", "cmd_float", "cmdf");
             final var itemModelRaw = YamlUtils.getString(config, "model", "item_model", "item-model");
             final var itemModel = itemModelRaw == null || itemModelRaw.isEmpty() ? null : NamespacedKey.fromString(itemModelRaw);
             final var skullTexture = YamlUtils.getString(config, "texture", "skull_texture", "skull-texture");
