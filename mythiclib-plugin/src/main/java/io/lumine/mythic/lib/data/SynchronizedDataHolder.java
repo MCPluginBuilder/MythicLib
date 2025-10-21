@@ -147,7 +147,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
 
             this.ready = true;
             onSessionReady();
-            playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
+            if (!mmoPlugin.isProfilePlugin()) playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
         }
     }
 
@@ -165,7 +165,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
 
             this.ready = false;
             onSessionClosed();
-            playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
+            if (!mmoPlugin.isProfilePlugin()) playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
         }
     }
 
