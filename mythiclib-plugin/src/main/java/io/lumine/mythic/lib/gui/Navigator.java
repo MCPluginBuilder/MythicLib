@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.gui;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.util.Tasks;
+import io.lumine.mythic.lib.version.VersionUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -37,8 +38,11 @@ public class Navigator implements Listener {
     private final MMOPlayerData playerData;
     private final Player player;
 
+    @Nullable
     private PluginInventory lastInvOpened;
+    @Nullable
     private Inventory lastBukkitOpened;
+    @Nullable
     public BukkitTask backgroundTask;
     private boolean canClose = true, closed = true;
 
@@ -105,6 +109,9 @@ public class Navigator implements Listener {
         return openedInventories.peek();
     }
 
+    // TODO improve code
+    public boolean recycle;
+
     /**
      * Opens the upmost inventory in the stack
      *
@@ -116,6 +123,15 @@ public class Navigator implements Listener {
         if (!playerData.isOnline()) return upmost;
 
         upmost.onOpen(); // Notify inventory open
+
+        if (this.recycle) {
+            this.recycle = false;
+            return upmost;
+        }
+
+        // Close current inventory if any
+        if (lastInvOpened != null) closeCurrentInventory();
+
         final var newBukkitInventory = upmost.getInventory(); // Generate Bukkit inventory
         this.lastInvOpened = upmost;
         this.lastBukkitOpened = newBukkitInventory;
@@ -130,7 +146,7 @@ public class Navigator implements Listener {
         if (Bukkit.isPrimaryThread()) openToPlayer(newBukkitInventory);
         else Tasks.runSync(MythicLib.plugin, () -> openToPlayer(newBukkitInventory));
 
-        upmost.startBackgroundTask();  // Start task
+        startBackgroundTask(upmost); // Start background task
 
         return upmost;
     }
@@ -166,32 +182,69 @@ public class Navigator implements Listener {
         return openLast();
     }
 
-    public void haltBackgroundTask() {
+    private void close() {
+        Validate.isTrue(!closed, "Already closed");
+        closed = true;
+
+        if (lastInvOpened != null) closeCurrentInventory();
+
+        InventoryCloseEvent.getHandlerList().unregister(this);
+        InventoryClickEvent.getHandlerList().unregister(this);
+        InventoryDragEvent.getHandlerList().unregister(this);
+        PlayerQuitEvent.getHandlerList().unregister(this);
+    }
+
+    //region Open and close inventory
+
+    private void closeCurrentInventory() {
+        Validate.notNull(lastInvOpened, "No inventory open");
+
+        lastInvOpened.onClose();
+        haltBackgroundTask();
+        this.lastInvOpened = null;
+    }
+
+    private void startBackgroundTask(@NotNull PluginInventory nextOpened) {
+        final var backgroundRunnable = nextOpened.getBackgroundRunnable();
+        if (backgroundRunnable == null) return; // No task to start
+
+        Validate.isTrue(backgroundTask == null, "Background task already running");
+
+        backgroundTask = Bukkit.getScheduler().runTaskTimer(MythicLib.plugin, () -> {
+            final var opened = Objects.requireNonNull(VersionUtils.getOpen(player).getTopInventory());
+            final var tracked = getLastBukkitOpened();
+
+            // Should be the same physical objects
+            if (opened != tracked) {
+                Navigator.this.haltBackgroundTask();
+                throw new RuntimeException("Failed at keeping track of opened inventory");
+            }
+
+            backgroundRunnable.accept(tracked);
+        }, nextOpened.getBackgroundRunnablePeriod(), nextOpened.getBackgroundRunnablePeriod());
+    }
+
+    private void haltBackgroundTask() {
         if (backgroundTask == null) return; // Task already halted
 
         backgroundTask.cancel();
         backgroundTask = null;
     }
 
-    // TODO use this optimization everywhere in MMO plugins
-    @Deprecated(forRemoval = true)
-    public boolean justOpenedSameInventory;
+    //endregion
+
+    //region Listeners
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (!event.getPlayer().equals(player)) return;
-
-        final var closedInventory = (PluginInventory) Objects.requireNonNull(event.getInventory().getHolder(), "Could not find holder of closed inventory");
-        this.justOpenedSameInventory = onHold && closedInventory.equals(lastInvOpened);
-        closedInventory.onClose(); // Notify inventory close
-        haltBackgroundTask(); // Stop background task
-
         if (onHold) return;
 
         if (canClose) close();
         else {
             onHold = true;
-            Bukkit.getScheduler().runTaskLater(MythicLib.plugin, this::openLast, closedInventory.getCloseTimeOut());
+            final var upmost = openedInventories.peek();
+            Bukkit.getScheduler().runTaskLater(MythicLib.plugin, this::openLast, upmost.getCloseTimeOut());
         }
     }
 
@@ -218,13 +271,5 @@ public class Navigator implements Listener {
         close();
     }
 
-    private void close() {
-        Validate.isTrue(!closed, "Already closed");
-        closed = true;
-
-        InventoryCloseEvent.getHandlerList().unregister(this);
-        InventoryClickEvent.getHandlerList().unregister(this);
-        InventoryDragEvent.getHandlerList().unregister(this);
-        PlayerQuitEvent.getHandlerList().unregister(this);
-    }
+    //endregion Listeners
 }
