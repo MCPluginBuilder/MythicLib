@@ -102,22 +102,25 @@ casting-delay:
 # '*** Cooldown Reduction' item stat.
 mitigation:
 
-  # Edit mitigation messages here. Leave to blank for no message.
-  message:
-    parry: '&cYou just parried {damage} damage.'
-    block: '&cYou just blocked {damage} damage.' # Use {power} to display block power.
-    dodge: '&cYou just dodged {damage} damage.'
-
   block:
-    cooldown: 5.0
+    cooldown: 3.0
+    message:
+      format: '&cYou just blocked {damage} damage.'
+      action-bar: false
 
   dodge:
     knockback: 1.0
-    cooldown: 5
+    cooldown: 3.0
+    message:
+      format: '&cYou just dodged {damage} damage.' # Use {power} to display block power.
+      action-bar: false
 
   parry:
     knockback: 1.0
-    cooldown: 8.0
+    cooldown: 3.0
+    message:
+      format: '&cYou just parried {damage} damage.'
+      action-bar: false
 
 # Change the amount of damage dealt on specific damage sources. This
 # tool comes handy when needing to balance your vanilla damage sources.

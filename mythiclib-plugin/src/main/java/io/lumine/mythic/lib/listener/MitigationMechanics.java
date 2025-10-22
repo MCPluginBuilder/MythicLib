@@ -59,9 +59,9 @@ public class MitigationMechanics extends Module implements Listener {
         blockDefaultCooldown = config.getDouble("block.cooldown");
         dodgeDefaultCooldown = config.getDouble("dodge.cooldown");
 
-        parryMessage = PlayerMessage.fromConfig(config.get("message.parry"));
-        dodgeMessage = PlayerMessage.fromConfig(config.get("message.dodge"));
-        blockMessage = PlayerMessage.fromConfig(config.get("message.block"));
+        parryMessage = PlayerMessage.fromConfig(config.get("parry.message"));
+        dodgeMessage = PlayerMessage.fromConfig(config.get("dodge.message"));
+        blockMessage = PlayerMessage.fromConfig(config.get("block.message"));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
