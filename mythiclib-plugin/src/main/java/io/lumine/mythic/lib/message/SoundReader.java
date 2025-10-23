@@ -1,8 +1,11 @@
 package io.lumine.mythic.lib.message;
 
+import io.lumine.mythic.lib.util.Pair;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Sounds;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -12,11 +15,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class SoundReader {
 
-    @Nullable
-    private final String soundString;
+    @Nullable("if Bukkit sound")
+    private final String assetName;
 
-    @Nullable
-    private final Sound soundEnum;
+    @Nullable("if custom sound")
+    private final Sound bukkitSound;
 
     private final float vol, pitch;
 
@@ -30,14 +33,9 @@ public class SoundReader {
         if (stringInput.contains(",")) {
 
             final var split = stringInput.split(",");
-            final Sound tryParse = tryParseSoundEnum(split[0]);
-            if (tryParse != null) {
-                soundEnum = tryParse;
-                soundString = null;
-            } else {
-                soundString = split[0];
-                soundEnum = null;
-            }
+            final var tryParse = parseSound(split[0]);
+            bukkitSound = tryParse.getLeft();
+            assetName = tryParse.getRight();
 
             var hasVol = split.length > 2;
             vol = hasVol ? Float.parseFloat(split[1]) : 1;
@@ -45,44 +43,25 @@ public class SoundReader {
             return;
         }
 
-        final Sound tryParse = tryParseSoundEnum(stringInput);
-        if (tryParse != null) {
-            soundEnum = tryParse;
-            soundString = null;
-        } else {
-            soundString = stringInput;
-            soundEnum = null;
-        }
+        final var parsedSound = parseSound(stringInput);
+        bukkitSound = parsedSound.getLeft();
+        assetName = parsedSound.getRight();
         vol = 1;
         pitch = 1;
     }
 
     public SoundReader(@NotNull ConfigObject config) {
         final String stringInput = config.string("sound", "snd", "s", "name", "n", "id");
-        final @Nullable Sound tryParse = tryParseSoundEnum(stringInput);
-        if (tryParse != null) {
-            soundEnum = tryParse;
-            soundString = null;
-        } else {
-            soundString = stringInput;
-            soundEnum = null;
-        }
+        final var parsedSound = parseSound(stringInput);
+        bukkitSound = parsedSound.getLeft();
+        assetName = parsedSound.getRight();
         vol = config.flpt(1f, "volume", "vol", "v");
         pitch = config.flpt(1f, "pitch", "p");
     }
 
-    @Nullable
-    private Sound tryParseSoundEnum(String stringInput) {
-        try {
-            return Sounds.fromName(stringInput);
-        } catch (Exception exception) {
-            return null;
-        }
-    }
-
     public void play(@NotNull Player player) {
-        if (soundEnum != null) player.playSound(player.getLocation(), soundEnum, vol, pitch);
-        else player.playSound(player.getLocation(), soundString, vol, pitch);
+        if (bukkitSound != null) player.playSound(player.getLocation(), bukkitSound, vol, pitch);
+        else player.playSound(player.getLocation(), assetName, vol, pitch);
     }
 
     //region Static methods
@@ -102,4 +81,26 @@ public class SoundReader {
 
         else throw new IllegalArgumentException("Expected either a string or config section");
     }
+
+    @NotNull
+    private static Pair<Sound, String> parseSound(String stringInput) {
+
+        // Try to parse as Bukkit sound
+        try {
+            return Pair.of(Sounds.fromName(stringInput), null);
+        } catch (Exception ignored) {
+            // Ignore
+        }
+
+        // Try to parse as a custom sound string
+        try {
+            Validate.notNull(NamespacedKey.fromString(stringInput), "Could not parse namespaced key");
+            return Pair.of(null, stringInput);
+        } catch (Exception ignored) {
+        }
+
+        throw new IllegalArgumentException("Invalid sound: '" + stringInput + "' is neither a Bukkit sound (UPPER_CASE_FORMAT) or Minecraft asset sound (namespace:key format)");
+    }
+
+    //endregion
 }
