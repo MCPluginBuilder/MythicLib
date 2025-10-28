@@ -34,7 +34,7 @@ public interface Database<H extends SynchronizedDataHolder, O extends OfflineDat
     public void saveData(@NotNull H playerData, @NotNull SaveReason reason);
 
     /**
-     * This method is always called ASYNC inside of a newly created thread. It should
+     * This method is always called ASYNC inside a newly created thread. It should
      * run the SQL methods or local config lookups in order to load player data.
      *
      * @param playerData Player data to be loaded

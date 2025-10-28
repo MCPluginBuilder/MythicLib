@@ -45,6 +45,16 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         return dataSource.getConnection();
     }
 
+    @Override
+    public void setup() {
+        try {
+            setupSQL();
+        } catch (SQLException exception) {
+            this.plugin.getLogger().log(Level.WARNING, "Got SQL exception during setup: " + exception.getMessage());
+            exception.printStackTrace();
+        }
+    }
+
     public void close() {
         dataSource.close();
     }
@@ -66,88 +76,26 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
 
     //region Util methods
 
-    public void executeQuery(@NotNull String sql, @NotNull SQLConsumer callback, @NotNull String... params) {
-        try (Connection connection = getConnection()) {
-            final var statement = connection.prepareStatement(sql);
-            for (int i = 0; i < params.length; i++)
-                statement.setString(i + 1, params[i]);
+    @NotNull
+    private static PreparedStatement prepareStatement(@NotNull Connection connection, @NotNull String sql, @NotNull String... params) throws SQLException {
+        final var statement = connection.prepareStatement(sql);
+        for (int i = 0; i < params.length; i++)
+            statement.setString(i + 1, params[i]);
+        return statement;
+    }
+
+    public void executeQuery(@NotNull String sql, @NotNull SQLConsumer callback, @NotNull String... params) throws SQLException {
+        try (var connection = getConnection();
+             var statement = prepareStatement(connection, sql, params)) {
             callback.accept(statement.executeQuery());
-        } catch (Throwable throwable) {
-            this.plugin.getLogger().log(Level.WARNING, "Could not open SQL result statement:");
-            throwable.printStackTrace();
         }
     }
 
-    public void executeUpdate(@NotNull String sql, @NotNull String... params) {
-        try (Connection connection = getConnection()) {
-            final var statement = connection.prepareStatement(sql);
-            for (int i = 0; i < params.length; i++)
-                statement.setString(i + 1, params[i]);
+    public void executeUpdate(@NotNull String sql, @NotNull String... params) throws SQLException {
+        try (var connection = getConnection();
+             var statement = prepareStatement(connection, sql, params)) {
             statement.executeUpdate();
-        } catch (Throwable throwable) {
-            this.plugin.getLogger().log(Level.WARNING, "Could not execute SQL update: " + throwable.getMessage());
-            throwable.printStackTrace();
         }
-    }
-
-    @Deprecated
-    @NotNull
-    public CompletableFuture<Void> executeQueryAsync(@NotNull String sql, @NotNull Consumer<ResultSet> callback, @NotNull String... params) {
-        return Tasks.runAsync(plugin, () -> executeQuery(sql, callback::accept, params));
-    }
-
-    @Deprecated
-    @NotNull
-    public CompletableFuture<Void> executeUpdateAsync(@NotNull String sql, String... params) {
-        return Tasks.runAsync(plugin, () -> executeUpdate(sql, params));
-    }
-
-    @Deprecated
-    public void getResult(@NotNull String sql, @NotNull Consumer<ResultSet> supplier) {
-        this.executeQuery(sql, supplier::accept);
-    }
-
-    @NotNull
-    @Deprecated
-    public CompletableFuture<Void> getResultAsync(String sql, Consumer<ResultSet> supplier) {
-        return Tasks.runAsync(plugin, () -> getResult(sql, supplier));
-    }
-
-    /**
-     * Retrieve a connection from pool and prepare it for
-     * use. Connection is closed when consumer is called.
-     *
-     * @param execute Action to be done with connection
-     * @deprecated Use try-with-resources with {@link #getConnection()} instead
-     */
-    @Deprecated
-    public void execute(Consumer<Connection> execute) {
-        try (Connection connection = getConnection()) {
-            execute.accept(connection);
-        } catch (Throwable throwable) {
-            this.plugin.getLogger().log(Level.WARNING, "SQL error: " + throwable.getMessage());
-            throwable.printStackTrace();
-        }
-    }
-
-    /**
-     * Retrieve a connection from pool and prepare it for
-     * use. Connection is closed when consumer is called.
-     * <p>
-     * Called asynchronously.
-     *
-     * @param execute Action to be done with connection
-     */
-    @NotNull
-    @Deprecated
-    public CompletableFuture<Void> executeAsync(Consumer<Connection> execute) {
-        return Tasks.runAsync(plugin, () -> {
-            try (Connection connection = getConnection()) {
-                execute.accept(connection);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
     }
 
     //endregion
@@ -156,25 +104,22 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     public @NotNull DataLoadResult loadData(@NotNull H playerData, boolean force) {
         final var effectiveId = playerData.getEffectiveId();
 
-        DataLoadResult returnValue;
+        UtilityMethods.debug(this.plugin, "SQL", "Trying to load data of " + effectiveId);
 
-        try (Connection connection = getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM `" + this.userdataTableName + "` WHERE `" + this.uuidFieldName + "` = ?;");
-            prepared.setString(1, effectiveId.toString());
-
-            UtilityMethods.debug(this.plugin, "SQL", "Trying to load data of " + effectiveId);
-            ResultSet resultSet = prepared.executeQuery(); // Freezes thread
+        try (var connection = getConnection();
+             var prepared = prepareStatement(connection, "SELECT * FROM `" + this.userdataTableName + "` WHERE `" + this.uuidFieldName + "` = ?;", effectiveId.toString());
+             var resultSet = prepared.executeQuery()) {
 
             // Empty result set
             if (!resultSet.next()) {
-                returnValue = new DataLoadResult(DataLoadResult.Type.SUCCESS, true, true);
+                return new DataLoadResult(DataLoadResult.Type.SUCCESS, true, true);
             }
 
             // Load from result set
             else {
                 final var isSaved = resultSet.getInt("is_saved") == 1;
 
-                returnValue = force || isSaved
+                return force || isSaved
                         ? loadDataFromResultSet(playerData, resultSet, isSaved)
                         : new DataLoadResult(DataLoadResult.Type.NOT_SYNC, false, isSaved);
             }
@@ -182,27 +127,28 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         } catch (SQLException exception) {
             this.plugin.getLogger().log(Level.WARNING, "Got SQL exception " + playerData.getEffectiveId() + ": " + exception.getMessage());
             exception.printStackTrace(); // TODO remove
-            returnValue = new DataLoadResult(DataLoadResult.Type.FAILURE);
+            return new DataLoadResult(DataLoadResult.Type.FAILURE);
         } catch (Throwable throwable) {
             // Real plugin exceptions.
             this.plugin.getLogger().log(Level.WARNING, "Could not load data of " + playerData.getEffectiveId() + ": " + throwable.getMessage());
             throwable.printStackTrace();
-            returnValue = new DataLoadResult(DataLoadResult.Type.FAILURE);
+            return new DataLoadResult(DataLoadResult.Type.FAILURE);
         }
-
-        return returnValue;
     }
+
+    protected abstract void setupSQL() throws SQLException;
 
     @NotNull
     protected abstract DataLoadResult loadDataFromResultSet(@NotNull H playerData, @NotNull ResultSet result, boolean isSaved) throws SQLException;
+
+    // TODO unify saving of player data
 
     @Override
     public void confirmReception(@NotNull H playerData) {
         final var effectiveId = playerData.getEffectiveId();
 
-        try (Connection connection = getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("INSERT INTO `" + this.userdataTableName + "` (`" + this.uuidFieldName + "`, `is_saved`) VALUES(?, 0) ON DUPLICATE KEY UPDATE `is_saved` = 0;");
-            prepared.setString(1, effectiveId.toString());
+        try (var connection = getConnection();
+             var prepared = prepareStatement(connection, "INSERT INTO `" + this.userdataTableName + "` (`" + this.uuidFieldName + "`, `is_saved`) VALUES(?, 0) ON DUPLICATE KEY UPDATE `is_saved` = 0;", effectiveId.toString())) {
             prepared.executeUpdate();
         } catch (Throwable exception) {
             this.plugin.getLogger().log(Level.WARNING, "Could not confirm data sync of " + effectiveId);
@@ -214,9 +160,9 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     public List<UUID> retrieveAllPlayerIds() {
         final List<UUID> uuids;
 
-        try (Connection connection = getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT `%s` FROM `%s`;", uuidFieldName, userdataTableName));
-            ResultSet result = prepared.executeQuery(); // Freezes thread
+        try (var connection = getConnection();
+             var prepared = connection.prepareStatement(String.format("SELECT `%s` FROM `%s`;", uuidFieldName, userdataTableName));
+             var result = prepared.executeQuery()) {
 
             uuids = new ArrayList<>();
             while (result.next()) {
@@ -304,6 +250,75 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
             this.databaseName = databaseName;
             this.userdataTableName = userdataTableName;
         }
+    }
+
+    //endregion
+
+    //region Deprecated methods
+
+    @Deprecated
+    @NotNull
+    public CompletableFuture<Void> executeQueryAsync(@NotNull String sql, @NotNull Consumer<ResultSet> callback, @NotNull String... params) {
+        return Tasks.runAsync(plugin, () -> {
+            try {
+                executeQuery(sql, callback::accept, params);
+            } catch (SQLException e) {
+                this.plugin.getLogger().log(Level.WARNING, "SQL Error (async): " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Deprecated
+    @NotNull
+    public CompletableFuture<Void> executeUpdateAsync(@NotNull String sql, String... params) {
+        return Tasks.runAsync(plugin, () -> {
+            try {
+                executeUpdate(sql, params);
+            } catch (SQLException e) {
+                this.plugin.getLogger().log(Level.WARNING, "SQL Error (async): " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Deprecated
+    public void getResult(@NotNull String sql, @NotNull Consumer<ResultSet> supplier) {
+        try {
+            executeQuery(sql, supplier::accept);
+        } catch (SQLException e) {
+            this.plugin.getLogger().log(Level.WARNING, "SQL Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @NotNull
+    @Deprecated
+    public CompletableFuture<Void> getResultAsync(String sql, Consumer<ResultSet> supplier) {
+        return Tasks.runAsync(plugin, () -> getResult(sql, supplier));
+    }
+
+    @Deprecated
+    public void execute(Consumer<Connection> execute) {
+        try (Connection connection = getConnection()) {
+            execute.accept(connection);
+        } catch (Throwable throwable) {
+            this.plugin.getLogger().log(Level.WARNING, "SQL Error: " + throwable.getMessage());
+            throwable.printStackTrace();
+        }
+    }
+
+    @NotNull
+    @Deprecated
+    public CompletableFuture<Void> executeAsync(Consumer<Connection> execute) {
+        return Tasks.runAsync(plugin, () -> {
+            try (Connection connection = getConnection()) {
+                execute.accept(connection);
+            } catch (Throwable throwable) {
+                this.plugin.getLogger().log(Level.WARNING, "SQL Error (async): " + throwable.getMessage());
+                throwable.printStackTrace();
+            }
+        });
     }
 
     //endregion
