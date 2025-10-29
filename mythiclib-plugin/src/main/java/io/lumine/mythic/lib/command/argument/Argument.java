@@ -130,14 +130,14 @@ public class Argument<T> {
         try {
             final var asUniqueId = UUID.fromString(input); // If fails, fallback to name
             final var entity = Bukkit.getEntity(asUniqueId);
-            Validate.notNull(entity, "Could not find entity with UUID " + input);
-            Validate.isTrue(entity instanceof LivingEntity, "Entity is not living");
+            Arguments.notNull(entity, "Could not find entity with UUID " + input);
+            Arguments.isTrue(entity instanceof LivingEntity, "Entity is not living");
             return (LivingEntity) entity;
         } catch (Throwable ignored) {
         }
 
         final var player = Bukkit.getPlayer(input);
-        Validate.notNull(player, "Could not find player " + input);
+        Arguments.notNull(player, "Could not find player " + input);
         return player;
     });
 
@@ -149,13 +149,13 @@ public class Argument<T> {
                 try {
                     final var asUniqueId = UUID.fromString(input); // If fails, fallback to name
                     final var player = Bukkit.getPlayer(asUniqueId);
-                    Validate.notNull(player, "Could not find player with UUID " + input);
+                    Arguments.notNull(player, "Could not find player with UUID " + input);
                     return player;
                 } catch (Throwable ignored) {
                 }
 
                 final var player = Bukkit.getPlayer(input);
-                Validate.notNull(player, "Could not find player " + input);
+                Arguments.notNull(player, "Could not find player " + input);
                 return player;
             });
 
@@ -163,7 +163,7 @@ public class Argument<T> {
             (explorer, list) -> Bukkit.getOnlinePlayers().forEach(online -> list.add(online.getName())),
             (explorer, input) -> {
                 final var player = Bukkit.getPlayer(input);
-                Validate.notNull(player, "Could not find player " + input);
+                Arguments.notNull(player, "Could not find player " + input);
                 return player;
             }, explorer -> {
         if (explorer.getSender() instanceof Player) return (Player) explorer.getSender();
