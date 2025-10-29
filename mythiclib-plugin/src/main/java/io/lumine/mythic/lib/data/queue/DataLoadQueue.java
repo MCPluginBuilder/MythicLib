@@ -8,7 +8,6 @@ import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.Bukkit;
-import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,8 +25,8 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
     }
 
     @NotNull
-    public CompletableFuture<Void> enqueue(@NotNull H playerData, @Nullable Event reason) {
-        final var record = new Record(playerData, reason);
+    public CompletableFuture<Void> enqueue(@NotNull H playerData) {
+        final var record = new Record(playerData);
         this.enqueue(record);
         return record.future;
     }
@@ -91,7 +90,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
                     if (!lookup) {
                         record.playerData.markSessionReady(); // Mark as ready
-                        Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData, record.reason));
+                        Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
                     }
                     record.future.complete(null); // Complete future
                 });
@@ -105,12 +104,11 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
     }
 
     protected class Record extends QueueRecord {
-        final @Nullable Event reason;
         final int tryCount;
         final @Nullable ProfileSession session;
 
-        public Record(@NotNull H playerData, @Nullable Event reason) {
-            this(playerData, playerData.getEffectiveId(), new CompletableFuture<>(), 0, extractPlayerSession(playerData), reason, 0);
+        public Record(@NotNull H playerData) {
+            this(playerData, playerData.getEffectiveId(), new CompletableFuture<>(), 0, extractPlayerSession(playerData), 0);
         }
 
         public Record(@NotNull H playerData,
@@ -118,17 +116,15 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
                       @NotNull CompletableFuture<Void> future,
                       long availableAt,
                       @Nullable ProfileSession session,
-                      @Nullable Event reason,
                       int tryCount) {
             super(playerData, effectiveId, future, availableAt);
 
             this.session = session;
-            this.reason = reason;
             this.tryCount = tryCount;
         }
 
         Record nextTry(int extraTry) {
-            return new Record(this.playerData, this.effectiveId, this.future, System.currentTimeMillis() + WAIT_TIME, this.session, this.reason, this.tryCount + extraTry);
+            return new Record(this.playerData, this.effectiveId, this.future, System.currentTimeMillis() + WAIT_TIME, this.session, this.tryCount + extraTry);
         }
 
         boolean invalidate() {

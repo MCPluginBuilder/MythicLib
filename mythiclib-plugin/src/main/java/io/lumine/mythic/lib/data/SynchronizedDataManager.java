@@ -16,7 +16,6 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -168,7 +167,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, joinEventPriority, event -> setup(event.getPlayer()), owning, false);
 
         // Save data on logout
-        if (profilePlugin || MythicLib.plugin.getProfileMode() != ProfileMode.LEGACY)
+        if (profilePlugin || !MythicLib.plugin.hasProfiles())
             UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SaveReason.LOG_OUT), owning, false);
 
         // ProfileAPI compatibility
@@ -221,11 +220,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         database.close();
     }
 
-    @NotNull
-    public CompletableFuture<Void> loadData(@NotNull H playerData) {
-        return loadData(playerData, null);
-    }
-
     /**
      * Loads data asynchronously from the data source and populates the provided
      * player data instance. If loaded, the player data is marked as ready, the
@@ -242,14 +236,14 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @see #saveData(SynchronizedDataHolder, SaveReason)
      */
     @NotNull
-    public CompletableFuture<Void> loadData(@NotNull H playerData, @Nullable Event parentProfileEvent) {
-        return this.loadQueue.enqueue(playerData, parentProfileEvent);
+    public CompletableFuture<Void> loadData(@NotNull H playerData) {
+        return this.loadQueue.enqueue(playerData);
     }
 
     /**
      * @param playerData Player data to be saved.
      * @return Completable future that completes when the data is saved.
-     * @see #loadData(SynchronizedDataHolder, Event)
+     * @see #loadData(SynchronizedDataHolder)
      */
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
@@ -273,14 +267,14 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         final @NotNull H playerData = activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
 
         // Schedule data loading
-        if (requiresSynchronizationOnLogin(playerData)) loadData(playerData, null);
+        if (requiresSynchronizationOnLogin(playerData)) loadData(playerData);
 
         return playerData;
     }
 
     private boolean requiresSynchronizationOnLogin(@NotNull H holder) {
 
-        // Safety - should never happen
+        // [Safeguard] should never happen
         if (holder.isSessionReady()) return false;
 
         // Profile plugins always require on-login sync
@@ -289,10 +283,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // No profile plugin - sync like usual
         if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) return true;
 
-        // Profile plugin detected => load if profile is provided!
-        // In proxy mode, profile is loaded right on login
-        // In legacy mode, depends on option "quit-profile-on-logout"
-        return holder.getMMOPlayerData().hasProfile();
+        // Profile plugin => rely on session events
+        return false;
     }
 
     /**
@@ -390,5 +382,5 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         else close();
     }
 
-//endregion
+    //endregion
 }

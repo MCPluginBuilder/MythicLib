@@ -7,29 +7,17 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
-
 public class SynchronizedDataLoadEvent extends Event {
     private final SynchronizedDataManager<?, ?> manager;
     private final SynchronizedDataHolder holder;
 
-    @Nullable
-    private final Event profileEvent;
-
     private static final HandlerList HANDLERS = new HandlerList();
 
-    @Deprecated
-    public SynchronizedDataLoadEvent(SynchronizedDataManager<?, ?> manager, SynchronizedDataHolder holder) {
-        this(manager, holder, null);
-    }
-
-    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder, @Nullable Event profileEvent) {
+    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder) {
         Validate.isTrue(!holder.getMMOPlayerData().isLookup(), "Cannot call event with lookup player data");
 
         this.holder = holder;
         this.manager = manager;
-        this.profileEvent = profileEvent;
     }
 
     public SynchronizedDataManager<?, ?> getManager() {
@@ -43,15 +31,6 @@ public class SynchronizedDataLoadEvent extends Event {
     @Deprecated
     public boolean syncIsFull() {
         return holder.getMMOPlayerData().hasStartedPlaying();
-    }
-
-    @NotNull
-    public Event getProfileEvent() {
-        return Objects.requireNonNull(profileEvent, "No corresponding profile event");
-    }
-
-    public boolean hasProfileEvent() {
-        return profileEvent != null;
     }
 
     @Override

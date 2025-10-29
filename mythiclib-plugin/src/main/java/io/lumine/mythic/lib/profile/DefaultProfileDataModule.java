@@ -51,7 +51,7 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
         final var playerData = manager.get(event.getPlayer());
 
-        manager.loadData(playerData, event);
+        manager.loadData(playerData);
     }
 
     @EventHandler
