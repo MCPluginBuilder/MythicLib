@@ -1,18 +1,21 @@
 package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.api.stat.StatInstance;
-import io.lumine.mythic.lib.api.stat.StatMap;
-import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
+import io.lumine.mythic.lib.gui.builtin.StatExplorer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class StatsCommand extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+
     public StatsCommand(CommandTreeNode parent) {
         super(parent, "stats");
+
+        argPlayer = this.addArgument(Argument.PLAYER_OR_SENDER);
     }
 
     @Override
@@ -22,15 +25,9 @@ public class StatsCommand extends CommandTreeNode {
             return CommandResult.FAILURE;
         }
 
-        final StatMap stats = MMOPlayerData.get((Player) sender).getStatMap();
-        for (StatInstance ins : stats.getInstances()) {
-            StringBuilder str = new StringBuilder(ins.getStat());
-            str.append(" | Stat: ").append(ins.getFinal()).append(" | Base: ").append(ins.getBase()).append(" | ");
-            for (StatModifier mod : ins.getModifiers())
-                str.append(mod.toString()).append(" (").append(mod.getKey()).append(") + ");
-            sender.sendMessage(str.toString());
-        }
-
+        final var player = (Player) sender;
+        final var target = explorer.parse(argPlayer);
+        new StatExplorer(player, MMOPlayerData.get(target)).open();
         return CommandResult.SUCCESS;
     }
 }
