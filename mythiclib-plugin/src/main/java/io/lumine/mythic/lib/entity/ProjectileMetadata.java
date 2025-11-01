@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.comp.flags.CustomFlag;
 import io.lumine.mythic.lib.damage.ProjectileAttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
@@ -94,10 +95,17 @@ public class ProjectileMetadata extends TemporaryHandler {
         this.tickTriggerMetadata = new TriggerMetadata(shooter, projectileType.getTickTrigger(), projectile, null);
 
         // Trigger skills
-        runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+        final var shouldTick = shouldTickProjectiles();
+        if (shouldTick)
+            runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
 
         // Register
         projectile.setMetadata(METADATA_KEY, new FixedMetadataValue(MythicLib.plugin, this));
+    }
+
+    private boolean shouldTickProjectiles() {
+        // Check once at arrow spawn instead of checking every tick
+        return !MythicLib.plugin.getMMOConfig().flagCheckSkills || MythicLib.plugin.getFlags().isFlagAllowed(shooter.getPlayer(), CustomFlag.MMO_ABILITIES);
     }
 
     @Override
@@ -106,7 +114,8 @@ public class ProjectileMetadata extends TemporaryHandler {
 
             @Override
             public void run() {
-                shooter.getData().triggerSkills(tickTriggerMetadata, cachedSkills);
+                // No flag check!
+                shooter.getData().triggerSkills(tickTriggerMetadata, cachedSkills, false);
             }
         };
     }
@@ -160,7 +169,7 @@ public class ProjectileMetadata extends TemporaryHandler {
     public void unregisterOnHit(ProjectileHitEvent event) {
         if (event.getEntity().getEntityId() == entityId)
             // Close with delay to make sure skills are triggered on hit/land
-            Bukkit.getScheduler().runTask(MythicLib.plugin, () -> close());
+            Bukkit.getScheduler().runTask(MythicLib.plugin, this::close);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

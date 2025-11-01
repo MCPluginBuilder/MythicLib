@@ -20,7 +20,6 @@ import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -370,18 +369,25 @@ public class MMOPlayerData {
         triggerSkills(triggerMetadata, isolateSkills(triggerMetadata));
     }
 
+    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills) {
+        this.triggerSkills(triggerMetadata, skills, true);
+    }
+
     /**
      * Trigger a specific set of skills, with a specific context.
      *
      * @param triggerMetadata Context in which skills were triggered
      * @param skills          The list of skills being potentially triggered
+     * @param flagCheck       Whether to check for WorldGuard flag. This allows for an optimization where
+     *                        projectiles cache the value of the WG flag and only recompute it every 2 seconds.
      */
-    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills) {
-        if (getPlayer().getGameMode() == GameMode.SPECTATOR || !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES))
+    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills, boolean flagCheck) {
+        if (getPlayer().getGameMode() == GameMode.SPECTATOR) return;
+        if (flagCheck && MythicLib.plugin.getMMOConfig().flagCheckSkills && !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES))
             return;
 
-        for (PassiveSkill skill : skills) {
-            final SkillHandler<?> handler = skill.getTriggeredSkill().getHandler();
+        for (var skill : skills) {
+            final var handler = skill.getTriggeredSkill().getHandler();
             if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
                 skill.getTriggeredSkill().cast(triggerMetadata);
         }

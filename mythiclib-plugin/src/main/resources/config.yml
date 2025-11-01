@@ -150,6 +150,12 @@ vanilla-damage-modifiers:
 # Changes apply on server restart.
 hologram-provider: TEXT_DISPLAYS
 
+# Enable WorldGuard/Residence flag checks for specific things.
+# If you do not use WG or Residence flags, it is recommended
+# to disable those for spare performance.
+enable_flag_checks:
+  skills: true
+
 # Displays in-game damage or heal indicators.
 # Changes apply on server restart.
 game-indicators:
