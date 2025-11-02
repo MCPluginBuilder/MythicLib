@@ -3,6 +3,8 @@ package io.lumine.mythic.lib.gui.builtin;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
+import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.util.AltChar;
 import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.util.ItemBuilder;
@@ -28,9 +30,9 @@ import java.util.UUID;
 
 public class StatExplorer extends PluginInventory {
     private final MMOPlayerData targetData;
-    private final List<String> stats;
+    private final List<StatHandler> stats;
 
-    private int statOffset = 0;
+    private int statOffset = 0, modifierOffset;
     private String explored;
 
     private static final int[]
@@ -42,7 +44,7 @@ public class StatExplorer extends PluginInventory {
         super(player);
 
         this.targetData = Objects.requireNonNull(targetData, "Target cannot be null");
-        this.stats = new ArrayList<>(MythicLib.plugin.getStats().getRegisteredStats());
+        this.stats = new ArrayList<>(MythicLib.plugin.getStats().getHandlers());
     }
 
     @Override
@@ -55,11 +57,11 @@ public class StatExplorer extends PluginInventory {
         while (j < Math.min(STAT_SLOTS.length, stats.size() - statOffset)) {
 
             final var stat = this.stats.get(statOffset + j);
-            final var statInstance = targetData.getStatMap().getInstance(stat);
+            final var statInstance = targetData.getStatMap().getInstance(stat.getStat());
 
-            ItemStack item = new ItemStack(Material.NAME_TAG);
+            ItemStack item = new ItemStack(stat instanceof AttributeStatHandler ? ((AttributeStatHandler) stat).getMaterial() : Material.PAPER);
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(ChatColor.GOLD + UtilityMethods.caseOnWords(stat.toLowerCase().replace("_", " ")));
+            meta.setDisplayName(ChatColor.GOLD + UtilityMethods.caseOnWords(stat.getStat().toLowerCase().replace("_", " ")));
 
             List<String> lore = new ArrayList<>();
             // lore.add(ChatColor.GRAY + handler.getDescription());
@@ -72,7 +74,7 @@ public class StatExplorer extends PluginInventory {
             for (var modifier : statInstance.getModifiers()) {
                 lore.add(ChatColor.DARK_GRAY + " - " + ChatColor.GRAY + modifier.toString() + ": " + ChatColor.GOLD + DECIMAL_FORMAT.format(modifier.getValue()));
             }
-            meta.getPersistentDataContainer().set(STAT_KEY, PersistentDataType.STRING, stat);
+            meta.getPersistentDataContainer().set(STAT_KEY, PersistentDataType.STRING, stat.getStat());
             meta.setLore(lore);
             item.setItemMeta(meta);
             inv.setItem(STAT_SLOTS[j++], item);
@@ -96,8 +98,8 @@ public class StatExplorer extends PluginInventory {
             inv.setItem(7, new ItemBuilder(Material.BARRIER, "&6" + AltChar.rightArrow + " Back"));
 
             j = 0;
-            while (j < Math.min(MODIFIER_SLOTS.length, modifiers.size() - statOffset)) {
-                final var modifier = modifiers.get(statOffset + j);
+            while (j < Math.min(MODIFIER_SLOTS.length, modifiers.size() - modifierOffset)) {
+                final var modifier = modifiers.get(modifierOffset + j);
 
                 ItemStack item = new ItemStack(Material.GRAY_DYE);
                 ItemMeta meta = item.getItemMeta();
@@ -123,10 +125,10 @@ public class StatExplorer extends PluginInventory {
             ItemStack fillModifier = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, "&cNo Modifier");
             while (j < MODIFIER_SLOTS.length) inv.setItem(MODIFIER_SLOTS[j++], fillModifier);
 
-            if (statOffset + MODIFIER_SLOTS.length < modifiers.size())
+            if (modifierOffset + MODIFIER_SLOTS.length < modifiers.size())
                 inv.setItem(26, new ItemBuilder(Material.ARROW, "&6Next Page"));
 
-            if (statOffset > 0)
+            if (modifierOffset > 0)
                 inv.setItem(18, new ItemBuilder(Material.ARROW, "&6Previous Page"));
         }
 
@@ -158,13 +160,13 @@ public class StatExplorer extends PluginInventory {
         }
 
         if (item.getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Next Page")) {
-            statOffset += MODIFIER_SLOTS.length;
+            modifierOffset += MODIFIER_SLOTS.length;
             open();
             return;
         }
 
         if (item.getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Previous Page")) {
-            statOffset -= MODIFIER_SLOTS.length;
+            modifierOffset -= MODIFIER_SLOTS.length;
             open();
             return;
         }
