@@ -18,7 +18,7 @@ public class AttributeStatHandler extends StatHandler {
     protected final Attribute attribute;
     private final Material material;
     private final String description;
-    private final double playerDefaultBase;
+    protected final double playerDefaultBase;
 
     protected static final NamespacedKey ATTRIBUTE_KEY = new NamespacedKey(MythicLib.plugin, "main");
     protected static final double EPSILON = .0001;
@@ -54,9 +54,8 @@ public class AttributeStatHandler extends StatHandler {
         final AttributeInstance attrIns = instance.getMap().getData().getPlayer().getAttribute(attribute);
         removeModifiers(attrIns);
 
-        final double vanillaBase = instance.getMap().getData().getPlayer().getAttribute(attribute).getBaseValue();
-        final double mmoFinal = clampValue(instance.getFilteredTotal(vanillaBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
-        final double difference = mmoFinal - vanillaBase;
+        final double mmoFinal = clampValue(instance.getFilteredTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
+        final double difference = mmoFinal - this.playerDefaultBase;
 
         /*
          * Only add an attribute modifier if the very final stat

@@ -25,9 +25,8 @@ public class MovementSpeedStatHandler extends AttributeStatHandler {
         // Calculate speed malus reduction (capped at 80%)
         final double coef = 1 - instance.getMap().getStat(SharedStat.SPEED_MALUS_REDUCTION) / 100;
 
-        final double vanillaBase = instance.getMap().getData().getPlayer().getAttribute(getAttribute()).getBaseValue();
-        final double mmoFinal = clampValue(instance.getFilteredTotal(vanillaBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible, mod -> mod.getValue() < 0 ? mod.multiply(coef) : mod));
-        final double difference = mmoFinal - vanillaBase;
+        final double mmoFinal = clampValue(instance.getFilteredTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible, mod -> mod.getValue() < 0 ? mod.multiply(coef) : mod));
+        final double difference = mmoFinal - this.playerDefaultBase;
 
         /*
          * Only add an attribute modifier if the very final stat
