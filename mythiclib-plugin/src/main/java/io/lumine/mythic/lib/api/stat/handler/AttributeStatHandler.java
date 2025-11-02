@@ -46,10 +46,11 @@ public class AttributeStatHandler extends StatHandler {
 
         // Force update on login
         this.forceUpdate = true;
+
+        addUpdateListener(this::updateAttributeModifierValue);
     }
 
-    @Override
-    public void runUpdate(@NotNull StatInstance instance) {
+    private void updateAttributeModifierValue(@NotNull StatInstance instance) {
         final AttributeInstance attrIns = instance.getMap().getData().getPlayer().getAttribute(attribute);
         removeModifiers(attrIns);
 
@@ -80,7 +81,7 @@ public class AttributeStatHandler extends StatHandler {
         return instance.getMap().getData().getPlayer().getAttribute(attribute).getValue();
     }
 
-    protected void removeModifiers(@NotNull AttributeInstance ins) {
+    protected static void removeModifiers(@NotNull AttributeInstance ins) {
         for (AttributeModifier mod : ins.getModifiers())
             if (VersionUtils.matches(mod, ATTRIBUTE_KEY)) ins.removeModifier(mod);
     }

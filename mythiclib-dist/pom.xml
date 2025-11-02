@@ -82,6 +82,7 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <!--
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-vr</artifactId>
@@ -228,7 +229,7 @@
             <version>1.7.1-SNAPSHOT</version>
             <scope>compile</scope>
             <optional>true</optional>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-v1_21_r6</artifactId>

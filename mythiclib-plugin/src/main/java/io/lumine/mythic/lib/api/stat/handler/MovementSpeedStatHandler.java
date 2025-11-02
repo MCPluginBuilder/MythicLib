@@ -14,10 +14,11 @@ import org.jetbrains.annotations.NotNull;
 public class MovementSpeedStatHandler extends AttributeStatHandler {
     public MovementSpeedStatHandler(@NotNull ConfigurationSection config) {
         super(config, SharedStat.MOVEMENT_SPEED, .1, Material.LEATHER_BOOTS, "Movement speed of an Entity.");
+
+        addUpdateListener(this::updateMovementSpeedAttributeValue);
     }
 
-    @Override
-    public void runUpdate(@NotNull StatInstance instance) {
+    private void updateMovementSpeedAttributeValue(@NotNull StatInstance instance) {
         final AttributeInstance attrIns = instance.getMap().getData().getPlayer().getAttribute(Attributes.MOVEMENT_SPEED);
         removeModifiers(attrIns);
 

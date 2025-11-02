@@ -8,6 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used to handle complex stat behaviours, including updates
@@ -20,6 +22,8 @@ public class StatHandler {
     protected final double baseValue, minValue, maxValue;
     protected final DecimalFormat decimalFormat;
     protected final String stat;
+
+    private final List<StatUpdateListener> updates = new ArrayList<>();
 
     /**
      * Should this stat force updates on player login
@@ -41,7 +45,19 @@ public class StatHandler {
         minValue = hasMinValue ? Double.parseDouble(cleanMin) : 0;
         maxValue = hasMaxValue ? Double.parseDouble(cleanMax) : 0;
         baseValue = config.getDouble("base-stat-value." + this.stat);
-        decimalFormat = config.contains("decimal-format." + this.stat) ? MythicLib.plugin.getMMOConfig().newDecimalFormat(config.getString("decimal-format." + this.stat)) : MythicLib.plugin.getMMOConfig().decimal;
+        decimalFormat = config.contains("decimal-format." + this.stat)
+                ? MythicLib.plugin.getMMOConfig().newDecimalFormat(config.getString("decimal-format." + this.stat))
+                : MythicLib.plugin.getMMOConfig().decimal;
+    }
+
+    public StatHandler(@NotNull String stat) {
+        this.stat = stat;
+        this.hasMinValue = false;
+        this.hasMaxValue = false;
+        this.minValue = 0;
+        this.maxValue = 0;
+        this.baseValue = 0;
+        this.decimalFormat = MythicLib.plugin.getMMOConfig().decimal;
     }
 
     @NotNull
@@ -54,20 +70,13 @@ public class StatHandler {
         return decimalFormat;
     }
 
-    /**
-     * Some stats like movement speed, attack damage... are based on vanilla
-     * player attributes. Every time a stat modifier is added to a StatInstance
-     * in MythicLib, MythicLib needs to perform a further attribute modifier update.
-     * <p>
-     * This is the method implemented to update a specific stat (often, a stat
-     * based on a vanilla attribute). Usually called when equipping items, applying
-     * buffs, etc.
-     *
-     * @param instance Stat instance of player that needs updating
-     * @see StatInstance#update()
-     */
-    public void runUpdate(@NotNull StatInstance instance) {
-        // Nothing to do
+    public void addUpdateListener(@NotNull StatUpdateListener listener) {
+        Validate.notNull(listener, "Cannot register null consumer to stat updates");
+        updates.add(listener);
+    }
+
+    public void runUpdates(@NotNull StatInstance instance) {
+        for (var update : updates) update.onUpdate(instance);
     }
 
     /**

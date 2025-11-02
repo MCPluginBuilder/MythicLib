@@ -194,12 +194,12 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      */
     public void update() {
         if (map.isBufferingUpdates()) updateRequired.set(true);
-        else handler.get().ifPresent(handler -> handler.runUpdate(this));
+        else handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     public void releaseUpdates() {
         if (updateRequired.getAndSet(false) && !map.isBufferingUpdates())
-            handler.get().ifPresent(handler -> handler.runUpdate(this));
+            handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     //endregion

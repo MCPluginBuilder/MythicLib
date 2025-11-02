@@ -67,8 +67,6 @@ min-max-values:
 # !! For vanilla attribute-based stats (Max Health, Movement Speed, Armor...)
 # !! this base stat value adds up to the player's vanilla base attribute value
 # !! (20 for Max Health, 0.1 for Movement Speed, 0 for Armor...)
-#
-# !! This option does NOT work when MMOCore is installed. Use class configs installed.
 base-stat-value:
 
   # Crits. By default, crits deal 2x damage
