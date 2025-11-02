@@ -48,7 +48,12 @@ public class AttackEventListener implements Listener {
     public void registerEvents(EntityDamageEvent event) {
 
         // Ignore fake events from RDW/mcMMO/...
-        if (!(event.getEntity() instanceof LivingEntity) || UtilityMethods.isFake(event)) return;
+        if (!(event.getEntity() instanceof LivingEntity)
+                // LAVA and CAMPIRE damage ticks twice a second
+                // This threshold avoids spamming holos for invalid damage events
+                // Fixees MMOItems#1637
+                || ((LivingEntity) event.getEntity()).getNoDamageTicks() > 10
+                || UtilityMethods.isFake(event)) return;
 
         // Call the Bukkit event with the attack meta found
         final @NotNull AttackMetadata attack = MythicLib.plugin.getDamage().findAttack(event);
@@ -60,43 +65,10 @@ public class AttackEventListener implements Listener {
         if (attackEvent.isCancelled()) return;
 
         event.setDamage(attackEvent.getDamage().getDamage());
-        fixDamage(event);
 
         // Call the death event if the entity is being killed
         if (attack.isPlayer() && event.getFinalDamage() >= ((Damageable) event.getEntity()).getHealth())
             Bukkit.getPluginManager().callEvent(new PlayerKillEntityEvent(attack, (LivingEntity) event.getEntity()));
-    }
-
-    private static final double MINIMUM_BASE_DAMAGE = 1 + 1e-6;
-    private static final EntityDamageEvent.DamageModifier MODIFIER_USED = EntityDamageEvent.DamageModifier.ARMOR;
-
-    /**
-     * For some obscure reason, Minecraft base damage must not be lower than 1. This never
-     * happens in vanilla Minecraft because the base damage of anything (entity attack, tick
-     * damage like cactus or lava) is always higher. However, the final damage output by
-     * MythicLib may be arbitrarily close to 1 due to defense, stats...
-     * <p>
-     * A solution for supporting attacks with small damage amounts is to set the base damage to 1
-     * and add a fictive damage modifier to compensate for the higher base damage.
-     * <p>
-     * Fixes MMOItems#1637
-     *
-     * @author Jules
-     */
-    private void fixDamage(@NotNull EntityDamageEvent event) {
-
-        // Not applicable, cannot fix
-        if (!event.isApplicable(MODIFIER_USED)) return;
-
-        final double baseDamage = event.getDamage(EntityDamageEvent.DamageModifier.BASE),
-                compensate = Math.max(0, MINIMUM_BASE_DAMAGE - baseDamage);
-
-        // No need for compensation
-        if (compensate <= 0) return;
-
-        // Increase base damage and use fictive damage modifier
-        event.setDamage(EntityDamageEvent.DamageModifier.BASE, MINIMUM_BASE_DAMAGE);
-        event.setDamage(MODIFIER_USED, event.getDamage(MODIFIER_USED) - compensate);
     }
 }
 
