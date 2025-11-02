@@ -14,6 +14,9 @@ public class MythicLibSkillHandler extends SkillHandler<MythicLibSkillResult> {
     private final Script script;
 
     public MythicLibSkillHandler(ConfigurationSection config, Script script) {
+        // it's not supposed to be the script ID used as skill handler ID
+        // but rather the name of the config object
+        // TODO clear this up with the script/skill update.
         super(config, script.getId());
 
         this.script = script;
