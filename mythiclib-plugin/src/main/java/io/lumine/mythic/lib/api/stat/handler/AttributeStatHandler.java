@@ -51,8 +51,9 @@ public class AttributeStatHandler extends StatHandler {
     }
 
     private void updateAttributeModifierValue(@NotNull StatInstance instance) {
-        final AttributeInstance attrIns = instance.getMap().getData().getPlayer().getAttribute(attribute);
-        removeModifiers(attrIns);
+        final var attributeInstance = instance.getMap().getData().getPlayer().getAttribute(attribute);
+        assert attributeInstance != null;
+        removeModifiers(attributeInstance);
 
         final double mmoFinal = clampValue(instance.getFilteredTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
         final double difference = mmoFinal - this.playerDefaultBase;
@@ -62,7 +63,7 @@ public class AttributeStatHandler extends StatHandler {
          * value is different from the main one to save map updates.
          */
         if (Math.abs(difference) > EPSILON)
-            attrIns.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
+            attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
     }
 
     @Override

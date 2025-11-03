@@ -67,7 +67,7 @@ public class StatManager extends Module {
                 final var msStatHandler = new MovementSpeedStatHandler(statsConfig);
                 registerStat(msStatHandler);
                 final var smrStatHandler = new StatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION);
-                smrStatHandler.addUpdateListener(msStatHandler::runUpdates);
+                smrStatHandler.delegateTo(SharedStat.MOVEMENT_SPEED);
                 registerStat(smrStatHandler);
             }
 

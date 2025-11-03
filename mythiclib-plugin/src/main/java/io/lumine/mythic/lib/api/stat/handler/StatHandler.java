@@ -75,6 +75,10 @@ public class StatHandler {
         updates.add(listener);
     }
 
+    public void delegateTo(@NotNull String stat) {
+        addUpdateListener(ins -> ins.getMap().getInstance(stat).update());
+    }
+
     public void runUpdates(@NotNull StatInstance instance) {
         for (var update : updates) update.onUpdate(instance);
     }
