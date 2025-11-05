@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.gui.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.version.ServerVersion;
@@ -50,6 +51,10 @@ public class IconOptions {
 
     @Nullable
     private final String skullTexture, tooltipStyle;
+
+    public IconOptions() {
+        this(null, (Integer) null);
+    }
 
     public IconOptions(@Nullable Material material) {
         this(material, (Integer) null);
