@@ -7,7 +7,7 @@ import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.WrapperUtils;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -27,7 +27,6 @@ import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -45,48 +44,20 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_1_21_R6 implements VersionWrapper {
+public class VersionWrapper_1_21_R6 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_21_R6() {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
     }
 
     @Override
@@ -431,7 +402,7 @@ public class VersionWrapper_1_21_R6 implements VersionWrapper {
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
         final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
-        state.setOwnerProfile(newProfile(uniqueId, textureValue));
+        state.setOwnerProfile(newProfile(uniqueId, textureValue).bukkit);
     }
 
     @Override
@@ -475,11 +446,6 @@ public class VersionWrapper_1_21_R6 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     @Override

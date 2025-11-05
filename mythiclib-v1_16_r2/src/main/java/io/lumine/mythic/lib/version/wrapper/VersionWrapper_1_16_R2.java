@@ -10,8 +10,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.impl.LegacyGameProfileWrapper;
-import io.lumine.mythic.lib.version.WrapperUtils;
+import io.lumine.mythic.lib.version.api.GameProfile;
 import net.minecraft.server.v1_16_R2.*;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import org.bukkit.Material;
@@ -33,11 +32,13 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.*;
 
-public class VersionWrapper_1_16_R2 implements VersionWrapper, LegacyGameProfileWrapper {
+public class VersionWrapper_1_16_R2 implements VersionWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_16_R2() {
@@ -524,5 +525,67 @@ public class VersionWrapper_1_16_R2 implements VersionWrapper, LegacyGameProfile
     @Override
     public InventoryClickEvent newInventoryClickEvent(VInventoryView view, InventoryType.SlotType type, int slot, ClickType click, InventoryAction action) {
         return new InventoryClickEvent(((InventoryViewImpl) view).view, type, slot, click, action);
+    }
+
+    @Override
+    public GameProfile getProfile(SkullMeta meta) {
+        try {
+
+            // Access field using reflection
+            final Field profileField = meta.getClass().getDeclaredField("profile");
+            profileField.setAccessible(true);
+            final var profileObject = (com.mojang.authlib.GameProfile) profileField.get(meta);
+            profileField.setAccessible(false);
+
+            return new GameProfileImpl(profileObject);
+        } catch (NoSuchFieldException | IllegalAccessException exception) {
+            throw new IllegalArgumentException("Could not fetch skull profile:" + exception.getMessage());
+        }
+    }
+
+    @Override
+    public void setProfile(SkullMeta meta, GameProfile profile) {
+        try {
+            final Field profileField = meta.getClass().getDeclaredField("profile");
+            profileField.setAccessible(true);
+            profileField.set(meta, profile == null ? null : ((GameProfileImpl) profile).bukkit);
+            profileField.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException exception) {
+            throw new IllegalArgumentException("Could not apply skull profile:" + exception.getMessage());
+        }
+    }
+
+    @Override
+    public GameProfile newProfile(UUID uniqueId, String textureValue) {
+        final var profile = new com.mojang.authlib.GameProfile(uniqueId, VersionWrapper.PLAYER_PROFILE_NAME);
+        profile.getProperties().put("textures", new Property("textures", textureValue));
+        return new GameProfileImpl(profile);
+    }
+
+    static class GameProfileImpl implements GameProfile {
+        public final com.mojang.authlib.GameProfile bukkit;
+
+        public GameProfileImpl(com.mojang.authlib.GameProfile bukkit) {
+            this.bukkit = bukkit;
+        }
+
+        @Override
+        public String getTextureValue() {
+            for (var prop : bukkit.getProperties().get("textures"))
+                return prop.getValue();
+            return null;
+        }
+
+        @Override
+        @Nullable
+        public UUID getUniqueId() {
+            return bukkit.getId();
+        }
+
+        @Override
+        @Nullable
+        public String getName() {
+            return bukkit.getName();
+        }
     }
 }

@@ -9,7 +9,6 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.api.ModernGameProfile;
 import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
@@ -476,7 +475,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
         final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
-        state.setOwnerProfile(((ModernGameProfile) newProfile(uniqueId, textureValue)).bukkit);
+        state.setOwnerProfile(newProfile(uniqueId, textureValue).bukkit);
     }
 
     @Override

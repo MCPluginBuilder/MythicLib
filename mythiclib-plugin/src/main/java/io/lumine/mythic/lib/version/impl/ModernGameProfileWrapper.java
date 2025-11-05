@@ -27,7 +27,7 @@ public interface ModernGameProfileWrapper extends VersionWrapper {
     }
 
     @Override
-    public default GameProfile newProfile(UUID uniqueId, String textureValue) {
+    public default ModernGameProfile newProfile(UUID uniqueId, String textureValue) {
         final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
         final String stringUrl = extractUrl(new String(Base64.getDecoder().decode(textureValue)));
         final URL url;
