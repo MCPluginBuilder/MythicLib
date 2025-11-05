@@ -1,13 +1,13 @@
 package io.lumine.mythic.lib.skill.handler.def.location;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -36,12 +36,12 @@ public class Arcane_Hail extends SkillHandler<LocationSkillResult> {
         double duration = skillMeta.getParameter("duration") * 10;
         double radius = skillMeta.getParameter("radius");
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 2, handler -> new BukkitRunnable() {
             int j = 0;
 
             public void run() {
                 if (j++ > duration) {
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -57,7 +57,7 @@ public class Arcane_Hail extends SkillHandler<LocationSkillResult> {
                 for (double k = 0; k < 60; k++)
                     loc1.getWorld().spawnParticle(VParticle.WITCH.get(), loc1.add(vector), 0);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 2);
+        });
     }
 
     // random double between -1 and 1

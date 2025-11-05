@@ -11,7 +11,6 @@ import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
@@ -64,8 +63,8 @@ public class AttackEffects extends Module implements Listener {
         // Weapon critical strikes
         if ((event.getDamage().hasType(DamageType.WEAPON) || event.getDamage().hasType(DamageType.UNARMED))
                 && RANDOM.nextDouble() <= stats.getStat("CRITICAL_STRIKE_CHANCE") / 100
-                && !event.getAttacker().getData().isOnCooldown(CooldownType.WEAPON_CRIT)) {
-            event.getAttacker().getData().applyCooldown(CooldownType.WEAPON_CRIT, weaponCritCooldown);
+                && !event.getAttacker().getData().getCooldownMap().isOnCooldown(CooldownType.WEAPON_CRIT)) {
+            event.getAttacker().getData().getCooldownMap().applyCooldown(CooldownType.WEAPON_CRIT, weaponCritCooldown);
 
             // Works for both weapon and unarmed damage
             final double damageMultiplicator = stats.getStat("CRITICAL_STRIKE_POWER") / 100;
@@ -80,8 +79,8 @@ public class AttackEffects extends Module implements Listener {
         // Skill critical strikes
         if (event.getDamage().hasType(DamageType.SKILL)
                 && RANDOM.nextDouble() <= stats.getStat("SKILL_CRITICAL_STRIKE_CHANCE") / 100
-                && !event.getAttacker().getData().isOnCooldown(CooldownType.SKILL_CRIT)) {
-            event.getAttacker().getData().applyCooldown(CooldownType.SKILL_CRIT, skillCritCooldown);
+                && !event.getAttacker().getData().getCooldownMap().isOnCooldown(CooldownType.SKILL_CRIT)) {
+            event.getAttacker().getData().getCooldownMap().applyCooldown(CooldownType.SKILL_CRIT, skillCritCooldown);
             event.getDamage().multiplicativeModifier(stats.getStat("SKILL_CRITICAL_STRIKE_POWER") / 100, DamageType.SKILL);
             event.getDamage().registerSkillCriticalStrike();
             event.getEntity().getWorld().playSound(event.getEntity().getLocation(), Sounds.ENTITY_PLAYER_ATTACK_CRIT, 1, 2);

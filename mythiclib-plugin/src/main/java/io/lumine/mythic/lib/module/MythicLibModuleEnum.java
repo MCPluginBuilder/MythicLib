@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.util.annotation.NotUsed;
 import java.util.function.Supplier;
 
 @NotUsed
+@Deprecated
 public enum MythicLibModuleEnum {
 
 

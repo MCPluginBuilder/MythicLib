@@ -1,21 +1,21 @@
 package io.lumine.mythic.lib.skill.handler.def.location;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Life_Ender extends SkillHandler<LocationSkillResult> {
     public Life_Ender() {
@@ -25,7 +25,7 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 
@@ -39,7 +39,7 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
         double radius = skillMeta.getParameter("radius");
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 2, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Location source = loc.clone().add(5 * Math.cos(RANDOM.nextDouble() * 2 * Math.PI), 20, 5 * Math.sin(RANDOM.nextDouble() * 2 * Math.PI));
             final Vector vec = loc.subtract(source).toVector().multiply((double) 1 / 30);
             int ti = 0;
@@ -69,9 +69,10 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
                             skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
                             entity.setVelocity(entity.getLocation().subtract(source).toVector().setY(.75).normalize().multiply(knockback));
                         }
-                    cancel();
+
+                    handler.close();
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

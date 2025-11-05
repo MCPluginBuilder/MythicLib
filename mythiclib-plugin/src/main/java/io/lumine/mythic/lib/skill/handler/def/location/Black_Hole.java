@@ -1,12 +1,12 @@
 package io.lumine.mythic.lib.skill.handler.def.location;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -34,13 +34,15 @@ public class Black_Hole extends SkillHandler<LocationSkillResult> {
         double radius = skillMeta.getParameter("radius");
 
         loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 1);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             int ti = 0;
             final double r = 4;
 
             public void run() {
-                if (ti++ > Math.min(300, duration))
-                    cancel();
+                if (ti++ > Math.min(300, duration)) {
+                    handler.close();
+                    return;
+                }
 
                 loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_HAT, 2, 2);
                 loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
@@ -58,6 +60,6 @@ public class Black_Hole extends SkillHandler<LocationSkillResult> {
                     if (entity.getLocation().distanceSquared(loc) < Math.pow(radius, 2) && UtilityMethods.canTarget(caster, entity))
                         entity.setVelocity(UtilityMethods.safeNormalize(loc.clone().subtract(entity.getLocation()).toVector()).multiply(.5));
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

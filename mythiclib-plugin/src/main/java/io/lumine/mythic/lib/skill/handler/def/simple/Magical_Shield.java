@@ -2,18 +2,21 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.event.AttackEvent;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Magical_Shield extends SkillHandler<SimpleSkillResult> {
     public Magical_Shield() {
@@ -23,7 +26,7 @@ public class Magical_Shield extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult(meta.getCaster().getPlayer().isOnGround());
     }
 
@@ -33,14 +36,17 @@ public class Magical_Shield extends SkillHandler<SimpleSkillResult> {
         double radiusSquared = Math.pow(skillMeta.getParameter("radius"), 2);
         double power = skillMeta.getParameter("power") / 100;
 
-        new MagicalShieldEffect(skillMeta.getCaster().getPlayer(), duration, radiusSquared, power);
+        new Handler(skillMeta.getCaster().getData(), duration, radiusSquared, power);
     }
 
-    public static class MagicalShieldEffect extends TemporaryListener {
+    static class Handler extends TemporaryHandler {
         private final Location loc;
         private final double radiusSquared, power;
 
-        public MagicalShieldEffect(Player caster, double duration, double radius, double power) {
+        public Handler(MMOPlayerData playerData, double duration, double radius, double power) {
+            super(playerData);
+
+            Player caster = playerData.getPlayer();
             this.loc = caster.getLocation().clone();
 
             this.radiusSquared = radius * radius;
@@ -48,7 +54,14 @@ public class Magical_Shield extends SkillHandler<SimpleSkillResult> {
 
             caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 3, 0);
 
-            registerRunnable(new BukkitRunnable() {
+            runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 3));
+
+            closeAfter((long) (duration * 20));
+        }
+
+        @Override
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
                 @Override
                 public void run() {
                     for (double j = 0; j < Math.PI / 2; j += Math.PI / (28 + RANDOM.nextInt(5)))
@@ -57,9 +70,7 @@ public class Magical_Shield extends SkillHandler<SimpleSkillResult> {
                                     loc.clone().add(2.5 * Math.cos(i + j) * Math.sin(j), 2.5 * Math.cos(j), 2.5 * Math.sin(i + j) * Math.sin(j)), 1,
                                     new Particle.DustOptions(Color.FUCHSIA, 1));
                 }
-            }, runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 3));
-
-            close((long) (duration * 20));
+            };
         }
 
         @EventHandler

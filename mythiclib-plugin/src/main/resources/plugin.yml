@@ -6,7 +6,12 @@ version: ${project.version}
 description: ${project.description}
 website: www.phoenixdevt.fr
 softdepend: [ WorldGuard,Residence,Factions,MythicMobs,PlaceholderAPI,Fabled ]
+loadbefore: [ MMOProfiles ]
 commands:
+  mythiclib:
+    description: 'Main command for MythicLib'
+    permission: 'mythiclib.admin'
+    aliases: [ 'ml' ]
   healthscale:
     description: 'No longer maintained, see ''/ml debug healthscale'' instead'
     permission: mythiclib.command.healthscale

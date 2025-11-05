@@ -18,9 +18,8 @@ public class GiveItemMechanic extends TargetMechanic {
     public GiveItemMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("material");
+        material = UtilityMethods.prettyValueOf(Material::valueOf, config.getString("material"), "No material with ID %s");
         amount = config.getDoubleFormula("amount", DoubleFormula.constant(1));
-        material = Material.valueOf(UtilityMethods.enumName(config.getString("material")));
     }
 
     @Override

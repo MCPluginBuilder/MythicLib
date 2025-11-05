@@ -18,7 +18,7 @@ public class AttributeStatHandler extends StatHandler {
     protected final Attribute attribute;
     private final Material material;
     private final String description;
-    private final double playerDefaultBase;
+    protected final double playerDefaultBase;
 
     protected static final NamespacedKey ATTRIBUTE_KEY = new NamespacedKey(MythicLib.plugin, "main");
     protected static final double EPSILON = .0001;
@@ -46,23 +46,24 @@ public class AttributeStatHandler extends StatHandler {
 
         // Force update on login
         this.forceUpdate = true;
+
+        addUpdateListener(this::updateAttributeModifierValue);
     }
 
-    @Override
-    public void runUpdate(@NotNull StatInstance instance) {
-        final AttributeInstance attrIns = instance.getMap().getData().getPlayer().getAttribute(attribute);
-        removeModifiers(attrIns);
+    private void updateAttributeModifierValue(@NotNull StatInstance instance) {
+        final var attributeInstance = instance.getMap().getData().getPlayer().getAttribute(attribute);
+        assert attributeInstance != null;
+        removeModifiers(attributeInstance);
 
-        final double vanillaBase = instance.getMap().getData().getPlayer().getAttribute(attribute).getBaseValue();
-        final double mmoFinal = clampValue(instance.getFilteredTotal(vanillaBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
-        final double difference = mmoFinal - vanillaBase;
+        final double mmoFinal = clampValue(instance.getFilteredTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
+        final double difference = mmoFinal - this.playerDefaultBase;
 
         /*
          * Only add an attribute modifier if the very final stat
          * value is different from the main one to save map updates.
          */
         if (Math.abs(difference) > EPSILON)
-            attrIns.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
+            attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
     }
 
     @Override
@@ -71,11 +72,16 @@ public class AttributeStatHandler extends StatHandler {
     }
 
     @Override
+    public double getPlayerDefaultBase() {
+        return playerDefaultBase;
+    }
+
+    @Override
     public double getFinalValue(@NotNull StatInstance instance) {
         return instance.getMap().getData().getPlayer().getAttribute(attribute).getValue();
     }
 
-    protected void removeModifiers(@NotNull AttributeInstance ins) {
+    protected static void removeModifiers(@NotNull AttributeInstance ins) {
         for (AttributeModifier mod : ins.getModifiers())
             if (VersionUtils.matches(mod, ATTRIBUTE_KEY)) ins.removeModifier(mod);
     }
@@ -93,9 +99,5 @@ public class AttributeStatHandler extends StatHandler {
     @NotNull
     public String getDescription() {
         return description;
-    }
-
-    public double getPlayerDefaultBase() {
-        return playerDefaultBase;
     }
 }

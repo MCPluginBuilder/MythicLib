@@ -1,22 +1,34 @@
 package io.lumine.mythic.lib.util;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Deprecated(forRemoval = true)
 public class MMOPlugin extends JavaPlugin {
 
-    /**
-     * Does this plugin store data? This determines if MythicLib
-     * must wait for this plugin to mark his data as synchronized
-     * before marking the MMOPlayerData instance as fully synchronized.
-     */
-    public boolean hasData() {
-        return true;
+    @Deprecated(forRemoval = true)
+    public MMOPlugin() {
+        throw new RuntimeException();
     }
 
-    /**
-     * It is plugin a profile plugin
-     */
+    @Deprecated(forRemoval = true)
+    public boolean hasData() {
+        throw new RuntimeException();
+    }
+
+    @Deprecated(forRemoval = true)
+    public boolean isProfilePlugin() {
+        throw new RuntimeException();
+    }
+
+    @Deprecated(forRemoval = true)
+    public NamespacedKey getNamespacedKey() {
+        throw new RuntimeException();
+    }
+
+    @Deprecated(forRemoval = true)
     public boolean hasProfiles() {
-        return false;
+        throw new RuntimeException();
     }
 }
+

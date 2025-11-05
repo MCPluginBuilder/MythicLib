@@ -36,7 +36,8 @@ public class LookingAtTargeter implements EntityTargeter {
         Validate.isTrue(range > 0, "Length must be strictly positive");
 
         Location source = meta.getCaster().getPlayer().getEyeLocation();
-        RayTraceResult result = meta.getSourceLocation().getWorld().rayTrace(source, source.getDirection(), range, FluidCollisionMode.NEVER, ignorePassable, size, entity -> true);
+        RayTraceResult result = source.getWorld().rayTrace(source, source.getDirection(), range, FluidCollisionMode.NEVER, ignorePassable, size, entity -> !entity.equals(meta.getCaster().getPlayer()));
+
         return result == null || result.getHitEntity() == null ? new ArrayList<>() : Arrays.asList(result.getHitEntity());
     }
 }

@@ -1,11 +1,11 @@
 package io.lumine.mythic.lib.script.mechanic.projectile;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
@@ -15,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 public class ShulkerBulletMechanic extends DirectionMechanic {
     private final DoubleFormula lifeSpan;
@@ -35,30 +36,37 @@ public class ShulkerBulletMechanic extends DirectionMechanic {
         Validate.isTrue(lifespan > 0, "Life spawn must be strictly positive");
         final ShulkerBullet shulkerBullet = (ShulkerBullet) source.getWorld().spawnEntity(source, EntityType.SHULKER_BULLET);
         shulkerBullet.setShooter(meta.getCaster().getPlayer());
-        new ShulkerBulletHandler(shulkerBullet, meta, dir).close(lifespan);
+        new Handler(shulkerBullet, meta, dir).closeAfter(lifespan);
     }
 
-    public class ShulkerBulletHandler extends TemporaryListener {
+    class Handler extends TemporaryHandler {
         private final ShulkerBullet bullet;
-        //private final Vector direction;
+        private final Vector direction;
         private final SkillMetadata skillMetadata;
 
-        public ShulkerBulletHandler(ShulkerBullet bullet, SkillMetadata skillMetadata, Vector direction) {
-            //this.direction = direction;
+        public Handler(ShulkerBullet bullet, SkillMetadata skillMetadata, Vector direction) {
+            super(skillMetadata.getCaster().getData());
+
+            this.direction = direction;
             this.bullet = bullet;
             this.skillMetadata = skillMetadata;
 
-            registerRunnable(new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (bullet.isDead()) close();
-                    else bullet.setVelocity(direction);
-                }
-            }, runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+            runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
         }
 
         @Override
-        public void whenClosed() {
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (bullet.isDead()) Handler.this.close();
+                    else bullet.setVelocity(direction);
+                }
+            };
+        }
+
+        @Override
+        protected void onClose() {
             if (!bullet.isDead()) bullet.remove();
         }
 

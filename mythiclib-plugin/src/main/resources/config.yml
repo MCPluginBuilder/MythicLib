@@ -102,26 +102,25 @@ casting-delay:
 # '*** Cooldown Reduction' item stat.
 mitigation:
 
-  # Edit mitigation messages here. Leave to blank for no message.
-  message:
-
-    # Whether or not they should display on action bar instead of chat
-    action-bar: true
-
-    parry: '&cYou just parried #damage# damage.'
-    block: '&cYou just blocked #damage# damage.' # Use #power# to display block power.
-    dodge: '&cYou just dodged #damage# damage.'
-
   block:
-    cooldown: 5.0
+    cooldown: 3.0
+    message:
+      format: '&cYou just blocked {damage} damage.'
+      action-bar: false
 
   dodge:
     knockback: 1.0
-    cooldown: 5
+    cooldown: 3.0
+    message:
+      format: '&cYou just dodged {damage} damage.' # Use {power} to display block power.
+      action-bar: false
 
   parry:
     knockback: 1.0
-    cooldown: 8.0
+    cooldown: 3.0
+    message:
+      format: '&cYou just parried {damage} damage.'
+      action-bar: false
 
 # Change the amount of damage dealt on specific damage sources. This
 # tool comes handy when needing to balance your vanilla damage sources.
@@ -151,6 +150,12 @@ vanilla-damage-modifiers:
 # Changes apply on server restart.
 hologram-provider: TEXT_DISPLAYS
 
+# Enable WorldGuard/Residence flag checks for specific things.
+# If you do not use WG or Residence flags, it is recommended
+# to disable those for spare performance.
+enable_flag_checks:
+  skills: true
+
 # Displays in-game damage or heal indicators.
 # Changes apply on server restart.
 game-indicators:
@@ -160,6 +165,7 @@ game-indicators:
   # provided in the wiki in order to remove the gray background
   damage:
     enabled: true
+    min_damage: 0.1 # Under 0.1 damage, no indicator will show
     decimal-format: '0.#'
     format: '{icon} &f{value}'
     custom-font:
@@ -211,6 +217,7 @@ game-indicators:
 
   # When an entity regens some health
   regen:
+    min_regen: 0.1 # Under 0.1 health regen, no indicator will show
     enabled: false
     decimal-format: '0.#'
     format: '&a+{value}'

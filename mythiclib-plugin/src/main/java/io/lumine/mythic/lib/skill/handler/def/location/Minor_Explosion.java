@@ -8,10 +8,10 @@ import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class Minor_Explosion extends SkillHandler<LocationSkillResult> {
     public Minor_Explosion() {
@@ -21,7 +21,7 @@ public class Minor_Explosion extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 

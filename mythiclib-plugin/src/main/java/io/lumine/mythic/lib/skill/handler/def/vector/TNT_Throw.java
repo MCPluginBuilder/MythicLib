@@ -1,19 +1,20 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class TNT_Throw extends SkillHandler<VectorSkillResult> {
     public TNT_Throw() {
@@ -23,7 +24,7 @@ public class TNT_Throw extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -35,7 +36,7 @@ public class TNT_Throw extends SkillHandler<VectorSkillResult> {
         TNTPrimed tnt = caster.getWorld().spawn(caster.getLocation().add(0, 1, 0), TNTPrimed.class);
         tnt.setFuseTicks(80);
         tnt.setVelocity(vec);
-        new CancelTeamDamage(caster, tnt);
+        new Handler(skillMeta.getCaster().getData(), tnt);
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 0);
         caster.getWorld().spawnParticle(VParticle.EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 12, 0, 0, 0, .1);
     }
@@ -43,26 +44,23 @@ public class TNT_Throw extends SkillHandler<VectorSkillResult> {
     /**
      * Used to cancel team damage and other things
      */
-    public static class CancelTeamDamage extends TemporaryListener {
+    static class Handler extends TemporaryHandler {
         private final Player player;
         private final TNTPrimed tnt;
 
-        public CancelTeamDamage(Player player, TNTPrimed tnt) {
-            this.player = player;
+        public Handler(MMOPlayerData playerData, TNTPrimed tnt) {
+            super(playerData);
+
+            this.player = playerData.getPlayer();
             this.tnt = tnt;
 
-            close(100);
+            closeAfter(120);
         }
 
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         public void a(EntityDamageByEntityEvent event) {
             if (event.getDamager().equals(tnt) && !UtilityMethods.canTarget(player, event.getEntity()))
                 event.setCancelled(true);
-        }
-
-        @Override
-        public void whenClosed() {
-            // Nothing
         }
     }
 }

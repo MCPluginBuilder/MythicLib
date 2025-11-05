@@ -21,10 +21,8 @@ public abstract class ParticleEffect extends PlayerModifier implements Closeable
     protected final ParticleInformation particle;
 
     @Nullable(value = "not null when registered")
+    protected MMOPlayerData playerData;
     protected Player player;
-
-    @Nullable(value = "not null when started")
-    private BukkitTask runningTask;
 
     public ParticleEffect(String key, ParticleInformation particle) {
         super(key, EquipmentSlot.OTHER, ModifierSource.OTHER);
@@ -43,30 +41,6 @@ public abstract class ParticleEffect extends PlayerModifier implements Closeable
         return particle;
     }
 
-    //region Bukkit Task
-
-    public boolean isStarted() {
-        return runningTask != null;
-    }
-
-    @NotNull
-    public ParticleEffect start() {
-        if (runningTask != null) return this;
-
-        Validate.notNull(player, "Player cannot be null");
-        runningTask = Bukkit.getScheduler().runTaskTimer(MythicLib.plugin, this::tick, 0, getType().getPeriod());
-        return this;
-    }
-
-    public void stop() {
-        if (runningTask == null) return;
-
-        runningTask.cancel();
-        runningTask = null;
-    }
-
-    //endregion
-
     protected double resolveModifier(Map<String, Double> modifiers, String path) {
         return modifiers.getOrDefault(path, getType().getDefaultModifierValue(path));
     }
@@ -78,10 +52,39 @@ public abstract class ParticleEffect extends PlayerModifier implements Closeable
 
     public abstract ParticleEffectType getType();
 
+    //region Bukkit Task
+
+    @Nullable(value = "not null when started")
+    private BukkitTask runningTask;
+
+    public boolean isStarted() {
+        return runningTask != null;
+    }
+
+    @NotNull
+    public ParticleEffect start() {
+        if (runningTask != null) return this;
+
+        Validate.notNull(playerData, "No player data bound");
+        this.player = playerData.getPlayer(); // Does not work if offline
+        runningTask = Bukkit.getScheduler().runTaskTimer(MythicLib.plugin, this::tick, 0, getType().getPeriod());
+        return this;
+    }
+
+    public void stop() {
+        if (runningTask == null) return;
+
+        runningTask.cancel();
+        runningTask = null;
+        this.player = null; // Avoid memory leak
+    }
+
+    //endregion
+
     //region Modifier
 
-    public void bindPlayer(@NotNull Player player) {
-        this.player = player;
+    public void bindPlayerData(@NotNull MMOPlayerData playerData) {
+        this.playerData = playerData;
     }
 
     @Override
@@ -101,9 +104,13 @@ public abstract class ParticleEffect extends PlayerModifier implements Closeable
 
     //endregion
 
+    //region Static methods
+
     @NotNull
     public static ParticleEffect fromConfig(@NotNull ConfigObject obj) {
         ParticleEffectType type = ParticleEffectType.get(UtilityMethods.enumName(obj.getString("particle-effect")));
         return type.getParser().apply(obj);
     }
+
+    //endregion
 }

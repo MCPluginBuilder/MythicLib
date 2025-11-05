@@ -86,6 +86,17 @@ public abstract class LightInjector {
     private static final Field GET_NETWORK_MANAGER = getField(PLAYER_CONNECTION_CLASS, NETWORK_MANAGER_CLASS, 1, 1);
 
     private static final Method GET_PLAYER_HANDLE = getMethod(getCBClass("entity.CraftPlayer"), "getHandle");
+    private static final Method GET_PROFILE_ID;
+
+    static {
+        Method methodFound;
+        try {
+            methodFound = getMethod(GameProfile.class, "id");
+        } catch (Exception e) {
+            methodFound = getMethod(GameProfile.class, "getId");
+        }
+        GET_PROFILE_ID = methodFound;
+    }
 
     // Used to make identifiers unique if multiple instances are created. This doesn't need to be atomic
     // since it is called only from the constructor, which is assured to run on the main thread
@@ -483,7 +494,9 @@ public abstract class LightInjector {
             if (player == null && PACKET_LOGIN_OUT_SUCCESS_CLASS.isInstance(packet)) {
                 // Player object should be in cache. If it's not, then it'll be PlayerJoinEvent to set the player
                 try {
-                    @Nullable Player player = playerCache.remove(((GameProfile) GAME_PROFILE_FROM_PACKET.get(packet)).getId());
+                    final GameProfile gameProfile = (GameProfile) GAME_PROFILE_FROM_PACKET.get(packet);
+                    final UUID gameProfileId = (UUID) GET_PROFILE_ID.invoke(gameProfile);
+                    @Nullable Player player = playerCache.remove(gameProfileId);
 
                     // Set the player only if it was contained into the cache
                     if (player != null) {

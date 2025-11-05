@@ -6,10 +6,10 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -17,6 +17,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -39,16 +40,17 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
         double duration = skillMeta.getParameter("duration");
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector dir = result.getTarget().multiply(.3);
             final Location loc = caster.getEyeLocation().clone();
             final double r = 0.4;
             int ti = 0;
 
             public void run() {
-                ti++;
-                if (ti > 50)
-                    cancel();
+                if (++ti > 50) {
+                    handler.close();
+                    return;
+                }
 
                 List<Entity> entities = UtilityMethods.getNearbyChunkEntities(loc);
                 for (double j = 0; j < 4; j++) {
@@ -62,24 +64,26 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
 
                     for (Entity target : entities)
                         if (UtilityMethods.canTarget(caster, loc, target)) {
-                            effect(target);
+                            playHitEffect(target);
                             double damage = skillMeta.getParameter("damage");
                             loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_TELEPORT, 2, .7f);
 
+                            // Damage nearby entities
                             for (Entity entity : entities)
                                 if (UtilityMethods.canTarget(caster, entity) && loc.distanceSquared(entity.getLocation().add(0, 1, 0)) < 9) {
                                     skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                                     ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, (int) (duration * 20), 0));
                                 }
-                            cancel();
+
+                            handler.close();
                             return;
                         }
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 
-    private void effect(Entity ent) {
+    private void playHitEffect(Entity ent) {
         new BukkitRunnable() {
             final Location loc2 = ent.getLocation();
             double y = 0;
@@ -92,8 +96,7 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
                         loc2.getWorld().spawnParticle(VParticle.WITCH.get(), loc2.clone().add(Math.cos(xz) * 2.5, y, Math.sin(xz) * 2.5), 0);
                     }
                 }
-                if (y >= 3)
-                    cancel();
+                if (y >= 3) cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
     }

@@ -1,21 +1,21 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -37,7 +37,7 @@ public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 12, handler -> new BukkitRunnable() {
             final Location loc = caster.getLocation().add(0, .1, 0);
             final double radius = skillMeta.getParameter("radius");
             final double knockup = .7 * skillMeta.getParameter("knock-up");
@@ -46,7 +46,7 @@ public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
 
             public void run() {
                 if (target.isDead() || !target.getWorld().equals(loc.getWorld()) || j++ > 200) {
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -63,18 +63,18 @@ public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
                     if (!hit.contains(entity.getEntityId()) && UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) < radius * radius) {
 
                         /*
-                         * Stop the runnable as soon as the
-                         * grenade finally hits the initial target.
+                         * Stop the runnable as soon as the grenade hits the
+                         * initial target, otherwise save it so that it is
+                         * not damaged twice by the same skill
                          */
-                        hit.add(entity.getEntityId());
-                        if (entity.equals(target))
-                            cancel();
+                        if (entity.equals(target)) handler.close();
+                        else hit.add(entity.getEntityId());
 
                         skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
                         entity.setVelocity(entity.getVelocity().add(offsetVector(knockup)));
                     }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 12);
+        });
     }
 
     private Vector offsetVector(double y) {

@@ -4,12 +4,13 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class Ignite extends SkillHandler<LocationSkillResult> {
     public Ignite() {
@@ -19,7 +20,7 @@ public class Ignite extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 

@@ -23,7 +23,8 @@ public class ConfigManager extends Module {
     public final DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
 
     public DecimalFormat decimal, decimals;
-    public boolean playerAbilityDamage, castingDelayCancelOnMove, enableCastingDelayBossbar, fixTooLargePackets, debugMode, ignoreShiftTriggers, ignoreOffhandClickTriggers, skipElementalDamageApplication;
+    public boolean playerAbilityDamage, castingDelayCancelOnMove, enableCastingDelayBossbar, fixTooLargePackets, debugMode,
+            ignoreShiftTriggers, ignoreOffhandClickTriggers, skipElementalDamageApplication, flagCheckSkills;
     public String naturalDefenseFormula, elementalDefenseFormula, castingDelayBossbarFormat;
     public BarColor castingDelayBarColor;
     public BarStyle castingDelayBarStyle;
@@ -58,10 +59,12 @@ public class ConfigManager extends Module {
         elementalDefenseFormula = config.getString("defense-application.elemental");
         fixTooLargePackets = config.getBoolean("fix-too-large-packets");
         debugMode = config.getBoolean("debug");
-        maxSyncTries = config.getInt("max-sync-tries");
+        maxSyncTries = config.getInt("max-sync-tries", 7);
         ignoreShiftTriggers = config.getBoolean("ignore_shift_triggers");
         ignoreOffhandClickTriggers = config.getBoolean("ignore_offhand_click_triggers");
         skipElementalDamageApplication = config.getBoolean("skip_elemental_damage_application");
+
+        flagCheckSkills = config.getBoolean("enable_flag_checks.skills");
 
         // Casting delay
         castingDelaySlowness = config.getDouble("casting-delay.slowness");

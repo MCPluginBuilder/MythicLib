@@ -7,10 +7,10 @@ import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Confuse extends SkillHandler<TargetSkillResult> {
     public Confuse() {
@@ -18,7 +18,7 @@ public class Confuse extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -27,11 +27,17 @@ public class Confuse extends SkillHandler<TargetSkillResult> {
         LivingEntity target = result.getTarget();
         Player caster = skillMeta.getCaster().getPlayer();
 
+        playParticleEffect(target.getLocation(), Math.toRadians(caster.getEyeLocation().getYaw() - 90));
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_SHEEP_DEATH, 1, 2);
+
+        Location loc = target.getLocation().clone();
+        loc.setYaw(target.getLocation().getYaw() - 180);
+        target.teleport(loc);
+    }
+
+    private void playParticleEffect(Location loc, double startAngle) {
         new BukkitRunnable() {
-            final Location loc = target.getLocation();
-            final double rads = Math.toRadians(caster.getEyeLocation().getYaw() - 90);
-            double ti = rads;
+            double ti = startAngle;
 
             public void run() {
                 for (int j1 = 0; j1 < 3; j1++) {
@@ -39,12 +45,8 @@ public class Confuse extends SkillHandler<TargetSkillResult> {
                     Location loc1 = loc.clone().add(Math.cos(ti), 1, Math.sin(ti));
                     loc.getWorld().spawnParticle(VParticle.WITCH.get(), loc1, 0);
                 }
-                if (ti >= Math.PI * 2 + rads)
-                    cancel();
+                if (ti >= Math.PI * 2 + startAngle) cancel();
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        Location loc = target.getLocation().clone();
-        loc.setYaw(target.getLocation().getYaw() - 180);
-        target.teleport(loc);
     }
 }

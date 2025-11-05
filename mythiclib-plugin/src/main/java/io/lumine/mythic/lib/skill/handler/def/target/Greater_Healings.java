@@ -8,8 +8,8 @@ import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 
 public class Greater_Healings extends SkillHandler<TargetSkillResult> {
     public Greater_Healings() {
@@ -19,7 +19,7 @@ public class Greater_Healings extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return meta.getCaster().getPlayer().isSneaking() ? new TargetSkillResult(meta.getCaster().getPlayer()) : new TargetSkillResult(meta, InteractionType.SUPPORT_SKILL);
     }
 

@@ -177,7 +177,7 @@ public interface VersionWrapper {
 
     String getSkullValue(Block block);
 
-    void setSkullValue(Block block, String value);
+    void setSkullValue(Block block, String textureValue);
 
     void setUUID(Player player, UUID uniqueId);
 

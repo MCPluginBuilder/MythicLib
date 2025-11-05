@@ -1,22 +1,22 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Firefly extends SkillHandler<SimpleSkillResult> {
     public Firefly() {
@@ -26,7 +26,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 
@@ -36,19 +36,21 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             int j = 0;
 
             public void run() {
-                if (j++ > duration)
-                    cancel();
+                if (j++ > duration) {
+                    handler.close();
+                    return;
+                }
 
                 if (caster.getLocation().getBlock().getType() == Material.WATER) {
                     caster.setVelocity(caster.getVelocity().multiply(3).setY(1.8));
                     caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_FIRE_EXTINGUISH, 1, .5f);
                     caster.getWorld().spawnParticle(VParticle.EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .2);
                     caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .2);
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -64,7 +66,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                         entity.setVelocity(caster.getVelocity().setY(0.3).multiply(1.7 * knockback));
                         caster.setVelocity(caster.getEyeLocation().getDirection().multiply(-3).setY(.5));
                         skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
-                        cancel();
+                        handler.close();
                         return;
                     }
 
@@ -82,6 +84,6 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                 caster.setVelocity(caster.getEyeLocation().getDirection());
                 caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

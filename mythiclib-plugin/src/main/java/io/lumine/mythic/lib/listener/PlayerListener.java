@@ -3,13 +3,12 @@ package io.lumine.mythic.lib.listener;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.logging.Level;
 
 public class PlayerListener implements Listener {
 
@@ -31,14 +30,9 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerQuitLowest(PlayerQuitEvent event) {
         final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
-        if (playerData != null) playerData.getStatMap().bufferUpdates();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerQuitMonitor(PlayerQuitEvent event) {
-        final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
-        if (playerData != null) playerData.updatePlayer(null);
-        else MythicLib.plugin.getLogger().log(Level.SEVERE, "Player data of " +
-                event.getPlayer().getName() + " not loaded on logout. Were they kicked when joining the server?");
+        if (playerData != null) {
+            if (playerData.hasProfileSession()) playerData.getProfileSession().startClosing();
+            Tasks.runSync(MythicLib.plugin, () -> playerData.updatePlayer(null));
+        }
     }
 }

@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.impl.LegacyGameProfileWrapper;
+import io.lumine.mythic.lib.version.WrapperUtils;
 import net.minecraft.server.v1_16_R2.*;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import org.bukkit.Material;

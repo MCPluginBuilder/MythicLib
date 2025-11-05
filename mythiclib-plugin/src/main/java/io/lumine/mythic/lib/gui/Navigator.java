@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.gui;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.util.Tasks;
+import io.lumine.mythic.lib.version.VersionUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -37,7 +38,11 @@ public class Navigator implements Listener {
     private final MMOPlayerData playerData;
     private final Player player;
 
+    @Nullable
+    private PluginInventory lastInvOpened;
+    @Nullable
     private Inventory lastBukkitOpened;
+    @Nullable
     public BukkitTask backgroundTask;
     private boolean canClose = true, closed = true;
 
@@ -104,6 +109,9 @@ public class Navigator implements Listener {
         return openedInventories.peek();
     }
 
+    // TODO improve code
+    public boolean recycle;
+
     /**
      * Opens the upmost inventory in the stack
      *
@@ -114,8 +122,19 @@ public class Navigator implements Listener {
         final PluginInventory upmost = openedInventories.peek();
         if (!playerData.isOnline()) return upmost;
 
-        final Inventory bukkitInventory = upmost.getInventory(); // Generate Bukkit inventory
-        lastBukkitOpened = bukkitInventory;
+        upmost.onOpen(); // Notify inventory open
+
+        if (this.recycle) {
+            this.recycle = false;
+            return upmost;
+        }
+
+        // Close current inventory if any
+        if (lastInvOpened != null) closeCurrentInventory();
+
+        final var newBukkitInventory = upmost.getInventory(); // Generate Bukkit inventory
+        this.lastInvOpened = upmost;
+        this.lastBukkitOpened = newBukkitInventory;
 
         // Reopen listeners if necessary
         if (closed) {
@@ -124,11 +143,10 @@ public class Navigator implements Listener {
         }
 
         // Only then we open the inventory on sync
-        if (Bukkit.isPrimaryThread()) openToPlayer(bukkitInventory);
-        else Tasks.runSync(MythicLib.plugin, () -> openToPlayer(bukkitInventory));
+        if (Bukkit.isPrimaryThread()) openToPlayer(newBukkitInventory);
+        else Tasks.runSync(MythicLib.plugin, () -> openToPlayer(newBukkitInventory));
 
-        // Start task
-        upmost.startBackgroundTask();
+        startBackgroundTask(upmost); // Start background task
 
         return upmost;
     }
@@ -151,38 +169,83 @@ public class Navigator implements Listener {
 
     /**
      * Pops upmost inventory and opens the second-in-order
+     *
+     * @return The new upmost inventory, or null if inventory stack is empty
      */
-    @NotNull
+    @Nullable
     public PluginInventory popOpen() {
         openedInventories.pop();
+        if (openedInventories.isEmpty()) {
+            player.closeInventory();
+            return null;
+        }
         return openLast();
     }
 
-    public void haltBackgroundTask() {
+    private void close() {
+        Validate.isTrue(!closed, "Already closed");
+        closed = true;
+
+        if (lastInvOpened != null) closeCurrentInventory();
+
+        InventoryCloseEvent.getHandlerList().unregister(this);
+        InventoryClickEvent.getHandlerList().unregister(this);
+        InventoryDragEvent.getHandlerList().unregister(this);
+        PlayerQuitEvent.getHandlerList().unregister(this);
+    }
+
+    //region Open and close inventory
+
+    private void closeCurrentInventory() {
+        Validate.notNull(lastInvOpened, "No inventory open");
+
+        lastInvOpened.onClose();
+        haltBackgroundTask();
+        this.lastInvOpened = null;
+    }
+
+    private void startBackgroundTask(@NotNull PluginInventory nextOpened) {
+        final var backgroundRunnable = nextOpened.getBackgroundRunnable();
+        if (backgroundRunnable == null) return; // No task to start
+
+        Validate.isTrue(backgroundTask == null, "Background task already running");
+
+        backgroundTask = Bukkit.getScheduler().runTaskTimer(MythicLib.plugin, () -> {
+            final var opened = Objects.requireNonNull(VersionUtils.getOpen(player).getTopInventory());
+            final var tracked = getLastBukkitOpened();
+
+            // Should be the same physical objects
+            if (opened != tracked) {
+                Navigator.this.haltBackgroundTask();
+                throw new RuntimeException("Failed at keeping track of opened inventory");
+            }
+
+            backgroundRunnable.accept(tracked);
+        }, nextOpened.getBackgroundRunnablePeriod(), nextOpened.getBackgroundRunnablePeriod());
+    }
+
+    private void haltBackgroundTask() {
         if (backgroundTask == null) return; // Task already halted
 
         backgroundTask.cancel();
         backgroundTask = null;
     }
 
+    //endregion
+
+    //region Listeners
+
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (!event.getPlayer().equals(player)) return;
+        if (onHold) return;
 
-        haltBackgroundTask();
-
-        if (onHold) return; // On hold?
-
-        // Cannot close
-        if (!canClose) {
+        if (canClose) close();
+        else {
             onHold = true;
-            final PluginInventory upmost = openedInventories.peek();
+            final var upmost = openedInventories.peek();
             Bukkit.getScheduler().runTaskLater(MythicLib.plugin, this::openLast, upmost.getCloseTimeOut());
-            return;
         }
-
-        // Trigger close
-        close();
     }
 
     @EventHandler
@@ -208,15 +271,5 @@ public class Navigator implements Listener {
         close();
     }
 
-    private void close() {
-        Validate.isTrue(!closed, "Already closed");
-        closed = true;
-
-        openedInventories.peek().onClose();
-
-        InventoryCloseEvent.getHandlerList().unregister(this);
-        InventoryClickEvent.getHandlerList().unregister(this);
-        InventoryDragEvent.getHandlerList().unregister(this);
-        PlayerQuitEvent.getHandlerList().unregister(this);
-    }
+    //endregion Listeners
 }

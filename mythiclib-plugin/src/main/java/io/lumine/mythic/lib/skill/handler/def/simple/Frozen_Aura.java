@@ -1,19 +1,18 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
     public Frozen_Aura() {
@@ -23,7 +22,7 @@ public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 
@@ -35,13 +34,15 @@ public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             double j = 0;
             int ti = 0;
 
             public void run() {
-                if (ti++ > duration)
-                    cancel();
+                if (ti++ > duration) {
+                    handler.close();
+                    return;
+                }
 
                 j += Math.PI / 60;
                 for (double k = 0; k < Math.PI * 2; k += Math.PI / 2)
@@ -55,6 +56,6 @@ public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
                         if (entity.getLocation().distanceSquared(caster.getLocation()) < radiusSquared && UtilityMethods.canTarget(caster, entity))
                             UtilityMethods.forcePotionEffect((LivingEntity) entity, VPotionEffectType.SLOWNESS.get(), 2, (int) amplifier);
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

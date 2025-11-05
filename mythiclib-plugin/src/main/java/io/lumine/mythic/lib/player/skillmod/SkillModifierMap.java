@@ -12,6 +12,16 @@ public class SkillModifierMap extends ModifierMap<SkillModifier> {
         super(playerData);
     }
 
+    @Override
+    protected void onSessionClose() {
+        // nothing
+    }
+
+    @Override
+    protected void onSessionOpen() {
+        // nothing
+    }
+
     public double calculateValue(@NotNull Skill cast, @NotNull String parameter) {
         return calculateValue(cast.getHandler(), cast.getParameter(parameter), parameter);
     }

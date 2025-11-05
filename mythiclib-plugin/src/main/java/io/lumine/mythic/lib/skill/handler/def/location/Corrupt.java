@@ -5,8 +5,8 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -15,6 +15,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 public class Corrupt extends SkillHandler<LocationSkillResult> {
     public Corrupt() {
@@ -24,7 +25,7 @@ public class Corrupt extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 

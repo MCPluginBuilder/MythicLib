@@ -1,14 +1,13 @@
 package io.lumine.mythic.lib.manager;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,10 +40,10 @@ public class ElementManager extends Module {
     public void onEnable() {
 
         // Load default file
-        UtilityMethods.loadDefaultFile("", "elements.yml");
+        FileUtils.copyDefaultFile(MythicLib.plugin, "elements.yml");
 
         // Load elements
-        FileConfiguration config = new ConfigFile("elements").getConfig();
+        var config = new YamlFile("elements").getContent();
         for (String key : config.getKeys(false))
             try {
                 register(new Element(config.getConfigurationSection(key)));

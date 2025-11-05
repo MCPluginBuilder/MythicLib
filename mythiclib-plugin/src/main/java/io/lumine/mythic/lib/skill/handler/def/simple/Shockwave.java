@@ -1,20 +1,20 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class Shockwave extends SkillHandler<SimpleSkillResult> {
     }
 
     @Override
-    public SimpleSkillResult getResult(SkillMetadata meta) {
+    public @NotNull SimpleSkillResult getResult(SkillMetadata meta) {
         return new SimpleSkillResult();
     }
 
@@ -38,16 +38,17 @@ public class Shockwave extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = caster.getEyeLocation().getDirection().setY(0);
             final Location loc = caster.getLocation();
             final List<Integer> hit = new ArrayList<>();
             int ti = 0;
 
             public void run() {
-                ti++;
-                if (ti >= Math.min(20, length))
-                    cancel();
+                if (++ti >= Math.min(20, length)) {
+                    handler.close();
+                    return;
+                }
 
                 loc.add(vec);
 
@@ -61,6 +62,6 @@ public class Shockwave extends SkillHandler<SimpleSkillResult> {
                         ent.setVelocity(ent.getVelocity().setY(.4 * knockUp));
                     }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

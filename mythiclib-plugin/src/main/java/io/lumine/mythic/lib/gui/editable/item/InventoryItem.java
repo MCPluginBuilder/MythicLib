@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,8 @@ public abstract class InventoryItem<T extends GeneratedInventory> {
     private final List<Integer> slots = new ArrayList<>();
 
     private String function;
+
+    protected final DecimalFormat ONE_DIGIT = new DecimalFormat("0.#");
 
     public InventoryItem(@NotNull ConfigurationSection config) {
         this(null, config);

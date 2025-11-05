@@ -37,7 +37,6 @@ public class VersionUtils {
         return null;
     }
 
-    @NotNull
     public static void addEmptyAttributeModifier(@NotNull ItemMeta meta) {
         meta.addAttributeModifier(NSK_ATTRIBUTE, emptyAttributeModifier());
     }

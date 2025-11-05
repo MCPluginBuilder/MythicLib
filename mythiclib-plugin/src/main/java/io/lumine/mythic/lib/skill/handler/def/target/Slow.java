@@ -10,10 +10,10 @@ import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Slow extends SkillHandler<TargetSkillResult> {
     public Slow() {
@@ -23,7 +23,7 @@ public class Slow extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -31,14 +31,20 @@ public class Slow extends SkillHandler<TargetSkillResult> {
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
 
+        playParticleEffect(target.getLocation());
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_LLAMA_ANGRY, 1, 2);
+
+        target.addPotionEffect(
+                new PotionEffect(VPotionEffectType.SLOWNESS.get(), (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
+    }
+
+    private void playParticleEffect(Location loc) {
         new BukkitRunnable() {
-            final Location loc = target.getLocation();
             double ti = 0;
 
             public void run() {
                 ti += Math.PI / 10;
-                if (ti >= Math.PI * 2)
-                    cancel();
+                if (ti >= Math.PI * 2) cancel();
 
                 for (double j = 0; j < Math.PI * 2; j += Math.PI)
                     for (double r = 0; r < .7; r += .1)
@@ -48,8 +54,5 @@ public class Slow extends SkillHandler<TargetSkillResult> {
 
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_LLAMA_ANGRY, 1, 2);
-        target.addPotionEffect(
-                new PotionEffect(VPotionEffectType.SLOWNESS.get(), (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
     }
 }

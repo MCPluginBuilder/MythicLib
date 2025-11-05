@@ -107,7 +107,7 @@ public abstract class SkillHandler<T extends SkillResult> {
     }
 
     /**
-     * This field is set to true to handle hard coded passive
+     * This field is set to true to handle hard-coded passive
      * skills like {@link Backstab}. By convention and to serve
      * as an example for external developers, all hard coded
      * passive skills have to use the API trigger type.

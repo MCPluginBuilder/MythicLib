@@ -7,13 +7,13 @@ import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
-import io.lumine.mythic.lib.api.stat.handler.DelegateStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.VMaterial;
 import org.bukkit.Material;
@@ -33,7 +33,9 @@ public class StatManager extends Module {
     /**
      * Cached values for MMOProfiles
      */
-    private final Map<org.bukkit.attribute.Attribute, Double> playerDefaultBaseValues = new HashMap<>();
+    private final Map<org.bukkit.attribute.Attribute, Double> vanillaDefaultBaseValues = new HashMap<>();
+
+    private boolean statsLoaded;
 
     public StatManager(MMOPluginImpl plugin) {
         super(plugin);
@@ -43,13 +45,15 @@ public class StatManager extends Module {
     public void onEnable() {
 
         // Load default file
-        UtilityMethods.loadDefaultFile("", "stats.yml");
+        FileUtils.copyDefaultFile(MythicLib.plugin, "stats.yml");
 
         // Register default stats
-        final ConfigurationSection statsConfig = new ConfigFile("stats").getConfig();
+        final var statsConfig = new YamlFile("stats").getContent();
 
         // Default stat handlers
         try {
+
+            // 1.14+
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.ARMOR, 0, Material.IRON_CHESTPLATE, "Armor bonus of an Entity."));
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.ARMOR_TOUGHNESS, 0, Material.GOLDEN_CHESTPLATE, "Armor toughness bonus of an Entity."));
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.ATTACK_DAMAGE, 1, Material.IRON_SWORD, "Attack damage of an Entity."));
@@ -57,9 +61,15 @@ public class StatManager extends Module {
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.KNOCKBACK_RESISTANCE, 0, Material.TNT_MINECART, "Resistance of an Entity to knockback."));
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.LUCK, 0, VMaterial.GRASS_BLOCK.get(), "Luck bonus of an Entity."));
             registerStat(new AttributeStatHandler(statsConfig, SharedStat.MAX_HEALTH, 20, Material.APPLE, "Maximum health of an Entity."));
-            final StatHandler msStatHandler = new MovementSpeedStatHandler(statsConfig);
-            registerStat(msStatHandler);
-            registerStat(new DelegateStatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION, msStatHandler));
+
+            // Move speed
+            {
+                final var msStatHandler = new MovementSpeedStatHandler(statsConfig);
+                registerStat(msStatHandler);
+                final var smrStatHandler = new StatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION);
+                smrStatHandler.delegateTo(SharedStat.MOVEMENT_SPEED);
+                registerStat(smrStatHandler);
+            }
 
             // 1.20.2
             if (MythicLib.plugin.getVersion().isAbove(1, 20, 2))
@@ -104,12 +114,15 @@ public class StatManager extends Module {
             } catch (RuntimeException exception) {
                 MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load stat handler '" + key + "': " + exception.getMessage());
             }
+
+        statsLoaded = true;
     }
 
     @Override
     public void onReset() {
         handlers.clear();
-        playerDefaultBaseValues.clear();
+        vanillaDefaultBaseValues.clear();
+        statsLoaded = false;
     }
 
     @NotNull
@@ -146,12 +159,18 @@ public class StatManager extends Module {
             handlers.put(alias, handler);
 
         if (handler instanceof AttributeStatHandler)
-            playerDefaultBaseValues.put(((AttributeStatHandler) handler).getAttribute(), ((AttributeStatHandler) handler).getPlayerDefaultBase());
+            vanillaDefaultBaseValues.put(((AttributeStatHandler) handler).getAttribute(), handler.getPlayerDefaultBase());
+    }
+
+    @NotNull
+    public StatHandler computeStat(@NotNull String stat) {
+        Validate.isTrue(this.statsLoaded, "Stats have not been loaded yet");
+        return this.handlers.computeIfAbsent(stat, ignored -> new StatHandler(stat));
     }
 
     @Nullable
     public Double getPlayerDefaultBaseValue(@NotNull Attribute attribute) {
-        return playerDefaultBaseValues.get(attribute);
+        return vanillaDefaultBaseValues.get(attribute);
     }
 
     @NotNull

@@ -1,19 +1,17 @@
 package io.lumine.mythic.lib.gui;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.apache.commons.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public abstract class PluginInventory implements InventoryHolder {
@@ -77,23 +75,13 @@ public abstract class PluginInventory implements InventoryHolder {
         this.backgroundRunnable = repeatingTask;
     }
 
-    public void startBackgroundTask() {
-        if (backgroundRunnable == null) return; // No task to start
+    @Nullable
+    public Consumer<Inventory> getBackgroundRunnable() {
+        return this.backgroundRunnable;
+    }
 
-        Validate.isTrue(navigator.backgroundTask == null, "Background task already running");
-
-        navigator.backgroundTask = Bukkit.getScheduler().runTaskTimer(MythicLib.plugin, () -> {
-            Inventory opened = Objects.requireNonNull(VersionUtils.getOpen(player).getTopInventory());
-            Inventory tracked = navigator.getLastBukkitOpened();
-
-            // Should be the same physical objects
-            if (opened != tracked) {
-                navigator.haltBackgroundTask();
-                throw new RuntimeException("Failed at keeping track of opened inventory");
-            }
-
-            backgroundRunnable.accept(tracked);
-        }, backgroundRunnablePeriod, backgroundRunnablePeriod);
+    public long getBackgroundRunnablePeriod() {
+        return backgroundRunnablePeriod;
     }
 
     public void open() {
@@ -116,10 +104,14 @@ public abstract class PluginInventory implements InventoryHolder {
     /**
      * Called when the inventory is closed. No instance of event
      * is provided, because it can either be triggered by the player
-     * closing the UI, or the player leaving the server
+     * closing the UI, leaving the server, or navigating to another UI.
      */
     public void onClose() {
-        // Default implementation does nothing
+        // Empty default implementation
+    }
+
+    public void onOpen() {
+        // Empty default implementation
     }
 
     private static MMOPlayerData retrievePlayerData(Player player) {

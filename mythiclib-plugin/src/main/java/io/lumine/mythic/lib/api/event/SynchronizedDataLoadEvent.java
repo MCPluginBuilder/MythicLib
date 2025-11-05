@@ -2,30 +2,22 @@ package io.lumine.mythic.lib.api.event;
 
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class SynchronizedDataLoadEvent extends Event {
     private final SynchronizedDataManager<?, ?> manager;
     private final SynchronizedDataHolder holder;
 
-    @Nullable
-    private final Event profileEvent;
-
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public SynchronizedDataLoadEvent(SynchronizedDataManager<?, ?> manager, SynchronizedDataHolder holder) {
-        this(manager, holder, null);
-    }
+    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder) {
+        Validate.isTrue(!holder.getMMOPlayerData().isLookup(), "Cannot call event with lookup player data");
 
-    public SynchronizedDataLoadEvent(@NotNull SynchronizedDataManager<?, ?> manager, @NotNull SynchronizedDataHolder holder, @NotNull Event profileEvent) {
         this.holder = holder;
         this.manager = manager;
-        this.profileEvent = profileEvent;
     }
 
     public SynchronizedDataManager<?, ?> getManager() {
@@ -36,17 +28,9 @@ public class SynchronizedDataLoadEvent extends Event {
         return holder;
     }
 
+    @Deprecated
     public boolean syncIsFull() {
-        return holder.getMMOPlayerData().hasFullySynchronized();
-    }
-
-    @NotNull
-    public Event getProfileEvent() {
-        return Objects.requireNonNull(profileEvent, "No corresponding profile event");
-    }
-
-    public boolean hasProfileEvent() {
-        return profileEvent != null;
+        return holder.getMMOPlayerData().hasStartedPlaying();
     }
 
     @Override

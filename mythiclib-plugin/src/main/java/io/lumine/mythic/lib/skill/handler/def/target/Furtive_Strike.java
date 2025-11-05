@@ -8,8 +8,8 @@ import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 
 public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
     public Furtive_Strike() {
@@ -19,7 +19,7 @@ public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 

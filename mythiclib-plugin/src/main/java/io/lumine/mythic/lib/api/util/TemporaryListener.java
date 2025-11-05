@@ -18,6 +18,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * @see io.lumine.mythic.lib.util.TemporaryHandler
+ * @deprecated
+ */
+@Deprecated
 public abstract class TemporaryListener implements Listener {
 
     /**
@@ -41,6 +46,7 @@ public abstract class TemporaryListener implements Listener {
     @Nullable
     private BukkitRunnable runnable;
 
+    @Deprecated
     public TemporaryListener(@NotNull HandlerList... handlerLists) {
         this(MythicLib.plugin, handlerLists);
     }
@@ -51,6 +57,7 @@ public abstract class TemporaryListener implements Listener {
      *
      * @param plugin Plugin registering the listener
      */
+    @Deprecated
     public TemporaryListener(@NotNull JavaPlugin plugin, @NotNull HandlerList... handlerLists) {
         this.handlerLists = handlerLists.length == 0 ? inferHandlerLists(this.getClass()) : handlerLists;
         Bukkit.getPluginManager().registerEvents(this, plugin);

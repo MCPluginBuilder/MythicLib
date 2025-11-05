@@ -241,4 +241,4 @@ gradle-app.setting
 !**/src/**
 
 local_install.bat
-local_install.sh
+proxy_install.bat

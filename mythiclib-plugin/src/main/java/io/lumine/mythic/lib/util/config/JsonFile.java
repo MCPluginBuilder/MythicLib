@@ -2,30 +2,37 @@ package io.lumine.mythic.lib.util.config;
 
 import com.google.gson.JsonObject;
 import io.lumine.mythic.lib.MythicLib;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 
 public class JsonFile extends ConfigFile<JsonObject> {
-    public JsonFile(@NotNull String name) {
-        this(MythicLib.plugin, "", name);
+    public JsonFile(@NotNull String fileName) {
+        this(MythicLib.plugin, null, fileName);
     }
 
-    public JsonFile(@NotNull String folder, @NotNull String name) {
-        this(MythicLib.plugin, folder, name);
+    public JsonFile(@NotNull Plugin plugin, @NotNull String fileName) {
+        this(plugin, null, fileName);
     }
 
-    public JsonFile(@NotNull Plugin plugin, @NotNull String folder, @NotNull String name) {
-        super(plugin, new File(plugin.getDataFolder() + folder, name + ".json"));
+    public JsonFile(@NotNull String folderPath, @NotNull String fileName) {
+        this(MythicLib.plugin, folderPath, fileName);
+    }
+
+    public JsonFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName) {
+        this(plugin, folderPath, fileName, true);
+    }
+
+    public JsonFile(@NotNull Plugin plugin, @Nullable String folderPath, @NotNull String fileName, boolean read) {
+        super(plugin, folderPath, fileName + ".json");
 
         // File does not exist
-        if (!getFile().exists()) {
+        if (!read || !getFile().exists()) {
             setContent(new JsonObject());
             return;
         }

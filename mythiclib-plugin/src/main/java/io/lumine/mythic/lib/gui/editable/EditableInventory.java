@@ -33,17 +33,15 @@ public abstract class EditableInventory {
         Validate.isTrue((vanillaSlots % 9) == 0, "Slots must be a multiple of 9");
 
         items.clear();
-        if (config.contains("items")) {
-            Validate.notNull(config.getConfigurationSection("items"), "Could not load item list");
+        if (config.isConfigurationSection("items"))
             for (String key : config.getConfigurationSection("items").getKeys(false))
                 try {
                     ConfigurationSection section = config.getConfigurationSection("items." + key);
                     Validate.notNull(section, "Could not load config");
                     items.add(resolveEntry(section));
-                } catch (IllegalArgumentException exception) {
-                    plugin.getLogger().log(Level.WARNING, "Could not load item '" + key + "' employee inventory '" + getId() + "': " + exception.getMessage());
+                } catch (Exception exception) {
+                    plugin.getLogger().log(Level.WARNING, "Could not load item '" + key + "' from inventory '" + getId() + "': " + exception.getMessage());
                 }
-        }
     }
 
     @NotNull

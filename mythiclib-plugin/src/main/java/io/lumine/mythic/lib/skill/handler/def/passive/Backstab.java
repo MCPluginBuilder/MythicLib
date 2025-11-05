@@ -12,11 +12,11 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.GameMode;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 public class Backstab extends SkillHandler<AttackSkillResult> implements Listener {
     public Backstab() {
@@ -26,7 +26,7 @@ public class Backstab extends SkillHandler<AttackSkillResult> implements Listene
     }
 
     @Override
-    public AttackSkillResult getResult(SkillMetadata meta) {
+    public @NotNull AttackSkillResult getResult(SkillMetadata meta) {
         return new AttackSkillResult(meta);
     }
 

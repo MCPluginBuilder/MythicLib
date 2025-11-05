@@ -265,8 +265,6 @@ public class SkillMetadata {
 
     public static final List<String> RESERVED_VARIABLE_NAMES = Arrays.asList("modifier", "parameter", "source", "targetLocation", "targetLoc", "target_loc", "target_location", "targetloc", "targetl", "caster", "attack", "stat", "target", "var", "rand", "random", "rdm");
 
-    public static final VariableList SERVER_VARIABLE_LIST = new VariableList(VariableScope.SERVER);
-
     /**
      * User variables have scopes, which dictate in which variable registry
      * they are saved. They include (from highest to lowest priority in case
@@ -289,12 +287,19 @@ public class SkillMetadata {
         Variable var = vars.getVariable(name);
         if (var != null) return var;
 
+        // Check PROFILE scope
+        var playerData = getCaster().getData();
+        if (playerData.isPlaying()) {
+            var = playerData.getProfileSession().getVariableList().getVariable(name);
+            if (var != null) return var;
+        }
+
         // Check for PLAYER scope
-        var = getCaster().getData().getVariableList().getVariable(name);
+        var = playerData.getVariableList().getVariable(name);
         if (var != null) return var;
 
         // Check for SERVER scope
-        return Objects.requireNonNull(SERVER_VARIABLE_LIST.getVariable(name), "Could not find user variable with name '" + name + "'");
+        return Objects.requireNonNull(VariableList.SERVER.getVariable(name), "Could not find user variable with name '" + name + "'");
     }
 
     /**

@@ -5,13 +5,13 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Starfall extends SkillHandler<TargetSkillResult> {
     public Starfall() {
@@ -21,7 +21,7 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -29,29 +29,33 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         final LivingEntity target = result.getTarget();
 
+        this.playParticleEffect(target.getLocation());
+        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
+
+        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
+    }
+
+    private void playParticleEffect(Location source) {
         new BukkitRunnable() {
             final double ran = RANDOM.nextDouble() * Math.PI * 2;
-            final Location loc = target.getLocation().add(Math.cos(ran) * 3, 6, Math.sin(ran) * 3);
-            final Vector vec = target.getLocation().add(0, .65, 0).toVector().subtract(loc.toVector()).multiply(.05);
+            final Location origin = source.add(Math.cos(ran) * 3, 6, Math.sin(ran) * 3);
+            final Vector vec = source.add(0, .65, 0).toVector().subtract(origin.toVector()).multiply(.05);
             double ti = 0;
 
             public void run() {
-                loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_HAT, 2, 2);
+                origin.getWorld().playSound(origin, Sounds.BLOCK_NOTE_BLOCK_HAT, 2, 2);
                 for (int j = 0; j < 2; j++) {
                     ti += .05;
 
-                    loc.add(vec);
-                    loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 1, .04, 0, .04, 0);
+                    origin.add(vec);
+                    origin.getWorld().spawnParticle(VParticle.FIREWORK.get(), origin, 1, .04, 0, .04, 0);
                     if (ti >= 1) {
-                        loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 24, 0, 0, 0, .12);
-                        loc.getWorld().playSound(loc, Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 2);
+                        origin.getWorld().spawnParticle(VParticle.FIREWORK.get(), origin, 24, 0, 0, 0, .12);
+                        origin.getWorld().playSound(origin, Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 2);
                         cancel();
                     }
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);
-        target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
-
-        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
     }
 }

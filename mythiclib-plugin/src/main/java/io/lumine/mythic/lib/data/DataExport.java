@@ -1,19 +1,15 @@
 package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.util.FileUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * Used to:
@@ -49,8 +45,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
         this.callback = callback;
     }
 
-    public boolean start(@NotNull Supplier<SynchronizedDataHandler<H, O>> source,
-                         @NotNull Supplier<SynchronizedDataHandler<H, O>> target) {
+    public boolean start(@NotNull Supplier<Database<H, O>> source,
+                         @NotNull Supplier<Database<H, O>> target) {
 
         // Make sure no players are online
         if (!manager.getLoaded().isEmpty()) {
@@ -60,14 +56,9 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
             return false;
         }
 
-        // Collect IDs from flat storage
-        final List<UUID> playerIds = Arrays.stream(FileUtils.getFile(manager.getOwningPlugin(), "userdata").listFiles())
-                .map(file -> UUID.fromString(file.getName().split("\\.", 2)[0]))
-                .collect(Collectors.toList());
-
         // Initialize fake SQL & YAML data provider
-        final SynchronizedDataHandler<H, O> targetHandler;
-        final SynchronizedDataHandler<H, O> sourceHandler;
+        final Database<H, O> targetHandler;
+        final Database<H, O> sourceHandler;
         try {
             targetHandler = target.get();
             sourceHandler = source.get();
@@ -81,6 +72,7 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
             return false;
         }
 
+        final var playerIds = sourceHandler.retrieveAllPlayerIds();
         final double timeEstimation = (double) playerIds.size() / BATCH_AMOUNT * BATCH_PERIOD / 20;
         output.sendMessage("Processing " + playerIds.size() + " player data(s).. See console for details");
         output.sendMessage("ETA: " + DECIMAL_FORMAT.format(timeEstimation) + "s");
@@ -114,8 +106,8 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                     try {
                         final UUID playerId = playerIds.get(index);
                         final H offlinePlayerData = manager.newPlayerData(new MMOPlayerData(playerId));
-                        sourceHandler.loadData(offlinePlayerData);
-                        targetHandler.saveData(offlinePlayerData, false);
+                        sourceHandler.loadData(offlinePlayerData, true);
+                        targetHandler.saveData(offlinePlayerData, SaveReason.LOG_OUT);
                     } catch (RuntimeException exception) {
                         errorCount++;
                         exception.printStackTrace();

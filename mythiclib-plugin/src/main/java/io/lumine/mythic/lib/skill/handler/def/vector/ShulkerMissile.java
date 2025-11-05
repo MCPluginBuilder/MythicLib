@@ -2,18 +2,17 @@ package io.lumine.mythic.lib.skill.handler.def.vector;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -25,6 +24,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
     public ShulkerMissile() {
@@ -43,12 +43,12 @@ public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
     public void whenCast(VectorSkillResult result, SkillMetadata skillMeta) {
         final Player caster = skillMeta.getCaster().getPlayer();
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 3, handler -> new BukkitRunnable() {
             double n = 0;
 
             public void run() {
                 if (n++ > 3) {
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -57,10 +57,10 @@ public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
                 shulkerBullet.setShooter(caster);
                 new ShulkerMissileHandler(skillMeta.getCaster(), shulkerBullet, result.getTarget(), (long) (skillMeta.getParameter("duration") * 20), skillMeta.getParameter("damage"), (int) (20 * skillMeta.getParameter("effect-duration")));
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 3);
+        });
     }
 
-    public static class ShulkerMissileHandler extends TemporaryListener {
+    static class ShulkerMissileHandler extends TemporaryHandler {
         private final PlayerMetadata caster;
         private final ShulkerBullet bullet;
         private final Vector vel;
@@ -69,6 +69,8 @@ public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
         private final int effectDuration;
 
         public ShulkerMissileHandler(PlayerMetadata caster, ShulkerBullet bullet, Vector vel, long duration, double damage, int effectDuration) {
+            super(caster.getData());
+
             this.caster = caster;
             this.bullet = bullet;
             this.vel = vel;
@@ -76,19 +78,24 @@ public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
             this.damage = damage;
             this.effectDuration = effectDuration;
 
-            registerRunnable(new BukkitRunnable() {
+            runTask(runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+        }
+
+        @Override
+        protected @Nullable BukkitRunnable newTask() {
+            return new BukkitRunnable() {
                 double ti = 0;
 
                 public void run() {
                     if (bullet.isDead() || ti++ >= duration) close();
                     else bullet.setVelocity(vel);
                 }
-            }, runnable -> runnable.runTaskTimer(MythicLib.plugin, 0, 1));
+            };
         }
 
         @Override
-        public void whenClosed() {
-            if (!bullet.isDead()) bullet.remove();
+        public void onClose() {
+            bullet.remove();
         }
 
         @EventHandler

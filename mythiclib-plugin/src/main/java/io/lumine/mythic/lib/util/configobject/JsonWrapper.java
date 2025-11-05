@@ -41,35 +41,145 @@ public class JsonWrapper implements ConfigObject {
         return str == null || str.isEmpty() ? null : str;
     }
 
+    //region Getters
+
     @Override
-    public String getString(String key) {
-        return object.get(key).getAsString();
+    public @NotNull String getString(@NotNull String key) {
+        final var obj = this.object.get(key);
+        if (obj == null) throw new MissingArgumentException(key);
+        return obj.getAsString();
     }
 
     @Override
-    public String getString(String key, String defaultValue) {
-        return object.has(key) ? getString(key) : defaultValue;
+    public @Nullable String getString(@NotNull String key, @Nullable String defaultValue) {
+        final var obj = object.get(key);
+        return obj != null ? obj.getAsString() : defaultValue;
     }
 
     @Override
-    public double getDouble(String key) {
-        return object.get(key).getAsDouble();
+    public double getDouble(@NotNull String key) {
+        final var obj = this.object.get(key);
+        if (obj == null) throw new MissingArgumentException(key);
+        return obj.getAsDouble();
     }
 
     @Override
-    public double getDouble(String key, double defaultValue) {
-        return object.has(key) ? getDouble(key) : defaultValue;
+    public double getDouble(@NotNull String key, double defaultValue) {
+        final var obj = object.get(key);
+        return obj != null ? obj.getAsDouble() : defaultValue;
     }
 
     @Override
-    public int getInt(String key) {
-        return object.get(key).getAsInt();
+    public int getInt(@NotNull String key) {
+        final var obj = this.object.get(key);
+        if (obj == null) throw new MissingArgumentException(key);
+        return obj.getAsInt();
     }
 
     @Override
-    public int getInt(String key, int defaultValue) {
-        return object.has(key) ? getInt(key) : defaultValue;
+    public int getInt(@NotNull String key, int defaultValue) {
+        final var obj = object.get(key);
+        return obj != null ? obj.getAsInt() : defaultValue;
     }
+
+    @Override
+    public float getFloat(@NotNull String key) {
+        final var obj = this.object.get(key);
+        if (obj == null) throw new MissingArgumentException(key);
+        return obj.getAsFloat();
+    }
+
+    @Override
+    public float getFloat(@NotNull String key, float defaultValue) {
+        final var obj = object.get(key);
+        return obj == null ? defaultValue : obj.getAsFloat();
+    }
+
+    @Override
+    public boolean getBoolean(@NotNull String key) {
+        return object.get(key).getAsBoolean();
+    }
+
+    @Override
+    public boolean getBoolean(@NotNull String key, boolean defaultValue) {
+        return object.has(key) ? getBoolean(key) : defaultValue;
+    }
+
+    //endregion
+
+    //region Finders
+
+    @Override
+    public String string(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsString();
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public String stringFb(@NotNull String defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsString();
+        return defaultValue;
+    }
+
+    @Override
+    public int integer(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsInt();
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public int integer(int defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsInt();
+        return defaultValue;
+    }
+
+    @Override
+    public double dble(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsDouble();
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public double dble(double defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsDouble();
+        return defaultValue;
+    }
+
+    @Override
+    public float flpt(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsFloat();
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public float flpt(float defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsFloat();
+        return defaultValue;
+    }
+
+    @Override
+    public boolean bool(@NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsBoolean();
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Override
+    public boolean bool(boolean defaultValue, @NotNull String... aliases) {
+        for (var alias : aliases)
+            if (object.has(alias)) return object.get(alias).getAsBoolean();
+        return defaultValue;
+    }
+
+    //endregion
 
     @NotNull
     @Override
@@ -84,16 +194,6 @@ public class JsonWrapper implements ConfigObject {
         } else throw new IllegalArgumentException("Expecting either a string or object");
 
         return new JsonWrapper(key, loadFrom);
-    }
-
-    @Override
-    public boolean getBoolean(String key) {
-        return object.get(key).getAsBoolean();
-    }
-
-    @Override
-    public boolean getBoolean(String key, boolean defaultValue) {
-        return object.has(key) ? getBoolean(key) : defaultValue;
     }
 
     @NotNull

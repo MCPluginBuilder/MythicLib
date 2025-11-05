@@ -1,21 +1,22 @@
 package io.lumine.mythic.lib.skill.handler.def.item;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.ItemSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
+import io.lumine.mythic.lib.util.TemporaryHandler;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
-import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Item_Bomb extends SkillHandler<ItemSkillResult> {
     public Item_Bomb() {
@@ -25,7 +26,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
     }
 
     @Override
-    public ItemSkillResult getResult(SkillMetadata meta) {
+    public @NotNull ItemSkillResult getResult(SkillMetadata meta) {
         return new ItemSkillResult(meta, Material.COAL_BLOCK);
     }
 
@@ -38,7 +39,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
         item.getEntity().setVelocity(result.getTarget().multiply(1.3));
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 2, 0);
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             int j = 0;
 
             public void run() {
@@ -59,7 +60,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
                     item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.ENTITY_GENERIC_EXPLODE, 3, 0);
 
                     item.close();
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -67,6 +68,6 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
                 item.getEntity().getWorld().spawnParticle(VParticle.FIREWORK.get(), item.getEntity().getLocation().add(0, .2, 0), 1, 0, 0, 0, .1);
                 item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.BLOCK_NOTE_BLOCK_HAT, 2, (float) (.5 + (j / 40. * 1.5)));
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

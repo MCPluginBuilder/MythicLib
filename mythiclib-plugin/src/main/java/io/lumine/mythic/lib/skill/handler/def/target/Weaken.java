@@ -1,18 +1,19 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.api.event.AttackEvent;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Weaken extends SkillHandler<TargetSkillResult> {
     public Weaken() {
@@ -22,7 +23,7 @@ public class Weaken extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta);
     }
 
@@ -32,8 +33,7 @@ public class Weaken extends SkillHandler<TargetSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         new ParabolicProjectile(caster.getPlayer().getLocation().add(0, 1, 0), target.getLocation().add(0, target.getHeight() / 2, 0), randomVector(caster.getPlayer()), () -> {
-            if (!target.isDead())
-                new Weakened(target, skillMeta.getParameter("ratio"), skillMeta.getParameter("duration"));
+            if (!target.isDead()) new Handler(skillMeta, target);
         }, 2, VParticle.WITCH.get());
     }
 
@@ -43,24 +43,28 @@ public class Weaken extends SkillHandler<TargetSkillResult> {
         return new Vector(Math.cos(a), .8, Math.sin(a)).normalize().multiply(.4);
     }
 
-    public static class Weakened extends TemporaryListener {
+    static class Handler extends TemporaryHandler {
         private final Entity entity;
-        private final double coef;
+        private final double damageCoefficient;
 
-        public Weakened(Entity entity, double ratio, double duration) {
+        public Handler(SkillMetadata skillMeta, Entity entity) {
+            //super(skillMeta.getCaster().getData());
+            //No need to attach a player to that skill
+
             this.entity = entity;
-            this.coef = 1 + ratio / 100;
+            this.damageCoefficient = 1 + skillMeta.getParameter("ratio") / 100;
+            double duration = skillMeta.getParameter("duration");
 
             new SmallParticleEffect(entity, VParticle.WITCH.get());
 
-            close((long) (duration * 20));
+            closeAfter((long) (duration * 20));
         }
 
         @EventHandler
         public void a(AttackEvent event) {
             if (event.getEntity().equals(entity)) {
                 event.getEntity().getWorld().spawnParticle(VParticle.WITCH.get(), entity.getLocation().add(0, entity.getHeight() / 2, 0), 16, .5, .5, .5, 0);
-                event.getDamage().multiplicativeModifier(coef);
+                event.getDamage().multiplicativeModifier(damageCoefficient);
             }
         }
     }

@@ -2,8 +2,6 @@ package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
-import io.lumine.mythic.lib.api.util.TemporaryListener;
-import io.lumine.mythic.lib.version.api.GameProfile;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
@@ -22,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class NoClipItem extends TemporaryListener {
+public class NoClipItem extends TemporaryHandler {
     private final Item item;
 
     /**
@@ -44,7 +42,7 @@ public class NoClipItem extends TemporaryListener {
     }
 
     @Override
-    public void whenClosed() {
+    public void onClose() {
         item.remove();
     }
 

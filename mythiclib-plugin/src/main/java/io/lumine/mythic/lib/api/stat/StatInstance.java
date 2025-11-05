@@ -7,13 +7,13 @@ import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -35,8 +35,6 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @NotNull
     private final Lazy<Optional<StatHandler>> handler;
 
-    public boolean updateRequired;
-
     public StatInstance(@NotNull StatMap map, @NotNull String stat) {
         this.map = map;
         this.stat = stat;
@@ -55,6 +53,10 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     public double getBase() {
         return handler.get().map(handler -> handler.getBaseValue(this)).orElse(0d);
+    }
+
+    public double getDefaultBase() {
+        return handler.get().map(StatHandler::getPlayerDefaultBase).orElse(0d);
     }
 
     /**
@@ -127,8 +129,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     @Override
     public void registerModifier(@NotNull StatModifier modifier) {
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
-        if (modifier.equals(current)) return; // Safeguard, that should never happen tho
-
+        // TODO change "Closeable". add one interface Openable and have code run here instead
+        // DO NOT TEST IF MODIFIER IS ALREADY IN THE MAP.
         if (current instanceof Closeable) ((Closeable) current).close();
         update();
     }
@@ -181,6 +183,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Updating and Buffering
 
+    public final AtomicBoolean updateRequired = new AtomicBoolean(false);
+
     /**
      * Forces an update on this stat instance. An important convention
      * is that NO UPDATES may be ran before all MMO plugins have loaded
@@ -189,67 +193,16 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Max Health, Movement Speed.
      */
     public void update() {
-        if (map.isBufferingUpdates()) updateRequired = true;
-        else handler.get().ifPresent(handler -> handler.runUpdate(this));
+        if (map.isBufferingUpdates()) updateRequired.set(true);
+        else handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     public void releaseUpdates() {
-        Validate.isTrue(!map.isBufferingUpdates(), "StatMap is still in buffer mode");
-        if (updateRequired) {
-            handler.get().ifPresent(handler -> handler.runUpdate(this));
-            updateRequired = false;
-        }
+        if (updateRequired.getAndSet(false) && !map.isBufferingUpdates())
+            handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     //endregion
-
-    //region Deprecated
-
-    @Deprecated
-    public ModifierPacket newPacket() {
-        return new ModifierPacket();
-    }
-
-    @Deprecated
-    public class ModifierPacket {
-        private final boolean previousBuffer;
-
-        @Deprecated
-        public ModifierPacket() {
-            previousBuffer = map.isBufferingUpdates();
-            map.bufferUpdates();
-        }
-
-        @Deprecated
-        public void addModifier(StatModifier modifier) {
-            StatInstance.this.registerModifier(modifier);
-        }
-
-        @Deprecated
-        public void remove(@NotNull UUID uniqueId) {
-            StatInstance.this.removeModifier(uniqueId);
-        }
-
-        @Deprecated
-        public void remove(@NotNull String key) {
-            StatInstance.this.removeIf(str -> str.equals(key));
-        }
-
-        @Deprecated
-        public void removeIf(@NotNull Predicate<String> condition) {
-            StatInstance.this.removeIf(condition);
-        }
-
-        @Deprecated
-        public void update() {
-            if (!previousBuffer) StatInstance.this.releaseUpdates();
-        }
-
-        @Deprecated
-        public void runUpdate() {
-            update();
-        }
-    }
 
     @Override
     @Deprecated

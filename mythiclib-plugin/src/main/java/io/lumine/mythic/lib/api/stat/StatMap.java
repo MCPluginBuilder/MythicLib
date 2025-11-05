@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.api.stat;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
+import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,30 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class StatMap implements PlayerStatProvider {
+public class StatMap extends PlayerDataMap implements PlayerStatProvider {
     private final MMOPlayerData data;
     private final Map<String, StatInstance> stats = new ConcurrentHashMap<>();
-
-    /**
-     * Update buffers address two issues.
-     * <p>
-     * First, it is useful to buffer stat updates on login because player
-     * data has not been fully loaded yet. Since MythicLib does not have
-     * long term storage for modifiers (especially stat modifiers related
-     * to vanilla attributes-based stats, mostly Max Health), it needs to
-     * wait for all plugins to load before sending any change to Bukkit.
-     * <p>
-     * It is also useful for MMOItems when refreshing a player's inventory and pause
-     * updates until MMOItems has finished swooping the full player's inventory.
-     * <p>
-     * A player StatMap always starts in buffering mode.
-     * On startup, player data is not loaded yet.
-     *
-     * @see StatMap#bufferUpdates()
-     * @see StatMap#releaseUpdates()
-     */
-    private boolean bufferUpdates = true;
 
     public StatMap(MMOPlayerData player) {
         this.data = player;
@@ -82,51 +63,59 @@ public class StatMap implements PlayerStatProvider {
         return stats.values();
     }
 
-    public void updateAll() {
+    @Override
+    public void onSessionOpen() {
 
         // Update caches and force updates
-        for (StatHandler handler : MythicLib.plugin.getStats().getHandlers()) {
-            final @Nullable StatInstance ins = handler.forcesUpdates() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
+        for (var handler : MythicLib.plugin.getStats().getHandlers()) {
+            final @Nullable var ins = handler.forcesUpdates() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
             if (ins == null) continue;
 
             ins.flushCache(); // Sometimes handlers are cached before mmodatas are loaded
             ins.update(); // Update all stats, whatever
         }
+    }
 
-        // Release updates
-        releaseUpdates();
+    @Override
+    protected void onSessionClose() {
+        flushCache();
     }
 
     public void flushCache() {
         stats.values().forEach(StatInstance::flushCache);
     }
 
+    //region Stat update buffers
+
+    /**
+     * It is useful to avoid multiple updates when applying multiple stat modifiers at once.
+     * For instance, when a player equips multiple items at once, or when MMOCore applies
+     * multiple buffs from varying sources.
+     * <p>
+     * This flag {@link #sessionOpen} also presents stat updates but for a different reason
+     * (stat maps are disabled when profile session is not alive).
+     * <p>
+     * Multi-thread safe implementation of updates buffered using
+     * an atomic integer to count the number of simultaneous threads
+     * buffering updates.
+     */
+    private final AtomicInteger updatesBuffered = new AtomicInteger(0);
+
     public boolean isBufferingUpdates() {
-        return bufferUpdates;
+        return updatesBuffered.get() > 0 || !sessionOpen;
     }
 
     public void bufferUpdates(@NotNull Runnable runnable) {
-        boolean buffered = !bufferUpdates;
-        bufferUpdates();
-        runnable.run();
-        if (buffered) releaseUpdates();
+        updatesBuffered.incrementAndGet();
+        try {
+            runnable.run();
+        } finally {
+            var current = updatesBuffered.decrementAndGet();
+            if (current == 0) stats.values().forEach(StatInstance::releaseUpdates);
+        }
     }
 
-    /**
-     * Not a safe method. Avoid using this method, and use the one
-     * provided instead, as this method requires the use of {@link #releaseUpdates()}
-     * which can mess with MMO plugin login logic.
-     *
-     * @see #bufferUpdates(Runnable)
-     */
-    public void bufferUpdates() {
-        bufferUpdates = true;
-    }
-
-    public void releaseUpdates() {
-        bufferUpdates = false;
-        stats.values().forEach(StatInstance::releaseUpdates);
-    }
+    //endregion
 
     /**
      * @param castHand The casting hand matters a lot! Should MythicLib take into account

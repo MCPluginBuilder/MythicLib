@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageMetadata;
@@ -9,12 +8,13 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Combo_Attack extends SkillHandler<TargetSkillResult> {
     public Combo_Attack() {
@@ -24,7 +24,7 @@ public class Combo_Attack extends SkillHandler<TargetSkillResult> {
     }
 
     @Override
-    public TargetSkillResult getResult(SkillMetadata meta) {
+    public @NotNull TargetSkillResult getResult(SkillMetadata meta) {
         return new TargetSkillResult(meta, 10, InteractionType.OFFENSE_SKILL);
     }
 
@@ -39,20 +39,22 @@ public class Combo_Attack extends SkillHandler<TargetSkillResult> {
         playEffect(target);
         skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.PHYSICAL);
 
-        new BukkitRunnable() {
-            int counter = 1;
+        TemporaryHandler.task(skillMeta.getCaster().getData(),
+                runnable -> runnable.runTaskTimer(MythicLib.plugin, ATTACK_PERIOD, ATTACK_PERIOD),
+                handler -> new BukkitRunnable() {
+                    int counter = 1;
 
-            @Override
-            public void run() {
-                if (counter++ >= count || UtilityMethods.isInvalidated(skillMeta.getCaster()) || target.isDead()) {
-                    cancel();
-                    return;
-                }
+                    @Override
+                    public void run() {
+                        if (counter++ >= count || target.isDead()) {
+                            handler.close();
+                            return;
+                        }
 
-                playEffect(target);
-                MythicLib.plugin.getDamage().registerAttack(new AttackMetadata(new DamageMetadata(damage, DamageType.SKILL, DamageType.PHYSICAL), target, skillMeta.getCaster()), true, true);
-            }
-        }.runTaskTimer(MythicLib.plugin, ATTACK_PERIOD, ATTACK_PERIOD);
+                        playEffect(target);
+                        MythicLib.plugin.getDamage().registerAttack(new AttackMetadata(new DamageMetadata(damage, DamageType.SKILL, DamageType.PHYSICAL), target, skillMeta.getCaster()), true, true);
+                    }
+                });
     }
 
     private void playEffect(Entity target) {

@@ -9,10 +9,10 @@ import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.CustomProjectileHandler;
 import io.lumine.mythic.lib.util.RayTrace;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,7 +38,8 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
-        new BukkitRunnable() {
+
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             int j = 0;
             final Vector vec = caster.getPlayer().getEyeLocation().getDirection();
             final Location loc = caster.getPlayer().getLocation().add(0, 1.3, 0);
@@ -46,7 +47,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
 
             public void run() {
                 if (j++ > 40) {
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -64,15 +65,15 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                     loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
                     double damage = skillMeta.getParameter("damage");
-                    skillMeta.getCaster().attack((LivingEntity) target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                    skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
 
-                    new BukkitRunnable() {
+                    TemporaryHandler.task(skillMeta.getCaster().getData(), r -> r.runTaskTimer(MythicLib.plugin, 3, 3), handler1 -> new BukkitRunnable() {
                         int i = 0;
 
                         @Override
                         public void run() {
                             if (i++ > 2) {
-                                cancel();
+                                handler1.close();
                                 return;
                             }
 
@@ -85,12 +86,12 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                                 skillMeta.getCaster().attack(result.getHit(), damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
                             result.draw(.13, tick -> tick.getWorld().spawnParticle(Particle.FLAME, tick, 0));
                         }
-                    }.runTaskTimer(MythicLib.plugin, 3, 3);
+                    });
 
-                    cancel();
+                    handler.close();
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 
     private Vector randomDirection() {

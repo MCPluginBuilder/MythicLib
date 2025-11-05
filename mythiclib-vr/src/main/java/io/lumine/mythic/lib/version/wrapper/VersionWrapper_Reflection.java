@@ -2,7 +2,6 @@ package io.lumine.mythic.lib.version.wrapper;
 
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
@@ -10,6 +9,7 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.api.ModernGameProfile;
 import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
@@ -29,7 +29,6 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
@@ -38,16 +37,19 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
+import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_21_R6.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -57,6 +59,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
     // Reflection stuff
     private final ServerVersion version;
     private final Method _CraftWorld_getHandle, _CraftPlayer_getHandle, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
+    private final Function<Material, net.minecraft.world.level.block.Block> _CraftBlockType_bukkitToMinecraft;
 
     public VersionWrapper_Reflection(ServerVersion version) throws NoSuchMethodException, ClassNotFoundException {
         generatorOutputs.add(Material.COBBLESTONE);
@@ -70,6 +73,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         var _CraftPlayer = obcClass("entity.CraftPlayer");
         var _CraftItemStack = obcClass("inventory.CraftItemStack");
         var _CraftSound = obcClass("CraftSound");
+        var _CraftBlockType = obcClass("block.CraftBlockType");
 
         // Methods
         _CraftWorld_getHandle = _CraftWorld.getDeclaredMethod("getHandle");
@@ -77,6 +81,16 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         _CraftItemStack_asNMSCopy = _CraftItemStack.getDeclaredMethod("asNMSCopy", ItemStack.class);
         _CraftItemStack_asBukkitCopy = _CraftItemStack.getDeclaredMethod("asBukkitCopy", net.minecraft.world.item.ItemStack.class);
         _CraftSound_minecraftToBukkit = _CraftSound.getDeclaredMethod("minecraftToBukkit", net.minecraft.sounds.SoundEvent.class);
+
+        // Lambdas
+        final var _CraftBlockType_bukkitToMinecraft = _CraftBlockType.getDeclaredMethod("bukkitToMinecraft", Material.class);
+        this._CraftBlockType_bukkitToMinecraft = material -> {
+            try {
+                return (net.minecraft.world.level.block.Block) _CraftBlockType_bukkitToMinecraft.invoke(null, material);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        };
     }
 
     private Class<?> obcClass(String obcClassPath) throws ClassNotFoundException {
@@ -238,7 +252,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
             nms = _CraftItemStack_asNMSCopy(item);
             final CustomData customDataTag = nms.get(DataComponents.CUSTOM_DATA);
-            compound = customDataTag == null ? new CompoundTag() : customDataTag.getUnsafe(); // F*ck
+            compound = customDataTag == null ? new CompoundTag() : customDataTag.copyTag();
         }
 
         @Override
@@ -319,7 +333,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
         @Override
         public void setCanMine(Collection<Material> blocks) {
-            List<net.minecraft.world.level.block.Block> nmsBlocks = blocks.stream().map(org.bukkit.craftbukkit.v1_21_R4.block.CraftBlockType::bukkitToMinecraft).collect(Collectors.toList());
+            List<net.minecraft.world.level.block.Block> nmsBlocks = blocks.stream().map(_CraftBlockType_bukkitToMinecraft).collect(Collectors.toList());
             List<BlockPredicate> list = new ArrayList<>();
             // First argument is not needed
             list.add(BlockPredicate.Builder.block().of(null, nmsBlocks).build());
@@ -453,23 +467,16 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
     @Override
     public String getSkullValue(Block block) {
-        ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
-        SkullBlockEntity skull = (SkullBlockEntity) nmsWorld.getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         if (skull.getOwnerProfile() == null) return "";
-        return skull.getOwnerProfile()
-                .gameProfile()
-                .getProperties()
-                .get("textures").iterator().next().value();
+        return skull.getOwnerProfile().partialProfile().getProperties().get("textures").iterator().next().value();
     }
 
     @Override
-    public void setSkullValue(Block block, String value) {
-        var nmsWorld = _CraftWorld_getHandle(block.getWorld());
-        var skull = (SkullBlockEntity) nmsWorld.getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var profile = new GameProfile(UUID.randomUUID(), PLAYER_PROFILE_NAME);
-        profile.getProperties().put("textures", new Property("textures", value));
-        skull.setOwner(new ResolvableProfile(profile));
-        skull.setChanged();
+    public void setSkullValue(Block block, String textureValue) {
+        final var state = (Skull) block.getState();
+        final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
+        state.setOwnerProfile(((ModernGameProfile) newProfile(uniqueId, textureValue)).bukkit);
     }
 
     @Override

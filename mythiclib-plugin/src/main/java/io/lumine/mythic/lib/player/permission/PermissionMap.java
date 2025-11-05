@@ -18,18 +18,27 @@ public class PermissionMap extends ModifierMap<PermissionModifier> {
         super(playerData);
     }
 
+    @Override
+    protected void onSessionOpen() {
+        // Lazy initialization of the attachment
+    }
+
+    @Override
+    protected void onSessionClose() {
+        if (attachment != null) {
+            getPlayerData().getPlayer().removeAttachment(attachment);
+            attachment = null;
+        }
+    }
+
     /**
      * If plugins are not using permissions, simply don't
      * instantiate a useless permission attachment
      */
     @NotNull
     private PermissionAttachment attachment() {
-        if (attachment != null) return attachment;
-        return attachment = getPlayerData().getPlayer().addAttachment(MythicLib.plugin);
-    }
-
-    public void flushAttachment() {
-        attachment = null;
+        if (attachment == null) attachment = getPlayerData().getPlayer().addAttachment(MythicLib.plugin);
+        return attachment;
     }
 
     @Override

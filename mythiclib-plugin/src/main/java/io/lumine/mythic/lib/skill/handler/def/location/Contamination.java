@@ -1,13 +1,13 @@
 package io.lumine.mythic.lib.skill.handler.def.location;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
-import io.lumine.mythic.lib.version.VParticle;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
+import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -15,6 +15,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Contamination extends SkillHandler<LocationSkillResult> {
     public Contamination() {
@@ -24,7 +25,7 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
     }
 
     @Override
-    public LocationSkillResult getResult(SkillMetadata meta) {
+    public @NotNull LocationSkillResult getResult(SkillMetadata meta) {
         return new LocationSkillResult(meta);
     }
 
@@ -36,14 +37,16 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
         double duration = Math.min(30, skillMeta.getParameter("duration")) * 20;
 
         loc.add(0, .1, 0);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final double dps = skillMeta.getParameter("damage") / 2;
             double ti = 0;
             int j = 0;
 
             public void run() {
-                if (j++ >= duration)
-                    cancel();
+                if (++j >= duration) {
+                    handler.close();
+                    return;
+                }
 
                 loc.getWorld().spawnParticle(VParticle.REDSTONE.get(), loc.clone().add(Math.cos(ti / 3) * 5, 0, Math.sin(ti / 3) * 5), 1,
                         new Particle.DustOptions(Color.PURPLE, 1));
@@ -61,6 +64,6 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
                             skillMeta.getCaster().attack((LivingEntity) entity, dps, false, DamageType.SKILL, DamageType.MAGIC);
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

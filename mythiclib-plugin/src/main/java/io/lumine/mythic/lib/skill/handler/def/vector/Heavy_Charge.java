@@ -1,19 +1,19 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
     public Heavy_Charge() {
@@ -23,7 +23,7 @@ public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -33,13 +33,15 @@ public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
 
         double knockback = skillMeta.getParameter("knockback");
 
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = result.getTarget().setY(-1);
             double ti = 0;
 
             public void run() {
-                if (ti++ > 20)
-                    cancel();
+                if (ti++ > 20) {
+                    handler.close();
+                    return;
+                }
 
                 if (ti < 9) {
                     caster.setVelocity(vec);
@@ -53,10 +55,10 @@ public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
                         target.setVelocity(caster.getVelocity().setY(0.3).multiply(1.7 * knockback));
                         caster.setVelocity(caster.getVelocity().setX(0).setY(0).setZ(0));
                         skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.PHYSICAL);
-                        cancel();
+                        handler.close();
                         break;
                     }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

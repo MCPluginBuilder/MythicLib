@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * @see io.lumine.mythic.lib.util.MMOPlugin
+ * @see MMOPlugin
  */
+@Deprecated
 @NotUsed
 public class MMOPluginImpl extends JavaPlugin {
     private final List<Module> modules = new ArrayList<>();

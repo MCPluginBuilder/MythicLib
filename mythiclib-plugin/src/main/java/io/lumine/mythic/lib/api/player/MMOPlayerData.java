@@ -3,9 +3,11 @@ package io.lumine.mythic.lib.api.player;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
+import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.listener.PlayerListener;
+import io.lumine.mythic.lib.message.actionbar.ActionBarHandler;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.player.cooldown.CooldownType;
@@ -15,12 +17,12 @@ import io.lumine.mythic.lib.player.potion.PermanentPotionEffectMap;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
+import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.util.MMOPlugin;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
@@ -37,55 +39,17 @@ import java.util.function.Consumer;
 public class MMOPlayerData {
 
     /**
-     * UUID of the Player entity. It has to be one of the
-     * two among the profile and official player ID.
-     */
-    @NotNull
-    private final UUID entityId;
-    private final boolean lookup;
-
-    @Nullable
-    private UUID profileId, officialId;
-
-    @Nullable
-    private Player player;
-
-    /**
-     * Last time the player either logged in or logged out.
-     */
-    private long lastLogActivity;
-
-    /**
      * This fixes a very specific issue with recent versions of Spigot (1.19+).
      * Bukkit interact events are called when a player drops an item. In specific
      * scenarios, dropping an item triggers left-click abilities, which sucks.
      */
     public long lastDrop;
 
-    /**
-     * When logging in, MythicLib waits for all MMO plugins
-     * to fill in the empty player's StatMap before performing
-     * stat updates.
-     */
-    @Nullable
-    private List<MMOPlugin> pluginLoadQueue = new LinkedList<>();
-
-    // Temporary player data
-    private final CooldownMap cooldownMap = new CooldownMap();
-    private final StatMap statMap = new StatMap(this);
-    private final SkillModifierMap skillModifierMap = new SkillModifierMap(this);
-    private final PermanentPotionEffectMap permEffectMap = new PermanentPotionEffectMap(this);
-    private final ParticleEffectMap particleEffectMap = new ParticleEffectMap(this);
-    private final PassiveSkillMap passiveSkillMap = new PassiveSkillMap(this);
-    private final PermissionMap permissionMap = new PermissionMap(this);
-    private final VariableList variableList = new VariableList(VariableScope.PLAYER);
-
-    /**
-     * Map used by other plugins to save any type of data. This
-     * is typically used by MMOCore and MMOItems to store the player
-     * resources when the player logs off.
-     */
+    // Information shared across all sessions
+    private final ActionBarHandler actionBar = new ActionBarHandler(this);
+    private final List<TemporaryHandler> tempHandlers = new ArrayList<>();
     private final Map<String, Object> externalData = new HashMap<>();
+    private final VariableList variableList = new VariableList(VariableScope.PLAYER);
 
     /**
      * @param player Player logging in. Original UUID is taken from that player
@@ -93,6 +57,7 @@ public class MMOPlayerData {
     private MMOPlayerData(@NotNull Player player) {
         this.lookup = false;
         this.entityId = Objects.requireNonNull(player, "Player cannot be null").getUniqueId();
+        this.officialId = player.getUniqueId();
     }
 
     /**
@@ -106,7 +71,6 @@ public class MMOPlayerData {
         this.lookup = true;
         this.entityId = Objects.requireNonNull(uniqueId, "UUID cannot be null");
         this.officialId = uniqueId;
-        this.profileId = uniqueId;
     }
 
     /**
@@ -125,152 +89,29 @@ public class MMOPlayerData {
         return entityId;
     }
 
-    /**
-     * This method will throw an error if the player hasn't chosen a profile
-     * yet. It is also guaranteed to throw an error if proxy-based profiles
-     * are not enabled.
-     * <p>
-     * Developers are discouraged from using this method.
-     *
-     * @return The Mojang user i.e official UUID
-     */
-    @NotNull
-    public UUID getOfficialId() {
-        return Objects.requireNonNull(officialId, "No official ID provided");
-    }
-
-    public void setOfficialId(@NotNull UUID officialId) {
-        this.officialId = Objects.requireNonNull(officialId, "Official ID cannot be null");
-    }
-
-    public boolean hasOfficialId() {
-        return officialId != null;
-    }
+    //region Player session
 
     /**
-     * If support for the Profile API is enabled, this returns the current
-     * player's profile ID. This method will throw an error if they have
-     * not chosen a profile yet.
-     * <p>
-     * Developers are discouraged from using this method.
-     *
-     * @return The UUID of the current player's profile
+     * UUID of the Player entity. It has to be one of the
+     * two among the profile and official player ID.
      */
     @NotNull
-    public UUID getProfileId() {
-        return Objects.requireNonNull(profileId, "No profile has been chosen yet");
-    }
+    private final UUID entityId;
 
-    public void setProfileId(@Nullable UUID profileId) {
-        this.profileId = profileId;
-    }
+    @Nullable
+    private Player player;
+    @Nullable
+    private String lastPlayerName;
 
-    public boolean hasProfile() {
-        return profileId != null;
-    }
+    private final boolean lookup;
+
+    /**
+     * Last time the player either logged in or logged out.
+     */
+    private long lastLogActivity;
 
     public boolean isLookup() {
         return lookup;
-    }
-
-    public boolean hasFullySynchronized() {
-        return pluginLoadQueue == null;
-    }
-
-    public void markAsSynchronized(@NotNull MMOPlugin plugin, @NotNull SynchronizedDataHolder holder) {
-        Validate.notNull(pluginLoadQueue, "Player is offline or MMO player data already synchronized");
-        Validate.isTrue(pluginLoadQueue.remove(plugin), "Player data already marked synchronized");
-
-        // Full MMO plugin synchronization
-        if (pluginLoadQueue.isEmpty()) {
-            pluginLoadQueue = null;
-            if (lookup) return;
-
-            // Ran when all plugin data has finished loading
-            statMap.updateAll();
-        }
-    }
-
-    /**
-     * @return The player's stat map which can be used by any other plugins to
-     *         apply stat modifiers to ANY MMOItems/MMOCore/external stats,
-     *         calculate stat values, etc.
-     */
-    @NotNull
-    public StatMap getStatMap() {
-        return statMap;
-    }
-
-    /**
-     * @return The player's skill modifier map. This map applies modifications
-     *         to numerical skill parameters (damage, cooldown...)
-     */
-    @NotNull
-    public SkillModifierMap getSkillModifierMap() {
-        return skillModifierMap;
-    }
-
-    @NotNull
-    public PermanentPotionEffectMap getPermanentEffectMap() {
-        return permEffectMap;
-    }
-
-    @NotNull
-    public ParticleEffectMap getParticleEffectMap() {
-        return particleEffectMap;
-    }
-
-    @NotNull
-    public PermissionMap getPermissionMap() {
-        return permissionMap;
-    }
-
-    /**
-     * @return All active skill triggers
-     */
-    @NotNull
-    public PassiveSkillMap getPassiveSkillMap() {
-        return passiveSkillMap;
-    }
-
-    @NotNull
-    public Collection<PassiveSkill> isolateSkills(@NotNull TriggerMetadata triggerMetadata) {
-        return triggerMetadata.getTriggerType().isActionHandSpecific() ? passiveSkillMap.isolateModifiers(triggerMetadata.getActionHand()) : passiveSkillMap.getModifiers();
-    }
-
-    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata) {
-        triggerSkills(triggerMetadata, isolateSkills(triggerMetadata));
-    }
-
-    /**
-     * Trigger a specific set of skills, with a specific context.
-     *
-     * @param triggerMetadata Context in which skills were triggered
-     * @param skills          The list of skills being potentially triggered
-     */
-    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills) {
-        if (getPlayer().getGameMode() == GameMode.SPECTATOR || !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES))
-            return;
-
-        for (PassiveSkill skill : skills) {
-            final SkillHandler<?> handler = skill.getTriggeredSkill().getHandler();
-            if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
-                skill.getTriggeredSkill().cast(triggerMetadata);
-        }
-    }
-
-    /**
-     * Ticks every second in-game for every online player
-     */
-    public void tickOnline() {
-
-        // Apply permanent potion effects
-        permEffectMap.applyPermanentPotionEffects();
-    }
-
-    @NotNull
-    public VariableList getVariableList() {
-        return variableList;
     }
 
     /**
@@ -280,18 +121,14 @@ public class MMOPlayerData {
         return lastLogActivity;
     }
 
-    /**
-     * When a player logs off, the MythicLib player data is cached for
-     * an extra delay which is set to 24 hours before it is finally removed
-     * from the memory.
-     * <p>
-     * Cache time out is set to one full day. If the player does NOT reconnect
-     * after one day, the temporary player data will be completely lost.
-     */
-    private static final long CACHE_TIME_OUT = 1000 * 60 * 60 * 24;
+    @NotNull
+    public String getPlayerName() {
+        return Objects.requireNonNull(lastPlayerName, "Player object never provided");
+    }
 
     public boolean isTimedOut() {
-        return !isOnline() && lastLogActivity + CACHE_TIME_OUT < System.currentTimeMillis();
+        this.savedProfileSessions.values().removeIf(ProfileSession::isTimedOut);
+        return !isOnline() && this.savedProfileSessions.isEmpty();
     }
 
     /**
@@ -305,11 +142,11 @@ public class MMOPlayerData {
     }
 
     /**
-     * Throws an IAE if the player is currently not online
-     * OR if the Player instance was not cached in yet.
+     * Throws an exception if the player is currently not online
+     * OR if the Player object has not been provided yet.
      * <p>
      * MythicLib updates the Player instance on event priority LOW
-     * using {@link PlayerJoinEvent} here: {@link PlayerListener}
+     * using {@link PlayerJoinEvent} in class {@link PlayerListener}
      *
      * @return Returns the corresponding Player instance.
      */
@@ -326,38 +163,145 @@ public class MMOPlayerData {
      */
     public void updatePlayer(@Nullable Player player) {
         this.player = player;
-        this.lastLogActivity = System.currentTimeMillis();
-
-        // When logging in (called BEFORE all MMO plugins)
         if (player != null) {
-            pluginLoadQueue = new ArrayList<>();
-            for (MMOPlugin mmoPlugin : MythicLib.plugin.getMMOPlugins())
-                if (mmoPlugin.hasData()) pluginLoadQueue.add(mmoPlugin);
+            this.lastPlayerName = player.getName();
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null);
         }
-
-        // When logging off (called AFTER all MMO plugins)
-        else {
-            permissionMap.flushAttachment();
-            statMap.flushCache();
-        }
+        this.lastLogActivity = System.currentTimeMillis();
     }
 
+    //endregion
+
+    //region Profile session
+
+    @NotNull
+    private UUID officialId;
+
+    @Nullable
+    private ProfileSession profileSession;
+
     /**
-     * Used when damage mitigation or a crit occurs to apply cooldown
+     * Watch out for the `null` key for when no profile is chosen!
+     */
+    private final Map<UUID, ProfileSession> savedProfileSessions = new HashMap<>();
+
+    /**
+     * This method will throw an error if the player hasn't chosen a profile
+     * yet. It is also guaranteed to throw an error if proxy-based profiles
+     * are not enabled.
+     * <p>
+     * Developers are discouraged from using this method.
      *
-     * @param cd    The type of mitigation
-     * @param value Mitigation cooldown in seconds
+     * @return The official Mojang/Microsoft account UUID
      */
-    public void applyCooldown(CooldownType cd, double value) {
-        cooldownMap.applyCooldown(cd.name(), value);
+    @NotNull
+    public UUID getOfficialId() {
+        return officialId;
+    }
+
+    public void setOfficialId(@NotNull UUID officialId) {
+        Validate.isTrue(MythicLib.plugin.getProfileMode() == ProfileMode.PROXY, "Player official IDs can only change in proxy profile mode");
+        this.officialId = Objects.requireNonNull(officialId, "Official ID cannot be null");
     }
 
     /**
-     * @param cd Cooldown type
-     * @return If the mechanic is currently on cooldown for the player
+     * If support for the Profile API is enabled, this returns the current
+     * player's profile ID. This method will throw an error if they have
+     * not chosen a profile yet.
+     *
+     * @return The UUID of the current player's profile
      */
-    public boolean isOnCooldown(CooldownType cd) {
-        return cooldownMap.isOnCooldown(cd.name());
+    @NotNull
+    public UUID getProfileId() {
+        return Objects.requireNonNull(profileSession, "No profile chosen").getProfileId();
+    }
+
+    /**
+     * Saves the current profile session temporarily. If the player leaves this
+     * session for too long, it will eventually be discarded.
+     */
+    public void saveCurrentProfileSession() {
+        Validate.notNull(this.profileSession, "No profile session to save");
+        Validate.isTrue(this.profileSession.isDead(), "Current profile session is still alive");
+
+        var mapKey = this.profileSession.hasProfile() ? this.profileSession.getProfileId() : null;
+        this.savedProfileSessions.put(mapKey, this.profileSession);
+        this.profileSession = null;
+    }
+
+    public boolean hasProfile() {
+        return profileSession != null && profileSession.hasProfile();
+    }
+
+    public boolean hasProfileSession() {
+        return profileSession != null;
+    }
+
+    /**
+     * Looks for previous profile sessions with the same profile ID. If one
+     * is found, restore the previous session with all its data. If none is
+     * found, create a new profile session and open it.
+     *
+     * @param profileId ID of profile opened, or null if no profile
+     */
+    public void chooseProfile(@Nullable UUID profileId) {
+        Validate.isTrue(!lookup, "Cannot choose a profile in lookup mode");
+        Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
+
+        // Restore previous session
+        final ProfileSession restored = savedProfileSessions.remove(profileId);
+        if (restored != null) {
+            this.profileSession = restored;
+            this.profileSession.reset();
+            return;
+        }
+
+        // Create new session
+        this.profileSession = new ProfileSession(this, profileId);
+    }
+
+    @NotNull
+    public ProfileSession getProfileSession() {
+        return Objects.requireNonNull(profileSession, "No profile chosen");
+    }
+
+    public void addTemporaryHandler(@NotNull TemporaryHandler handler) {
+        Validate.notNull(handler, "Handler cannot be null");
+        tempHandlers.add(handler);
+    }
+
+    public void removeTemporaryHandler(@NotNull TemporaryHandler handler) {
+        Validate.notNull(tempHandlers.remove(handler), "Handler is not registered");
+    }
+
+    public void clearTemporaryHandlers() {
+        tempHandlers.forEach(handler -> handler.closeNow(true));
+        tempHandlers.clear();
+    }
+
+    public boolean isPlaying() {
+        return profileSession != null && profileSession.isReady();
+    }
+
+    //endregion
+
+    //region Session data getters
+
+    private final ProfileSession fallbackProfileSession = new ProfileSession(this, UUID.randomUUID());
+
+    @NotNull
+    protected ProfileSession safePlayerSession() {
+        return Objects.requireNonNullElse(profileSession, fallbackProfileSession);
+    }
+
+    /**
+     * @return The player's stat map which can be used by any other plugins to
+     *         apply stat modifiers to ANY MMOItems/MMOCore/external stats,
+     *         calculate stat values, etc.
+     */
+    @NotNull
+    public StatMap getStatMap() {
+        return safePlayerSession().getStatMap();
     }
 
     /**
@@ -369,7 +313,93 @@ public class MMOPlayerData {
      */
     @NotNull
     public CooldownMap getCooldownMap() {
-        return cooldownMap;
+        return safePlayerSession().getCooldownMap();
+    }
+
+    /**
+     * @return The player's skill modifier map. This map applies modifications
+     *         to numerical skill parameters (damage, cooldown...)
+     */
+    @NotNull
+    public SkillModifierMap getSkillModifierMap() {
+        return safePlayerSession().getSkillModifierMap();
+    }
+
+    @NotNull
+    public PermanentPotionEffectMap getPermanentEffectMap() {
+        return safePlayerSession().getPermanentEffectMap();
+    }
+
+    @NotNull
+    public ParticleEffectMap getParticleEffectMap() {
+        return safePlayerSession().getParticleEffectMap();
+    }
+
+    /**
+     * @return All currently registered player passive skills
+     */
+    @NotNull
+    public PassiveSkillMap getPassiveSkillMap() {
+        return safePlayerSession().getPassiveSkillMap();
+    }
+
+    @NotNull
+    public PermissionMap getPermissionMap() {
+        return safePlayerSession().getPermissionMap();
+    }
+
+    //endregion
+
+    @NotNull
+    public VariableList getVariableList() {
+        return variableList;
+    }
+
+    @NotNull
+    public ActionBarHandler getActionBar() {
+        return actionBar;
+    }
+
+    @NotNull
+    public Collection<PassiveSkill> isolateSkills(@NotNull TriggerMetadata triggerMetadata) {
+        return triggerMetadata.getTriggerType().isActionHandSpecific() ? getPassiveSkillMap().isolateModifiers(triggerMetadata.getActionHand()) : getPassiveSkillMap().getModifiers();
+    }
+
+    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata) {
+        triggerSkills(triggerMetadata, isolateSkills(triggerMetadata));
+    }
+
+    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills) {
+        this.triggerSkills(triggerMetadata, skills, true);
+    }
+
+    /**
+     * Trigger a specific set of skills, with a specific context.
+     *
+     * @param triggerMetadata Context in which skills were triggered
+     * @param skills          The list of skills being potentially triggered
+     * @param flagCheck       Whether to check for WorldGuard flag. This allows for an optimization where
+     *                        projectiles cache the value of the WG flag and only recompute it every 2 seconds.
+     */
+    public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills, boolean flagCheck) {
+        if (getPlayer().getGameMode() == GameMode.SPECTATOR) return;
+        if (flagCheck && MythicLib.plugin.getMMOConfig().flagCheckSkills && !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES))
+            return;
+
+        for (var skill : skills) {
+            final var handler = skill.getTriggeredSkill().getHandler();
+            if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
+                skill.getTriggeredSkill().cast(triggerMetadata);
+        }
+    }
+
+    /**
+     * Ticks every second in-game for every online player
+     */
+    public void tickOnline() {
+
+        // Apply permanent potion effects
+        getPermanentEffectMap().applyPermanentPotionEffects();
     }
 
     @Nullable
@@ -400,6 +430,8 @@ public class MMOPlayerData {
         return getUniqueId().hashCode();
     }
 
+    //region Static methods
+
     private static final Map<UUID, MMOPlayerData> PLAYER_DATA = new WeakHashMap<>();
 
     /**
@@ -412,10 +444,11 @@ public class MMOPlayerData {
      *
      * @param player Player whose data should be initialized
      */
+    @NotNull
     public static MMOPlayerData setup(@NotNull Player player) {
-        final MMOPlayerData found = PLAYER_DATA.computeIfAbsent(player.getUniqueId(), uuid -> new MMOPlayerData(player));
-        found.updatePlayer(player);
-        return found;
+        final var playerData = PLAYER_DATA.computeIfAbsent(player.getUniqueId(), uuid -> new MMOPlayerData(player));
+        playerData.updatePlayer(player);
+        return playerData;
     }
 
     @NotNull
@@ -485,16 +518,12 @@ public class MMOPlayerData {
     }
 
     /**
-     * Calls some method for every player online. Performance method
-     * to avoid useless list calculations since it is being used by
-     * MythicLib 20 times a second for every online player.
-     * <p>
-     * This method is more performant than the following code:
-     * <code>Bukkit.getOnlinePlayers().forEach(player -> MMOPlayerData.get(player)......);</code>
+     * Calls some method for every player that has started playing
+     * i.e that has chosen a profile and loaded his data.
      */
-    public static void forEachOnline(@NotNull Consumer<MMOPlayerData> action) {
-        for (MMOPlayerData registered : PLAYER_DATA.values())
-            if (registered.isOnline()) action.accept(registered);
+    public static void forEachPlaying(@NotNull Consumer<MMOPlayerData> action) {
+        for (var registered : PLAYER_DATA.values())
+            if (registered.isPlaying()) action.accept(registered);
     }
 
     /**
@@ -505,7 +534,39 @@ public class MMOPlayerData {
         PLAYER_DATA.values().removeIf(MMOPlayerData::isTimedOut);
     }
 
-    //region Deprecated API
+    //endregion
+
+    //region Deprecated
+
+    /**
+     * @see #forEachPlaying(Consumer)
+     * @deprecated
+     */
+    @Deprecated
+    public static void forEachOnline(@NotNull Consumer<MMOPlayerData> action) {
+        for (MMOPlayerData registered : PLAYER_DATA.values())
+            if (registered.isOnline()) action.accept(registered);
+    }
+
+    @Deprecated
+    public boolean hasStartedPlaying() {
+        return isPlaying();
+    }
+
+    @Deprecated
+    public boolean hasOfficialId() {
+        return true;
+    }
+
+    @Deprecated
+    public void setProfileId(@Nullable UUID profileId) {
+        throw new IllegalStateException("Cannot change profile ID");
+    }
+
+    @Deprecated
+    public boolean hasFullySynchronized() {
+        return isPlaying();
+    }
 
     @Deprecated
     public long getLastLogin() {
@@ -537,14 +598,14 @@ public class MMOPlayerData {
 
     @Deprecated
     public void triggerSkills(@NotNull TriggerType triggerType, @Nullable PlayerMetadata caster, @Nullable Entity target, @Nullable AttackMetadata attackMetadata) {
-        final Iterable<PassiveSkill> candidates = triggerType.isActionHandSpecific() ? passiveSkillMap.isolateModifiers(caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand()) : passiveSkillMap.getModifiers();
+        final Iterable<PassiveSkill> candidates = triggerType.isActionHandSpecific() ? getPassiveSkillMap().isolateModifiers(caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand()) : getPassiveSkillMap().getModifiers();
         final TriggerMetadata meta = new TriggerMetadata(this, triggerType, null, null, target, null, attackMetadata, caster);
         triggerSkills(meta, candidates);
     }
 
     @Deprecated
     public void triggerSkills(@NotNull TriggerType triggerType, @Nullable PlayerMetadata caster, @Nullable Entity target) {
-        final Iterable<PassiveSkill> candidates = triggerType.isActionHandSpecific() ? passiveSkillMap.isolateModifiers(caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand()) : passiveSkillMap.getModifiers();
+        final Iterable<PassiveSkill> candidates = triggerType.isActionHandSpecific() ? getPassiveSkillMap().isolateModifiers(caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand()) : getPassiveSkillMap().getModifiers();
         final TriggerMetadata meta = new TriggerMetadata(this, triggerType, null, null, target, null, null, caster);
         triggerSkills(meta, candidates);
     }
@@ -559,6 +620,22 @@ public class MMOPlayerData {
     public void triggerSkills(@NotNull TriggerType triggerType, @Nullable PlayerMetadata caster, @NotNull Iterable<PassiveSkill> skills, @Nullable Entity target, @Nullable AttackMetadata attack) {
         final TriggerMetadata meta = new TriggerMetadata(this, triggerType, caster == null ? EquipmentSlot.MAIN_HAND : caster.getActionHand(), null, target, null, attack, caster);
         triggerSkills(meta, skills);
+    }
+
+    /**
+     * @deprecated CooldownType now extends CooldownObject
+     */
+    @Deprecated
+    public void applyCooldown(CooldownType cd, double value) {
+        getCooldownMap().applyCooldown(cd.name(), value);
+    }
+
+    /**
+     * @deprecated CooldownType now extends CooldownObject
+     */
+    @Deprecated
+    public boolean isOnCooldown(CooldownType cd) {
+        return getCooldownMap().isOnCooldown(cd.name());
     }
 
     //endregion

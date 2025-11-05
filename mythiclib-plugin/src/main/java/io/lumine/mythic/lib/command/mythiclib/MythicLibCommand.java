@@ -1,21 +1,21 @@
 package io.lumine.mythic.lib.command.mythiclib;
 
-import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.command.api.CommandTreeRoot;
-import io.lumine.mythic.lib.command.mythiclib.debug.DebugCommand;
-import io.lumine.mythic.lib.command.mythiclib.statmod.TempStatCommand;
-import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
+import io.lumine.mythic.lib.command.CommandTreeRoot;
+import io.lumine.mythic.lib.command.mythiclib.mythiclib.*;
+import io.lumine.mythic.lib.command.mythiclib.mythiclib.debug.DebugCommand;
 
 public class MythicLibCommand extends CommandTreeRoot {
-    public MythicLibCommand(@NotNull ConfigurationSection config) {
-        super(config, MythicLib.plugin.getCommands().MYTHICLIB);
+
+    @SuppressWarnings("deprecation")
+    public MythicLibCommand() {
+        super("mythiclib", "mythiclib.admin");
 
         addChild(new ReloadCommand(this));
         addChild(new CastCommand(this));
         addChild(new DamageCommand(this));
         addChild(new DebugCommand(this));
-        addChild(new StatModCommand(this));
         addChild(new TempStatCommand(this));
+
+        addChild(new StatModCommand(this)); // legacy
     }
 }

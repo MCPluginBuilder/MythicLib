@@ -8,11 +8,11 @@ import io.lumine.mythic.lib.api.crafting.uifilters.MythicItemUIFilter;
 import io.lumine.mythic.lib.api.event.armorequip.ArmorEquipEvent;
 import io.lumine.mythic.lib.api.placeholders.MythicPlaceholders;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.command.HealthScaleCommand;
-import io.lumine.mythic.lib.command.MMOTempStatCommand;
+import io.lumine.mythic.lib.command.mythiclib.HealthScaleCommand;
+import io.lumine.mythic.lib.command.mythiclib.MMOTempStatCommand;
+import io.lumine.mythic.lib.command.mythiclib.MythicLibCommand;
 import io.lumine.mythic.lib.comp.FabledModule;
 import io.lumine.mythic.lib.comp.McMMOModule;
-import io.lumine.mythic.lib.comp.actionbar.ActionBarProvider;
 import io.lumine.mythic.lib.comp.adventure.AdventureParser;
 import io.lumine.mythic.lib.comp.anticheat.AntiCheatSupport;
 import io.lumine.mythic.lib.comp.anticheat.SpartanPlugin;
@@ -26,7 +26,6 @@ import io.lumine.mythic.lib.comp.formula.FormulaParser;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsAttackHandler;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHook;
 import io.lumine.mythic.lib.comp.placeholder.*;
-import io.lumine.mythic.lib.comp.profile.LegacyProfiles;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
 import io.lumine.mythic.lib.glow.GlowModule;
@@ -41,8 +40,9 @@ import io.lumine.mythic.lib.listener.option.FixMovementSpeed;
 import io.lumine.mythic.lib.listener.option.HealthScale;
 import io.lumine.mythic.lib.listener.option.VanillaDamageModifiers;
 import io.lumine.mythic.lib.manager.*;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
-import io.lumine.mythic.lib.util.MMOPlugin;
+import io.lumine.mythic.lib.profile.handler.ProfileHandler;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -58,17 +58,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 
 public class MythicLib extends MMOPluginImpl {
     public static MythicLib plugin;
 
     private final DamageManager damageManager = new DamageManager(this);
-    private final MythicLibCommandManager commandManager = new MythicLibCommandManager();
     private final EntityManager entityManager = new EntityManager();
     private final StatManager statManager = new StatManager(this);
     private final ConfigManager configManager = new ConfigManager(this);
@@ -87,8 +83,8 @@ public class MythicLib extends MMOPluginImpl {
     private AdventureParser adventureParser;
     private PlaceholderParser placeholderParser;
     private GlowModule glowModule;
-    private ActionBarProvider actionBarProvider;
     private @Nullable ProfileMode profileMode;
+    private @Nullable ProfileHandler profileHandler;
 
     @Override
     public void onLoad() {
@@ -226,6 +222,9 @@ public class MythicLib extends MMOPluginImpl {
             getLogger().log(Level.INFO, "Hooked onto DualWield");
         }
 
+        // Initialize profile handler
+        initializeProfiles();
+
         // Look for plugin dependency cycles
         final Stack<DependencyNode> dependencyCycle = new DependencyCycleCheck().checkCycle();
         if (dependencyCycle != null) {
@@ -245,7 +244,12 @@ public class MythicLib extends MMOPluginImpl {
             glowModule.enable();
         }
 
-        // Command executors
+        // Main command
+        final var mythicLibCommand = new MythicLibCommand();
+        getCommand("mythiclib").setExecutor(mythicLibCommand);
+        getCommand("mythiclib").setTabCompleter(mythicLibCommand);
+
+        // Other commands
         getCommand("mmotempstat").setExecutor(new MMOTempStatCommand());
         getCommand("healthscale").setExecutor(new HealthScaleCommand());
 
@@ -256,9 +260,6 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
         damageManager.enable();
-
-        // Loads commands
-        commandManager.initialize(false);
 
         // Load local skills
         skillManager.enable();
@@ -273,7 +274,7 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getScheduler().runTaskTimer(this, MMOPlayerData::flushOfflinePlayerData, 20 * 60 * 60, 20 * 60 * 60);
 
         // Loop for applying permanent potion effects
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachOnline(MMOPlayerData::tickOnline), 100, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickOnline), 100, 20);
 
         configManager.enable();
         statManager.enable();
@@ -328,15 +329,6 @@ public class MythicLib extends MMOPluginImpl {
         return fakeEventManager;
     }
 
-    @Deprecated
-    public MythicLibCommandManager getCommand() {
-        return getCommands();
-    }
-
-    public MythicLibCommandManager getCommands() {
-        return commandManager;
-    }
-
     public DamageManager getDamage() {
         return damageManager;
     }
@@ -387,35 +379,63 @@ public class MythicLib extends MMOPluginImpl {
         return glowModule;
     }
 
+    //region Profile mode
+
+    private void validateNoProfileMode() {
+        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
+    }
+
     /**
      * Enables support for legacy (spigot-based) MMOProfiles.
      */
     public void useLegacyProfiles() {
-        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
-        profileMode = ProfileMode.LEGACY;
+        validateNoProfileMode();
 
-        Bukkit.getPluginManager().registerEvents(new LegacyProfiles(), this);
-        getLogger().log(Level.INFO, "Hooked onto spigot-based ProfileAPI");
+        this.profileMode = ProfileMode.LEGACY;
+        getLogger().log(Level.INFO, "Hooked onto classic ProfileAPI");
+    }
+
+    public void useNoProfiles() {
+        validateNoProfileMode();
+
+        this.profileMode = ProfileMode.NONE;
+        // No console log if no profile plugin installed
     }
 
     /**
      * Enables support for proxy-based MMOProfiles
      */
     public void useProxyProfiles() {
-        Validate.isTrue(profileMode == null, "Profiles have already been enabled/disabled");
-        profileMode = ProfileMode.PROXY;
+        validateNoProfileMode();
 
+        this.profileMode = ProfileMode.PROXY;
         getLogger().log(Level.INFO, "Hooked onto proxy-based ProfileAPI");
     }
 
-    public boolean hasProfiles() {
-        return profileMode != null;
+    private void initializeProfiles() {
+
+        // Disable profiles altogether
+        if (profileMode == null) useNoProfiles();
+
+        Validate.notNull(profileMode, "Internal error with profile mode");
+        Bukkit.getPluginManager().registerEvents(this.profileHandler = this.profileMode.newProfileHandler(), this);
     }
 
-    @Nullable
-    public ProfileMode getProfileMode() {
-        return profileMode;
+    public boolean hasProfiles() {
+        return getProfileMode() != ProfileMode.NONE;
     }
+
+    @NotNull
+    public ProfileMode getProfileMode() {
+        return Objects.requireNonNull(profileMode, "No profile mode");
+    }
+
+    @NotNull
+    public ProfileHandler getProfileHandler() {
+        return Objects.requireNonNull(profileHandler, "No profile handler");
+    }
+
+    //endregion
 
     @Deprecated
     public void handleFlags(FlagPlugin flagPlugin) {
@@ -458,9 +478,5 @@ public class MythicLib extends MMOPluginImpl {
     @NotNull
     public HologramFactory getHologramFactory() {
         return hologramFactory;
-    }
-
-    public ActionBarProvider getActionBarProvider() {
-        return actionBarProvider;
     }
 }

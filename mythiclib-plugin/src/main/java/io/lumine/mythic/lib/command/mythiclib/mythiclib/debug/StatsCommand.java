@@ -1,0 +1,33 @@
+package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
+
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
+import io.lumine.mythic.lib.gui.builtin.StatExplorer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+public class StatsCommand extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+
+    public StatsCommand(CommandTreeNode parent) {
+        super(parent, "stats");
+
+        argPlayer = this.addArgument(Argument.PLAYER_OR_SENDER);
+    }
+
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("You can only use this command as a player");
+            return CommandResult.FAILURE;
+        }
+
+        final var player = (Player) sender;
+        final var target = explorer.parse(argPlayer);
+        new StatExplorer(player, MMOPlayerData.get(target)).open();
+        return CommandResult.SUCCESS;
+    }
+}

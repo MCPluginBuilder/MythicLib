@@ -1,21 +1,21 @@
 package io.lumine.mythic.lib.skill.handler.def.vector;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
     public Bouncy_Fireball() {
@@ -25,7 +25,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
     }
 
     @Override
-    public VectorSkillResult getResult(SkillMetadata meta) {
+    public @NotNull VectorSkillResult getResult(SkillMetadata meta) {
         return new VectorSkillResult(meta);
     }
 
@@ -34,7 +34,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
         Player caster = skillMeta.getCaster().getPlayer();
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 2, 0);
-        new BukkitRunnable() {
+        TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
             final Vector vec = result.getTarget().setY(0).normalize().multiply(.5 * skillMeta.getParameter("speed"));
             final Location loc = caster.getLocation().clone().add(0, 1.2, 0);
             int j = 0;
@@ -46,7 +46,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
                 if (j++ > 100) {
                     loc.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), loc, 32, 0, 0, 0, .05);
                     loc.getWorld().playSound(loc, Sounds.BLOCK_FIRE_EXTINGUISH, 1, 1);
-                    cancel();
+                    handler.close();
                     return;
                 }
 
@@ -82,9 +82,9 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
                     loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 12, 2, 2, 2, 0);
                     loc.getWorld().spawnParticle(VParticle.EXPLOSION.get(), loc, 48, 0, 0, 0, .2);
                     loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 3, 0);
-                    cancel();
+                    handler.close();
                 }
             }
-        }.runTaskTimer(MythicLib.plugin, 0, 1);
+        });
     }
 }

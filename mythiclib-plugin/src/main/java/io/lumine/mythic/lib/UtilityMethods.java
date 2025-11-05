@@ -8,9 +8,11 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.util.DelayFormat;
+import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.*;
@@ -21,6 +23,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.command.CommandMap;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
@@ -43,9 +46,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,13 +59,38 @@ public class UtilityMethods {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
     }
 
+    public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
+        try {
+            return evaluate.apply(enumName(rawInput));
+        } catch (Throwable throwable) {
+            throw new RuntimeException(String.format(errorMessage, rawInput));
+        }
+    }
+
     /**
      * Paper does not have this option. This allows some
      * plugins to be built against Spigot and not Paper
      */
     @NotNull
     public static CommandMap getCommandMap() {
-        return Bukkit.getCommandMap();
+
+        try {
+            return Bukkit.getCommandMap();
+        } catch (NoSuchMethodError ignored) {
+            // Does not work on Paper
+        }
+
+        try {
+            final var commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            commandMapField.setAccessible(true);
+            final var commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
+            commandMapField.setAccessible(false);
+            return commandMap;
+        } catch (Throwable ignored) {
+            // Only works on Paper
+        }
+
+        throw new IllegalStateException("Could not find command map");
     }
 
     public static Vector safeNormalize(@NotNull Vector vec) {
@@ -76,11 +101,6 @@ public class UtilityMethods {
         final double normSquared = vec.lengthSquared();
         if (normSquared == 0) return defaultValue;
         return vec.multiply(1d / Math.sqrt(normSquared));
-    }
-
-    @Deprecated
-    public static int getPageNumber(int elements, int perPage) {
-        return Math.ceilDiv(Math.max(1, elements), perPage);
     }
 
     public static void forcePotionEffect(LivingEntity entity, PotionEffectType type, double duration, int amplifier) {
@@ -106,15 +126,6 @@ public class UtilityMethods {
     @NotNull
     public static Pattern internalPlaceholderPattern(char start, char end) {
         return Pattern.compile(start + "[^&|!=" + start + end + "]*?" + end);
-    }
-
-    private static final Listener PRIVATE_LISTENER = new Listener() {
-    };
-
-    public static <T extends Event> void registerEvent(@NotNull Class<T> eventClass,
-                                                       @NotNull EventPriority priority,
-                                                       @NotNull Consumer<T> executor) {
-        registerEvent(eventClass, PRIVATE_LISTENER, priority, executor, MythicLib.plugin, false);
     }
 
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
@@ -145,6 +156,15 @@ public class UtilityMethods {
 
     public static boolean isUndead(@NotNull Entity entity) {
         return UNDEAD_ENTITY_TYPES.get().contains(entity.getType());
+    }
+
+    private static final Listener PRIVATE_LISTENER = new Listener() {
+    };
+
+    public static <T extends Event> void registerEvent(@NotNull Class<T> eventClass,
+                                                       @NotNull EventPriority priority,
+                                                       @NotNull Consumer<T> executor) {
+        registerEvent(eventClass, PRIVATE_LISTENER, priority, executor, MythicLib.plugin, false);
     }
 
     /**
@@ -181,14 +201,14 @@ public class UtilityMethods {
     }
 
     public static boolean isInvalidated(@NotNull MMOPlayerData playerData) {
-        return !playerData.isOnline() || isInvalidated(playerData.getPlayer());
+        return !playerData.isOnline() || playerData.getPlayer().isDead();
     }
 
     public static boolean isInvalidated(@NotNull Player player) {
         return !player.isOnline() || player.isDead();
     }
 
-    @Nullable
+    @NotNull
     public static ItemStack getHandItem(@NotNull LivingEntity entity, @NotNull EquipmentSlot hand) {
         switch (hand) {
             case MAIN_HAND:
@@ -212,11 +232,6 @@ public class UtilityMethods {
         }
     }
 
-    @Deprecated
-    public static void setTextureValue(@NotNull ItemMeta meta, @NotNull String textureValue) {
-        if (meta instanceof SkullMeta) setTextureValue((SkullMeta) meta, textureValue, UUID.randomUUID());
-    }
-
     public static void setTextureValue(@NotNull SkullMeta meta, @NotNull String textureValue) {
         setTextureValue(meta, textureValue, UUID.randomUUID());
     }
@@ -225,42 +240,12 @@ public class UtilityMethods {
         VersionWrapper.get().setProfile(meta, GameProfile.of(uniqueId, textureValue));
     }
 
-    @Deprecated
-    public static boolean isFakeEvent(@NotNull EntityDamageEvent event) {
-        return isFake(event);
-    }
-
     public static boolean isFake(@NotNull Event event) {
         return MythicLib.plugin.getFakeEvents().isFake(event);
     }
 
-    @NotNull
-    @Deprecated
-    public static Runnable serverThreadCatch(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Throwable throwable) {
-                Bukkit.getScheduler().runTask(plugin, () -> throwable.printStackTrace());
-            }
-        };
-    }
-
     public static boolean isAir(@Nullable ItemStack item) {
         return item == null || item.getType() == Material.AIR;
-    }
-
-    private static final DelayFormat DELAY_FORMAT_SECONDS = new DelayFormat("smhdMy");
-    private static final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
-
-    @Deprecated
-    public static String formatDelay(long millis) {
-        return DELAY_FORMAT_MINUTES.format(millis);
-    }
-
-    @Deprecated
-    public static String formatDelay(long millis, boolean seconds) {
-        return (seconds ? DELAY_FORMAT_SECONDS : DELAY_FORMAT_MINUTES).format(millis);
     }
 
     private static final int PTS_PER_BLOCK = 10;
@@ -377,6 +362,22 @@ public class UtilityMethods {
         throw new IllegalArgumentException("Could not find enum field given candidates " + Arrays.asList(candidates));
     }
 
+    /**
+     * Another major fuckup with Minecraft. The issue addressed by this method
+     * is the fact that AttributeInstance#getDefaultValue does not return the
+     * default value of the attribute for players. For 95% attributes, these
+     * values are the same, but for "Movement speed" (0.1 vs 0.7) and "Attack damage"
+     * (1 vs 2) they are not.
+     * <p>
+     * The only way to fix that is to hardcode a map, and only use #getDefaultValue
+     * as a fallback for unknown attributes or non-player entities, to handle recently
+     * added Minecraft attributes.
+     *
+     * @param attribute The attribute to get the default value of
+     * @param instance  The instance of the attribute for the player, as fallback
+     * @return Default value of base player attribute value.
+     * @author Jules
+     */
     public static double getPlayerDefaultBaseValue(@NotNull Attribute attribute, @Nullable AttributeInstance instance) {
         final Double found = MythicLib.plugin.getStats().getPlayerDefaultBaseValue(attribute);
         return found != null ? found : (instance != null ? instance.getDefaultValue() : 0);
@@ -467,6 +468,16 @@ public class UtilityMethods {
             player.setHealth(Math.min(player.getAttribute(Attributes.MAX_HEALTH).getValue(), player.getHealth() + heal));
     }
 
+    /**
+     * Used by MMOProfiles and MMOCore to re-apply health after
+     * profile session opens
+     */
+    public static void setHealth(@NotNull LivingEntity entity, double health) {
+        final double maxHealth = entity.getAttribute(Attributes.MAX_HEALTH).getValue();
+        // 0.001d to avoid death on #setHealth
+        entity.setHealth(Math.max(0.001d, Math.min(maxHealth, health)));
+    }
+
     public static void closeOpenViewsOfType(Class<?> inventoryHolderClass) {
         for (Player online : Bukkit.getOnlinePlayers()) {
             final VInventoryView view = VersionUtils.getOpen(online);
@@ -513,40 +524,6 @@ public class UtilityMethods {
     }
 
     /**
-     * Used to find players in chunks around some location. This is
-     * used when displaying individual holograms to a list of players.
-     *
-     * @param loc Target location
-     * @return Players in chunks around the location
-     */
-    @Deprecated
-    public static List<Player> getNearbyPlayers(Location loc) {
-        final List<Player> players = new ArrayList<>();
-
-        final int cx = loc.getChunk().getX(), cz = loc.getChunk().getZ();
-
-        for (int x = -1; x < 2; x++)
-            for (int z = -1; z < 2; z++)
-                for (Entity target : loc.getWorld().getChunkAt(cx + x, cz + z).getEntities())
-                    if (target instanceof Player) players.add((Player) target);
-
-        return players;
-    }
-
-    public static void loadDefaultFile(String path, String name) {
-        final String newPath = path.isEmpty() ? "" : "/" + path;
-        final File folder = new File(MythicLib.plugin.getDataFolder() + newPath);
-        if (!folder.exists()) folder.mkdir();
-
-        final File file = new File(MythicLib.plugin.getDataFolder() + newPath, name);
-        if (!file.exists()) try {
-            Files.copy(MythicLib.plugin.getResource("default/" + (path.isEmpty() ? "" : path + "/") + name), file.getAbsoluteFile().toPath());
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-    }
-
-    /**
      * The 'vanished' meta data should be supported by vanish plugins
      * to let all the plugins knows when a player is vanished.
      *
@@ -559,19 +536,26 @@ public class UtilityMethods {
     }
 
     /**
+     * TODO rename this to screamingSnakeCase
+     *
      * @return Upper case string, with spaces and - replaced by _
      */
     public static String enumName(String str) {
         return str.toUpperCase().replace("-", "_").replace(" ", "_");
     }
 
-    @Deprecated
-    public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
-        return Tasks.sync(plugin, syncTask);
+    public static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
-    public static String ymlName(String str) {
-        return str.toLowerCase().replace("_", "-").replace(" ", "-");
+    @NotNull
+    public static <T extends Enum<?>> String kebabCase(T element) {
+        return element.name().toLowerCase().replace("_", "-");
+    }
+
+    @NotNull
+    public static String kebabCase(@NotNull String input) {
+        return input.toLowerCase().replace("_", "-").replace(" ", "-");
     }
 
     /**
@@ -658,13 +642,11 @@ public class UtilityMethods {
         return loc.getY() - moving.getBlockY() - 1;
     }
 
-    private static final Map<String, String> DEBUG_COLOR_PREFIX = new HashMap<>();
-
-    static {
-        DEBUG_COLOR_PREFIX.put("MythicLib", "§a");
-        DEBUG_COLOR_PREFIX.put("MMOItems", "§c");
-        DEBUG_COLOR_PREFIX.put("MMOCore", "§6");
-        DEBUG_COLOR_PREFIX.put("RPGInventory", "§e");
+    /**
+     * @see #debug(JavaPlugin, String, String)
+     */
+    public static void debug(@NotNull JavaPlugin plugin, @NotNull String message) {
+        debug(plugin, null, message);
     }
 
     /**
@@ -680,15 +662,8 @@ public class UtilityMethods {
         Validate.notNull(plugin, "Plugin cannot be null");
         Validate.notNull(message, "Message cannot be null");
 
-        final String colorPrefix = DEBUG_COLOR_PREFIX.getOrDefault(plugin.getName(), "");
-
         if (MythicLib.plugin.getMMOConfig().debugMode)
-            plugin.getLogger().log(Level.INFO, colorPrefix + "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
-    }
-
-    @Deprecated
-    public static String getFontSpace(int size) {
-        return getSpaceFont(size);
+            plugin.getLogger().log(Level.INFO, "[Debug" + (prefix == null ? "" : ": " + prefix) + "] " + message);
     }
 
     private static final int NEGATIVE_SPACE_BASE_CHAR = 0xD0000;
@@ -706,4 +681,139 @@ public class UtilityMethods {
         final int codePoint = NEGATIVE_SPACE_BASE_CHAR + width;
         return new String(Character.toChars(codePoint));
     }
+
+    //region Deprecated
+
+    /**
+     * @see FileUtils#copyDefaultFile(Plugin, String)
+     * @deprecated
+     */
+    @Deprecated
+    public static void loadDefaultFile(String path, String name) {
+        var sb = new StringBuilder();
+        if (path != null && !path.isEmpty()) {
+            sb.append(path);
+            if (!path.endsWith("/")) sb.append("/");
+        }
+        sb.append(name);
+        FileUtils.copyDefaultFile(MythicLib.plugin, sb.toString());
+    }
+
+    @Deprecated
+    public static <T> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull Iterable<T> values) {
+        return YamlUtils.containsOneKey(config, values);
+    }
+
+    @Deprecated
+    public static <T extends Enum<?>> boolean containsOneKey(@NotNull ConfigurationSection config, @NotNull T[] enumValues, @NotNull Function<T, String> name) {
+        return YamlUtils.containsOneKey(config, enumValues, name);
+    }
+
+    /**
+     * @see io.lumine.mythic.lib.gui.editable.GeneratedInventory#computeMaxPage(int)
+     * @deprecated
+     */
+    @Deprecated
+    public static int getPageNumber(int elements, int perPage) {
+        return Math.ceilDiv(Math.max(1, elements), perPage);
+    }
+
+    @Deprecated
+    public static void setTextureValue(@NotNull ItemMeta meta, @NotNull String textureValue) {
+        if (meta instanceof SkullMeta) setTextureValue((SkullMeta) meta, textureValue, UUID.randomUUID());
+    }
+
+    @Deprecated
+    public static boolean isFakeEvent(@NotNull EntityDamageEvent event) {
+        return isFake(event);
+    }
+
+    /**
+     * @see #kebabCase(String)
+     * @deprecated
+     */
+    @Deprecated
+    public static String ymlName(String str) {
+        return kebabCase(str);
+    }
+
+    @NotNull
+    @Deprecated
+    public static Runnable serverThreadCatch(@NotNull Plugin plugin, @NotNull Runnable runnable) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable throwable) {
+                Bukkit.getScheduler().runTask(plugin, () -> throwable.printStackTrace());
+            }
+        };
+    }
+
+    @Deprecated
+    public static String formatDelay(long millis) {
+        final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
+        return DELAY_FORMAT_MINUTES.format(millis);
+    }
+
+    @Deprecated
+    public static String formatDelay(long millis, boolean seconds) {
+        final DelayFormat DELAY_FORMAT_SECONDS = new DelayFormat("smhdMy");
+        final DelayFormat DELAY_FORMAT_MINUTES = new DelayFormat("mhdMy");
+        return (seconds ? DELAY_FORMAT_SECONDS : DELAY_FORMAT_MINUTES).format(millis);
+    }
+
+    /**
+     * @see Tasks#sync(Plugin, Runnable)
+     * @deprecated
+     */
+    @Deprecated
+    public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
+        return Tasks.sync(plugin, syncTask);
+    }
+
+    /**
+     * Used to find players in chunks around some location. This is
+     * used when displaying individual holograms to a list of players.
+     *
+     * @param loc Target location
+     * @return Players in chunks around the location
+     * @deprecated
+     */
+    @Deprecated
+    public static List<Player> getNearbyPlayers(Location loc) {
+        final List<Player> players = new ArrayList<>();
+
+        final int cx = loc.getChunk().getX(), cz = loc.getChunk().getZ();
+
+        for (int x = -1; x < 2; x++)
+            for (int z = -1; z < 2; z++)
+                for (Entity target : loc.getWorld().getChunkAt(cx + x, cz + z).getEntities())
+                    if (target instanceof Player) players.add((Player) target);
+
+        return players;
+    }
+
+    /**
+     * @see #getSpaceFont(int)
+     * @deprecated
+     */
+    @Deprecated
+    public static String getFontSpace(int size) {
+        return getSpaceFont(size);
+    }
+
+    /**
+     * @see #prettyValueOf(Function, String, String)
+     * @deprecated
+     */
+    @Deprecated
+    public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
+        try {
+            return evaluate.apply(enumName(rawInput));
+        } catch (Throwable throwable) {
+            throw new RuntimeException(String.format(errorMessage, params));
+        }
+    }
+
+    //endregion
 }
