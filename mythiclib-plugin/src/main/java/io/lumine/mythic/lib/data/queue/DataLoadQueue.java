@@ -42,7 +42,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         // Fetch data
         ///////////////////////////////
 
-        UtilityMethods.debug(this.plugin, "Data", "Fetching data of " + record.effectiveId);
+        UtilityMethods.debug(this.plugin, "Data", "Fetching data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + ")");
 
         // Try to load player data
         final var force = record.tryCount >= this.maxTries;
@@ -58,49 +58,57 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
             // Failure
             case FAILURE:
+                if (force) {
+                    UtilityMethods.debug(this.plugin, "Data", "Error when loading '" + record.effectiveId + "', loading anyways");
+                    break;
+                }
+
                 UtilityMethods.debug(this.plugin, "Data", "Error when loading '" + record.effectiveId + "', next try in " + WAIT_TIME + "ms");
                 this.enqueue(record.nextTry(1));
-                break;
+                return;
 
             // Tempo, keep on working
             case TEMPO:
                 UtilityMethods.debug(this.plugin, "Data", "Got tempo for '" + record.effectiveId + "', next try in " + WAIT_TIME + "ms");
                 this.enqueue(record.nextTry(0));
-                break;
+                return;
 
             case SUCCESS:
                 UtilityMethods.debug(this.plugin, "Data", "Data fetch success sync=" + result.sync + " empty=" + result.empty + " for '" + record.effectiveId + "'");
-
-                // Invalidate check
-                if (record.invalidate()) return;
-
-                if (result.empty) this.manager.loadEmptyPlayerData(record.playerData);
-                if (!record.playerData.getMMOPlayerData().isLookup()) // TODO call not safe!!!
-                    this.database.confirmReception(record.playerData);
-                final var lookup = record.playerData.getMMOPlayerData().isLookup();
-
-                ///////////////////////////////
-                // Data is loaded, back to server thread
-                ///////////////////////////////
-
-                Tasks.runSync(plugin, () -> {
-
-                    // Player could go offline while transitioning to main thread
-                    if (record.invalidate()) return;
-
-                    if (!lookup) {
-                        record.playerData.markSessionReady(); // Mark as ready
-                        Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
-                    }
-                    record.future.complete(null); // Complete future
-                });
-
-                return;
+                break;
 
             // Wtf?
             default:
                 throw new IllegalStateException("Unhandled data fetch result");
         }
+
+        //////////////////////////////////
+        // Data load success
+        //////////////////////////////////
+
+        // Invalidate check
+        if (record.invalidate()) return;
+
+        if (result.empty) this.manager.loadEmptyPlayerData(record.playerData);
+        if (!record.playerData.getMMOPlayerData().isLookup()) // TODO call not safe!!!
+            this.database.confirmReception(record.playerData);
+        final var lookup = record.playerData.getMMOPlayerData().isLookup();
+
+        ///////////////////////////////
+        // Data is loaded, back to server thread
+        ///////////////////////////////
+
+        Tasks.runSync(plugin, () -> {
+
+            // Player could go offline while transitioning to main thread
+            if (record.invalidate()) return;
+
+            if (!lookup) {
+                record.playerData.markSessionReady(); // Mark as ready
+                Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
+            }
+            record.future.complete(null); // Complete future
+        });
     }
 
     protected class Record extends QueueRecord {
