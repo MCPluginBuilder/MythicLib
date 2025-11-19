@@ -49,12 +49,12 @@ public abstract class Skill implements CooldownObject {
         return cast(triggerMeta.toSkillMetadata(this));
     }
 
+    @SuppressWarnings("unchecked")
     @NotNull
     public <T extends SkillResult> SkillResult cast(@NotNull SkillMetadata meta) {
-        final SkillHandler<T> handler = (SkillHandler<T>) getHandler();
 
         // Lower level skill restrictions
-        final T result = handler.getResult(meta);
+        final var result = ((SkillHandler<T>) getHandler()).getResult(meta);
         if (!result.isSuccessful()) return result;
 
         // High level skill restrictions
@@ -80,6 +80,7 @@ public abstract class Skill implements CooldownObject {
      * <p>
      * This method however calls {@link SkillCastEvent} after skill casting.
      */
+    @SuppressWarnings("unchecked")
     public <T extends SkillResult> void castInstantly(@NotNull SkillMetadata meta, @NotNull T result) {
 
         // High level skill effects

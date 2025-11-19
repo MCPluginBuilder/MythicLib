@@ -15,7 +15,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class TempStatCommand extends CommandTreeNode {
 
@@ -58,6 +60,7 @@ public class TempStatCommand extends CommandTreeNode {
         private final Argument<@NotNull Pair<ModifierType, Double>> argValue;
         private final Argument<@NotNull Long> argDuration;
         private final Argument<@NotNull String> argKey;
+        private final Argument<Boolean> argUnique;
 
         public AddCommand(@NotNull CommandTreeNode parent) {
             super(parent, "add");
@@ -67,6 +70,7 @@ public class TempStatCommand extends CommandTreeNode {
             argValue = addArgument(VALUE);
             argDuration = addArgument(Argument.DURATION_TICKS.withFallback(explorer -> 0L));
             argKey = addArgument(Argument.MODIFIER_KEY);
+            argUnique = addArgument(Argument.BOOLEAN.withKey("unique").withFallback(explorer -> false));
         }
 
         public static final Argument<@NotNull Pair<ModifierType, Double>> VALUE = new Argument<>("value",
@@ -89,14 +93,21 @@ public class TempStatCommand extends CommandTreeNode {
             final var value = rawValue.getRight();
 
             final long duration = explorer.parse(argDuration);
-            final String key = explorer.parse(argKey);
+            final var key = explorer.parse(argKey);
+            final boolean unique = explorer.parse(argUnique);
 
             final var playerData = MMOPlayerData.get(target);
+            final var uniqueId = unique ? UUID.nameUUIDFromBytes(key.getBytes()) : UUID.randomUUID();
 
-            if (duration <= 0)
-                new StatModifier(key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
-            else
-                new TemporaryStatModifier(key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, duration);
+            // Permanent modifier
+            if (duration <= 0) {
+                new StatModifier(uniqueId, key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
+            }
+
+            // Temporary modifier
+            else {
+                new TemporaryStatModifier(uniqueId, key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, duration);
+            }
 
             return explorer.success("Modifier of &6" + value + type.toStringSuffix() + " " + statName + "&e for &6" + duration + "&e ticks given to &6" + target.getName());
         }
