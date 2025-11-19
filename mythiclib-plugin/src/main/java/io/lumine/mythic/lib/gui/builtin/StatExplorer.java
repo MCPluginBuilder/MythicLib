@@ -72,7 +72,7 @@ public class StatExplorer extends PluginInventory {
             lore.add("");
             lore.add(ChatColor.GRAY + "Modifier Count: " + ChatColor.GOLD + statInstance.getModifiers().size());
             for (var modifier : statInstance.getModifiers()) {
-                lore.add(ChatColor.DARK_GRAY + " - " + ChatColor.GRAY + modifier.toString() + ": " + ChatColor.GOLD + DECIMAL_FORMAT.format(modifier.getValue()));
+                lore.add(ChatColor.DARK_GRAY + " - " + ChatColor.GRAY + modifier.getKey() + ": " + ChatColor.GOLD + DECIMAL_FORMAT.format(modifier.getValue()));
             }
             meta.getPersistentDataContainer().set(STAT_KEY, PersistentDataType.STRING, stat.getStat());
             meta.setLore(lore);
