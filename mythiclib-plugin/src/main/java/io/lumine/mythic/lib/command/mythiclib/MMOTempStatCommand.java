@@ -20,7 +20,7 @@ public class MMOTempStatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        sender.sendMessage("/mmotempstat is deprecated. Use instead /ml statmod ...");
+        sender.sendMessage("/mmotempstat is deprecated. Use instead /ml tempstat ...");
 
 
         if (args.length < 4) {

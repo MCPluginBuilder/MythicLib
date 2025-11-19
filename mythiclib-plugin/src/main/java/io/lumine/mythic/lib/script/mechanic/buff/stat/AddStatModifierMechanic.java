@@ -16,22 +16,23 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class AddStatModifierMechanic extends TargetMechanic {
     private final DoubleFormula amount, lifetime;
     private final String stat, key;
-    private final boolean relative;
+    private final boolean relative, unique;
 
     @MechanicMetadata
     public AddStatModifierMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("stat", "amount", "key");
-
-        stat = config.getString("stat");
-        key = config.getString("key");
+        stat = config.string("stat");
+        key = config.stringFb("default", "key", "k");
         lifetime = config.contains("time") ? new DoubleFormula(config.getString("time")) : DoubleFormula.ZERO;
         relative = config.getBoolean("relative", false);
-        amount = new DoubleFormula(config.getString("amount"));
+        amount = new DoubleFormula(config.string("amount", "a", "value", "v"));
+        unique = config.bool("unique", "u");
     }
 
     @Override
@@ -40,10 +41,11 @@ public class AddStatModifierMechanic extends TargetMechanic {
 
         MMOPlayerData playerData = MMOPlayerData.get((OfflinePlayer) target);
         long lifetime = Math.max(0, (long) this.lifetime.evaluate(meta));
+        final var uniqueId = unique ? UUID.nameUUIDFromBytes(this.key.getBytes()) : UUID.randomUUID();
 
         if (lifetime > 0)
-            new TemporaryStatModifier(key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, lifetime);
+            new TemporaryStatModifier(uniqueId, key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, lifetime);
         else
-            new StatModifier(key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
+            new StatModifier(uniqueId, key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
     }
 }
