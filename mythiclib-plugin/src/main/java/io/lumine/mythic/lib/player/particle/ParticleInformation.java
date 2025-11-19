@@ -1,12 +1,17 @@
 package io.lumine.mythic.lib.player.particle;
 
 import com.google.gson.JsonObject;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -72,18 +77,18 @@ public class ParticleInformation {
     }
 
     /**
-     * Used by particle effects and therefore do NOT need the speed,
+     * Used by particle effects and therefore does NOT need the speed,
      * offsets and amount parameters to be read from the config.
      *
      * @param obj Config to read data from
-     * @see {@link ParticleEffect}
+     * @see ParticleEffect
      */
     public ParticleInformation(ConfigObject obj) {
-        particle = Particle.valueOf(obj.getString("name"));
+        particle = UtilityMethods.prettyValueOf(Particle::valueOf, obj.string("name", "particle"), "No particle with name '%s'");
         color = obj.contains("color") ? readColor(obj.getObject("color")) : null;
         size = (float) obj.getDouble("size", 1);
 
-        // Not being used
+        // Not used
         rOffset = speed = 0;
         amount = 1;
         blockData = null;
@@ -100,13 +105,15 @@ public class ParticleInformation {
         amount = object.get("Amount").getAsInt();
         rOffset = object.get("Offset").getAsDouble();
 
+        // TODO safeguard, use red color if no color is provided
         boolean colored = object.get("Colored").getAsBoolean();
         color = colored ? Color.fromRGB(object.get("Red").getAsInt(), object.get("Green").getAsInt(), object.get("Blue").getAsInt()) : null;
         speed = colored ? 0 : object.get("Speed").getAsFloat();
 
-        // Not being used
+        // Not used
         size = 1;
 
+        // TODO safeguard, add DIRT if none provided
         blockData = !colored && object.has("Material") ? Material.valueOf(object.get("Material").getAsString()).createBlockData() : null;
     }
 
@@ -140,4 +147,24 @@ public class ParticleInformation {
     private Color readColor(ConfigObject obj) {
         return Color.fromRGB(obj.getInt("red"), obj.getInt("green"), obj.getInt("blue"));
     }
+
+    //region Static methods
+
+    @NotNull
+    public static ParticleInformation fromConfig(@NotNull Object obj) {
+        Validate.notNull(obj, "Cannot read particle from null object");
+
+        if (obj instanceof String) {
+            final var particle = UtilityMethods.prettyValueOf(Particle::valueOf, (String) obj, "No particle with name '%s'");
+            return new ParticleInformation(particle);
+        }
+
+        if (obj instanceof ConfigurationSection) {
+            return new ParticleInformation(new ConfigSectionObject((ConfigurationSection) obj));
+        }
+
+        throw new IllegalArgumentException("Cannot read particle from " + obj.getClass().getSimpleName());
+    }
+
+    //endregion
 }
