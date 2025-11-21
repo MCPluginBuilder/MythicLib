@@ -261,15 +261,21 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @return The empty player data, which will be loaded in a near future.
      * @see #unregister(Player, SaveReason)
      */
+    @NotNull
     public H setup(@NotNull Player player) {
 
         // Get data or compute it if non existent (more resilient)
-        final @NotNull H playerData = activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
+        final var playerData = this.setupEmpty(player);
 
         // Schedule data loading
         if (requiresSynchronizationOnLogin(playerData)) loadData(playerData);
 
         return playerData;
+    }
+
+    @NotNull
+    public H setupEmpty(@NotNull Player player) {
+        return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
     }
 
     private boolean requiresSynchronizationOnLogin(@NotNull H holder) {
