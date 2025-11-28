@@ -63,6 +63,24 @@ public class DamageIndicators extends GameIndicators {
         final var entity = event.getEntity();
         if (event.getDamage().getDamage() < minDamage) return;
 
+        /*
+         * Bukkit calls multiple damage events during the invulnerability
+         * period of the entity. This creates invalid events which do not
+         * lead to any damage dealt to the entity.
+         *
+         * https://hub.spigotmc.org/jira/browse/SPIGOT-7983
+         *
+         * This is only an issue with Spigot, Paper builds do not have this
+         * issue. Once the bug above is fixed, this code can be safely removed.
+         *
+         * Fixes MMOItems#1637
+         */
+        if (!MythicLib.plugin.getVersion().isPaper()) {
+            final var invulLeft = event.getEntity().getNoDamageTicks();
+            final var invulMax = event.getEntity().getMaximumNoDamageTicks();
+            if (invulLeft > invulMax / 2) return;
+        }
+
         // Display no indicator around vanished player
         if (entity instanceof Player && UtilityMethods.isVanished((Player) entity)) return;
 

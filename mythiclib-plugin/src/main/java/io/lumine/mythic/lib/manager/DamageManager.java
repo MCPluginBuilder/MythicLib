@@ -191,6 +191,8 @@ public class DamageManager extends Module implements Listener {
             }
         }
 
+        // TODO support for Spigot new DamageSource's
+
         // Attacks with a damager
         if (event instanceof EntityDamageByEntityEvent) {
 
