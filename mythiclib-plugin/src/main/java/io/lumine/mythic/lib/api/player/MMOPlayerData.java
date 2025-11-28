@@ -157,17 +157,27 @@ public class MMOPlayerData {
 
     /**
      * Caches a new Player instance and refreshes the last log activity.
-     * Provided player can be null if the player is disconnecting
+     * Provided player can be null if the player is disconnecting. This
+     * method might be called multiple times per player join/quit event.
      *
      * @param player Player instance to cache (null if logging off)
      */
     public void updatePlayer(@Nullable Player player) {
-        this.player = player;
-        if (player != null) {
-            this.lastPlayerName = player.getName();
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null);
+
+        // Player logging off
+        if (this.player != null && player == null) {
+            this.player = null;
+            this.lastLogActivity = System.currentTimeMillis();
         }
-        this.lastLogActivity = System.currentTimeMillis();
+
+        // Player logging in
+        else if (this.player == null && player != null) {
+            this.player = player;
+            this.lastLogActivity = System.currentTimeMillis();
+            this.lastPlayerName = player.getName();
+            // [Safeguard] Should never have previous profile session
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE && !hasProfileSession()) chooseProfile(null); // Setup profile session
+        }
     }
 
     //endregion
@@ -441,6 +451,10 @@ public class MMOPlayerData {
      * This is called async using {@link AsyncPlayerPreLoginEvent} which does
      * not provide a Player instance, meaning the cached Player instance is NOT
      * loaded yet. It is only loaded when the player logs in using {@link PlayerJoinEvent}
+     * <p>
+     * This method is not guaranteed to be called only once per player, it might
+     * be called once per MMO plugin every time the MMO plugins processes
+     * the player join event.
      *
      * @param player Player whose data should be initialized
      */

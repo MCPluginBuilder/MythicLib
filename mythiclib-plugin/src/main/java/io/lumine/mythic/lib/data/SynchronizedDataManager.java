@@ -275,7 +275,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     @NotNull
     public H setupEmpty(@NotNull Player player) {
-        return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.get(player.getUniqueId())));
+        return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.setup(player)));
     }
 
     private boolean requiresSynchronizationOnLogin(@NotNull H holder) {
