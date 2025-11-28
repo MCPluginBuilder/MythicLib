@@ -102,7 +102,7 @@ sae2:
 
 staff_deal_damage:
   mechanics:
-    - 'damage{amount="<stat.attack_damage>";damage_type="WEAPON,MAGIC,PROJECTILE"}'
+    - 'damage{amount="<stat.attack_damage>";damage_type="WEAPON,MAGIC"}'
 
 # Default staff attack effect
 staff_default:
