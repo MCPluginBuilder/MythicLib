@@ -199,9 +199,14 @@ public class TriggerType {
      */
     CAST = new TriggerType("CAST", false, false),
 
-    COMMAND = new TriggerType("COMMAND"),
+    COMMAND = new TriggerType("COMMAND");
 
-    PLUGIN = new TriggerType("PLUGIN"),
+    /**
+     * @see #API
+     * @deprecated
+     */
+    @Deprecated
+    public static final TriggerType PLUGIN = new TriggerType("PLUGIN");
 
     /**
      * Should be used by plugins when passive skills get triggered by
@@ -210,7 +215,7 @@ public class TriggerType {
      *
      * @see SkillHandler#isTriggerable()
      */
-    API = new TriggerType("API");
+    public static final TriggerType API = new TriggerType("API");
 
     /**
      * Called when a player equips armor

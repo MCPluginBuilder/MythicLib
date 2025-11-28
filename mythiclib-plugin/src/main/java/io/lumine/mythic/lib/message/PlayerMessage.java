@@ -49,7 +49,7 @@ public abstract class PlayerMessage {
         // Cast script if provided
         if (ranOnMessage != null) {
             Skill skill = new SimpleSkill(ranOnMessage);
-            skill.cast(player, TriggerType.PLUGIN);
+            skill.cast(player, TriggerType.API);
         }
 
         // Play sound
