@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.version;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHealIndicators;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
@@ -41,7 +40,7 @@ public class ServerVersion {
         VersionWrapper found;
         try {
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + craftBukkitVersion.substring(1)).getDeclaredConstructor().newInstance();
-        } catch (Exception exception) {
+        } catch (ClassNotFoundException exception) {
             MythicLib.plugin.getLogger().log(Level.WARNING, "Non-natively supported Spigot version detected, trying reflection-based compatibility mode");
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_Reflection").getDeclaredConstructor(ServerVersion.class).newInstance(this);
         }
