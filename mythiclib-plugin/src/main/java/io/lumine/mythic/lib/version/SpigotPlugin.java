@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -34,7 +35,7 @@ public class SpigotPlugin {
     public void checkForUpdate() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                HttpsURLConnection connection = (HttpsURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + id).openConnection();
+                final var connection = (HttpsURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + id).openConnection();
                 connection.setRequestMethod("GET");
                 version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
             } catch (Throwable throwable) {
@@ -63,29 +64,50 @@ public class SpigotPlugin {
         });
     }
 
-    private boolean isOutdated(String v1, String v2) {
+    private static boolean isOutdated(@NotNull String internetVersion, @NotNull String installedVersion) {
+        final var publik = parseVersion(internetVersion);
+        final var local = parseVersion(installedVersion);
 
-        // easy check first
-        if (v1.equals(v2)) return false;
+        for (var i = 0; i < Math.max(publik.length, local.length); i++) {
+            final var publicIdx = idx(publik, i);
+            final var localIdx = idx(local, i);
 
-        String[] netVersion = v1.replaceAll("[^0-9.]", "").split("\\.");
-        String[] localVersion = v2.replaceAll("[^0-9.]", "").split("\\.");
-
-        /*
-         * no need to try and catch parsing exceptions because of the previous
-         * regex filter
-         */
-        for (int i = 0; i < Math.max(netVersion.length, localVersion.length); i++)
-            if ((i >= netVersion.length ? 0 : Integer.parseInt(netVersion[i])) > (i >= localVersion.length ? 0 : Integer.parseInt(localVersion[i])))
-                return true;
+            if (publicIdx < localIdx) return false;
+            if (publicIdx > localIdx) return true;
+        }
 
         return false;
     }
 
-    private List<String> getOutOfDateMessage() {
-        return Arrays.asList("&8--------------------------------------------", "&a" + plugin.getName() + " " + version + " is available!", "&a" + getResourceUrl(), "&7&oYou can disable this notification in the config file.", "&8--------------------------------------------");
+    private static int idx(int[] version, int index) {
+        return index >= version.length ? 0 : version[index];
     }
 
+    private static int[] parseVersion(@NotNull String input) {
+        input = input.split("-")[0]; // Remove suffixes like "-SNAPSHOT"
+
+        var parts = input.split("\\.");
+        var version = new int[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            try {
+                version[i] = Integer.parseInt(parts[i]);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid version format: '" + input + "' is not an int");
+            }
+
+        return version;
+    }
+
+    @NotNull
+    private List<String> getOutOfDateMessage() {
+        return Arrays.asList("&8--------------------------------------------",
+                "&a" + plugin.getName() + " " + version + " is available! (Running " + plugin.getDescription().getVersion() + ")",
+                "&aDownload at: " + getResourceUrl(),
+                "&7&oYou can disable this notification in the config file.",
+                "&8--------------------------------------------");
+    }
+
+    @NotNull
     private String getResourceUrl() {
         return "https://www.spigotmc.org/resources/" + id + "/";
     }
