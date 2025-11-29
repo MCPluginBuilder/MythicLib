@@ -1,5 +1,11 @@
 package io.lumine.mythic.lib.damage;
 
+import io.lumine.mythic.lib.UtilityMethods;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public enum DamageType {
 
     /**
@@ -58,5 +64,30 @@ public enum DamageType {
 
     public String getOffenseStat() {
         return name() + "_DAMAGE";
+    }
+
+    @NotNull
+    public static List<DamageType> listFromConfig(@NotNull Object object) {
+
+        // From string
+        if (object instanceof String) {
+
+            var split = ((String) object).split(",");
+            var list = new ArrayList<DamageType>(split.length);
+            for (var s : split)
+                list.add(UtilityMethods.prettyValueOf(DamageType::valueOf, s, "No damage type with name '%s'"));
+            return list;
+        }
+
+        // From string list
+        if (object instanceof List) {
+
+            var list = new ArrayList<DamageType>(((List<?>) object).size());
+            for (var o : (List<?>) object)
+                list.add(UtilityMethods.prettyValueOf(DamageType::valueOf, o.toString(), "No damage type with name '%s'"));
+            return list;
+        }
+
+        throw new IllegalArgumentException("Cannot parse DamageType list from " + object);
     }
 }

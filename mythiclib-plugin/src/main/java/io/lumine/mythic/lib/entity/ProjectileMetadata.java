@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
+import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.damage.ProjectileAttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
@@ -21,7 +22,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,11 +66,15 @@ public class ProjectileMetadata extends TemporaryHandler {
      */
     private boolean customDamage;
 
+    // Attack damage types
+    private final List<DamageType> damageTypes;
+
     /**
      * Can be modified by external plugins.
      */
     private double damageMultiplier = 1;
 
+    // TODO switch to PersistentDataContainer for recent Spigot versions
     public static final String METADATA_KEY = "MythicLibProjectileMetadata";
     private static final HandlerList[] HANDLER_LISTS = inferHandlerLists(ProjectileMetadata.class);
 
@@ -83,15 +87,20 @@ public class ProjectileMetadata extends TemporaryHandler {
      * @param projectileType Type of projectile being fired
      * @param projectile     Projectile being fired
      */
-    private ProjectileMetadata(@NotNull PlayerMetadata shooter, @NotNull ProjectileType projectileType, @NotNull Entity projectile) {
+    private ProjectileMetadata(@NotNull PlayerMetadata shooter,
+                               @NotNull List<DamageType> damageTypes,
+                               @NotNull ProjectileType projectileType,
+                               @NotNull Entity projectile) {
         super(HANDLER_LISTS);
 
         this.entityId = projectile.getEntityId();
         this.projectileType = projectileType;
+        this.damageTypes = damageTypes;
 
         // Cache important stuff
         this.shooter = shooter;
         this.cachedSkills = shooter.getData().getPassiveSkillMap().isolateModifiers(shooter.getActionHand());
+        // TODO use SkillMetadata directly instead to avoid re-instanciating TriggerMetadata every tick
         this.tickTriggerMetadata = new TriggerMetadata(shooter, projectileType.getTickTrigger(), projectile, null);
 
         // Trigger skills
@@ -114,7 +123,7 @@ public class ProjectileMetadata extends TemporaryHandler {
 
             @Override
             public void run() {
-                // No flag check!
+                // [Optimization] No flag check!
                 shooter.getData().triggerSkills(tickTriggerMetadata, cachedSkills, false);
             }
         };
@@ -123,6 +132,14 @@ public class ProjectileMetadata extends TemporaryHandler {
     @NotNull
     public PlayerMetadata getShooter() {
         return shooter;
+    }
+
+    /**
+     * @return Damage types of this projectile attack
+     */
+    @NotNull
+    public List<DamageType> getDamageTypes() {
+        return damageTypes;
     }
 
     @Nullable
@@ -202,23 +219,34 @@ public class ProjectileMetadata extends TemporaryHandler {
 
     @Nullable
     public static ProjectileMetadata get(@NotNull Entity projectile) {
-        for (MetadataValue mv : projectile.getMetadata(METADATA_KEY))
+        for (var mv : projectile.getMetadata(METADATA_KEY))
             if (mv.getOwningPlugin().equals(MythicLib.plugin)) return (ProjectileMetadata) mv.value();
         return null;
     }
 
     @NotNull
     public static ProjectileMetadata create(@NotNull PlayerMetadata shooter, @NotNull ProjectileType projectileType, @NotNull Entity projectile) {
-        final @Nullable ProjectileMetadata found = get(projectile);
-        if (found != null) return found;
-        return new ProjectileMetadata(shooter, projectileType, projectile);
+        final @Nullable var existingMetadata = get(projectile);
+        if (existingMetadata != null) return existingMetadata;
+
+        return new ProjectileMetadata(shooter, MythicLib.plugin.getMMOConfig().bowAttackTypes, projectileType, projectile);
     }
 
     @NotNull
     public static ProjectileMetadata create(@NotNull MMOPlayerData data, @NotNull EquipmentSlot actionHand, @NotNull ProjectileType projectileType, @NotNull Entity projectile) {
-        final @Nullable ProjectileMetadata found = get(projectile);
-        if (found != null) return found;
-        return new ProjectileMetadata(data.getStatMap().cache(actionHand), projectileType, projectile);
+        final @Nullable var existingMapping = get(projectile);
+        if (existingMapping != null) return existingMapping;
+
+        return create(data.getStatMap().cache(actionHand), MythicLib.plugin.getMMOConfig().bowAttackTypes, projectileType, projectile);
+    }
+
+    @NotNull
+    public static ProjectileMetadata create(@NotNull PlayerMetadata shooter,
+                                            @NotNull List<DamageType> attackDamageTypes,
+                                            @NotNull ProjectileType projectileType,
+                                            @NotNull Entity projectile) {
+        // TODO support other types of projectiles? snowballs, tridents....
+        return new ProjectileMetadata(shooter, attackDamageTypes, projectileType, projectile);
     }
 
     //endregion

@@ -1,7 +1,9 @@
 package io.lumine.mythic.lib.script.mechanic.projectile;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
 import io.lumine.mythic.lib.entity.ProjectileType;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
@@ -19,9 +21,12 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class ShootArrowMechanic extends DirectionMechanic {
     private final boolean fromItem, playerAttackDamage;
     private final DoubleFormula velocity;
+    private final List<DamageType> damageTypes;
 
     @Nullable
     private final Script onHit, onLand, onTick;
@@ -35,17 +40,19 @@ public class ShootArrowMechanic extends DirectionMechanic {
         onLand = config.getScriptOrNull("land");
         onTick = config.getScriptOrNull("tick");
         velocity = config.getDoubleFormula("velocity", DoubleFormula.constant(1));
+        damageTypes = config.contains("damage_types") ? DamageType.listFromConfig(config.getObject("damage_types")) : null;
     }
 
     @Override
     public void cast(SkillMetadata meta, Location source, Vector dir) {
-        final Arrow arrow = meta.getCaster().getPlayer().launchProjectile(Arrow.class);
+        final var arrow = meta.getCaster().getPlayer().launchProjectile(Arrow.class);
         arrow.setVelocity(dir.multiply(velocity.evaluate(meta)));
 
         // Trigger on-shoot abilities
         meta.getCaster().triggerSkills(TriggerType.SHOOT_BOW, arrow, null);
 
-        final ProjectileMetadata proj = ProjectileMetadata.create(meta.getCaster(), ProjectileType.ARROW, arrow);
+        final var damageTypes = this.damageTypes != null ? this.damageTypes : MythicLib.plugin.getMMOConfig().bowAttackTypes;
+        final var proj = ProjectileMetadata.create(meta.getCaster(), damageTypes, ProjectileType.ARROW, arrow);
         if (fromItem)
             proj.setSourceItem(NBTItem.get(meta.getCaster().getPlayer().getInventory().getItem(meta.getCaster().getActionHand().toBukkit())));
         if (playerAttackDamage) proj.setCustomDamage(true);

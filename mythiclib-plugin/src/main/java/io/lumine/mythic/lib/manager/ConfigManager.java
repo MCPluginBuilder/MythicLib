@@ -4,19 +4,26 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.relation.EmptyPvPInteractionRules;
 import io.lumine.mythic.lib.comp.interaction.relation.InteractionRules;
+import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.logging.Level;
 
 @ModuleInfo(key = "config")
 public class ConfigManager extends Module {
@@ -30,6 +37,8 @@ public class ConfigManager extends Module {
     public BarStyle castingDelayBarStyle;
     public double castingDelaySlowness;
     public int maxSyncTries;
+    public List<DamageType> meleeWeaponAttackTypes, meleeUnarmedAttackTypes, meleeRandomAttackTypes, bowAttackTypes;
+    public final EnumMap<EntityDamageEvent.DamageCause, List<DamageType>> damageCauseMap = new EnumMap<>(EntityDamageEvent.DamageCause.class);
 
     @NotNull
     public InteractionRules interactionRules;
@@ -66,7 +75,9 @@ public class ConfigManager extends Module {
 
         flagCheckSkills = config.getBoolean("enable_flag_checks.skills");
 
+        ///////////////////
         // Casting delay
+        ///////////////////
         castingDelaySlowness = config.getDouble("casting-delay.slowness");
         castingDelayCancelOnMove = config.getBoolean("casting-delay.cancel-on-move");
         enableCastingDelayBossbar = config.getBoolean("casting-delay.bossbar.enabled");
@@ -85,6 +96,49 @@ public class ConfigManager extends Module {
         } catch (IllegalArgumentException exception) {
             skillCancelScript = null;
         }
+
+        ///////////////////
+        // Attack damage types
+        ///////////////////
+        try {
+            meleeWeaponAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.melee_weapon"));
+        } catch (Exception exception) {
+            meleeWeaponAttackTypes = List.of(DamageType.PHYSICAL, DamageType.WEAPON);
+        }
+
+        try {
+            meleeUnarmedAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.melee_unarmed"));
+        } catch (Exception exception) {
+            meleeUnarmedAttackTypes = List.of(DamageType.PHYSICAL, DamageType.UNARMED);
+        }
+
+        try {
+            meleeRandomAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.melee_random"));
+        } catch (Exception exception) {
+            meleeRandomAttackTypes = List.of(DamageType.PHYSICAL);
+        }
+
+        try {
+            bowAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.bow"));
+        } catch (Exception exception) {
+            bowAttackTypes = List.of(DamageType.PHYSICAL, DamageType.PROJECTILE, DamageType.WEAPON);
+        }
+
+        ///////////////////
+        // DamageCause -> DamageType mapping
+        ///////////////////
+        this.damageCauseMap.clear();
+        final var rawConfigFile = new YamlFile("config"); // Ignore default keys
+        damageTypeConfigMigration(rawConfigFile);
+        final var damageCauseSection = rawConfigFile.getContent().getConfigurationSection("damage_types.bukkit");
+        if (damageCauseSection != null) for (var key : damageCauseSection.getKeys(false))
+            try {
+                var cause = UtilityMethods.prettyValueOf(EntityDamageEvent.DamageCause::valueOf, key, "No damage cause with ID " + key + " exists!");
+                var types = DamageType.listFromConfig(damageCauseSection.getStringList(key));
+                damageCauseMap.put(cause, types);
+            } catch (Exception exception) {
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load DamageCause/DamageType mapping " + key + ": " + exception.getMessage());
+            }
     }
 
     /**
@@ -102,5 +156,16 @@ public class ConfigManager extends Module {
 
     private char getFirstChar(String str) {
         return str == null || str.isEmpty() ? '.' : str.charAt(0);
+    }
+
+    @BackwardsCompatibility(version = "1.7.1-SNAPSHOT")
+    private static void damageTypeConfigMigration(YamlFile config) {
+        // Autoupdate config.yml
+        if (!config.getContent().isConfigurationSection("damage_types")) {
+            var freshConfig = YamlFile.fromJarFile(MythicLib.plugin, "", "config").getContent();
+
+            config.getContent().set("damage_types", freshConfig.getConfigurationSection("damage_types"));
+            config.save();
+        }
     }
 }

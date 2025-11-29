@@ -65,6 +65,55 @@ critical-strikes:
 # trigger any skill, so just ignore them.
 ignore_shift_triggers: false
 
+# General options with attack damage types
+damage_types:
+
+  # Unless stated otherwise (by MMOItems item types or skills),
+  # what damage types should be applied to vanilla melee attacks
+  # or projectiles?
+  #
+  # This includes, for instance, melee attacks done with vanilla
+  # weapons (MMOItems weapons all have custom damage types), damage
+  # dealt using vanilla bows and crossbows....
+  default:
+    melee_weapon: [ WEAPON, PHYSICAL ]    # Hitting with a weapon (sword, axe...)
+    melee_unarmed: [ UNARMED, PHYSICAL ]  # Punching with bare hands
+    melee_default: [ PHYSICAL ]           # Hitting with a random non-weapon item
+    bow: [ WEAPON, PROJECTILE, PHYSICAL ] # Bows, crossbows, all projectiles
+
+  # Links Bukkit DamageCause's to MythicLib damage types.
+  # For instance, you can map damage dealt by Ender Dragon Breath
+  # damage to MAGIC damage type.
+  #
+  # Available Bukkit damage causes available here:
+  # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html
+  bukkit:
+    MAGIC: [ MAGIC ]                  # Witches and potions
+    DRAGON_BREATH: [ MAGIC ]          # Ender Dragon Breath
+    POISON: [ MAGIC, DOT ]            # Poison potion effect
+    WITHER: [ MAGIC, DOT ]            # Wither potion effect
+    FIRE_TICK: [ PHYSICAL, DOT ]      # Fire damage over time
+    MELTING: [ PHYSICAL, DOT ]        # Powder snow damage (1.20.3+)
+    STARVATION: [ DOT ]               # Starvation damage
+    DRYOUT: [ DOT ]                   # Drying out damage (1.20.4+)
+    FREEZE: [ DOT ]                   # Freezing damage
+    FIRE: [ PHYSICAL ]                # Standing in fire (not fire tick)
+    LAVA: [ PHYSICAL ]                # Lava damage
+    HOT_FLOOR: [ PHYSICAL ]           # Magma block damage
+    SONIC_BOOM: [ PHYSICAL ]          # Elytra sonic boom
+    LIGHTNING: [ PHYSICAL ]           # Lightning and trident channeling
+    FALL: [ PHYSICAL ]                # Fall damage
+    THORNS: [ PHYSICAL ]              # Thorns enchantment
+    CONTACT: [ PHYSICAL ]             # Cactus damage
+    ENTITY_EXPLOSION: [ PHYSICAL ]    # Creeper explosion
+    ENTITY_SWEEP_ATTACK: [ PHYSICAL ] # Sweeping Edge enchantment
+    FALLING_BLOCK: [ PHYSICAL ]       # Anvil or falling block damage
+    FLY_INTO_WALL: [ PHYSICAL ]       # Elytra crash into wall
+    BLOCK_EXPLOSION: [ PHYSICAL ]     # TNT explosion
+    SUFFOCATION: [ PHYSICAL ]         # When inside a block
+    CRAMMING: [ PHYSICAL ]            # Entity cramming (too many entities in one block)
+    DROWNING: [ PHYSICAL ]            # Drowning damage
+
 # When enabled, abilities provided by the item in the offhand will
 # not be triggered. Set to false by default.
 ignore_offhand_click_triggers: false
