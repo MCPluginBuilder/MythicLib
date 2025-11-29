@@ -80,6 +80,13 @@ public interface ConfigObject {
 
     boolean bool(boolean defaultValue, @NotNull String... aliases);
 
+    @NotNull
+    default DoubleFormula doubleFormula(@NotNull DoubleFormula defaultValue, @NotNull String... aliases) {
+        for (String key : aliases)
+            if (contains(key)) return getDoubleFormula(key);
+        return defaultValue;
+    }
+
     //endregion
 
     default DoubleFormula getDoubleFormula(String key) {
@@ -135,12 +142,13 @@ public interface ConfigObject {
     /**
      * Throws an IAE if any of the given key
      * is not found in the config object
-     * @deprecated 
+     *
      * @see #flpt(String...)
-     * @see #bool( String...) 
+     * @see #bool(String...)
      * @see #string(String...)
-     * @see #integer(String...) 
-     * @see #dble(String...) 
+     * @see #integer(String...)
+     * @see #dble(String...)
+     * @deprecated
      */
     @Deprecated
     default void validateKeys(String... keys) {

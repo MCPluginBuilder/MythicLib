@@ -37,10 +37,7 @@ import io.lumine.mythic.lib.script.mechanic.projectile.ShulkerBulletMechanic;
 import io.lumine.mythic.lib.script.mechanic.shaped.*;
 import io.lumine.mythic.lib.script.mechanic.variable.*;
 import io.lumine.mythic.lib.script.mechanic.variable.vector.*;
-import io.lumine.mythic.lib.script.mechanic.visual.ParticleMechanic;
-import io.lumine.mythic.lib.script.mechanic.visual.PlayerSoundMechanic;
-import io.lumine.mythic.lib.script.mechanic.visual.SoundMechanic;
-import io.lumine.mythic.lib.script.mechanic.visual.TellMechanic;
+import io.lumine.mythic.lib.script.mechanic.visual.*;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.script.targeter.entity.*;
@@ -198,10 +195,11 @@ public class SkillManager extends Module {
         registerMechanic("set_vector", SetVectorMechanic::new, "set_vec");
 
         // Visual
-        registerMechanic("particle", ParticleMechanic::new, "spawn_particle", "par");
+        registerMechanic("action_bar", ActionBarMechanic::new, "actionbar", "ab");
+        registerMechanic("spawn_particle", ParticleMechanic::new, "particle", "par", "spawnparticle");
         registerMechanic("sound", SoundMechanic::new, "play_world_sound", "play_sound", "world_sound");
-        registerMechanic("player_sound", PlayerSoundMechanic::new, "play_player_sound");
-        registerMechanic("tell", TellMechanic::new, "message", "msg", "send", "send_message", "send_msg");
+        registerMechanic("player_sound", PlayerSoundMechanic::new, "play_player_sound", "playersound");
+        registerMechanic("send_message", TellMechanic::new, "message", "msg", "send", "tell", "send_msg");
 
         //////////////////////////////////
         // Targeters
