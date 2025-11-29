@@ -88,7 +88,11 @@ public class DamageIndicators extends GameIndicators {
         final List<String> holos = new ArrayList<>();
         final Map<IndicatorType, Double> mappedDamage = mapDamage(event.getDamage());
         final double modifierDue = (event.toBukkit().getFinalDamage() - event.getDamage().getDamage()) / Math.max(1, mappedDamage.size());
-        mappedDamage.forEach((type, val) -> holos.add(type.computeFormat(val + modifierDue)));
+        mappedDamage.forEach((type, val) -> {
+            // Ignore minimal damage values
+            final var damageValue = val + modifierDue;
+            if (damageValue > 0) holos.add(type.computeFormat(damageValue));
+        });
 
         // Display multiple indicators
         if (splitHolograms) for (String holo : holos)

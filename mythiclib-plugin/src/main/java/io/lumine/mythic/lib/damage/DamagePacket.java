@@ -24,7 +24,7 @@ import java.util.Objects;
 public class DamagePacket implements Cloneable {
     @NotNull
     private DamageType[] types;
-    private double value, additiveModifiers, multiplicativeModifiers = 1;
+    private double value, additive, scalar = 1;
 
     @Nullable
     private Element element;
@@ -84,12 +84,11 @@ public class DamagePacket implements Cloneable {
      *                    increase final damage by 50%
      */
     public void multiplicativeModifier(double coefficient) {
-        Validate.isTrue(coefficient >= 0, "Coefficient cannot be negative");
-        this.multiplicativeModifiers *= coefficient;
+        this.scalar *= coefficient;
     }
 
     public void additiveModifier(double multiplier) {
-        this.additiveModifiers += multiplier;
+        this.additive += multiplier;
     }
 
     /**
@@ -99,7 +98,7 @@ public class DamagePacket implements Cloneable {
     public double getFinalValue() {
 
         // Make sure the returned value is positive
-        return value * Math.max(0, 1 + additiveModifiers) * multiplicativeModifiers;
+        return value * Math.max(0, 1 + additive) * scalar;
     }
 
     /**
@@ -120,8 +119,8 @@ public class DamagePacket implements Cloneable {
 
         // Append value and modifier
         damageTypes.append("\u00a7e").append("(").append(value)
-                .append("*").append(additiveModifiers)
-                .append("*").append(multiplicativeModifiers).append(")").append("x");
+                .append("*").append(additive)
+                .append("*").append(scalar).append(")").append("x");
 
         // Append Scaling
         boolean damageAppended = false;
@@ -167,8 +166,8 @@ public class DamagePacket implements Cloneable {
     @Override
     public DamagePacket clone() {
         DamagePacket clone = new DamagePacket(value, types);
-        clone.additiveModifiers = additiveModifiers;
-        clone.multiplicativeModifiers = multiplicativeModifiers;
+        clone.additive = additive;
+        clone.scalar = scalar;
         clone.element = element;
         return clone;
     }
