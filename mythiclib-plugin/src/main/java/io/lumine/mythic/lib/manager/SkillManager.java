@@ -152,6 +152,7 @@ public class SkillManager extends Module {
         registerMechanic("multiply_damage", MultiplyDamageMechanic::new);
         registerMechanic("potion", PotionMechanic::new, "peffect", "potion_effect", "p_effect", "apply_potion", "apply_potion_effect", "apply_peffect");
         registerMechanic("remove_potion", RemovePotionMechanic::new);
+        registerMechanic("set_no_damage_ticks", SetNoDamageTicksMechanic::new, "no_damage_ticks", "set_no_damage", "setnodamage", "nodamageticks");
         registerMechanic("set_on_fire", SetOnFireMechanic::new);
 
         // Player
