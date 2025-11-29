@@ -144,31 +144,6 @@ casting-delay:
     style: SEGMENTED_20
     color: PURPLE
 
-# Default and max. values of armor/mitigation stats. These
-# stats all have a cooldown which can be reduced using the
-# '*** Cooldown Reduction' item stat.
-mitigation:
-
-  block:
-    cooldown: 3.0
-    message:
-      format: '&cYou just blocked {damage} damage.'
-      action-bar: false
-
-  dodge:
-    knockback: 1.0
-    cooldown: 3.0
-    message:
-      format: '&cYou just dodged {damage} damage.' # Use {power} to display block power.
-      action-bar: false
-
-  parry:
-    knockback: 1.0
-    cooldown: 3.0
-    message:
-      format: '&cYou just parried {damage} damage.'
-      action-bar: false
-
 # Change the amount of damage dealt on specific damage sources. This
 # tool comes handy when needing to balance your vanilla damage sources.
 # You can use any math formula for any damage source possible.

@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class AddVectorMechanic extends VariableMechanic {
@@ -28,7 +29,7 @@ public class AddVectorMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         Variable targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");

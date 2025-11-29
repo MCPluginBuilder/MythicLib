@@ -14,9 +14,7 @@ import java.util.logging.Level;
  * evaluating the formula. This represents 90% of the total skill
  * system configurability.
  *
- * TODO
  * @see io.lumine.mythic.lib.util.formula.NumericalExpression
- * @see io.lumine.mythic.lib.util.formula.preprocess.ExpressionPreprocessor
  */
 public class DoubleFormula {
     @Nullable

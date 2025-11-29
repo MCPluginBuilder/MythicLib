@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.targeter.entity.DefaultEntityTargeter;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A mechanic that takes an entity as parameter. Examples:
@@ -25,7 +26,7 @@ public abstract class TargetMechanic extends Mechanic {
         return targeter;
     }
 
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         for (Entity target : targeter.findTargets(meta))
             cast(meta, target);
     }

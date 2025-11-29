@@ -15,6 +15,7 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.SkillOrientation;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import jdk.jfr.Event;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -192,6 +193,15 @@ public class SkillMetadata {
         return orientation;
     }
 
+    @NotNull
+    public Event getSourceEvent() {
+        final var varFound = getVariable("source_event");
+        // TODO does this method return null or non null ????
+        Validate.notNull(varFound, "Skill has no source event variable");
+        if (!(varFound instanceof EventVariable)) throw new NullPointerException("Skill has no source event");
+        return (Event) varFound.getStored();
+    }
+
     public boolean hasOrientation() {
         return orientation != null;
     }
@@ -263,7 +273,9 @@ public class SkillMetadata {
         return clone(source, targetLocation, targetEntity, orientation);
     }
 
-    public static final List<String> RESERVED_VARIABLE_NAMES = Arrays.asList("modifier", "parameter", "source", "targetLocation", "targetLoc", "target_loc", "target_location", "targetloc", "targetl", "caster", "attack", "stat", "target", "var", "rand", "random", "rdm");
+    public static final List<String> RESERVED_VARIABLE_NAMES = Arrays.asList("modifier", "parameter", "source", "targetLocation",
+            "targetLoc", "target_loc", "target_location", "targetloc", "targetl", "caster", "attack", "stat", "target", "var",
+            "rand", "random", "rdm");
 
     /**
      * User variables have scopes, which dictate in which variable registry
@@ -396,7 +408,7 @@ public class SkillMetadata {
         return var;
     }
 
-    private static final Pattern INTERNAL_PLACEHOLDER_PATTERN = UtilityMethods.internalPlaceholderPattern('<', '>');
+    public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = UtilityMethods.internalPlaceholderPattern('<', '>');
 
     @NotNull
     public String parseString(String str) {

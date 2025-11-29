@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class DotProductMechanic extends VariableMechanic {
@@ -24,7 +25,7 @@ public class DotProductMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         Variable var1 = meta.getVariable(varName1);
         Validate.isTrue(var1 instanceof PositionVariable, "Variable '" + varName1 + "' is not a vector");

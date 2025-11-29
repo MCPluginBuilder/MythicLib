@@ -62,7 +62,7 @@ public interface ConfigObject {
 
     String string(@NotNull String... aliases);
 
-    String stringFb(@NotNull String defaultValue, @NotNull String... aliases);
+    String stringFb(@Nullable String defaultValue, @NotNull String... aliases);
 
     double dble(@NotNull String... aliases);
 
@@ -81,18 +81,36 @@ public interface ConfigObject {
     boolean bool(boolean defaultValue, @NotNull String... aliases);
 
     @NotNull
-    default DoubleFormula doubleFormula(@NotNull DoubleFormula defaultValue, @NotNull String... aliases) {
-        for (String key : aliases)
-            if (contains(key)) return getDoubleFormula(key);
+    default Script script(@NotNull String... aliases) {
+        for (String key : aliases) if (contains(key)) return getScript(key);
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Nullable
+    default Script script(@Nullable Script defaultValue, @NotNull String... aliases) {
+        for (String key : aliases) if (contains(key)) return getScript(key);
         return defaultValue;
     }
 
     //endregion
 
-    default DoubleFormula getDoubleFormula(String key) {
-        return new DoubleFormula(getString(key));
+    @NotNull
+    default DoubleFormula getDoubleFormula(@NotNull String... aliases) {
+        for (var key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+        throw new MissingArgumentException(aliases);
     }
 
+    @NotNull
+    default DoubleFormula getDoubleFormula(@NotNull DoubleFormula defaultValue, @NotNull String... aliases) {
+        for (String key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+        return defaultValue;
+    }
+
+    /**
+     * @deprecated
+     * @see #getDoubleFormula(DoubleFormula, String...)
+     */
+    @Deprecated
     default DoubleFormula getDoubleFormula(String key, DoubleFormula defaultValue) {
         return contains(key) ? getDoubleFormula(key) : Objects.requireNonNull(defaultValue, "Default value cannot be null");
     }
@@ -103,8 +121,8 @@ public interface ConfigObject {
     }
 
     @NotNull
-    default Script getScript(String key) {
-        return MythicLib.plugin.getSkills().getScriptOrThrow(getString(key));
+    default Script getScript(String... aliases) {
+        return MythicLib.plugin.getSkills().getScriptOrThrow(string(aliases));
     }
 
     @NotNull

@@ -19,8 +19,8 @@ public class ActionBarMechanic extends TargetMechanic {
         super(config);
 
         message = config.string("message", "msg", "m", "format", "f");
-        duration = config.doubleFormula(DoubleFormula.constant(30), "duration", "dur", "d", "ticks", "time", "t");
-        priority = config.doubleFormula(DoubleFormula.constant(0), "priority", "prior", "p", "level", "lvl", "l");
+        duration = config.getDoubleFormula(DoubleFormula.constant(30), "duration", "dur", "d", "ticks", "time", "t");
+        priority = config.getDoubleFormula(DoubleFormula.constant(0), "priority", "prior", "p", "level", "lvl", "l");
     }
 
     @Override

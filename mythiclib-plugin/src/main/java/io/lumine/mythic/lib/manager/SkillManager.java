@@ -130,6 +130,7 @@ public class SkillManager extends Module {
 
         // Misc
         registerMechanic("apply_cooldown", ApplyCooldownMechanic::new, "apply_cd");
+        registerMechanic("cancel_event", CancelEventMechanic::new, "cancelevent");
         registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
         registerMechanic("delay", DelayMechanic::new);
         registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
@@ -244,6 +245,7 @@ public class SkillManager extends Module {
         registerCondition("is_living", IsLivingCondition::new);
         registerCondition("on_fire", OnFireCondition::new);
         registerCondition("permission", PermissionCondition::new);
+        registerCondition("random_chance", RandomChanceCondition::new, "roll_chance", "chance_roll", "randomchance", "chance", "rollchance");
         registerCondition("time", TimeCondition::new);
 
         //////////////////////////////////

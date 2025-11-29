@@ -12,6 +12,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Draws a parabola from point A to point B.
@@ -41,7 +42,7 @@ public class ParabolaMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         // This better not be empty
         Location source = this.sourceLocation.findTargets(meta).get(0);

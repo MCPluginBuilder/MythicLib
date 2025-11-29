@@ -21,13 +21,13 @@ public class ShulkerBulletMechanic extends DirectionMechanic {
     private final DoubleFormula lifeSpan;
     private final Script onHitEntity;
 
-    private static final double DEFAULT_LIFE_SPAN = 60;
+    private static final DoubleFormula DEFAULT_LIFE_SPAN = DoubleFormula.constant(60);
 
     public ShulkerBulletMechanic(ConfigObject config) {
         super(config);
 
         onHitEntity = config.contains("hit_entity") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("hit_entity")) : null;
-        lifeSpan = config.getDoubleFormula("life_span", DoubleFormula.constant(DEFAULT_LIFE_SPAN));
+        lifeSpan = config.getDoubleFormula(DEFAULT_LIFE_SPAN, "life_span", "lifespan", "lifetime", "l", "ticks", "duration", "dur", "d");
     }
 
     @Override

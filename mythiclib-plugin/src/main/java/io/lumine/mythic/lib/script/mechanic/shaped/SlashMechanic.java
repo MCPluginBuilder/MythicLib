@@ -13,6 +13,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Performs what looks like a sword slash in
@@ -51,7 +52,7 @@ public class SlashMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         // This better not be empty
         Location source = this.sourceLocation.findTargets(meta).get(0);

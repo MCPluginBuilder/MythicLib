@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Checks if the current world time is DAY/NIGHT/DUSK..
@@ -25,7 +26,7 @@ public class ConsumeAmmoMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         // If creative, no consume
         if (creativeInfinite && meta.getCaster().getPlayer().getGameMode() == GameMode.CREATIVE) return;

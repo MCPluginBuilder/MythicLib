@@ -39,7 +39,7 @@ public class ShootArrowMechanic extends DirectionMechanic {
         onHit = config.getScriptOrNull("hit");
         onLand = config.getScriptOrNull("land");
         onTick = config.getScriptOrNull("tick");
-        velocity = config.getDoubleFormula("velocity", DoubleFormula.constant(1));
+        velocity = config.getDoubleFormula(DoubleFormula.constant(1), "velocity", "vel", "speed", "sp");
         damageTypes = config.contains("damage_types") ? DamageType.listFromConfig(config.getObject("damage_types")) : null;
     }
 

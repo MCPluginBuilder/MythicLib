@@ -24,9 +24,13 @@ import io.lumine.mythic.lib.comp.flags.WorldGuardFlags;
 import io.lumine.mythic.lib.comp.formula.FormulaParser;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsAttackHandler;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHook;
-import io.lumine.mythic.lib.comp.placeholder.*;
+import io.lumine.mythic.lib.comp.placeholder.DefaultPlaceholderParser;
+import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIHook;
+import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIParser;
+import io.lumine.mythic.lib.comp.placeholder.PlaceholderParser;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
+import io.lumine.mythic.lib.damage.mitigation.MitigationModule;
 import io.lumine.mythic.lib.glow.GlowModule;
 import io.lumine.mythic.lib.glow.provided.MythicGlowModule;
 import io.lumine.mythic.lib.gui.PluginInventory;
@@ -71,9 +75,9 @@ public class MythicLib extends MMOPluginImpl {
     private final SkillManager skillManager = new SkillManager(this);
     private final FlagHandler flagHandler = new FlagHandler();
     private final IndicatorManager indicatorManager = new IndicatorManager();
+    private final MitigationModule mitigationModule = new MitigationModule();
     private final FakeEventManager fakeEventManager = new FakeEventManager();
     private final AttackEffects attackEffects = new AttackEffects(this);
-    private final MitigationMechanics mitigationMechanics = new MitigationMechanics(this);
     private final List<MMOPlugin> mmoPlugins = new ArrayList<>();
     private Gson gson;
     private AntiCheatSupport antiCheatSupport;
@@ -128,7 +132,6 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getPluginManager().registerEvents(new DamageReduction(), this);
         attackEffects.enable();
         Bukkit.getPluginManager().registerEvents(new CustomProjectileDamage(), this);
-        mitigationMechanics.enable();
         Bukkit.getPluginManager().registerEvents(new AttackEventListener(), this);
         Bukkit.getPluginManager().registerEvents(new MythicCraftingManager(), this);
         Bukkit.getPluginManager().registerEvents(new SkillTriggers(), this);
@@ -251,13 +254,10 @@ public class MythicLib extends MMOPluginImpl {
         getCommand("megaworkbench").setExecutor(MegaWorkbenchMapping.MWB);
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
+        mitigationModule.reload(); // Nothing depends on it
         damageManager.enable();
-
-        // Load local skills
-        skillManager.enable();
-
-        // Load elements
-        elementManager.enable();
+        skillManager.enable(); // Before elements are loaded
+        elementManager.enable(); // Before stats are loaded
 
         // Load player data of online players
         Bukkit.getOnlinePlayers().forEach(MMOPlayerData::setup);
@@ -270,21 +270,23 @@ public class MythicLib extends MMOPluginImpl {
 
         configManager.enable();
         statManager.enable();
+
+        mitigationModule.postload(); // After scripts are loaded
     }
 
     public void reload() {
         reloadConfig();
+        mitigationModule.reload();
         statManager.reload();
         attackEffects.reload();
-        mitigationMechanics.reload();
         skillManager.reload();
         configManager.reload();
         elementManager.reload();
         this.indicatorManager.reload(getConfig());
+        mitigationModule.postload(); // After scripts are loaded
 
         // Flush outdated data
-        for (MMOPlayerData online : MMOPlayerData.getLoaded())
-            online.getStatMap().flushCache();
+        for (var online : MMOPlayerData.getLoaded()) online.getStatMap().flushCache();
     }
 
     @Override
@@ -331,6 +333,11 @@ public class MythicLib extends MMOPluginImpl {
 
     public SkillManager getSkills() {
         return skillManager;
+    }
+
+    @NotNull
+    public MitigationModule getMitigation() {
+        return mitigationModule;
     }
 
     public ElementManager getElements() {

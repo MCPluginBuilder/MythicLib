@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.variable.def.StringVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SetStringMechanic extends VariableMechanic {
@@ -18,7 +19,7 @@ public class SetStringMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         getTargetVariableList(meta).registerVariable(new StringVariable(getVariableName(), meta.parseString(value)));
     }
 }

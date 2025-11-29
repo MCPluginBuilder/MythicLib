@@ -15,9 +15,7 @@ public class TellMechanic extends TargetMechanic {
     public TellMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("format");
-
-        message = config.getString("format");
+        message = config.string("message", "msg", "m", "format", "fmt", "f", "text", "txt");
     }
 
     @Override

@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Ticks from point A to point B
@@ -30,7 +31,7 @@ public class LineMechanic extends Mechanic {
         source = config.getLocationTargeter("source");
         target = config.getLocationTargeter("target");
 
-        step = config.getDoubleFormula("step", DoubleFormula.constant(.5));
+        step = config.getDoubleFormula(DoubleFormula.constant(.5), "step");
         instant = config.getBoolean("instant", false);
         pointsPerTick = config.getInt("points_per_tick", 1);
         Validate.isTrue(pointsPerTick > 0, "PPT must be strictly positive");
@@ -41,7 +42,7 @@ public class LineMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         Location source = this.source.findTargets(meta).get(0);
         for (Location loc : this.target.findTargets(meta))
             cast(meta, source, loc);

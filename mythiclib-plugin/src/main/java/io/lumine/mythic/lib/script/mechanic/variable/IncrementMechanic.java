@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.variable.def.IntegerVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class IncrementMechanic extends VariableMechanic {
@@ -14,7 +15,7 @@ public class IncrementMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         Variable var = getTargetVariableList(meta).getVariable(getVariableName());
         Validate.notNull(var, "Could not find int variable '" + getVariableName() + "'");
         Validate.isTrue(var instanceof IntegerVariable, "Variable '" + var + "' is not an int");

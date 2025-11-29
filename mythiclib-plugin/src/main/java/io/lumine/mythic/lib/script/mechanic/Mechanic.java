@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.script.mechanic;
 
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A mechanic is an elementary brick of a skill. It can
@@ -11,5 +12,5 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
  * in order to create complex and FULLY CUSTOM skills
  */
 public abstract class Mechanic {
-    public abstract void cast(SkillMetadata meta);
+    public abstract void cast(@NotNull SkillMetadata meta);
 }

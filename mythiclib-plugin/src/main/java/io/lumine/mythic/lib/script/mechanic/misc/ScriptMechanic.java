@@ -13,6 +13,7 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public class ScriptMechanic extends Mechanic {
 
         // Multiple skill casts
         counterVarName = config.getString("counter", "counter");
-        iterations = config.getDoubleFormula("iterations", DoubleFormula.constant(1));
+        iterations = config.getDoubleFormula(DoubleFormula.constant(1), "iterations", "ite", "iter", "times");
 
         // Targeters
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : null;
@@ -55,7 +56,7 @@ public class ScriptMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         if (counterVarName == null)
             castWithNewMeta(meta);
         else {
@@ -77,9 +78,9 @@ public class ScriptMechanic extends Mechanic {
      *
      * @param old Meta used to cast the 'skill' mechanic
      * @implNote Regarding the double for loop which allows to cast the skill
-     * with every possible skill metadata, this will not be used very often.
-     * Generally the skill is either used with a entity targeter OR a location targeter,
-     * neither both at the same time.
+     *         with every possible skill metadata, this will not be used very often.
+     *         Generally the skill is either used with a entity targeter OR a location targeter,
+     *         neither both at the same time.
      */
     private void castWithNewMeta(SkillMetadata old) {
 

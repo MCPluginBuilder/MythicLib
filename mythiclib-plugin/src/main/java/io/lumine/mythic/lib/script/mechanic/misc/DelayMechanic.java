@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Used to add delay inside of a skill before casting
@@ -30,7 +31,7 @@ public class DelayMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         throw new RuntimeException("Cannot run this mechanic");
     }
 }

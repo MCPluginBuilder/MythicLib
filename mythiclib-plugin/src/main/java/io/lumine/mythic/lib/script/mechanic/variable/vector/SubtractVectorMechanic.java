@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SubtractVectorMechanic extends VariableMechanic {
@@ -19,16 +20,18 @@ public class SubtractVectorMechanic extends VariableMechanic {
         super(config);
 
         // Term by term addition
-        x = config.contains("x") ? new DoubleFormula(config.getString("x")) : DoubleFormula.ZERO;
-        y = config.contains("y") ? new DoubleFormula(config.getString("y")) : DoubleFormula.ZERO;
-        z = config.contains("z") ? new DoubleFormula(config.getString("z")) : DoubleFormula.ZERO;
+        x = config.contains("x") ? new DoubleFormula(config.getString("x")) : null;
+        y = config.contains("y") ? new DoubleFormula(config.getString("y")) : null;
+        z = config.contains("z") ? new DoubleFormula(config.getString("z")) : null;
 
         // Vector addition
-        varToSubstract = config.getString("subtracted", null);
+        varToSubstract = config.stringFb(null, "subtracted", "subtract", "sub", "other", "rhs", "value", "val", "v");
+
+        Validate.isTrue(varToSubstract != null || x != null || y != null || z != null, "Must provide at least one of 'x', 'y', 'z' or 'subtracted'");
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         Variable targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
@@ -42,9 +45,9 @@ public class SubtractVectorMechanic extends VariableMechanic {
         }
 
         // Term by term addition
-        double x = this.x.evaluate(meta);
-        double y = this.y.evaluate(meta);
-        double z = this.z.evaluate(meta);
+        double x = this.x == null ? 0 : this.x.evaluate(meta);
+        double y = this.y == null ? 0 : this.y.evaluate(meta);
+        double z = this.z == null ? 0 : this.z.evaluate(meta);
 
         target.add(-x, -y, -z);
     }

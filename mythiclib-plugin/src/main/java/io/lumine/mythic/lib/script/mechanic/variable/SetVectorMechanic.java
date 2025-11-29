@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SetVectorMechanic extends VariableMechanic {
@@ -22,7 +23,7 @@ public class SetVectorMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         getTargetVariableList(meta).registerVariable(new PositionVariable(getVariableName(), new Position(meta.getSourceLocation().getWorld(), x.evaluate(meta), y.evaluate(meta), z.evaluate(meta))));
     }
 }

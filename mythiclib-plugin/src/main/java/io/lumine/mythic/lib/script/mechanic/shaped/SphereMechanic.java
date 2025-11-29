@@ -27,10 +27,8 @@ public class SphereMechanic extends LocationMechanic {
     public SphereMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("tick", "points");
-
         onTick = config.getScript("tick");
-        radius = config.getDoubleFormula("radius", DoubleFormula.constant(2));
+        radius = config.getDoubleFormula(DoubleFormula.constant(2), "radius", "rad", "r");
         points = config.getDoubleFormula("points");
     }
 

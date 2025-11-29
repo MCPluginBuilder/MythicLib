@@ -39,9 +39,9 @@ public class RayTraceMechanic extends DirectionMechanic {
         offense = config.getBoolean("offense", true);
         rayTraceType = config.contains("mode") ? RayTraceType.valueOf(UtilityMethods.enumName(config.getString("mode"))) : RayTraceType.DEFAULT;
 
-        range = config.getDoubleFormula("range", DoubleFormula.constant(DEFAULT_RANGE));
-        size = config.getDoubleFormula("size", DoubleFormula.constant(DEFAULT_SIZE));
-        step = config.getDoubleFormula("step", DoubleFormula.constant(DEFAULT_STEP));
+        range = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_RANGE), "range", "rng", "length", "len");
+        size = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_SIZE), "size", "width", "wide");
+        step = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_STEP), "step", "st");
     }
 
     @Override

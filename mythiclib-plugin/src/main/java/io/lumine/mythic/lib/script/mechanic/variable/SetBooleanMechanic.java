@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.script.variable.def.BooleanVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.formula.BooleanExpression;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SetBooleanMechanic extends VariableMechanic {
@@ -19,7 +20,7 @@ public class SetBooleanMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         final boolean value = BooleanExpression.eval(meta.parseString(expression));
         getTargetVariableList(meta).registerVariable(new BooleanVariable(getVariableName(), value));
     }

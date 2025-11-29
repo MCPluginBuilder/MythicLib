@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Used when a mechanic requires a direction as parameter
@@ -36,7 +37,7 @@ public abstract class DirectionMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
 
         // This better not be empty
         final Location source = this.sourceLocation.findTargets(meta).get(0);

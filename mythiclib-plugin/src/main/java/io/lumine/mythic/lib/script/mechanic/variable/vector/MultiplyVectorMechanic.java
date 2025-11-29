@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class MultiplyVectorMechanic extends VariableMechanic {
@@ -22,7 +23,7 @@ public class MultiplyVectorMechanic extends VariableMechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         Variable var = meta.getVariable(getVariableName());
         Validate.isTrue(var instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         ((PositionVariable) var).getStored().multiply(coef.evaluate(meta));

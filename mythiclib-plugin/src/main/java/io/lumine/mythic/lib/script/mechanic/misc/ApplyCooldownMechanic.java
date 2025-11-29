@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Applies a cooldown to the skill caster
@@ -22,7 +23,7 @@ public class ApplyCooldownMechanic extends Mechanic {
     }
 
     @Override
-    public void cast(SkillMetadata meta) {
+    public void cast(@NotNull SkillMetadata meta) {
         final double amount = this.amount.evaluate(meta);
         if (amount > 0) meta.getCaster().getData().getCooldownMap().applyCooldown(cooldownPath, amount);
     }

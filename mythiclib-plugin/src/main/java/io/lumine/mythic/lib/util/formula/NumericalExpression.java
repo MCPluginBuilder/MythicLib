@@ -1,24 +1,23 @@
 package io.lumine.mythic.lib.util.formula;
 
-import io.lumine.mythic.lib.util.formula.preprocess.ExpressionPreprocessor;
+import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.Lazy;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
-public class NumericalExpression<C> {
+public abstract class NumericalExpression {
 
     // Built-in functions
     private static final Function RANDOM_DOUBLE = new Function("random", 0) {
         @Override
         public double apply(double... doubles) {
-            return RANDOM.nextDouble();
+            return Math.random();
         }
     };
     private static final Function ATAN2 = new Function("atan2", 2) {
@@ -45,15 +44,20 @@ public class NumericalExpression<C> {
             return Math.max(doubles[0], doubles[1]);
         }
     };
+    private static final Function CLAMP = new Function("clamp", 3) {
+        @Override
+        public double apply(double... doubles) {
+            // clamp(x, min, max) = min(max, max(x, min))
+            return Math.min(doubles[2], Math.max(doubles[0], doubles[1]));
+        }
+    };
     private static final Function NON_ZERO = new Function("non_zero", 2) {
         @Override
         public double apply(double... doubles) {
             return doubles[0] == 0 ? doubles[1] : doubles[0];
         }
     };
-    private static final Function[] FUNCTIONS = {RANDOM_DOUBLE, ATAN2, POW, MIN, MAX, NON_ZERO};
-
-    private static final Random RANDOM = new Random();
+    private static final Function[] FUNCTIONS = {RANDOM_DOUBLE, ATAN2, POW, MIN, MAX, NON_ZERO, CLAMP};
 
     // Constants
     private static final Map<String, Double> CONSTANTS;
@@ -69,39 +73,10 @@ public class NumericalExpression<C> {
         CONSTANTS = Collections.unmodifiableMap(constants);
     }
 
-    @Nullable
-    private final Expression precompiled;
-    private final String expression;
-    private final ExpressionPreprocessor<C> preprocessor;
-
-    public NumericalExpression(@NotNull String expression, @NotNull ExpressionPreprocessor<C> preprocessor) {
-        this.expression = expression;
-        this.preprocessor = preprocessor;
-
-        // Try to precompile the expression
-        Expression expressionObject = null;
-        try {
-            expressionObject = decorateAndCompile(new ExpressionBuilder(preprocessor.preprocess(expression)));
-        } catch (Exception ignored) {
-            // Not pre-compilation
-        }
-
-        this.precompiled = expressionObject;
-    }
-
-    public double evaluate(@NotNull C context) {
-
-        // If the expression is precompiled
-        if (precompiled != null) {
-            preprocessor.process(precompiled, context);
-            return precompiled.evaluate();
-        }
-
-        return decorateAndCompile(new ExpressionBuilder(preprocessor.quickProcess(expression, context))).evaluate();
-    }
+    public abstract double evaluate(@NotNull Lazy<SkillMetadata> skillMetadata);
 
     @NotNull
-    private Expression decorateAndCompile(@NotNull ExpressionBuilder builder) {
+    protected static Expression decorateAndCompile(@NotNull ExpressionBuilder builder) {
         return builder
                 .implicitMultiplication(false)
                 .functions(FUNCTIONS)
@@ -122,6 +97,31 @@ public class NumericalExpression<C> {
      * @return Value of numerical expression
      */
     public static double eval(@NotNull String expression) {
-        return new NumericalExpression<Void>(expression, ExpressionPreprocessor.EMPTY).evaluate(null);
+        return decorateAndCompile(new ExpressionBuilder(expression)).evaluate();
+    }
+
+    @NotNull
+    public static NumericalExpression compile(@NotNull String expression) {
+
+        // Try as constant
+        try {
+            final var constantValue = Double.parseDouble(expression);
+            return new ConstantNumericalExpression(constantValue);
+        } catch (NumberFormatException ignored) {
+        }
+
+        // Try to precompile
+        try {
+            return new PrecompiledNumericalExpression(expression);
+        } catch (Exception e) {
+            /*
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Precompile failure");
+            e.printStackTrace();
+             */
+        }
+
+        // Runtime compilation and evaluation fallback
+        // Worst for performance but 100% sound
+        return new NaiveNumericalExpression(expression);
     }
 }

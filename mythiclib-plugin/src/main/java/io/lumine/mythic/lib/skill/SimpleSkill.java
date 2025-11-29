@@ -9,6 +9,13 @@ import org.jetbrains.annotations.NotNull;
 public class SimpleSkill extends Skill {
     private final SkillHandler<?> handler;
 
+    /**
+     * Used until the SkillMetadata/ScriptMetadata update
+     * TODO remove
+     */
+    @Deprecated
+    public static final SimpleSkill EMPTY = new SimpleSkill(new EmptySkillHandler());
+
     @Deprecated
     public SimpleSkill(TriggerType triggerType, SkillHandler<?> handler) {
         this(handler);

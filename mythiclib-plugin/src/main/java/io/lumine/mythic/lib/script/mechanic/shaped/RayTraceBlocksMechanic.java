@@ -27,8 +27,8 @@ public class RayTraceBlocksMechanic extends DirectionMechanic {
         onHit = config.contains("hit_block") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("hit_block")) : null;
         ignorePassable = config.getBoolean("ignore_passable", false);
 
-        range = config.getDoubleFormula("range", DoubleFormula.constant(RayTraceMechanic.DEFAULT_RANGE));
-        step = config.getDoubleFormula("step", DoubleFormula.constant(RayTraceMechanic.DEFAULT_STEP));
+        range = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_RANGE), "range");
+        step = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_STEP), "step");
     }
 
     @Override
