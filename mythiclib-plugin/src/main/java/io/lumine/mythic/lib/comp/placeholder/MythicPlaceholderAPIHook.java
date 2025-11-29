@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Gunging
  */
+@Deprecated
 public class MythicPlaceholderAPIHook implements MythicPlaceholder {
     @NotNull
     @Override

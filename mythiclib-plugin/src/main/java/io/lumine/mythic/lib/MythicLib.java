@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.api.crafting.recipes.vmp.MegaWorkbenchMapping;
 import io.lumine.mythic.lib.api.crafting.recipes.vmp.SuperWorkbenchMapping;
 import io.lumine.mythic.lib.api.crafting.uifilters.MythicItemUIFilter;
 import io.lumine.mythic.lib.api.event.armorequip.ArmorEquipEvent;
-import io.lumine.mythic.lib.api.placeholders.MythicPlaceholders;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.command.mythiclib.HealthScaleCommand;
 import io.lumine.mythic.lib.command.mythiclib.MMOTempStatCommand;
@@ -206,7 +205,7 @@ public class MythicLib extends MMOPluginImpl {
         }
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            MythicPlaceholders.registerPlaceholder(new MythicPlaceholderAPIHook());
+            //MythicPlaceholders.registerPlaceholder(new MythicPlaceholderAPIHook());
             new PlaceholderAPIHook().register();
             placeholderParser = new PlaceholderAPIParser();
             getLogger().log(Level.INFO, "Hooked onto PlaceholderAPI");

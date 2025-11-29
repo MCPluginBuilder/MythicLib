@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author Gunging
  */
+@Deprecated
 public interface MythicPlaceholder {
 
     /**

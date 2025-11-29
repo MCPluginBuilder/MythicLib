@@ -8,11 +8,11 @@ import io.lumine.mythic.lib.api.crafting.ingredients.MythicRecipeInventory;
 import io.lumine.mythic.lib.api.crafting.recipes.MythicCachedResult;
 import io.lumine.mythic.lib.api.crafting.recipes.vmp.VanillaInventoryMapping;
 import io.lumine.mythic.lib.api.crafting.uimanager.ProvidedUIFilter;
-import io.lumine.mythic.lib.api.placeholders.MythicPlaceholders;
 import io.lumine.mythic.lib.api.util.ui.FFPMythicLib;
 import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackProvider;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -156,7 +156,7 @@ public class MROCommand extends MythicRecipeOutput {
              * Parses all Placeholders of the usual form, %<something>%,
              * and todo parses the sender location for MythicLib commands
              */
-            parsed.add(MythicPlaceholders.parse(str, eventTrigger.getWhoClicked()));
+            parsed.add(MythicLib.plugin.getPlaceholderParser().parse((OfflinePlayer) eventTrigger.getWhoClicked(), str));
         }
 
         // Run command list for each time

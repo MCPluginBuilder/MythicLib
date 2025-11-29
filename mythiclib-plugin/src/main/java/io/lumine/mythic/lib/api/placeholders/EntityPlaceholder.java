@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Gunging
  */
+@Deprecated
 public class EntityPlaceholder implements MythicPlaceholder {
     @NotNull
     @Override
