@@ -1,5 +1,3 @@
-# DO NOT TOUCH
-config-version: 5
 
 # This will verbose debug messages to the console when
 # toggled on. This option applies for every MMO- plugin.

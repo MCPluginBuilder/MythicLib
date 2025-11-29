@@ -115,13 +115,6 @@ public class MythicLib extends MMOPluginImpl {
         new SpigotPlugin(90306, this).checkForUpdate();
         saveDefaultConfig();
 
-        final int configVersion = getConfig().contains("config-version", true) ? getConfig().getInt("config-version") : -1;
-        final int defConfigVersion = getConfig().getDefaults().getInt("config-version");
-        if (configVersion != defConfigVersion) {
-            getLogger().warning("You may be using an outdated config.yml!");
-            getLogger().warning("(Your config version: '" + configVersion + "' | Expected config version: '" + defConfigVersion + "')");
-        }
-
         // Fixes left clicks
         new MythicPacketSniffer(this, version);
 
