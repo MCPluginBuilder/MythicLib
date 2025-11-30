@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class VariableList implements VariableContainer {
     private final VariableScope scope;
-    private final Map<String, Variable> vars = new HashMap<>();
+    private final Map<String, Variable<?>> vars = new HashMap<>();
 
     public static final VariableList SERVER = new VariableList(VariableScope.SERVER);
 
@@ -24,11 +24,11 @@ public class VariableList implements VariableContainer {
     }
 
     @Nullable
-    public Variable getVariable(@NotNull String name) {
+    public Variable<?> getVariable(@NotNull String name) {
         return vars.get(name);
     }
 
-    public void registerVariable(@NotNull Variable var) {
+    public void registerVariable(@NotNull Variable<?> var) {
         Validate.isTrue(!SkillMetadata.RESERVED_VARIABLE_NAMES.contains(var.getName()), "Cannot use reserved variable name '" + var.getName() + "'");
         vars.put(var.getName(), var);
     }

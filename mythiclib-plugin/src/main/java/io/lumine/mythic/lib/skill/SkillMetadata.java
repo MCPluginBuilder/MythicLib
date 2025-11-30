@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import io.lumine.mythic.lib.script.util.VariableNotFoundException;
 import io.lumine.mythic.lib.script.variable.Variable;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
@@ -293,10 +294,10 @@ public class SkillMetadata {
      * @return User variable if found, throws a NPE otherwise.
      */
     @NotNull
-    public Variable getUserVariable(String name) {
+    public Variable<?> getUserVariable(String name) {
 
         // Prioritize SKILL scope
-        Variable var = vars.getVariable(name);
+        var var = vars.getVariable(name);
         if (var != null) return var;
 
         // Check PROFILE scope
@@ -310,8 +311,10 @@ public class SkillMetadata {
         var = playerData.getVariableList().getVariable(name);
         if (var != null) return var;
 
-        // Check for SERVER scope
-        return Objects.requireNonNull(VariableList.SERVER.getVariable(name), "Could not find user variable with name '" + name + "'");
+        var = VariableList.SERVER.getVariable(name);
+        if (var != null) return var;
+
+        throw new VariableNotFoundException(name);
     }
 
     /**
@@ -330,12 +333,12 @@ public class SkillMetadata {
      * @return The (sub) variable found
      */
     @NotNull
-    public Variable getVariable(String name) {
+    public Variable<?> getVariable(@NotNull String name) {
 
         // Find initial variable
-        final String[] args = name.split("\\.");
-        Variable var;
-        int i = 1;
+        final var args = name.split("\\.");
+        Variable<?> var;
+        var i = 1;
 
         switch (args[0]) {
 
@@ -402,8 +405,10 @@ public class SkillMetadata {
         }
 
         // Dives into the variable tree to find the subvariable
-        for (; i < args.length; i++)
+        for (; i < args.length; i++) {
             var = var.getVariable(args[i]);
+            if (var == null) throw new VariableNotFoundException(name);
+        }
 
         return var;
     }

@@ -7,10 +7,7 @@ import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.condition.Condition;
-import io.lumine.mythic.lib.script.condition.generic.BooleanCondition;
-import io.lumine.mythic.lib.script.condition.generic.CompareCondition;
-import io.lumine.mythic.lib.script.condition.generic.InBetweenCondition;
-import io.lumine.mythic.lib.script.condition.generic.StringEqualsCondition;
+import io.lumine.mythic.lib.script.condition.generic.*;
 import io.lumine.mythic.lib.script.condition.location.BiomeCondition;
 import io.lumine.mythic.lib.script.condition.location.CuboidCondition;
 import io.lumine.mythic.lib.script.condition.location.DistanceCondition;
@@ -230,6 +227,7 @@ public class SkillManager extends Module {
 
         registerCondition("boolean", BooleanCondition::new);
         registerCondition("compare", CompareCondition::new);
+        registerCondition("has_variable", HasVariableCondition::new, "has_var", "variable_exists", "var_exists");
         registerCondition("in_between", InBetweenCondition::new);
         registerCondition("string_equals", StringEqualsCondition::new);
 
