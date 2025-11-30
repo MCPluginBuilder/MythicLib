@@ -1,11 +1,11 @@
 package io.lumine.mythic.lib.script.condition.generic;
 
-import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 /**
- * Checks if the two strings are equal
+ * Checks if two strings are equal
  */
 public class StringEqualsCondition extends Condition {
     private final String first, second;
@@ -14,11 +14,9 @@ public class StringEqualsCondition extends Condition {
     public StringEqualsCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("first", "second");
-
-        first = config.getString("first");
-        second = config.getString("second");
-        ignoreCase = config.getBoolean("ignore_case", false);
+        first = config.string("first", "one", "left", "lhs");
+        second = config.string("second", "two", "right", "rhs");
+        ignoreCase = config.bool(false, "ignore_case", "ic");
     }
 
     @Override

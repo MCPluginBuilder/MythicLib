@@ -20,14 +20,12 @@ public class CopyVectorMechanic extends VariableMechanic {
     public CopyVectorMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("value");
-
-        varName = config.getString("value");
+        varName = config.string("value", "val");
     }
 
     @Override
     public void cast(@NotNull SkillMetadata meta) {
-        Variable var = meta.getVariable(varName);
+        var var = meta.getVariable(varName);
         Validate.isTrue(var instanceof PositionVariable, "Variable '" + var.getName() + "' is not a vector");
         getTargetVariableList(meta).registerVariable(new PositionVariable(getVariableName(), ((PositionVariable) var).getStored().clone()));
     }

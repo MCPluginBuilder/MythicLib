@@ -2,7 +2,6 @@ package io.lumine.mythic.lib.script.mechanic.variable.vector;
 
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.variable.VariableMechanic;
-import io.lumine.mythic.lib.script.variable.Variable;
 import io.lumine.mythic.lib.script.variable.def.PositionVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
@@ -17,14 +16,12 @@ public class MultiplyVectorMechanic extends VariableMechanic {
     public MultiplyVectorMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("coef");
-
-        coef = new DoubleFormula(config.getString("coef"));
+        coef = config.getDoubleFormula("value", "val", "coefficient", "coef", "c", "scalar", "s");
     }
 
     @Override
     public void cast(@NotNull SkillMetadata meta) {
-        Variable var = meta.getVariable(getVariableName());
+        var var = meta.getVariable(getVariableName());
         Validate.isTrue(var instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         ((PositionVariable) var).getStored().multiply(coef.evaluate(meta));
     }

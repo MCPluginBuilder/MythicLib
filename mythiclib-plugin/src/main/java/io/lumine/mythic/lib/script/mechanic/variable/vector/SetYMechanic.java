@@ -18,15 +18,13 @@ public class SetYMechanic extends VariableMechanic {
     public SetYMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("y");
-
-        coordinate = new DoubleFormula(config.getString("y"));
+        coordinate = config.getDoubleFormula("value", "val", "v", "y");
     }
 
     @Override
     public void cast(@NotNull SkillMetadata meta) {
 
-        Variable targetVar = meta.getVariable(getVariableName());
+        var targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         Position target = (Position) targetVar.getStored();
 

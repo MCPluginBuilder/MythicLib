@@ -18,15 +18,13 @@ public class SetZMechanic extends VariableMechanic {
     public SetZMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("z");
-
-        coordinate = new DoubleFormula(config.getString("z"));
+        coordinate = config.getDoubleFormula("value", "val", "v", "z");
     }
 
     @Override
     public void cast(@NotNull SkillMetadata meta) {
 
-        Variable targetVar = meta.getVariable(getVariableName());
+        var targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         Position target = (Position) targetVar.getStored();
 

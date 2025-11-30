@@ -20,19 +20,17 @@ public class CuboidCondition extends LocationCondition {
     public CuboidCondition(ConfigObject config) {
         super(config, false);
 
-        config.validateKeys("first", "second", "third");
-
         varName1 = config.getString("loc1");
         varName2 = config.getString("loc2");
     }
 
     @Override
     public boolean isMet(SkillMetadata meta, Location loc) {
-        Variable var1 = meta.getVariable(varName1);
+        var var1 = meta.getVariable(varName1);
         Validate.isTrue(var1 instanceof PositionVariable, "Variable '" + varName1 + "' is not a vector");
         Vector vec1 = ((Position) var1.getStored()).toVector();
 
-        Variable var2 = meta.getVariable(varName1);
+        var var2 = meta.getVariable(varName1);
         Validate.isTrue(var2 instanceof PositionVariable, "Variable '" + varName2 + "' is not a vector");
         Vector vec2 = ((Position) var2.getStored()).toVector();
 

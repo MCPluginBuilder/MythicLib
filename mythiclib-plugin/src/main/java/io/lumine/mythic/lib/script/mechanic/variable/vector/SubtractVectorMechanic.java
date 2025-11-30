@@ -20,9 +20,9 @@ public class SubtractVectorMechanic extends VariableMechanic {
         super(config);
 
         // Term by term addition
-        x = config.contains("x") ? new DoubleFormula(config.getString("x")) : null;
-        y = config.contains("y") ? new DoubleFormula(config.getString("y")) : null;
-        z = config.contains("z") ? new DoubleFormula(config.getString("z")) : null;
+        x = config.getDoubleFormula((DoubleFormula) null, "x");
+        y = config.getDoubleFormula((DoubleFormula) null, "y");
+        z = config.getDoubleFormula((DoubleFormula) null, "z");
 
         // Vector addition
         varToSubstract = config.stringFb(null, "subtracted", "subtract", "sub", "other", "rhs", "value", "val", "v");
@@ -33,13 +33,13 @@ public class SubtractVectorMechanic extends VariableMechanic {
     @Override
     public void cast(@NotNull SkillMetadata meta) {
 
-        Variable targetVar = meta.getVariable(getVariableName());
+        var targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         Position target = (Position) targetVar.getStored();
 
         // Vector addition
         if (varToSubstract != null) {
-            Variable var = meta.getVariable(varToSubstract);
+            var var = meta.getVariable(varToSubstract);
             Validate.isTrue(var instanceof PositionVariable, "Variable '" + varToSubstract + "' is not a vector");
             target.add(((PositionVariable) var).getStored().clone().multiply(-1));
         }

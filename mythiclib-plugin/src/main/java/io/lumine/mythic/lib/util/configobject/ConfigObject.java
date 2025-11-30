@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,6 +87,7 @@ public interface ConfigObject {
         throw new MissingArgumentException(aliases);
     }
 
+    @Contract("!null, _ -> !null")
     @Nullable
     default Script script(@Nullable Script defaultValue, @NotNull String... aliases) {
         for (String key : aliases) if (contains(key)) return getScript(key);
@@ -100,8 +102,9 @@ public interface ConfigObject {
         throw new MissingArgumentException(aliases);
     }
 
-    @NotNull
-    default DoubleFormula getDoubleFormula(@NotNull DoubleFormula defaultValue, @NotNull String... aliases) {
+    @Contract("!null, _ -> !null")
+    @Nullable
+    default DoubleFormula getDoubleFormula(@Nullable DoubleFormula defaultValue, @NotNull String... aliases) {
         for (String key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
         return defaultValue;
     }

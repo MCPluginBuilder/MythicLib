@@ -15,7 +15,7 @@ public class CancelEventMechanic extends Mechanic {
     @Override
     public void cast(@NotNull SkillMetadata meta) {
         final var event = meta.getSourceEvent();
-        Validate.isTrue(event instanceof Cancellable, "Event is not cancellable");
+        Validate.isTrue(event instanceof Cancellable, "Source event is not cancellable");
         ((Cancellable) event).setCancelled(true);
     }
 }

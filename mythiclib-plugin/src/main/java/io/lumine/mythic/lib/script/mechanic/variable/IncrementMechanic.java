@@ -15,10 +15,11 @@ public class IncrementMechanic extends VariableMechanic {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void cast(@NotNull SkillMetadata meta) {
-        Variable var = getTargetVariableList(meta).getVariable(getVariableName());
+        var var = getTargetVariableList(meta).getVariable(getVariableName());
         Validate.notNull(var, "Could not find int variable '" + getVariableName() + "'");
         Validate.isTrue(var instanceof IntegerVariable, "Variable '" + var + "' is not an int");
-        var.setStored(((IntegerVariable) var).getStored() + 1);
+        ((Variable) var).setStored(((IntegerVariable) var).getStored() + 1);
     }
 }
