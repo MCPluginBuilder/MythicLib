@@ -34,6 +34,12 @@ public class MitigationModule {
 
         types.clear();
 
+        // [Backwards compatibility] Also copy scripts/mitigation_types.yml
+        if (!new YamlFile("mitigation_types").exists()) {
+            FileUtils.copyDefaultFile(MythicLib.plugin, "mitigation_types.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/mitigation_types.yml");
+        }
+
         FileUtils.copyDefaultFile(MythicLib.plugin, "mitigation_types.yml");
 
         // Load mitigation types from config

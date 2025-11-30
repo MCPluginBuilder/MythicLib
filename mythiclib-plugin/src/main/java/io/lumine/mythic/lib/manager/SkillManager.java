@@ -489,6 +489,7 @@ public class SkillManager extends Module {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmoitems_scripts.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmocore_scripts.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/example_skills.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/mitigation_types.yml");
         }
 
         // Load default skills
