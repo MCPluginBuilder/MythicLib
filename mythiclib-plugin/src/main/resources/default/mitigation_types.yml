@@ -38,7 +38,7 @@ dodge:
   # events, you can safely remove/comment out this option.
   legacy: dodge
 
-  cooldown: '3 * (1 - <stat.dodge_cooldown_reduction> / 100)' # Cooldown between two consecutive parries (in seconds)
+  cooldown: '3 * (1 - <stat.dodge_cooldown_reduction> / 100)' # Cooldown between two consecutive dodges (in seconds)
   roll: '<stat.dodge_rating> / 100' # Chance to successfully dodge an attack
   on_damage: 'mitigation_on_dodge' # Script/skill ran on damage
 
