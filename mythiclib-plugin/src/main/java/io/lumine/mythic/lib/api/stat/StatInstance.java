@@ -396,8 +396,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     @Deprecated
     public double getFilteredTotal(Predicate<StatModifier> filter, Function<StatModifier, StatModifier> modification) {
-        final double total = getFilteredTotal(getBase(), filter, modification);
-        return handler.get().map(statHandler -> statHandler.clampValue(total)).orElse(total);
+        return getFilteredTotal(getBase(), filter, modification);
     }
 
     //endregion
