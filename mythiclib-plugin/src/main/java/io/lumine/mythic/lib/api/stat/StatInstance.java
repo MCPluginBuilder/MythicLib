@@ -204,6 +204,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //endregion
 
+    //region Deprecated
+
     @Override
     @Deprecated
     public void addModifier(@NotNull StatModifier modifier) {

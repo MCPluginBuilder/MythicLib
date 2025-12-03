@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.api.stat.api;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
-import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
@@ -60,29 +59,35 @@ public abstract class ModifiedInstance<T extends InstanceModifier> {
      *                     a stat modifier has a negative value and returning a modifier
      *                     with a reduced absolute value.
      * @return The final modified value taking, into account the default value
-     *         as well as all of the modifiers. %-based modifiers are applied
+     *         as well as all the modifiers. %-based modifiers are applied
      *         afterwards, onto the sum of the base value + flat modifiers.
      */
-    public double getFilteredTotal(double base, Predicate<T> filter, Function<T, T> modification) {
+    public double getFilteredTotal(double base, @NotNull Predicate<T> filter, @NotNull Function<T, T> modification) {
 
-        // Flat
-        for (T mod : modifiers.values())
-            if (mod.getType() == ModifierType.FLAT && filter.test(mod))
-                base += modification.apply(mod).getValue();
+        // Allows for independent iterations for max parallelism
+        var addScalar = 1d;
+        var multScalar = 1d;
 
-        // Additive scalars
-        double scalar = 1;
-        for (T mod : modifiers.values())
-            if (mod.getType() == ModifierType.ADDITIVE_MULTIPLIER && filter.test(mod))
-                scalar += modification.apply(mod).getValue() / 100;
-        base *= scalar;
+        for (var mod : modifiers.values())
+            if (filter.test(mod)) switch (mod.getType()) {
 
-        // Multiplicative scalars
-        for (T mod : modifiers.values())
-            if (mod.getType() == ModifierType.RELATIVE && filter.test(mod))
-                base *= 1 + modification.apply(mod).getValue() / 100;
+                case FLAT:
+                    // Flat modifiers
+                    base += modification.apply(mod).getValue();
+                    continue;
 
-        return base;
+                case RELATIVE:
+                    // Additive scalars
+                    addScalar += modification.apply(mod).getValue() / 100;
+                    continue;
+
+                case ADDITIVE_MULTIPLIER:
+                    // Multiplicative/Compound scalars
+                    // Bad naming
+                    multScalar *= 1 + (modification.apply(mod).getValue() / 100);
+            }
+
+        return base * addScalar * multScalar;
     }
 
     @Nullable
