@@ -10,9 +10,8 @@ import io.lumine.mythic.lib.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,6 +24,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     private final StatMap map;
     @NotNull
     private final String stat;
+
+    // TODO why is there a ConcurrentHashMap here?
+    protected final Map<UUID, StatModifier> modifiers = new ConcurrentHashMap<>();
 
     /**
      * Can be empty at any time, since it can be flushed by events
@@ -60,18 +62,29 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     }
 
     /**
-     * @return The final stat value taking into account the default stat value
-     *         as well as the stat modifiers. The relative stat modifiers are
-     *         applied afterward, onto the sum of the base value + flat modifiers.
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The final stat value
      */
-    public double getTotal() {
-        return getFilteredTotal(EquipmentSlot.MAIN_HAND::isCompatible, mod -> mod);
-    }
-
     public double getFinal() {
         return handler.get().map(handler -> handler.getFinalValue(this)).orElse(getTotal());
     }
 
+    /**
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The formatted final stat value
+     */
     @NotNull
     public String formatFinal() {
         return format(getFinal());
@@ -83,50 +96,146 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     }
 
     /**
-     * @param filter Filters stat modifications taken into account for the calculation
-     * @return The final stat value taking into account the default stat value
-     *         as well as the stat modifiers. The relative stat modifiers are
-     *         applied afterward, onto the sum of the base value + flat modifiers.
+     * @param uniqueId The unique ID of the desired modifier
+     * @return Modifier with given ID, or <code>null</code> if not found
      */
-    public double getFilteredTotal(Predicate<StatModifier> filter) {
-        return getFilteredTotal(filter, mod -> mod);
+    @Nullable
+    public StatModifier getModifier(@NotNull UUID uniqueId) {
+        return modifiers.get(uniqueId);
     }
 
     /**
-     * @param modification A modification to any stat modifier before taking it into
-     *                     account in stat calculation. This can be used for instance to
-     *                     reduce debuffs, by checking if a stat modifier has a negative
-     *                     value and returning a modifier with a reduced absolute value
-     * @return The final stat value taking into account the default stat value
-     *         as well as the stat modifiers. The relative stat modifiers are
-     *         applied afterwards, onto the sum of the base value + flat
-     *         modifiers.
+     * @return All registered modifiers
      */
-    public double getTotal(Function<StatModifier, StatModifier> modification) {
-        return getFilteredTotal(EquipmentSlot.MAIN_HAND::isCompatible, modification);
+    @NotNull
+    public Collection<StatModifier> getModifiers() {
+        return modifiers.values();
     }
 
     /**
-     * @param filter       Filters stat modifications taken into account for the calculation
-     * @param modification A modification to any stat modifier before taking it into
-     *                     account in stat calculation. This can be used for instance to
-     *                     reduce debuffs, by checking if a stat modifier has a negative
-     *                     value and returning a modifier with a reduced absolute value
-     * @return The final stat value taking into account the default stat value
-     *         as well as the stat modifiers. The relative stat modifiers are
-     *         applied afterward, onto the sum of the base value & flat modifiers.
+     * @return All unique IDs of registered modifiers
      */
-    public double getFilteredTotal(Predicate<StatModifier> filter, Function<StatModifier, StatModifier> modification) {
-        final double total = getFilteredTotal(getBase(), filter, modification);
-        return handler.get().map(statHandler -> statHandler.clampValue(total)).orElse(total);
+    @NotNull
+    public Set<UUID> getIds() {
+        return modifiers.keySet();
     }
+
+    //region Stat Computation
+
+    /**
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The total stat value taking into account the base & default stat values
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers. The
+     *         total stat value is computed with action hand set to MAIN_HAND.
+     */
+    public double getTotal() {
+        return getTotal(getBase(), EquipmentSlot.MAIN_HAND);
+    }
+
+    /**
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The total stat value taking into account the provided base stat value
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers.
+     */
+    public double getTotal(@NotNull EquipmentSlot actionHand) {
+        return getTotal(getBase(), actionHand);
+    }
+
+    /**
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The total stat value taking into account the provided base stat value
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers. The
+     *         total stat value is computed with action hand set to MAIN_HAND.
+     */
+    public double getTotal(double base) {
+        return getTotal(base, EquipmentSlot.MAIN_HAND);
+    }
+
+    /**
+     * TOTAL stat value refers to the value after all MMO modifiers have been applied.
+     * It differs from the FINAL stat value which can be further modified by the
+     * Bukkit attribute system for vanilla stats like Max Health, Movement Speed...
+     * <p>
+     * For custom MythicLib stats, FINAL and TOTAL values are the same.
+     * Most users should most likely interact with the FINAL stat value.
+     *
+     * @return The total stat value taking into account the provided base stat value
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers.
+     */
+    public double getTotal(double base, @NotNull EquipmentSlot actionHand) {
+        final var statHandler = this.handler.get();
+        final @Nullable var transform = statHandler.map(StatHandler::getModifierEditor).orElse(null);
+
+        // Allows for independent iterations for max parallelism
+        var addScalar = 1d;
+        var multScalar = 1d;
+
+        for (var mod : modifiers.values()) {
+
+            // Apply hand filter
+            if (!actionHand.isCompatible(mod)) continue;
+
+            // Apply modifier transformer
+            mod = transform == null ? mod : transform.apply(this, mod);
+            if (mod == null) continue;
+
+            switch (mod.getType()) {
+
+                case FLAT:
+                    // Flat modifiers
+                    base += mod.getValue();
+                    continue;
+
+                case RELATIVE:
+                    // Additive scalars
+                    addScalar += mod.getValue() / 100;
+                    continue;
+
+                case ADDITIVE_MULTIPLIER:
+                    // Multiplicative/Compound scalars
+                    // Bad naming
+                    multScalar *= 1 + (mod.getValue() / 100);
+            }
+        }
+
+        base = base * addScalar * multScalar;
+
+        // Clamp stat value
+        final var handler = this.handler.get();
+        if (handler.isPresent()) base = handler.get().clampValue(base);
+
+        return base;
+    }
+
+    //endregion
 
     /**
      * Registers a stat modifier and run the required player stat updates
      *
      * @param modifier The stat modifier being registered
      */
-    @Override
     public void registerModifier(@NotNull StatModifier modifier) {
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
         // TODO change "Closeable". add one interface Openable and have code run here instead
@@ -139,15 +248,14 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Iterates through registered stat modifiers and unregisters them if a
      * certain condition based on their string key is met
      *
-     * @param condition Condition on the modifier key, if it should be
-     *                  unregistered or not
+     * @param keyCondition Condition on the modifier key, if it should be
+     *                     unregistered or not
      */
-    @Override
-    public void removeIf(@NotNull Predicate<String> condition) {
+    public void removeIf(@NotNull Predicate<String> keyCondition) {
         boolean update = false;
-        for (Iterator<StatModifier> iterator = modifiers.values().iterator(); iterator.hasNext(); ) {
-            final StatModifier modifier = iterator.next();
-            if (condition.test(modifier.getKey())) {
+        for (var iterator = modifiers.values().iterator(); iterator.hasNext(); ) {
+            final var modifier = iterator.next();
+            if (keyCondition.test(modifier.getKey())) {
                 if (modifier instanceof Closeable) ((Closeable) modifier).close();
                 iterator.remove();
                 update = true;
@@ -160,7 +268,6 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
     /**
      * Removes the modifier associated to the given unique ID.
      */
-    @Override
     public void removeModifier(@NotNull UUID uniqueId) {
 
         // Find and remove current value
@@ -175,6 +282,13 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         if (mod instanceof Closeable) ((Closeable) mod).close();
 
         update();
+    }
+
+    /**
+     * @return True if no modifier is registered on this stat instance
+     */
+    public boolean isEmpty() {
+        return this.modifiers.isEmpty();
     }
 
     public void flushCache() {
@@ -206,7 +320,6 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Deprecated
 
-    @Override
     @Deprecated
     public void addModifier(@NotNull StatModifier modifier) {
         removeIf(modifier.getKey()::equals);
@@ -219,17 +332,72 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         return handler.get().orElse(null);
     }
 
-    /**
-     * Removes a stat modifier with a specific key
-     *
-     * @param key The string key of the external stat modifier source or plugin
-     * @see #removeModifier(UUID)
-     * @deprecated Modifiers are now uniquely identified by UUIDs
-     */
-    @Override
     @Deprecated
-    public void remove(String key) {
+    public void remove(@NotNull String key) {
         removeIf(key::equals);
+    }
+
+    @Deprecated
+    public double getFilteredTotal(double base,
+                                   Predicate<StatModifier> filter,
+                                   Function<StatModifier, StatModifier> modification) {
+
+        // Allows for independent iterations for max parallelism
+        var addScalar = 1d;
+        var multScalar = 1d;
+
+        for (var mod : modifiers.values())
+            if (filter.test(mod)) switch (mod.getType()) {
+
+                case FLAT:
+                    // Flat modifiers
+                    base += modification.apply(mod).getValue();
+                    continue;
+
+                case RELATIVE:
+                    // Additive scalars
+                    addScalar += modification.apply(mod).getValue() / 100;
+                    continue;
+
+                case ADDITIVE_MULTIPLIER:
+                    // Multiplicative/Compound scalars
+                    // Bad naming
+                    multScalar *= 1 + (modification.apply(mod).getValue() / 100);
+            }
+
+        base = base * addScalar * multScalar;
+
+        // Clamp stat value
+        final var handler = this.handler.get();
+        if (handler.isPresent()) base = handler.get().clampValue(base);
+
+        return base;
+    }
+
+    @Deprecated
+    public double getFilteredTotal(double base, @NotNull Predicate<StatModifier> filter) {
+        return getFilteredTotal(base, filter, mod -> mod);
+    }
+
+    @Deprecated
+    public double getTotal(double base, Function<StatModifier, StatModifier> modification) {
+        return getFilteredTotal(base, EquipmentSlot.MAIN_HAND::isCompatible, modification);
+    }
+
+    @Deprecated
+    public double getFilteredTotal(Predicate<StatModifier> filter) {
+        return getFilteredTotal(filter, mod -> mod);
+    }
+
+    @Deprecated
+    public double getTotal(Function<StatModifier, StatModifier> modification) {
+        return getFilteredTotal(EquipmentSlot.MAIN_HAND::isCompatible, modification);
+    }
+
+    @Deprecated
+    public double getFilteredTotal(Predicate<StatModifier> filter, Function<StatModifier, StatModifier> modification) {
+        final double total = getFilteredTotal(getBase(), filter, modification);
+        return handler.get().map(statHandler -> statHandler.clampValue(total)).orElse(total);
     }
 
     //endregion

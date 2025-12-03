@@ -1,110 +1,50 @@
 package io.lumine.mythic.lib.api.stat.api;
 
-import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
-import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-/**
- * @see InstanceModifier
- */
+@Deprecated
 public abstract class ModifiedInstance<T extends InstanceModifier> {
-    protected final Map<UUID, T> modifiers = new ConcurrentHashMap<>();
 
-    /**
-     * @return The final modified value taking, into account the default value
-     *         as well as all of the modifiers. %-based modifiers are applied
-     *         afterwards, onto the sum of the base value + flat modifiers.
-     */
+    @Deprecated
     public double getTotal(double base) {
-        return getFilteredTotal(base, EquipmentSlot.MAIN_HAND::isCompatible, mod -> mod);
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * @param filter Filters modifiers taken into account for the final value computation
-     * @return The final modified value taking, into account the default value
-     *         as well as all of the modifiers. %-based modifiers are applied
-     *         afterwards, onto the sum of the base value + flat modifiers.
-     */
+    @Deprecated
     public double getFilteredTotal(double base, Predicate<T> filter) {
-        return getFilteredTotal(base, filter, mod -> mod);
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * @param modification A modification to any modifier before taking it into account
-     *                     in the final calculation.
-     *                     This can be used for instance to reduce debuffs, by checking if
-     *                     a stat modifier has a negative value and returning a modifier
-     *                     with a reduced absolute value.
-     * @return The final modified value taking, into account the default value
-     *         as well as all of the modifiers. %-based modifiers are applied
-     *         afterwards, onto the sum of the base value + flat modifiers.
-     */
+    @Deprecated
     public double getTotal(double base, Function<T, T> modification) {
-        return getFilteredTotal(base, EquipmentSlot.MAIN_HAND::isCompatible, modification);
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * @param filter       Filters modifiers taken into account for the final value computation
-     * @param modification A modification to any modifier before taking it into account
-     *                     in the final calculation.
-     *                     This can be used for instance to reduce debuffs, by checking if
-     *                     a stat modifier has a negative value and returning a modifier
-     *                     with a reduced absolute value.
-     * @return The final modified value taking, into account the default value
-     *         as well as all the modifiers. %-based modifiers are applied
-     *         afterwards, onto the sum of the base value + flat modifiers.
-     */
-    public double getFilteredTotal(double base, @NotNull Predicate<T> filter, @NotNull Function<T, T> modification) {
-
-        // Allows for independent iterations for max parallelism
-        var addScalar = 1d;
-        var multScalar = 1d;
-
-        for (var mod : modifiers.values())
-            if (filter.test(mod)) switch (mod.getType()) {
-
-                case FLAT:
-                    // Flat modifiers
-                    base += modification.apply(mod).getValue();
-                    continue;
-
-                case RELATIVE:
-                    // Additive scalars
-                    addScalar += modification.apply(mod).getValue() / 100;
-                    continue;
-
-                case ADDITIVE_MULTIPLIER:
-                    // Multiplicative/Compound scalars
-                    // Bad naming
-                    multScalar *= 1 + (modification.apply(mod).getValue() / 100);
-            }
-
-        return base * addScalar * multScalar;
+    @Deprecated
+    public double getFilteredTotal(double base, Predicate<T> filter, Function<T, T> modification) {
+        throw new IllegalStateException("Deprecated class");
     }
 
-    @Nullable
     @Deprecated
     public T getModifier(@Nullable String key) {
-        for (T modifier : modifiers.values())
-            if (modifier.getKey().equals(key)) return modifier;
+        if (key == null) return null;
+        for (var mod : getModifiers())
+            if (mod.getKey().equals(key))
+                return mod;
         return null;
     }
 
-    /**
-     * @param uniqueId The unique ID of the desired modifier
-     * @return Modifier with given ID, or <code>null</code> if not found
-     */
-    @Nullable
     public T getModifier(@NotNull UUID uniqueId) {
-        return modifiers.get(uniqueId);
+        throw new IllegalStateException("Deprecated class");
     }
 
     @Deprecated
@@ -114,71 +54,44 @@ public abstract class ModifiedInstance<T extends InstanceModifier> {
     }
 
     public void registerModifier(@NotNull T modifier) {
-        modifiers.put(modifier.getUniqueId(), modifier);
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * Removes the modifier associated to the given unique ID.
-     */
     public void removeModifier(@NotNull UUID uniqueId) {
-        modifiers.remove(uniqueId);
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * Removes the modifier associated to the given key.
-     */
     @Deprecated
     public void remove(@NotNull String key) {
         removeIf(key::equals);
     }
 
     public boolean isEmpty() {
-        return modifiers.isEmpty();
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * Iterates through registered modifiers and unregisters them if a
-     * certain condition based on their string key is met.
-     *
-     * @param condition Condition on the modifier key
-     */
     public void removeIf(@NotNull Predicate<String> condition) {
-        for (Iterator<T> iterator = modifiers.values().iterator(); iterator.hasNext(); ) {
-            final T modifier = iterator.next();
-            if (condition.test(modifier.getKey())) {
-                if (modifier instanceof Closeable) ((Closeable) modifier).close();
-                iterator.remove();
-            }
-        }
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * @return All registered modifiers
-     */
-    @NotNull
     public Collection<T> getModifiers() {
-        return modifiers.values();
+        throw new IllegalStateException("Deprecated class");
     }
 
-    @NotNull
     public Set<UUID> getIds() {
-        return modifiers.keySet();
+        throw new IllegalStateException("Deprecated class");
     }
 
-    /**
-     * @return All string keys of currently registered modifiers
-     */
     @Deprecated
-    @NotNull
     public Set<String> getKeys() {
-        return modifiers.values().stream().map(PlayerModifier::getKey).collect(Collectors.toSet());
+        return getModifiers().stream().map(PlayerModifier::getKey).collect(Collectors.toSet());
     }
 
-    /**
-     * @param key The string key of the external modifier source or plugin
-     * @return If a modifier is registered with this key
-     */
-    public boolean contains(String key) {
-        return modifiers.containsKey(key);
+    @Deprecated
+    public boolean contains(@NotNull String key) {
+        for (var mod : getModifiers())
+            if (mod.getKey().equals(key))
+                return true;
+        return false;
     }
 }

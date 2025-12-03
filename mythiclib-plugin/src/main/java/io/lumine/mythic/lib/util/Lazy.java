@@ -33,14 +33,17 @@ public class Lazy<T> implements Supplier<T> {
         evaluated = false;
     }
 
+    @NotNull
     public static <T> Lazy<T> persistent(Supplier<T> expression) {
         return new Lazy<>(expression, true);
     }
 
+    @NotNull
     public static <T> Lazy<T> of(@NotNull Supplier<T> expression) {
         return new Lazy<>(expression, false);
     }
 
+    @NotNull
     public static <T> Lazy<T> of(@Nullable T value) {
         return new Lazy<>(value);
     }

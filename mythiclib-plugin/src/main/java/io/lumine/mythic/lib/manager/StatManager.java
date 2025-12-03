@@ -228,7 +228,7 @@ public class StatManager extends Module {
 
     @Deprecated
     public double getBaseValue(String stat, StatMap map) {
-        @Nullable final StatHandler handler = handlers.get(stat);
+        final @Nullable var handler = handlers.get(stat);
         return handler == null ? 0 : handler.getBaseValue(map.getInstance(stat));
     }
 

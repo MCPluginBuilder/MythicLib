@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -24,11 +25,13 @@ public class StatHandler {
     protected final String stat;
 
     private final List<StatUpdateListener> updates = new ArrayList<>();
+    @Nullable
+    private ModifierEditor modifierEditor;
 
     /**
      * Should this stat force updates on player login
      */
-    protected boolean forceUpdate;
+    protected boolean updateOnLogin;
 
     /**
      * @param config Root stat handlers configuration file
@@ -75,6 +78,15 @@ public class StatHandler {
         updates.add(listener);
     }
 
+    public void setModifierEditor(@Nullable ModifierEditor modifierEditor) {
+        this.modifierEditor = modifierEditor;
+    }
+
+    @Nullable
+    public ModifierEditor getModifierEditor() {
+        return modifierEditor;
+    }
+
     public void delegateTo(@NotNull String stat) {
         addUpdateListener(ins -> ins.getMap().getInstance(stat).update());
     }
@@ -99,8 +111,8 @@ public class StatHandler {
         return 0;
     }
 
-    public boolean forcesUpdates() {
-        return forceUpdate;
+    public boolean updateOnLogin() {
+        return updateOnLogin;
     }
 
     /**
@@ -124,5 +136,10 @@ public class StatHandler {
         if (hasMaxValue && clamped > maxValue) clamped = maxValue;
         if (hasMinValue && clamped < minValue) clamped = minValue;
         return clamped;
+    }
+
+    @Deprecated
+    public boolean forcesUpdates() {
+        return updateOnLogin;
     }
 }

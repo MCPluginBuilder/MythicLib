@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.player;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.damage.AttackMetadata;
@@ -54,8 +53,9 @@ public class PlayerMetadata implements PlayerStatProvider {
         Validate.isTrue(Objects.requireNonNull(actionHand).isHand(), "Equipment slot must be a hand");
 
         // Isolate stat modifiers
-        for (StatInstance ins : statMap.getInstances())
-            this.playerStats.put(ins.getStat(), ins.getFilteredTotal(actionHand::isCompatible));
+        // TODO Should this take into account FINAL and not TOTAL stat values?
+        for (var ins : statMap.getInstances())
+            this.playerStats.put(ins.getStat(), ins.getTotal(actionHand));
     }
 
     @NotNull

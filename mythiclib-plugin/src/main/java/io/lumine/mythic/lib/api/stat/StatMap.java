@@ -68,11 +68,11 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
         // Update caches and force updates
         for (var handler : MythicLib.plugin.getStats().getHandlers()) {
-            final @Nullable var ins = handler.forcesUpdates() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
-            if (ins == null) continue;
+            final @Nullable var instance = handler.updateOnLogin() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
+            if (instance == null) continue;
 
-            ins.flushCache(); // Sometimes handlers are cached before mmodatas are loaded
-            ins.update(); // Update all stats, whatever
+            instance.flushCache(); // Sometimes handlers are cached before mmodatas are loaded
+            instance.update(); // Update all stats, whatever
         }
     }
 

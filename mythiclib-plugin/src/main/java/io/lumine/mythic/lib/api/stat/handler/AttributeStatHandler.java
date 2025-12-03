@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.gui.builtin.AttributeExplorer;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Material;
@@ -45,23 +46,23 @@ public class AttributeStatHandler extends StatHandler {
         this.playerDefaultBase = playerDefaultBase;
 
         // Force update on login
-        this.forceUpdate = true;
+        this.updateOnLogin = true;
 
         addUpdateListener(this::updateAttributeModifierValue);
     }
 
     private void updateAttributeModifierValue(@NotNull StatInstance instance) {
+        Validate.isTrue(instance.getStat().equals(stat), "Attribute stat handler of " + this.stat + " got stat " + instance.getStat());
+
+        // Clear previous modifiers from Bukkit attribute instance
         final var attributeInstance = instance.getMap().getData().getPlayer().getAttribute(attribute);
         assert attributeInstance != null;
         removeModifiers(attributeInstance);
 
-        final double mmoFinal = clampValue(instance.getFilteredTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND::isCompatible));
-        final double difference = mmoFinal - this.playerDefaultBase;
+        final var mmoFinal = instance.getTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND);
+        final var difference = mmoFinal - this.playerDefaultBase;
 
-        /*
-         * Only add an attribute modifier if the very final stat
-         * value is different from the main one to save map updates.
-         */
+        // Only register attribute modifier if absolutely necessary
         if (Math.abs(difference) > EPSILON)
             attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
     }

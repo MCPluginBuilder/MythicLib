@@ -176,7 +176,8 @@ public class MMOPlayerData {
             this.lastLogActivity = System.currentTimeMillis();
             this.lastPlayerName = player.getName();
             // [Safeguard] Should never have previous profile session
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE && !hasProfileSession()) chooseProfile(null); // Setup profile session
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE && !hasProfileSession())
+                chooseProfile(null); // Setup profile session
         }
     }
 

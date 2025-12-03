@@ -6,17 +6,17 @@ import org.jetbrains.annotations.NotNull;
 public enum ModifierType {
 
     /**
-     * Compound multiplier
-     * <p>
-     * Multiplies final stat value by a set %.
-     */
-    RELATIVE,
-
-    /**
      * Additive multiplier
      * <p>
      * Multiplies stat value by X%. Additive scalars stack up linearly,
      * which means +100% and +100% stack up to +200%.
+     */
+    RELATIVE,
+
+    /**
+     * Compound multiplier
+     * <p>
+     * Multiplies final stat value by a set %.
      */
     ADDITIVE_MULTIPLIER,
 
