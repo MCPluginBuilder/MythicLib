@@ -1,29 +1,5 @@
 
 
-#######################################
-# Custom Damage Types
-######################################
-
-# Increases damage dealt to undead mobs
-undead_damage_type_boost:
-  skip_event: true # For performance
-  # No cooldown, no roll
-  on_attack: undead_damage_type_boost_script
-
-# Increases damage dealt to players
-pvp_damage_type_boost:
-  skip_event: true # For performance
-  # No cooldown, no roll
-  on_attack: pvp_damage_type_boost_script
-
-# Increases damage dealt to non-player entities
-pvp_damage_type_boost:
-  skip_event: true # For performance
-  # No cooldown, no roll
-  on_attack: pve_damage_type_boost_script
-
-
-
 ######################################
 # Lifesteal & Spellsteal
 #
@@ -31,6 +7,7 @@ pvp_damage_type_boost:
 # Lifesteal procs on weapon damage, Spellsteal procs
 # on skill damage.
 ######################################
+
 lifesteal_and_spellsteal:
   skip_event: true # For performance
   # No cooldown, no roll
@@ -39,6 +16,7 @@ lifesteal_and_spellsteal:
 ######################################
 # Weapon Critical Strikes
 ######################################
+
 weapon_crits:
 
   pre_attack: weapon_crit_pre_attack_script
@@ -56,10 +34,10 @@ weapon_crits:
   on_attack: weapon_crit_script
 
 
-
 ######################################
 # Skill Critical Strikes
 ######################################
+
 skill_crits:
 
   pre_attack: skill_crit_pre_attack_script
