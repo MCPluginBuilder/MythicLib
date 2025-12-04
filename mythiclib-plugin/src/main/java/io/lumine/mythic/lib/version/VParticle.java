@@ -40,7 +40,7 @@ public enum VParticle {
 
         //this.dustOptions = wrapped.getDataType() == Particle.DustOptions.class;
         //this.blockData = wrapped.getDataType() == BlockData.class;
-        this.spell = MythicLib.plugin.getVersion().isAbove(1, 20, 8) && wrapped.getDataType() == Particle.Spell.class;
+        this.spell = MythicLib.plugin.getVersion().isAbove(1, 21, 9) && wrapped.getDataType() == Particle.Spell.class;
     }
 
     @NotNull
