@@ -407,7 +407,7 @@ public class SkillMetadata {
         // Dives into the variable tree to find the subvariable
         for (; i < args.length; i++) {
             var = var.getVariable(args[i]);
-            if (var == null) throw new VariableNotFoundException(name);
+            if (var == null) throw new VariableNotFoundException(name, args, i);
         }
 
         return var;

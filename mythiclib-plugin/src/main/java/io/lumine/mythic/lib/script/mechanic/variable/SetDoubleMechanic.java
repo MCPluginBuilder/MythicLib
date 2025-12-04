@@ -14,9 +14,7 @@ public class SetDoubleMechanic extends VariableMechanic {
     public SetDoubleMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("value");
-
-        formula = new DoubleFormula(config.getString("value"));
+        formula = config.getDoubleFormula("value", "val", "double", "float", "rhs");
     }
 
     @Override

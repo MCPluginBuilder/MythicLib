@@ -28,9 +28,6 @@ public interface VariableRegistry<T> {
     @NotNull
     public Variable<?> accessVariable(@NotNull T t, @NotNull String name);
 
-    /**
-     * @param name Subvariable name
-     * @return If there exists a variable which such name
-     */
+    @Deprecated
     public boolean hasVariable(String name);
 }

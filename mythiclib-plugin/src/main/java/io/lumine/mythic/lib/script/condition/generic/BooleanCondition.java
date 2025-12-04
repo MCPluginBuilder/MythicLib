@@ -14,9 +14,7 @@ public class BooleanCondition extends Condition {
     public BooleanCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("formula");
-
-        formula = config.getString("formula");
+        formula = config.string("formula", "form", "f", "expression", "expr", "e");
     }
 
     @Override

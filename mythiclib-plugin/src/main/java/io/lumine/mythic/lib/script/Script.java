@@ -126,23 +126,25 @@ public class Script implements PreloadedObject {
     }
 
     /**
-     * Cast this skill
+     * Cast this script
      *
-     * @param meta Skill cast information
-     * @return If conditions are met ie skill is cast
+     * @param meta Script execution environment
+     * @return If conditions are met, i.e script was successfully called
      */
-    public boolean cast(SkillMetadata meta) {
+    public boolean cast(@NotNull SkillMetadata meta) {
 
-        int conditionCounter = 0;
-        for (Condition condition : conditions)
+        // Check conditions one by one
+        var conditionCounter = 0;
+        for (var condition : conditions)
             try {
-                conditionCounter += 1;
+                conditionCounter++;
                 if (!condition.checkIfMet(meta)) return false;
-            } catch (RuntimeException exception) {
+            } catch (Exception exception) {
                 MythicLib.plugin.getLogger().log(Level.WARNING, "Could not check condition n" + conditionCounter + " from script '" + id + "': " + exception.getMessage());
                 return false;
             }
 
+        // Cast script and return true
         new MechanicQueue(meta, this).next();
         return true;
     }

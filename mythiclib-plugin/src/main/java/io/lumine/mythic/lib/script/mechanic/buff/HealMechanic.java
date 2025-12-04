@@ -4,10 +4,10 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.version.Attributes;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -22,9 +22,7 @@ public class HealMechanic extends TargetMechanic {
     public HealMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("amount");
-
-        amount = new DoubleFormula(config.getString("amount"));
+        amount = config.getDoubleFormula("amount", "amt", "a", "value", "val", "v", "health", "hp");
         reason = EntityRegainHealthEvent.RegainReason.valueOf(UtilityMethods.enumName(config.getString("reason", "CUSTOM")));
     }
 

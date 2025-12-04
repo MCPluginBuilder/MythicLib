@@ -31,6 +31,7 @@ import io.lumine.mythic.lib.comp.placeholder.PlaceholderParser;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
 import io.lumine.mythic.lib.damage.mitigation.MitigationModule;
+import io.lumine.mythic.lib.damage.onhit.OnHitModule;
 import io.lumine.mythic.lib.glow.GlowModule;
 import io.lumine.mythic.lib.glow.provided.MythicGlowModule;
 import io.lumine.mythic.lib.gui.PluginInventory;
@@ -76,8 +77,8 @@ public class MythicLib extends MMOPluginImpl {
     private final FlagHandler flagHandler = new FlagHandler();
     private final IndicatorManager indicatorManager = new IndicatorManager();
     private final MitigationModule mitigationModule = new MitigationModule();
+    private final OnHitModule onHitModule = new OnHitModule();
     private final FakeEventManager fakeEventManager = new FakeEventManager();
-    private final AttackEffects attackEffects = new AttackEffects(this);
     private final List<MMOPlugin> mmoPlugins = new ArrayList<>();
     private Gson gson;
     private AntiCheatSupport antiCheatSupport;
@@ -130,7 +131,7 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
         Bukkit.getPluginManager().registerEvents(damageManager, this);
         Bukkit.getPluginManager().registerEvents(new DamageReduction(), this);
-        attackEffects.enable();
+        Bukkit.getPluginManager().registerEvents(new LegacyAttackEffects(), this);
         Bukkit.getPluginManager().registerEvents(new CustomProjectileDamage(), this);
         Bukkit.getPluginManager().registerEvents(new AttackEventListener(), this);
         Bukkit.getPluginManager().registerEvents(new MythicCraftingManager(), this);
@@ -255,6 +256,7 @@ public class MythicLib extends MMOPluginImpl {
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
         mitigationModule.reload(); // Nothing depends on it
+        onHitModule.reload(); // Nothing depends on it
         damageManager.enable();
         skillManager.enable(); // Before elements are loaded
         elementManager.enable(); // Before stats are loaded
@@ -272,18 +274,20 @@ public class MythicLib extends MMOPluginImpl {
         statManager.enable();
 
         mitigationModule.postload(); // After scripts are loaded
+        onHitModule.postload(); // After scripts are loaded
     }
 
     public void reload() {
         reloadConfig();
         mitigationModule.reload();
+        onHitModule.reload();
         statManager.reload();
-        attackEffects.reload();
         skillManager.reload();
         configManager.reload();
         elementManager.reload();
         this.indicatorManager.reload(getConfig());
         mitigationModule.postload(); // After scripts are loaded
+        onHitModule.postload(); // After scripts are loaded
 
         // Flush outdated data
         for (var online : MMOPlayerData.getLoaded()) online.getStatMap().flushCache();
@@ -358,10 +362,6 @@ public class MythicLib extends MMOPluginImpl {
 
     public PlaceholderParser getPlaceholderParser() {
         return placeholderParser;
-    }
-
-    public AttackEffects getAttackEffects() {
-        return attackEffects;
     }
 
     public AntiCheatSupport getAntiCheat() {

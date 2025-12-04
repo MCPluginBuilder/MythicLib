@@ -19,13 +19,18 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
 public class MitigationModule {
-    private final Map<String, MitigationType> types = new HashMap<>();
+
+    /**
+     * Using a linked hash map to preserve order
+     * provided by the user in the config file
+     */
+    private final Map<String, MitigationType> types = new LinkedHashMap<>();
 
     private boolean enabled = false;
     private final Listener listener = new CustomListener();
@@ -46,10 +51,10 @@ public class MitigationModule {
         final var config = new YamlFile("mitigation_types").getContent();
         for (var key : config.getKeys(false))
             try {
-                final var mechanic = new MitigationType(config.getConfigurationSection(key));
-                registerType(mechanic);
+                final var type = new MitigationType(config.getConfigurationSection(key));
+                registerType(type);
             } catch (Exception exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load mitigation mechanic '" + key + "': " + exception.getMessage());
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load mitigation type '" + key + "': " + exception.getMessage());
             }
 
         // Enable or disable
@@ -79,11 +84,11 @@ public class MitigationModule {
 
     @NotNull
     public MitigationType getMitigationType(String id) {
-        return Objects.requireNonNull(types.get(id), "No mitigation mechanic with ID '" + id + "'");
+        return Objects.requireNonNull(types.get(id), "No mitigation type with ID '" + id + "'");
     }
 
-    public void registerType(@NotNull MitigationType mechanic) {
-        types.put(mechanic.getId(), mechanic);
+    public void registerType(@NotNull MitigationType type) {
+        types.put(type.getId(), type);
     }
 
     private class CustomListener implements Listener {
@@ -101,15 +106,14 @@ public class MitigationModule {
                 final var attacker = attackerProvider != null ? attackerProvider.getEntity() : null;
                 final var temp = new TriggerMetadata(playerData, TriggerType.DAMAGED, EquipmentSlot.MAIN_HAND, playerData.getPlayer().getLocation(), attacker, null, event.getAttack(), null).toSkillMetadata(SimpleSkill.EMPTY);
                 // TODO add field to skillMetadata
-                // TODO add source_vent as reserved variable name
                 temp.getVariableList().registerVariable(new EventVariable("source_event", event));
                 return temp;
             });
 
             for (var type : MitigationModule.this.types.values()) {
 
-                // Predamage script
-                if (type.preDamage() != null) type.preDamage().cast(lazySkillMeta.get());
+                // Pre-damage script
+                if (type.preDamage() != null && !type.preDamage().cast(lazySkillMeta.get())) continue;
 
                 // Check cooldown
                 if (type.hasCooldown() && playerData.getCooldownMap().isOnCooldown(type)) continue;

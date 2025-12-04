@@ -30,10 +30,9 @@ public class MultiplyDamageMechanic extends TargetMechanic {
     public MultiplyDamageMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("amount");
-
-        amount = new DoubleFormula(config.getString("amount"));
-        damageType = config.contains("damage_type") ? DamageType.valueOf(config.getString("damage_type").toUpperCase()) : null;
+        amount = config.getDoubleFormula("value", "val", "v", "amount", "amt", "a", "scalar", "s", "coef", "c");
+        final var damageTypeStr = config.stringFb(null, "damage_type", "dtype", "dt");
+        damageType = damageTypeStr != null ? UtilityMethods.prettyValueOf(DamageType::valueOf, damageTypeStr, "No damage type with ID %s") : null;
         additive = config.getBoolean("additive", false);
 
         // Elemental attack?

@@ -1,0 +1,80 @@
+
+######################################
+# Weapon Critical Strikes
+######################################
+
+weapon_crit_script_check:
+  conditions:
+    # either weapon/unarmed damage can crit
+    - 'has_damage_type{types="weapon,unarmed"}'
+
+weapon_crit_script:
+  mechanics:
+    # increase weapon/unarmed damage by crit power
+    - 'set_double{var=crit_coef;val="<stat.critical_strike_power> / 100"}'
+    - 'multiply_damage{scalar="<crit_coef>";dtype=WEAPON}'
+    - 'multiply_damage{scalar="<crit_coef>";dtype=UNARMED}'
+
+    # play sound and particle effect
+    #Uncomment for an action bar message
+    #- 'action_bar{m="&6You landed a crit for &c<attack.damage> &6damage!";target=caster;priority=40;duration=30}'
+    - "play_sound{sound=ENTITY_PLAYER_ATTACK_CRIT;volume=1;pitch=1}"
+    - "particle{particle=CRIT;amount=32;offset_x=.5;offset_y=.5;offset_z=.5;speed=0.5;target_location={type=target;position=BODY}}"
+
+######################################
+# Skill Critical Strikes
+######################################
+
+skill_crit_script_check:
+  conditions:
+    # only skill damage can crit
+    - 'has_damage_type{types="skill"}'
+
+skill_crit_script:
+  mechanics:
+    - 'multiply_damage{scalar="<stat.skill_critical_strike_power> / 100";dtype=SKILL}'
+
+    # play sound and particle effect
+    - "play_sound{sound=ENTITY_PLAYER_ATTACK_CRIT;volume=1;pitch=1}"
+    - "particle{particle=TOTEM_OF_UNDYING;amount=32;offset_x=.5;offset_y=.5;offset_z=.5;speed=0.5;target_location={type=target;position=BODY}}"
+
+######################################
+# Custom Damage Types
+######################################
+
+undead_damage_type_boost_script:
+  conditions:
+    # check if target is undead
+    - 'string_contains{lhs="ZOMBIFIED_PIGLIN,SKELETON,STRAY,WITHER_SKELETON,ZOMBIE,DROWNED,HUSK,PIG_ZOMBIE,ZOMBIE_VILLAGER,PHANTOM,WITHER,SKELETON_HORSE,ZOMBIE_HORSE";rhs="<target.type>"}'
+  mechanics:
+    - 'multiply_damage{scalar="<stat.undead_damage> / 100";additive=true}'
+
+pve_damage_type_boost_script:
+  conditions:
+    - 'string_equals{rhs="<target.type>";lhs="PLAYER";reverse=true}'
+  mechanics:
+    - 'multiply_damage{scalar="<stat.pve_damage> / 100";additive=true}'
+
+pvp_damage_type_boost_script:
+  conditions:
+    - 'string_equals{rhs="<target.type>";lhs="PLAYER"}'
+  mechanics:
+    - 'multiply_damage{scalar="<stat.pvp_damage> / 100";additive=true}'
+
+
+######################################
+# Lifesteal & Skill Vampirism
+######################################
+
+lifesteal_and_spellsteal_script:
+  mechanics:
+    - 'set_double{var=heal;val="<stat.lifesteal> / 100 * <attack.damage_weapon> + <stat.spell_vampirism> / 100 * <attack.damage_skill>"}'
+    - 'script{s=lifesteal_and_spellsteal_script_heal}'
+
+lifesteal_and_spellsteal_script_heal:
+  conditions:
+    - 'bool{expr=" <heal> > 0 "}' # only if heal is positive
+  mechanics:
+    #- 'message{m="&aYou healed for &2<heal> &ahealth!";target=caster}'
+    - 'heal{amount="<heal>";reason=MAGIC;target=caster}' # heal player
+

@@ -50,14 +50,6 @@ health-scale:
   scale: 20
   delay: 0
 
-critical-strikes:
-  weapon:
-    coefficient: 2 # Default = 2 meaning crits deal 200% of the initial damage
-    cooldown: 3
-  skill:
-    coefficient: 1.5 # Default = 1.5 meaning crits deal 150% of the initial damage
-    cooldown: 3
-
 # When enabled, SHIFT_<RIGHT_CLICK/DROP_ITEM/...> trigger types are disabled
 # and the corresponding base triggers will trigger even when crouching.
 #

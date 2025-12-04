@@ -1,12 +1,12 @@
 package io.lumine.mythic.lib.api.event.mitigation;
 
 import io.lumine.mythic.lib.api.event.DamageMitigationEvent;
-import io.lumine.mythic.lib.api.event.MMOPlayerDataEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.mitigation.MitigationType;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.jetbrains.annotations.NotNull;
 
 @Deprecated
 public class PlayerDodgeEvent extends DamageMitigationEvent implements Cancellable {
@@ -41,7 +41,7 @@ public class PlayerDodgeEvent extends DamageMitigationEvent implements Cancellab
 
     @Deprecated
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlers;
     }
 

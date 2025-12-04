@@ -225,11 +225,12 @@ public class SkillManager extends Module {
         // Conditions
         //////////////////////////////////
 
-        registerCondition("boolean", BooleanCondition::new);
+        registerCondition("boolean", BooleanCondition::new, "bool", "generic");
         registerCondition("compare", CompareCondition::new);
         registerCondition("has_variable", HasVariableCondition::new, "has_var", "variable_exists", "var_exists");
         registerCondition("in_between", InBetweenCondition::new);
-        registerCondition("string_equals", StringEqualsCondition::new);
+        registerCondition("string_equals", StringEqualsCondition::new, "string_equal", "str_eq");
+        registerCondition("string_contains", StringContainsCondition::new, "string_contain", "str_contain", "str_in", "string_in");
 
         registerCondition("biome", BiomeCondition::new);
         registerCondition("cuboid", CuboidCondition::new);
@@ -490,6 +491,7 @@ public class SkillManager extends Module {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmocore_scripts.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/example_skills.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mitigation_types.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "script/on_hit_effects.yml");
         }
 
         // Load default skills

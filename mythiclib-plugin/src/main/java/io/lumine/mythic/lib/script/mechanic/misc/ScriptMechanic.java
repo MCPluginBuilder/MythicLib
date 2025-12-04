@@ -21,7 +21,7 @@ import java.util.List;
 
 @MechanicMetadata
 public class ScriptMechanic extends Mechanic {
-    private final Script skill;
+    private final Script subscript;
 
     /**
      * Allows to cast the same script multiple times in a row but
@@ -41,7 +41,9 @@ public class ScriptMechanic extends Mechanic {
     private final EntityTargeter targetEntity;
 
     public ScriptMechanic(ConfigObject config) {
-        config.validateKeys("name");
+
+        // Script to call
+        subscript = MythicLib.plugin.getSkills().getScriptOrThrow(config.string("script", "s", "name", "id", "n"));
 
         // Multiple skill casts
         counterVarName = config.getString("counter", "counter");
@@ -51,8 +53,6 @@ public class ScriptMechanic extends Mechanic {
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : null;
         targetEntity = config.contains("target") ? config.getEntityTargeter("target") : null;
         targetLocation = config.contains("target_location") ? config.getLocationTargeter("target_location") : null;
-
-        skill = MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("name"));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ScriptMechanic extends Mechanic {
 
         // Reduces calculations
         if (sourceLocation == null && targetEntity == null && targetLocation == null) {
-            skill.cast(old);
+            subscript.cast(old);
             return;
         }
 
@@ -100,6 +100,6 @@ public class ScriptMechanic extends Mechanic {
         // Cast with every mathematically possible skill metadata
         for (Location targetLocation : newTargetLocations)
             for (Entity targetEntity : newTargetEntities)
-                skill.cast(old.clone(sourceLocation, targetLocation, targetEntity, old.getOrientationOrNull()));
+                subscript.cast(old.clone(sourceLocation, targetLocation, targetEntity, old.getOrientationOrNull()));
     }
 }

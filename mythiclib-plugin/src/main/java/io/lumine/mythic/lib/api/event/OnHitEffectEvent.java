@@ -1,25 +1,25 @@
 package io.lumine.mythic.lib.api.event;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.damage.mitigation.MitigationType;
+import io.lumine.mythic.lib.damage.onhit.OnHitEffect;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class DamageMitigationEvent extends MMOPlayerDataEvent implements Cancellable {
+public class OnHitEffectEvent extends MMOPlayerDataEvent implements Cancellable {
     private final EntityDamageEvent bukkitEvent;
-    private final MitigationType type;
+    private final OnHitEffect effect;
 
     private boolean cancelled;
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public DamageMitigationEvent(@NotNull MMOPlayerData player, @NotNull MitigationType type, @NotNull EntityDamageEvent bukkitEvent) {
+    public OnHitEffectEvent(@NotNull MMOPlayerData player, @NotNull OnHitEffect effect, @NotNull EntityDamageEvent bukkitEvent) {
         super(player);
 
         this.bukkitEvent = bukkitEvent;
-        this.type = type;
+        this.effect = effect;
     }
 
     @NotNull
@@ -28,8 +28,8 @@ public class DamageMitigationEvent extends MMOPlayerDataEvent implements Cancell
     }
 
     @NotNull
-    public MitigationType getType() {
-        return type;
+    public OnHitEffect getEffect() {
+        return effect;
     }
 
     @Override
