@@ -35,7 +35,7 @@ public class Warp extends SkillHandler<Warp.WarpSkillResult> {
         Location loc = result.getLocation();
 
         new ParabolicProjectile(caster.getLocation().add(0, 1, 0), loc.clone().add(0, 1, 0), () -> {
-            if (!UtilityMethods.isInvalidated(skillMeta.getCaster())) return;
+            if (UtilityMethods.isInvalidated(skillMeta.getCaster())) return;
 
             caster.teleport(loc);
             caster.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 0);
