@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.util.FileUtils;
@@ -37,12 +37,12 @@ public class StatManager extends Module {
 
     private boolean statsLoaded;
 
-    public StatManager(MMOPluginImpl plugin) {
+    public StatManager(MMOPlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void onEnable() {
+    protected void onReload() {
 
         // Load default file
         FileUtils.copyDefaultFile(MythicLib.plugin, "stats.yml");
@@ -119,7 +119,7 @@ public class StatManager extends Module {
     }
 
     @Override
-    public void onReset() {
+    protected void onReset() {
         handlers.clear();
         vanillaDefaultBaseValues.clear();
         statsLoaded = false;
@@ -196,14 +196,7 @@ public class StatManager extends Module {
 
     @Deprecated
     public void initialize(boolean clearBefore) {
-        if (clearBefore) {
-            reset();
-            onLoad();
-            onEnable();
-        } else {
-            onLoad();
-            onEnable();
-        }
+        reload();
     }
 
     @Deprecated

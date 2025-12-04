@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.hologram;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.listener.option.GameIndicators;
+import io.lumine.mythic.lib.util.IndicatorConfig;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -17,11 +17,11 @@ public abstract class Hologram {
 
     public abstract void updateLocation(@NotNull Location loc);
 
-    public void flyOut(@NotNull GameIndicators settings, @NotNull Vector dir) {
+    public void flyOut(@NotNull IndicatorConfig settings, @NotNull Vector dir) {
         new BukkitRunnable() {
             final Location loc = getLocation().clone();
             double v = 6 * settings.initialUpwardVelocity; // Initial upward velocity
-            int i = 0; // Counter
+            int ticks = 0; // Counter
 
             private final double acc = -10 * settings.gravity; // Downwards acceleration
             private static final double DT = 3d / 20d; // Delta_t used to integrate acceleration and velocity
@@ -29,10 +29,10 @@ public abstract class Hologram {
             @Override
             public void run() {
 
-                if (i == 0) dir.multiply(2 * settings.radialVelocity);
+                if (ticks == 0) dir.multiply(2 * settings.radialVelocity);
 
                 // Remove hologram when reaching end of life
-                if (i++ >= settings.lifespan) {
+                if (ticks++ * settings.tickPeriod >= settings.lifespan) {
                     despawn();
                     cancel();
                     return;

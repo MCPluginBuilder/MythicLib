@@ -21,8 +21,8 @@ import java.util.Set;
 public class EntityManager extends Module {
     private final Set<RelationshipHandler> relHandlers = new HashSet<>();
 
-    public EntityManager() {
-        super(MythicLib.plugin);
+    public EntityManager(MythicLib plugin) {
+        super(plugin);
     }
 
     /**

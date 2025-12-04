@@ -1,53 +1,170 @@
 package io.lumine.mythic.lib.module;
 
-import io.lumine.mythic.lib.util.annotation.NotUsed;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A module is defined as a standalone feature in the plugin. It can
  * depend on other modules to operate, and can be disabled/enabled
  * at runtime based on configuration files.
  */
-@Deprecated
-@NotUsed
 public abstract class Module {
-    protected final MMOPluginImpl plugin;
+    protected final MMOPlugin plugin;
     protected final NamespacedKey key;
-    protected final List<NamespacedKey> dependencies = new ArrayList<>();
-    //protected final List<Module> resolvedDependencies = new ArrayList<>();
 
     // Runtime flags
-    // TODO set loaded to false.
-    protected boolean loaded = true, enabled, started;
+    // enabled = if the module is running
+    // startup = toggled on once while calling #onStartup()
+    protected boolean enabled, startup;
 
-    /**
-     * Module was completely disabled either during loading or enabling phase
-     */
-    protected boolean disabled;
+    private final List<Listener> moduleListeners = new ArrayList<>();
+    private final List<ListenerToggle> moduleListenerToggles = new ArrayList<>();
 
-    protected Module(MMOPluginImpl plugin) {
+    protected Module(@NotNull MMOPlugin plugin) {
         this.plugin = plugin;
 
         ModuleInfo info = getClass().getAnnotation(ModuleInfo.class);
         Validate.notNull(info, "Could not find annotation data ModuleInfo");
         this.key = NamespacedKey.fromString(info.key(), plugin);
+
+        Validate.isTrue(!(this instanceof Listener), "Module cannot be a Listener, use inner class");
     }
 
-    protected Module(@NotNull MMOPluginImpl plugin, @NotNull String key, boolean load) {
-        this.plugin = plugin;
-        this.key = new NamespacedKey(plugin, key);
+    private void resolveModuleListeners() {
+        for (var field : getClass().getDeclaredFields())
+            try {
+                final var annot = field.getAnnotation(ModuleListener.class);
+                if (annot == null) continue;
+
+                field.setAccessible(true);
+                if (Listener.class.isAssignableFrom(field.getType()))
+                    this.moduleListeners.add((Listener) Objects.requireNonNull(field.get(this)));
+                else if (ListenerToggle.class.isAssignableFrom(field.getType())) {
+                    this.moduleListenerToggles.add((ListenerToggle) Objects.requireNonNull(field.get(this)));
+                } else
+                    throw new IllegalStateException("Unsupported module listener field type " + field.getType().getName());
+                field.setAccessible(false);
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
     }
+
+    //region FSM
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    protected boolean shouldEnable() {
+        // Override, check the config if it should enable
+        return true;
+    }
+
+    /**
+     * Called when the plugin starts or when plugins reload. This
+     * checks the enable toggle in the config, if it does not match
+     * the module state, then the module is either enabled or disabled.
+     * <p>
+     * If the module needs to be enabled, its configuration is reloaded.
+     */
+    public void reload() {
+
+        // Startup, run at most once
+        if (!startup) startup();
+
+        if (!shouldEnable()) {
+            if (enabled) disable();
+            return;
+        }
+
+        // Enable module
+        if (enabled) onReset();
+        else enable();
+
+        // Reload config
+        onReload();
+    }
+
+    private void startup() {
+        Validate.isTrue(!startup, "Module has already started up");
+        startup = true;
+
+        resolveModuleListeners();
+        onStartup();
+    }
+
+    private void enable() {
+        Validate.isTrue(!enabled, "Module is already enabled");
+        enabled = true;
+
+        moduleListeners.forEach(listener -> plugin.getServer().getPluginManager().registerEvents(listener, plugin));
+        onEnable();
+    }
+
+    private void disable() {
+        Validate.isTrue(enabled, "Module is already disabled");
+        enabled = false;
+
+        moduleListeners.forEach(HandlerList::unregisterAll);
+        moduleListenerToggles.forEach(ListenerToggle::disable);
+        onDisable();
+    }
+
+    //endregion
+
+    //region Methods
+
+    /**
+     * Gets called at most once the first time the module is enabled.
+     * This can be used to generate default config files or run
+     * static initialization code or computations.
+     */
+    protected void onStartup() {
+        // Default impl
+    }
+
+    /**
+     * Called before the module is re-enabled. This method should typically
+     * empty maps or structures that were filled during #onEnable().
+     * <p>
+     * At the end of this method, the module should be ready to be either
+     * enabled or disabled.
+     */
+    protected void onReset() {
+        // Default impl
+    }
+
+    protected void onEnable() {
+        // Default impl
+    }
+
+    protected void onDisable() {
+        // Default impl
+    }
+
+    /**
+     * Called last everytime, after the module has been either
+     * reset or enabled.
+     */
+    protected void onReload() {
+        // Default impl
+    }
+
+    //endregion>
 
     /*
+    //region Dependencies
+
+    protected final List<NamespacedKey> dependencies = new ArrayList<>();
+    protected final List<Module> resolvedDependencies = new ArrayList<>();
+
     public void resolveDependencies() {
         Validate.isTrue(MMOPluginRegistry.getInstance().isRegistrationAllowed(), "Dependency validation is not allowed");
 
@@ -55,96 +172,6 @@ public abstract class Module {
             final String pluginId = dep.split("\\:")[0];
             return !activePlugins.contains(pluginId);
         });
-    }*/
-
-    @Deprecated
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Deprecated
-    public boolean shouldLoad() {
-        // Default impl
-        return true;
-    }
-
-    /**
-     * Loading a manager refers to instantiating all the necessary
-     * references potentially needed everywhere else. This is usually
-     * done when plugins are loading, not enabling
-     */
-    @Deprecated
-    public void load() {
-        Validate.isTrue(!loaded, "Module is already loaded");
-
-        this.loaded = true;
-        onLoad();
-    }
-
-    @Deprecated
-    public boolean shouldEnable() {
-        // Default impl
-        return true;
-    }
-
-    /**
-     * Called when the server starts or when the plugins are getting enabled.
-     */
-    public void enable() {
-        Validate.isTrue(loaded, "Module is not loaded yet");
-        Validate.isTrue(!enabled, "Module is already enabled");
-
-        // Startup script
-        if (!started) {
-            onStartup();
-            started = true;
-        }
-
-        // Register listener if necessary
-        if (this instanceof Listener) Bukkit.getPluginManager().registerEvents((Listener) this, plugin);
-
-        // Flags
-        this.enabled = true;
-
-        // Callback
-        onEnable();
-    }
-
-    /**
-     * Called before reloading
-     */
-    public void reset() {
-        Validate.isTrue(loaded || enabled, "Module is already reset");
-
-        // Unregister listeners if necessary
-        if (this instanceof Listener) HandlerList.unregisterAll((Listener) this);
-
-        // Flags
-        this.loaded = false;
-        this.enabled = false;
-
-        // Callback
-        onReset();
-    }
-
-    @Deprecated
-    public void onLoad() {
-        // Default impl
-    }
-
-    public void onEnable() {
-        // Default impl
-    }
-
-    /**
-     * Gets called at most once
-     */
-    public void onStartup() {
-        // Default impl
-    }
-
-    public void onReset() {
-        // Default impl
     }
 
     public void addDependencies(NamespacedKey... dependencies) {
@@ -156,24 +183,16 @@ public abstract class Module {
         return dependencies;
     }
 
+    //endregion
+    */
+
     @NotNull
     public NamespacedKey getKey() {
         return key;
     }
 
     @NotNull
-    public MMOPluginImpl getPlugin() {
+    public MMOPlugin getPlugin() {
         return plugin;
-    }
-
-    /**
-     * Reloads this specific module. It could point to outdated references
-     * to other managers though, so it is recommended to fully reload all the
-     * MMO plugins when doing big changes. This can be done by using /ml reload.
-     */
-    public void reload() {
-        reset();
-        load();
-        enable();
     }
 }

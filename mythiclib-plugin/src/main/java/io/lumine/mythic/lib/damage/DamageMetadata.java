@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.damage;
 
+import io.lumine.mythic.lib.damage.indicator.DamageIndicator;
 import io.lumine.mythic.lib.element.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,11 +30,8 @@ public class DamageMetadata implements Cloneable {
     @Nullable
     private final DamagePacket initialPacket;
 
-    @Deprecated
-    private boolean weaponCrit, skillCrit;
-
-    @Deprecated
-    private final Set<Element> elementalCrit = new HashSet<>();
+    // TODO change with custom damage types
+    private final List<String> critTags = new ArrayList<>();
 
     /**
      * Used to register an attack with NO initial packet.
@@ -71,30 +69,6 @@ public class DamageMetadata implements Cloneable {
     @Nullable
     public DamagePacket getInitialPacket() {
         return initialPacket;
-    }
-
-    public boolean isWeaponCriticalStrike() {
-        return weaponCrit;
-    }
-
-    public void registerWeaponCriticalStrike() {
-        this.weaponCrit = true;
-    }
-
-    public boolean isSkillCriticalStrike() {
-        return skillCrit;
-    }
-
-    public void registerSkillCriticalStrike() {
-        this.skillCrit = true;
-    }
-
-    public boolean isElementalCriticalStrike(Element el) {
-        return elementalCrit.contains(el);
-    }
-
-    public void registerElementalCriticalStrike(Element el) {
-        elementalCrit.add(el);
     }
 
     /**
@@ -136,53 +110,25 @@ public class DamageMetadata implements Cloneable {
     }
 
     @NotNull
-    public Map<Element, Double> mapElementalDamage() {
-        final Map<Element, Double> mapped = new HashMap<>();
-
-        for (DamagePacket packet : packets)
-            if (packet.getElement() != null)
-                mapped.put(packet.getElement(), mapped.getOrDefault(packet.getElement(), 0d) + packet.getFinalValue());
-
-        return mapped;
-    }
-
-    @NotNull
     public List<DamagePacket> getPackets() {
         return packets;
     }
 
     /**
      * @return Set containing all the damage types found
-     * in all the different damage packets.
+     *         in all the different damage packets.
      */
     @NotNull
     public Set<DamageType> collectTypes() {
-        final Set<DamageType> collected = new HashSet<>();
-
-        for (DamagePacket packet : packets)
-            for (DamageType type : packet.getTypes())
-                collected.add(type);
-
-        return collected;
-    }
-
-    /**
-     * @return Set containing all the elements found
-     * in all the different damage packets.
-     */
-    @NotNull
-    public Set<Element> collectElements() {
-        final Set<Element> collected = new HashSet<>();
-
-        for (DamagePacket packet : packets)
-            if (packet.getElement() != null) collected.add(packet.getElement());
-
+        final var collected = new HashSet<DamageType>();
+        for (var packet : packets)
+            collected.addAll(Arrays.asList(packet.getTypes()));
         return collected;
     }
 
     /**
      * @return Iterates through all registered damage packets and
-     * see if any has this damage type.
+     *         see if any has this damage type.
      */
     public boolean hasType(DamageType type) {
         for (DamagePacket packet : packets)
@@ -194,7 +140,7 @@ public class DamageMetadata implements Cloneable {
     /**
      * @param element If null, will return true if it has non-elemental damage.
      * @return Iterates through all registered damage packets and
-     * see if any has this element.
+     *         see if any has this element.
      */
     public boolean hasElement(@Nullable Element element) {
         for (DamagePacket packet : packets)
@@ -202,6 +148,8 @@ public class DamageMetadata implements Cloneable {
 
         return false;
     }
+
+    //region Modifiers
 
     /**
      * Registers a new damage packet.
@@ -325,6 +273,8 @@ public class DamageMetadata implements Cloneable {
         return this;
     }
 
+    //endregion
+
     @Override
     public DamageMetadata clone() {
         DamageMetadata clone = new DamageMetadata(initialPacket);
@@ -352,4 +302,75 @@ public class DamageMetadata implements Cloneable {
         // Yeah
         return damageTypes.append("\u00a73}").toString();
     }
+
+    //region Deprecated
+
+    @NotNull
+    @Deprecated
+    public Set<Element> collectElements() {
+        final Set<Element> collected = new HashSet<>();
+
+        for (DamagePacket packet : packets)
+            if (packet.getElement() != null) collected.add(packet.getElement());
+
+        return collected;
+    }
+
+    @Deprecated
+    @NotNull
+    public Map<Element, Double> mapElementalDamage() {
+        final Map<Element, Double> mapped = new HashMap<>();
+
+        for (DamagePacket packet : packets)
+            if (packet.getElement() != null)
+                mapped.put(packet.getElement(), mapped.getOrDefault(packet.getElement(), 0d) + packet.getFinalValue());
+
+        return mapped;
+    }
+
+    public boolean isCrit(DamageIndicator indicator) {
+        // TODO rewrite after custom damage type update
+
+        // element
+        final var el = indicator.getElement();
+        if (el != null && critTags.contains(el.getId())) return true;
+
+        //dtypes
+        for (var dtype : indicator.getTooltips())
+            if (critTags.contains(dtype.name().toLowerCase())) return true;
+
+        return false;
+    }
+
+    @Deprecated
+    public boolean isWeaponCriticalStrike() {
+        return critTags.contains("weapon");
+    }
+
+    @Deprecated
+    public void registerWeaponCriticalStrike() {
+        this.critTags.add("weapon");
+    }
+
+    @Deprecated
+    public boolean isSkillCriticalStrike() {
+        return critTags.contains("skill");
+    }
+
+    @Deprecated
+    public void registerSkillCriticalStrike() {
+        this.critTags.add("skill");
+    }
+
+    @Deprecated
+    public boolean isElementalCriticalStrike(Element el) {
+        return critTags.contains(el.getId());
+    }
+
+    @Deprecated
+    public void registerElementalCriticalStrike(Element el) {
+        this.critTags.add(el.getId());
+    }
+
+    //endregion
 }

@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
-import io.lumine.mythic.lib.listener.option.GameIndicators;
+import io.lumine.mythic.lib.util.IndicatorConfig;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -120,7 +120,7 @@ public class BukkitHologramFactory implements HologramFactory /*, Listener*/ {
          * is much better for server tick and animation smoothness.
          */
         @Override
-        public void flyOut(@NotNull GameIndicators settings, @NotNull Vector dir) {
+        public void flyOut(@NotNull IndicatorConfig settings, @NotNull Vector dir) {
 
             // Teleport duration is not implemented in 1.20.1 and below
             Validate.isTrue(MythicLib.plugin.getVersion().isAbove(1, 20, 2), "Moving indicators is only available in 1.20.2 and above");

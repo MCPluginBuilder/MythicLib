@@ -30,8 +30,10 @@ import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIParser;
 import io.lumine.mythic.lib.comp.placeholder.PlaceholderParser;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
+import io.lumine.mythic.lib.damage.indicator.DamageIndicators;
 import io.lumine.mythic.lib.damage.mitigation.MitigationModule;
 import io.lumine.mythic.lib.damage.onhit.OnHitModule;
+import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.glow.GlowModule;
 import io.lumine.mythic.lib.glow.provided.MythicGlowModule;
 import io.lumine.mythic.lib.gui.PluginInventory;
@@ -39,13 +41,9 @@ import io.lumine.mythic.lib.hologram.HologramFactory;
 import io.lumine.mythic.lib.hologram.HologramFactoryList;
 import io.lumine.mythic.lib.listener.*;
 import io.lumine.mythic.lib.listener.event.AttackEventListener;
-import io.lumine.mythic.lib.listener.option.FixAttributeModifiers;
-import io.lumine.mythic.lib.listener.option.FixMovementSpeed;
-import io.lumine.mythic.lib.listener.option.HealthScale;
-import io.lumine.mythic.lib.listener.option.VanillaDamageModifiers;
+import io.lumine.mythic.lib.listener.option.*;
 import io.lumine.mythic.lib.manager.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
 import io.lumine.mythic.lib.profile.handler.ProfileHandler;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -65,19 +63,20 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 
-public class MythicLib extends MMOPluginImpl {
+public class MythicLib extends MMOPlugin {
     public static MythicLib plugin;
 
     private final DamageManager damageManager = new DamageManager(this);
-    private final EntityManager entityManager = new EntityManager();
+    private final EntityManager entityManager = new EntityManager(this);
     private final StatManager statManager = new StatManager(this);
     private final ConfigManager configManager = new ConfigManager(this);
     private final ElementManager elementManager = new ElementManager(this);
     private final SkillManager skillManager = new SkillManager(this);
     private final FlagHandler flagHandler = new FlagHandler();
-    private final IndicatorManager indicatorManager = new IndicatorManager();
-    private final MitigationModule mitigationModule = new MitigationModule();
-    private final OnHitModule onHitModule = new OnHitModule();
+    private final DamageIndicators damageIndicators = new DamageIndicators(this);
+    private final RegenIndicators regenIndicators = new RegenIndicators(this);
+    private final MitigationModule mitigationModule = new MitigationModule(this);
+    private final OnHitModule onHitModule = new OnHitModule(this);
     private final FakeEventManager fakeEventManager = new FakeEventManager();
     private final List<MMOPlugin> mmoPlugins = new ArrayList<>();
     private Gson gson;
@@ -130,7 +129,6 @@ public class MythicLib extends MMOPluginImpl {
 
         // Register listeners
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
-        Bukkit.getPluginManager().registerEvents(damageManager, this);
         Bukkit.getPluginManager().registerEvents(new DamageReduction(), this);
         Bukkit.getPluginManager().registerEvents(new LegacyAttackEffects(), this);
         Bukkit.getPluginManager().registerEvents(new CustomProjectileDamage(), this);
@@ -229,9 +227,6 @@ public class MythicLib extends MMOPluginImpl {
             getLogger().log(Level.WARNING, "Plugin dependency cycle: " + dependencyCycle);
         }
 
-        // Regen and damage indicators
-        this.indicatorManager.load(getConfig());
-
 //		if (Bukkit.getPluginManager().getPlugin("ShopKeepers") != null)
 //			entityManager.registerHandler(new ShopKeepersEntityHandler());
 
@@ -256,11 +251,15 @@ public class MythicLib extends MMOPluginImpl {
         getCommand("megaworkbench").setExecutor(MegaWorkbenchMapping.MWB);
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
-        damageManager.enable();
-        skillManager.enable(); // Before elements are loaded
-        elementManager.enable(); // Before stats are loaded
+        damageManager.reload();
+        skillManager.reload(); // Before elements are loaded
+        elementManager.reload(); // Before stats are loaded
         mitigationModule.reload(); // After scripts
         onHitModule.reload(); // After scripts
+        damageIndicators.reload();
+        regenIndicators.reload();
+        configManager.reload(); // TODO why so late?
+        statManager.reload(); // TODO why so late?
 
         // Load player data of online players
         Bukkit.getOnlinePlayers().forEach(MMOPlayerData::setup);
@@ -270,9 +269,6 @@ public class MythicLib extends MMOPluginImpl {
 
         // Loop for applying permanent potion effects
         Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickOnline), 100, 20);
-
-        configManager.enable();
-        statManager.enable();
     }
 
     public void reload() {
@@ -281,9 +277,10 @@ public class MythicLib extends MMOPluginImpl {
         skillManager.reload();
         configManager.reload();
         elementManager.reload();
-        this.indicatorManager.reload(getConfig());
         mitigationModule.reload();
         onHitModule.reload();
+        damageIndicators.reload();
+        regenIndicators.reload();
 
         // Flush outdated data
         for (var online : MMOPlayerData.getLoaded()) online.getStatMap().flushCache();
@@ -307,6 +304,14 @@ public class MythicLib extends MMOPluginImpl {
 
     public ServerVersion getVersion() {
         return version;
+    }
+
+    public DamageIndicators getDamageIndicators() {
+        return damageIndicators;
+    }
+
+    public RegenIndicators getRegenIndicators() {
+        return regenIndicators;
     }
 
     @Deprecated
@@ -459,6 +464,11 @@ public class MythicLib extends MMOPluginImpl {
 
     public AdventureParser getAdventureParser() {
         return adventureParser;
+    }
+
+    @Override
+    public @NotNull SynchronizedDataManager<?, ?> getRawPlayerDataManager() {
+        throw new IllegalArgumentException("No player data manager for MythicLib");
     }
 
     public File getJarFile() {

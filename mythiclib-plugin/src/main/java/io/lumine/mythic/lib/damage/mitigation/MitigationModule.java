@@ -5,6 +5,10 @@ import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.api.event.DamageMitigationEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.module.ListenerToggle;
+import io.lumine.mythic.lib.module.Module;
+import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.module.ModuleListener;
 import io.lumine.mythic.lib.script.variable.def.EventVariable;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
@@ -12,10 +16,8 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.config.YamlFile;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,20 +26,29 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public class MitigationModule {
+@ModuleInfo(key = "damage_mitigation")
+public class MitigationModule extends Module {
 
     /**
      * Using a linked hash map to preserve order
      * provided by the user in the config file
      */
-    private final Map<String, MitigationType> types = new LinkedHashMap<>();
+    private final Map<String, MitigationType> registry = new LinkedHashMap<>();
 
-    private boolean enabled = false;
-    private final Listener listener = new CustomListener();
+    @ModuleListener
+    final ListenerToggle mainListener = new ListenerToggle(this, InternalListener::new);
 
-    public void reload() {
+    public MitigationModule(MythicLib plugin) {
+        super(plugin);
+    }
 
-        types.clear();
+    @Override
+    protected void onReset() {
+        registry.clear();
+    }
+
+    @Override
+    protected void onReload() {
 
         // [Backwards compatibility] Also copy scripts/mitigation_types.yml
         if (!new YamlFile("mitigation_types").exists()) {
@@ -52,40 +63,21 @@ public class MitigationModule {
         for (var key : config.getKeys(false))
             try {
                 final var type = new MitigationType(config.getConfigurationSection(key));
-                registerType(type);
+                registry.put(type.getId(), type);
             } catch (Exception exception) {
                 MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load mitigation type '" + key + "': " + exception.getMessage());
             }
 
-        // Enable or disable
-        if (this.enabled && types.isEmpty()) disable();
-        else if (!this.enabled && !types.isEmpty()) enable();
-    }
-
-    private void disable() {
-        Validate.isTrue(this.enabled, "Damage Mitigation module is already disabled");
-
-        this.enabled = false;
-        HandlerList.unregisterAll(this.listener);
-    }
-
-    private void enable() {
-        Validate.isTrue(!this.enabled, "Damage Mitigation module is already enabled");
-
-        this.enabled = true;
-        Bukkit.getPluginManager().registerEvents(this.listener, MythicLib.plugin);
+        // Enable or disable listener
+        mainListener.toggle(!registry.isEmpty());
     }
 
     @NotNull
     public MitigationType getMitigationType(String id) {
-        return Objects.requireNonNull(types.get(id), "No mitigation type with ID '" + id + "'");
+        return Objects.requireNonNull(registry.get(id), "No mitigation type with ID '" + id + "'");
     }
 
-    public void registerType(@NotNull MitigationType type) {
-        types.put(type.getId(), type);
-    }
-
-    private class CustomListener implements Listener {
+    private class InternalListener implements Listener {
 
         @EventHandler
         public void applyMitigationTypes(@NotNull AttackEvent event) {
@@ -104,7 +96,7 @@ public class MitigationModule {
                 return temp;
             });
 
-            for (var type : MitigationModule.this.types.values()) {
+            for (var type : MitigationModule.this.registry.values()) {
 
                 // Pre-damage script
                 if (type.preDamage() != null && !type.preDamage().cast(lazySkillMeta.get())) continue;

@@ -1,44 +1,41 @@
-package io.lumine.mythic.lib.listener.option;
+package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.event.IndicatorDisplayEvent;
 import io.lumine.mythic.lib.hologram.Hologram;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.Listener;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.Collections;
-import java.util.Random;
 
-public abstract class GameIndicators implements Listener {
+public class IndicatorConfig {
     private final String format;
     private final DecimalFormat decimalFormat;
     private final boolean move;
 
-    // Options to be used by the hologram module
+    // General physics options
     public final double radialVelocity, gravity, initialUpwardVelocity, entityHeightPercent, yOffset, rOffset, entityWidthPercent;
+
+    // Lifespan and period
     public final long lifespan, tickPeriod;
 
-    protected static final Random RANDOM = new Random();
-
-    public GameIndicators(ConfigurationSection config) {
-        decimalFormat = MythicLib.plugin.getMMOConfig().newDecimalFormat(config.getString("decimal-format"));
+    public IndicatorConfig(ConfigurationSection config) {
+        decimalFormat = MythicLib.plugin.getMMOConfig().newDecimalFormat(config.getString("decimal_format"));
         format = config.getString("format");
-        radialVelocity = config.getDouble("radial-velocity", 1);
+        radialVelocity = config.getDouble("radial_velocity", 1);
         gravity = config.getDouble("gravity", 1);
-        initialUpwardVelocity = config.getDouble("initial-upward-velocity", 1);
-        entityHeightPercent = config.getDouble("entity-height-percent", .75);
-        entityWidthPercent = config.getDouble("entity-width-percent", .75);
-        yOffset = config.getDouble("y-offset", .1);
-        rOffset = config.getDouble("r-offset", 0.1);
+        initialUpwardVelocity = config.getDouble("initial_upward_velocity", 1);
+        entityHeightPercent = config.getDouble("entity_height_percent", .75);
+        entityWidthPercent = config.getDouble("entity_width_percent", .75);
+        yOffset = config.getDouble("y_offset", .1);
+        rOffset = config.getDouble("r_offset", 0.1);
         move = config.getBoolean("move", true);
         lifespan = config.getLong("lifespan", 20);
-        tickPeriod = config.getLong("tick-period", 3);
+        tickPeriod = config.getLong("tick_period", 3);
     }
 
     @NotNull
@@ -64,12 +61,12 @@ public abstract class GameIndicators implements Listener {
      * @param dir     Average direction of the hologram indicator
      */
     public void displayIndicator(@NotNull Entity entity, @NotNull String message, @NotNull Vector dir, @NotNull IndicatorDisplayEvent.IndicatorType type) {
-        IndicatorDisplayEvent called = new IndicatorDisplayEvent(entity, message, type);
+        final var called = new IndicatorDisplayEvent(entity, message, type);
         Bukkit.getPluginManager().callEvent(called);
         if (called.isCancelled())
             return;
 
-        final double a = RANDOM.nextDouble() * 2 * Math.PI,
+        final double angle = Math.random() * 2 * Math.PI,
 
                 // Entity width defined as arithmetical mean of widths across the two dimensions
                 width = (entity.getBoundingBox().getWidthX() + entity.getBoundingBox().getWidthZ()) / 2,
@@ -80,8 +77,8 @@ public abstract class GameIndicators implements Listener {
                 // Starting Z coordinate
                 h = yOffset + entity.getHeight() * entityHeightPercent;
 
-        final Location loc = entity.getLocation().add(Math.cos(a) * r, h, Math.sin(a) * r);
-        Hologram holo = Hologram.create(loc, Collections.singletonList(MythicLib.plugin.parseColors(called.getMessage())));
+        final var loc = entity.getLocation().add(Math.cos(angle) * r, h, Math.sin(angle) * r);
+        final var holo = Hologram.create(loc, Collections.singletonList(MythicLib.plugin.parseColors(called.getMessage())));
 
         // No movement
         if (!move)

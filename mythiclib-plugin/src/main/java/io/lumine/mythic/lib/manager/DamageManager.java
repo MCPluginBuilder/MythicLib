@@ -7,9 +7,10 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.damage.*;
 import io.lumine.mythic.lib.entity.ProjectileMetadata;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.module.ModuleListener;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
@@ -40,7 +41,7 @@ import java.util.logging.Level;
  * @author jules
  */
 @ModuleInfo(key = "damage")
-public class DamageManager extends Module implements Listener {
+public class DamageManager extends Module {
 
     /**
      * External attack handlers
@@ -56,14 +57,19 @@ public class DamageManager extends Module implements Listener {
      */
     private final Map<UUID, AttackMetadata> attackMetadatas = new WeakHashMap<>();
 
+    @ModuleListener
+    @SuppressWarnings("unused")
+    final Listener mainListener = new InternalListener();
+
     private AttributeModifier noKnockbackModifier;
 
-    public DamageManager(MMOPluginImpl plugin) {
+    public DamageManager(MMOPlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void onEnable() {
+    protected void onStartup() {
+        // Not on constructor, server version is not available yet
         noKnockbackModifier = VersionUtils.attrMod(new NamespacedKey(MythicLib.plugin, "no_knockback"), 100, AttributeModifier.Operation.ADD_NUMBER);
     }
 
@@ -336,25 +342,28 @@ public class DamageManager extends Module implements Listener {
         return attackMetadatas.get(entity.getUniqueId());
     }
 
-    /**
-     * This method is used to unregister MythicLib custom damage after everything
-     * was calculated, hence MONITOR priority. As a safe practice, it does NOT
-     * ignore cancelled damage events. It does however ignore fake events as they
-     * are sometimes called for checking interaction rules after the metadata
-     * has been set, but before effects are being applied which can screw things up.
-     * <p>
-     * This method is ABSOLUTELY NECESSARY. While MythicLib does clean up the
-     * entity metadata as soon as damage is dealt, vanilla attacks and extra
-     * plugins just don't.
-     */
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void unregisterCustomAttacks(EntityDamageEvent event) {
-        if (UtilityMethods.isFake(event)) return;
+    private class InternalListener implements Listener {
 
-        if (event.getEntity() instanceof LivingEntity) {
-            final @Nullable AttackMetadata attack = unmarkAsMetadata(event.getEntity());
-            if (attack != null && !event.isCancelled() && event.getFinalDamage() > 0)
-                Bukkit.getPluginManager().callEvent(new AttackUnregisteredEvent(event, attack));
+        /**
+         * This method is used to unregister MythicLib custom damage after everything
+         * was calculated, hence MONITOR priority. As a safe practice, it does NOT
+         * ignore cancelled damage events. It does however ignore fake events as they
+         * are sometimes called for checking interaction rules after the metadata
+         * has been set, but before effects are being applied which can screw things up.
+         * <p>
+         * This method is ABSOLUTELY NECESSARY. While MythicLib does clean up the
+         * entity metadata as soon as damage is dealt, vanilla attacks and extra
+         * plugins just don't.
+         */
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void unregisterCustomAttacks(EntityDamageEvent event) {
+            if (UtilityMethods.isFake(event)) return;
+
+            if (event.getEntity() instanceof LivingEntity) {
+                final @Nullable AttackMetadata attack = unmarkAsMetadata(event.getEntity());
+                if (attack != null && !event.isCancelled() && event.getFinalDamage() > 0)
+                    Bukkit.getPluginManager().callEvent(new AttackUnregisteredEvent(event, attack));
+            }
         }
     }
 

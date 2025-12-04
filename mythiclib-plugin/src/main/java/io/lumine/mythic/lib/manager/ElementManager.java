@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.manager;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.element.Element;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.util.FileUtils;
@@ -21,7 +21,7 @@ import java.util.logging.Level;
 public class ElementManager extends Module {
     private final Map<String, Element> mapped = new HashMap<>();
 
-    public ElementManager(MMOPluginImpl plugin) {
+    public ElementManager(MMOPlugin plugin) {
         super(plugin);
     }
 
@@ -32,12 +32,12 @@ public class ElementManager extends Module {
     }
 
     @Override
-    public void onReset() {
+    protected void onReset() {
         mapped.clear();
     }
 
     @Override
-    public void onEnable() {
+    protected void onReload() {
 
         // Load default file
         FileUtils.copyDefaultFile(MythicLib.plugin, "elements.yml");

@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.relation.EmptyPvPInteractionRules;
 import io.lumine.mythic.lib.comp.interaction.relation.InteractionRules;
 import io.lumine.mythic.lib.damage.DamageType;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.skill.SimpleSkill;
@@ -46,13 +46,18 @@ public class ConfigManager extends Module {
     @Nullable
     public Skill skillCastScript, skillCancelScript;
 
-    public ConfigManager(MMOPluginImpl plugin) {
+    public ConfigManager(MMOPlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void onEnable() {
-        final ConfigurationSection config = MythicLib.plugin.getConfig();
+    protected void onReset() {
+        this.damageCauseMap.clear();
+    }
+
+    @Override
+    protected void onReload() {
+        final var config = MythicLib.plugin.getConfig();
 
         // Decimal formatting
         formatSymbols.setDecimalSeparator(getFirstChar(config.getString("number-format.decimal-separator")));
@@ -127,7 +132,6 @@ public class ConfigManager extends Module {
         ///////////////////
         // DamageCause -> DamageType mapping
         ///////////////////
-        this.damageCauseMap.clear();
         final var rawConfigFile = new YamlFile("config"); // Ignore default keys
         damageTypeConfigMigration(rawConfigFile);
         final var damageCauseSection = rawConfigFile.getContent().getConfigurationSection("damage_types.bukkit");

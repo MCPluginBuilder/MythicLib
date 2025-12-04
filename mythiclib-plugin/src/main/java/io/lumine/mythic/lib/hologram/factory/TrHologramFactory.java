@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.hologram.factory;
 
 import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
-import io.lumine.mythic.lib.listener.option.GameIndicators;
+import io.lumine.mythic.lib.util.IndicatorConfig;
 import me.arasple.mc.trhologram.api.TrHologramAPI;
 import me.arasple.mc.trhologram.api.hologram.HologramBuilder;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -70,7 +70,7 @@ public class TrHologramFactory implements HologramFactory {
         }
 
         @Override
-        public void flyOut(@NotNull GameIndicators settings, @NotNull Vector dir) {
+        public void flyOut(@NotNull IndicatorConfig settings, @NotNull Vector dir) {
             // Not supported
         }
 

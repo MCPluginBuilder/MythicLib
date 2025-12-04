@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.manager;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.module.MMOPluginImpl;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.script.Script;
@@ -110,7 +110,7 @@ public class SkillManager extends Module {
 
     private boolean registration = true;
 
-    public SkillManager(MMOPluginImpl plugin) {
+    public SkillManager(MMOPlugin plugin) {
         super(plugin);
 
         //////////////////////////////////
@@ -354,11 +354,6 @@ public class SkillManager extends Module {
         throw new IllegalArgumentException("Expected a string, config section or list");
     }
 
-    @Deprecated
-    public Script loadScript(@NotNull ConfigurationSection config, @NotNull String key) {
-        return loadScript(key, config.get(key));
-    }
-
     @NotNull
     public Collection<Script> getScripts() {
         return scripts.values();
@@ -442,8 +437,8 @@ public class SkillManager extends Module {
     }
 
     @Override
-    public void onReset() {
-        for (SkillHandler<?> handler : handlers.values())
+    protected void onReset() {
+        for (var handler : handlers.values())
             if (handler instanceof Listener) HandlerList.unregisterAll((Listener) handler);
 
         handlers.clear();
@@ -452,19 +447,8 @@ public class SkillManager extends Module {
         registration = true;
     }
 
-    @Deprecated
-    public void initialize(boolean clearFirst) {
-        if (clearFirst) {
-            reload();
-        } else try {
-            enable();
-        } catch (Exception exception) {
-            reload();
-        }
-    }
-
     @Override
-    public void onStartup() {
+    protected void onStartup() {
 
         // MythicMobs skill handler type
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null)
@@ -476,7 +460,7 @@ public class SkillManager extends Module {
     }
 
     @Override
-    public void onEnable() {
+    protected void onReload() {
         registration = false;
 
         // mkdir skill folder
@@ -548,4 +532,18 @@ public class SkillManager extends Module {
                     }
         }, "Could not load skill '%s': %s");
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public void initialize(boolean clearFirst) {
+        reload();
+    }
+
+    @Deprecated
+    public Script loadScript(@NotNull ConfigurationSection config, @NotNull String key) {
+        return loadScript(key, config.get(key));
+    }
+
+    //endregion
 }

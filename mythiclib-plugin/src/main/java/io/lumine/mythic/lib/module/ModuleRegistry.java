@@ -12,7 +12,7 @@ import java.util.Map;
 @NotUsed
 @Deprecated
 public class ModuleRegistry {
-    private final Map<String, MMOPluginImpl> plugins = new HashMap<>();
+    private final Map<String, MMOPlugin> plugins = new HashMap<>();
     private final Map<String, Module> registry = new HashMap<>();
 
     /**
@@ -39,11 +39,11 @@ public class ModuleRegistry {
     //endregion
 
     @Nullable
-    public MMOPluginImpl getPlugin(@NotNull String key) {
+    public MMOPlugin getPlugin(@NotNull String key) {
         return plugins.get(key);
     }
 
-    public void registerPlugin(@NotNull MMOPluginImpl plugin) {
+    public void registerPlugin(@NotNull MMOPlugin plugin) {
         this.plugins.put(plugin.getName(), plugin);
     }
 
