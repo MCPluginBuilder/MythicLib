@@ -19,7 +19,7 @@ public class OnHitEffect implements CooldownObject {
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
         this.onAttack = MythicLib.plugin.getSkills().loadScript(config.get("on_attack"));
-        if (config.contains("pre_damage"))
+        if (config.contains("pre_attack"))
             this.preAttack = MythicLib.plugin.getSkills().loadScript(config.get("pre_attack"));
     });
 

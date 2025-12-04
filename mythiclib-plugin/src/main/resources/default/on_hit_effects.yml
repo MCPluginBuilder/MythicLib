@@ -19,7 +19,7 @@ lifesteal_and_spellsteal:
 
 weapon_crits:
 
-  pre_attack: weapon_crit_pre_attack_script
+  pre_attack: weapon_crit_script_check
 
   # Formula for cooldown between two consecutive weapon crits (in seconds)
   # To disable cooldown, delete this line, or comment it out
@@ -40,7 +40,7 @@ weapon_crits:
 
 skill_crits:
 
-  pre_attack: skill_crit_pre_attack_script
+  pre_attack: skill_crit_script_check
 
   # Formula for cooldown between two consecutive skill crits (in seconds)
   # To disable cooldown, delete this line, or comment it out
