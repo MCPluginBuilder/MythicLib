@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Mechanic that affects a new value to a variable. It is
@@ -17,14 +18,26 @@ public abstract class VariableMechanic extends Mechanic {
 
     public VariableMechanic(ConfigObject config) {
         varName = config.string("variable", "var", "v");
-        scope = config.contains("scope") ? UtilityMethods.prettyValueOf(VariableScope::valueOf, config.getString("scope"), "No scope with ID %s") : VariableScope.SKILL;
+        scope = config.contains("scope") ? UtilityMethods.prettyValueOf(VariableScope::valueOf, config.getString("scope"), "No variable scope with ID %s") : VariableScope.SKILL;
     }
 
     public String getVariableName() {
         return varName;
     }
 
+    @NotNull
     public VariableList getTargetVariableList(SkillMetadata meta) {
-        return scope == VariableScope.SKILL ? meta.getVariableList() : meta.getCaster().getData().getVariableList();
+        switch (this.scope) {
+            case SERVER:
+                return VariableList.SERVER;
+            case PLAYER:
+                return meta.getCaster().getData().getVariableList();
+            case PROFILE:
+                return meta.getCaster().getData().getProfileSession().getVariableList();
+            case SKILL:
+                return meta.getVariableList();
+            default:
+                throw new IllegalStateException("Unknown variable scope " + this.scope);
+        }
     }
 }
