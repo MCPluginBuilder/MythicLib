@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.mechanic.offense;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -21,14 +21,12 @@ public class PotionMechanic extends TargetMechanic {
     public PotionMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("effect", "duration");
-
-        effect = PotionEffectType.getByName(UtilityMethods.enumName(config.getString("effect")));
-        level = new DoubleFormula(config.getString("level", "1"));
-        duration = new DoubleFormula(config.getString("duration"));
-        ambient = config.getBoolean("ambient", true);
-        particles = config.getBoolean("particles", true);
-        icon = config.getBoolean("icon", true);
+        effect = config.parse(Parsers.POTION_EFFECT_TYPE, "effect", "eff", "e", "type", "pe");
+        level = config.getDoubleFormula(DoubleFormula.constant(1), "level", "lvl", "l");
+        duration = config.getDoubleFormula("ticks", "t", "duration", "dur", "d", "time");
+        ambient = config.bool(false, "ambient", "amb");
+        particles = config.bool(true, "particles", "part");
+        icon = config.bool(true, "icon", "ic");
     }
 
     @Override

@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -31,8 +32,7 @@ public class MultiplyDamageMechanic extends TargetMechanic {
         super(config);
 
         amount = config.getDoubleFormula("value", "val", "v", "amount", "amt", "a", "scalar", "s", "coef", "c");
-        final var damageTypeStr = config.stringFb(null, "damage_type", "dtype", "dt");
-        damageType = damageTypeStr != null ? UtilityMethods.prettyValueOf(DamageType::valueOf, damageTypeStr, "No damage type with ID %s") : null;
+        damageType = config.parse(null, Parsers.DAMAGE_TYPE, "damage_type", "dtype", "dt");
         additive = config.getBoolean("additive", false);
 
         // Elemental attack?

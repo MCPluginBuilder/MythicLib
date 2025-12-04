@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -16,6 +17,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 @MechanicMetadata
 public class DamageMechanic extends TargetMechanic {
@@ -35,23 +38,10 @@ public class DamageMechanic extends TargetMechanic {
     public DamageMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("amount");
-
-        amount = new DoubleFormula(config.getString("amount"));
-        knockback = config.getBoolean("knockback", true);
-        ignoreImmunity = config.getBoolean("ignore_immunity", false);
-
-        // Look for damage type
-        if (config.contains("damage_type")) {
-            final String[] split = config.getString("damage_type").split("\\,");
-            types = new DamageType[split.length];
-            for (int i = 0; i < split.length; i++)
-                types[i] = DamageType.valueOf(UtilityMethods.enumName(split[i]));
-        }
-
-        // By default, magical-skill damage
-        else
-            types = new DamageType[]{DamageType.MAGIC, DamageType.SKILL};
+        amount = config.getDoubleFormula("damage", "dmg", "d", "amount", "amt", "a", "value", "val", "v");
+        knockback = config.bool(true, "knockback", "kb", "knock");
+        ignoreImmunity = config.bool(false, "ignore_immunity", "ii");
+        types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "magic,skill", "damage_type", "dtype", "dt").toArray(new DamageType[0]);
 
         // Elemental attack?
         elementName = config.contains("element") ? UtilityMethods.enumName(config.getString("element")) : null;

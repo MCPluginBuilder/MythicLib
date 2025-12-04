@@ -15,17 +15,15 @@ public class SetOnFireMechanic extends TargetMechanic {
     public SetOnFireMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("ticks");
-
-        stack = config.getBoolean("stack", false);
+        stack = config.bool(false, "stack", "add");
         min = config.getBoolean("min", false);
         max = config.getBoolean("max", false);
-        ticks = config.getDoubleFormula("ticks");
+        ticks = config.getDoubleFormula("ticks", "t", "duration", "dur", "d", "time");
     }
 
     @Override
     public void cast(SkillMetadata meta, Entity target) {
-        int ticks = (int) this.ticks.evaluate(meta);
+        var ticks = (int) this.ticks.evaluate(meta);
         if (stack) ticks += target.getFireTicks();
         else if (max) ticks = Math.max(ticks, target.getFireTicks());
         else if (min) ticks = Math.min(ticks, target.getFireTicks());

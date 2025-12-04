@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.mechanic.offense;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -17,9 +17,7 @@ public class RemovePotionMechanic extends TargetMechanic {
     public RemovePotionMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("effect");
-
-        effect = PotionEffectType.getByName(UtilityMethods.enumName(config.getString("effect")));
+        effect = config.parse(Parsers.POTION_EFFECT_TYPE, "effect", "eff", "e", "type", "pe");
     }
 
     @Override

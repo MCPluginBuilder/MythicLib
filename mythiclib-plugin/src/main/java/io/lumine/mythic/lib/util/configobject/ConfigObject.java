@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * An interface to cover both configuration sections and line configs.
@@ -81,6 +82,8 @@ public interface ConfigObject {
 
     boolean bool(boolean defaultValue, @NotNull String... aliases);
 
+    //endregion
+
     @NotNull
     default Script script(@NotNull String... aliases) {
         for (String key : aliases) if (contains(key)) return getScript(key);
@@ -94,7 +97,18 @@ public interface ConfigObject {
         return defaultValue;
     }
 
-    //endregion
+    @Contract("!null, _, _ -> !null")
+    @Nullable
+    default <T> T parse(@Nullable T defaultValue, @NotNull Function<String, T> parser, @NotNull String... aliases) {
+        for (var key : aliases) if (contains(key)) return parser.apply(getString(key));
+        return defaultValue;
+    }
+
+    @NotNull
+    default <T> T parse(@NotNull Function<String, T> parser, @NotNull String... aliases) {
+        for (var key : aliases) if (contains(key)) return parser.apply(getString(key));
+        throw new MissingArgumentException(aliases);
+    }
 
     @NotNull
     default DoubleFormula getDoubleFormula(@NotNull String... aliases) {

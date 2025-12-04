@@ -12,10 +12,14 @@ import org.bukkit.entity.LivingEntity;
 @MechanicMetadata
 public class SetNoDamageTicksMechanic extends TargetMechanic {
     private final DoubleFormula ticks;
+    private final boolean stack, min, max;
 
     public SetNoDamageTicksMechanic(ConfigObject config) {
         super(config);
 
+        stack = config.bool(false, "stack", "add");
+        min = config.getBoolean("min", false);
+        max = config.getBoolean("max", false);
         ticks = config.getDoubleFormula(DoubleFormula.constant(10), "ticks", "t", "duration", "dur", "d", "time");
     }
 
@@ -23,8 +27,10 @@ public class SetNoDamageTicksMechanic extends TargetMechanic {
     public void cast(SkillMetadata meta, Entity target) {
         Validate.isTrue(target instanceof LivingEntity, "SetNoDamageTicksMechanic can only be applied to living entities");
 
-        final var ticks = (int) this.ticks.evaluate(meta);
-        Validate.isTrue(ticks >= 0, "NoDamageTicks duration must be non-negative");
+        var ticks = (int) this.ticks.evaluate(meta);
+        if (stack) ticks += ((LivingEntity) target).getNoDamageTicks();
+        else if (max) ticks = Math.max(ticks, ((LivingEntity) target).getNoDamageTicks());
+        else if (min) ticks = Math.min(ticks, ((LivingEntity) target).getNoDamageTicks());
 
         ((LivingEntity) target).setNoDamageTicks(ticks);
     }
