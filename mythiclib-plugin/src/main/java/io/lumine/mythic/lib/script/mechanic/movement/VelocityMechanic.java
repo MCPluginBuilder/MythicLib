@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.script.mechanic.movement;
 
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
-import io.lumine.mythic.lib.script.variable.Variable;
 import io.lumine.mythic.lib.script.variable.def.PositionVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -15,14 +14,12 @@ public class VelocityMechanic extends TargetMechanic {
     public VelocityMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("vector");
-
-        this.varName = config.getString("vector");
+        this.varName = config.string("value", "val", "v", "vector", "vec", "velocity", "vel");
     }
 
     @Override
     public void cast(SkillMetadata meta, Entity target) {
-        Variable velVar = meta.getVariable(varName);
+        var velVar = meta.getVariable(varName);
         Validate.isTrue(velVar instanceof PositionVariable, "Variable '" + varName + "' is not a vector");
         Vector vel = ((PositionVariable) velVar).getStored().toVector();
 

@@ -14,8 +14,8 @@ public class StringContainsCondition extends Condition {
     public StringContainsCondition(ConfigObject config) {
         super(config);
 
-        first = config.string("first", "one", "left", "lhs");
-        second = config.string("second", "two", "right", "rhs");
+        first = config.string("search", "look", "lookfor", "lf");
+        second = config.string("in", "within");
         ignoreCase = config.bool(false, "ignore_case", "ic");
     }
 

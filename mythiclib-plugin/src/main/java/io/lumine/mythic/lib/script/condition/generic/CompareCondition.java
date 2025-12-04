@@ -1,29 +1,33 @@
 package io.lumine.mythic.lib.script.condition.generic;
 
-import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import io.lumine.mythic.lib.util.DoubleFormula;
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.Parsers;
+import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.DoubleFormula;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 import java.util.function.BiPredicate;
 
 /**
  * Compares two double numbers using the specified comparator
+ *
+ * @see BooleanCondition
+ * @deprecated
  */
+@Deprecated
 public class CompareCondition extends Condition {
     private final Comparator comparator;
     private final DoubleFormula first, second;
 
     private static final double SMALLEST_DIFFERENCE = .0000001;
 
+    @Deprecated
     public CompareCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("first", "comparator", "second");
-
-        first = new DoubleFormula(config.getString("first"));
-        second = new DoubleFormula(config.getString("second"));
-        comparator = Comparator.fromString(config.getString("comparator"));
+        first = config.getDoubleFormula("first");
+        second = config.getDoubleFormula("second");
+        comparator = config.parse(Parsers.COMPARATOR, "comparator");
     }
 
     @Override

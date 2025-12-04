@@ -14,8 +14,8 @@ public class StringEqualsCondition extends Condition {
     public StringEqualsCondition(ConfigObject config) {
         super(config);
 
-        first = config.string("first", "one", "left", "lhs");
-        second = config.string("second", "two", "right", "rhs");
+        first = config.string("first", "left", "lhs");
+        second = config.string("second", "right", "rhs");
         ignoreCase = config.bool(false, "ignore_case", "ic");
     }
 

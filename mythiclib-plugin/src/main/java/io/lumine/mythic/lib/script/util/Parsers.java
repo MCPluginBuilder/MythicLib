@@ -2,6 +2,8 @@ package io.lumine.mythic.lib.script.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
+import io.lumine.mythic.lib.script.condition.generic.CompareCondition;
+import io.lumine.mythic.lib.script.mechanic.shaped.RayTraceMechanic;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
@@ -17,4 +19,9 @@ public class Parsers {
 
     public static final Function<String, List<DamageType>> DAMAGE_TYPES = DamageType::listFromConfig;
 
+    public static final Function<String, RayTraceMechanic.RayTraceType> RAY_TRACE_TYPE =
+            input -> UtilityMethods.prettyValueOf(RayTraceMechanic.RayTraceType::valueOf, input, "No ray trace type with ID %s");
+
+    public static final Function<String, CompareCondition.Comparator> COMPARATOR =
+            input -> UtilityMethods.prettyValueOf(CompareCondition.Comparator::fromString, input, "No comparator with ID %s");
 }

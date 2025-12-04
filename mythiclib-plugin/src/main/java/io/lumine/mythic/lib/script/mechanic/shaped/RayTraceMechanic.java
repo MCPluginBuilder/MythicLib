@@ -1,11 +1,11 @@
 package io.lumine.mythic.lib.script.mechanic.shaped;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -34,14 +34,15 @@ public class RayTraceMechanic extends DirectionMechanic {
         onTick = config.getScriptOrNull("tick");
         onHitEntity = config.getScriptOrNull("hit_entity");
         onHitBlock = config.getScriptOrNull("hit_block");
-        ignorePassable = config.getBoolean("ignore_passable", false);
-        neutral = config.getBoolean("neutral", true);
-        offense = config.getBoolean("offense", true);
-        rayTraceType = config.contains("mode") ? RayTraceType.valueOf(UtilityMethods.enumName(config.getString("mode"))) : RayTraceType.DEFAULT;
 
-        range = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_RANGE), "range", "rng", "length", "len");
+        ignorePassable = config.bool(false, "ignore_passable", "ip");
+        neutral = config.bool(true, "neutral");
+        offense = config.bool(true, "offense");
+        rayTraceType = config.parse(Parsers.RAY_TRACE_TYPE, "mode", "m");
+
+        range = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_RANGE), "range", "rng", "length", "len", "distance", "dist");
         size = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_SIZE), "size", "width", "wide");
-        step = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_STEP), "step", "st");
+        step = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_STEP), "step_size", "step", "st", "ss");
     }
 
     @Override

@@ -15,11 +15,9 @@ public class SetVectorMechanic extends VariableMechanic {
     public SetVectorMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("x", "y", "z");
-
-        x = new DoubleFormula(config.getString("x"));
-        y = new DoubleFormula(config.getString("y"));
-        z = new DoubleFormula(config.getString("z"));
+        x = config.getDoubleFormula(DoubleFormula.ZERO, "x");
+        y = config.getDoubleFormula(DoubleFormula.ZERO, "y");
+        z = config.getDoubleFormula(DoubleFormula.ZERO, "z");
     }
 
     @Override
