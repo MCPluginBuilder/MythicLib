@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.location;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
@@ -48,7 +49,7 @@ public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
     static class Handler extends TemporaryHandler {
         private final List<UUID> entities = new ArrayList<>();
         private final Snowman snowman;
-        private final Player caster;
+        private final PlayerMetadata caster;
 
         private final double damage, duration, radiusSquared;
 
@@ -59,7 +60,7 @@ public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
             snowman.setInvulnerable(true);
             snowman.addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), 100000, 254, true));
 
-            this.caster = skillMeta.getCaster().getPlayer();
+            this.caster = skillMeta.getCaster();
 
             this.damage = skillMeta.getParameter("damage");
             this.duration = Math.min(skillMeta.getParameter("duration") * 20, 300);
@@ -82,13 +83,15 @@ public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
 
                     j += Math.PI / 24 % (2 * Math.PI);
                     for (double k = 0; k < 3; k++)
-                        snowman.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(),
-                                snowman.getLocation().add(Math.cos(j + k / 3 * 2 * Math.PI) * 1.3, 1, Math.sin(j + k / 3 * 2 * Math.PI) * 1.3), 0);
-                    snowman.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), snowman.getLocation().add(0, 1, 0), 1, 0, 0, 0, .2);
+                        VParticle.INSTANT_EFFECT.spawnSafeSpell(snowman.getLocation().add(
+                                Math.cos(j + k / 3 * 2 * Math.PI) * 1.3,
+                                1,
+                                Math.sin(j + k / 3 * 2 * Math.PI) * 1.3));
+                    VParticle.INSTANT_EFFECT.spawnSafeSpell(snowman.getLocation().add(0, 1, 0), 1, 0, 0, 0, .2);
 
                     if (ti % 2 == 0)
                         for (Entity entity : UtilityMethods.getNearbyChunkEntities(snowman.getLocation()))
-                            if (!entity.equals(snowman) && UtilityMethods.canTarget(caster, entity)
+                            if (!entity.equals(snowman) && UtilityMethods.canTarget(caster.getPlayer(), entity)
                                     && entity.getLocation().distanceSquared(snowman.getLocation()) < radiusSquared) {
                                 snowman.getWorld().playSound(snowman.getLocation(), Sounds.ENTITY_SNOWBALL_THROW, 1, 1.3f);
 

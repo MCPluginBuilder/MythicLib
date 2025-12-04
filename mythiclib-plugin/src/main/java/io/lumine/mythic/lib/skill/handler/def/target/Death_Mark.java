@@ -33,16 +33,15 @@ public class Death_Mark extends SkillHandler<TargetSkillResult> {
         double dps = skillMeta.getParameter("damage") / duration * 20;
 
         TemporaryHandler.timerTask(skillMeta.getCaster().getData(), 1, handler -> new BukkitRunnable() {
-            double ti = 0;
+            int ti = 0;
 
             public void run() {
-                ti++;
-                if (ti > duration || target.isDead()) {
+                if (++ti > duration || target.isDead()) {
                     handler.close();
                     return;
                 }
 
-                target.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), target.getLocation(), 4, .2, 0, .2, 0);
+                VParticle.INSTANT_EFFECT.spawnSafeSpell(target.getLocation(), 4, .2, 0, .2, 0);
 
                 if (ti % 20 == 0)
                     skillMeta.getCaster().attack(target, dps, false, DamageType.SKILL, DamageType.MAGIC);

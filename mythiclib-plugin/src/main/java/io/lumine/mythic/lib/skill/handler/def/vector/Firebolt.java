@@ -57,7 +57,7 @@ public class Firebolt extends SkillHandler<VectorSkillResult> {
                     }
 
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 5, .12, .12, .12, 0);
-                    if (RANDOM.nextDouble() < .3)
+                    if (Math.random() < .3)
                         loc.getWorld().spawnParticle(Particle.LAVA, loc, 0);
                     for (Entity target : entities)
                         if (UtilityMethods.canTarget(caster, loc, target)) {

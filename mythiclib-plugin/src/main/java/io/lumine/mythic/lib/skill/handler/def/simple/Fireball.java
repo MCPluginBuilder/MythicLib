@@ -95,7 +95,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
     }
 
     private Vector randomDirection() {
-        double x = RANDOM.nextDouble() - .5, y = (RANDOM.nextDouble() - .2) / 2, z = RANDOM.nextDouble() - .5;
+        double x = Math.random() - .5, y = (Math.random() - .2) / 2, z = Math.random() - .5;
         Vector dir = new Vector(x, y, z);
         return dir.lengthSquared() == 0 ? new Vector(1, 0, 0) : dir.normalize();
     }

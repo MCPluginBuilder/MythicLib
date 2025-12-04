@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
@@ -46,11 +47,12 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
             if (serverEntities.getTarget() != null && serverEntities.getTarget().equals(caster))
                 serverEntities.setTarget(null);
 
-        new ShadowVeilEffect(caster, duration, (int) skillMeta.getParameter("deception"));
+        new ShadowVeilEffect(skillMeta.getCaster(), duration, (int) skillMeta.getParameter("deception"));
     }
 
     public static class ShadowVeilEffect extends TemporaryHandler {
         private final Player player;
+        private final PlayerMetadata caster;
         private final double duration;
         private final Location loc;
 
@@ -60,8 +62,9 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
         int hitsLeft;
 
 
-        public ShadowVeilEffect(Player player, double duration, int hitsLeft) {
-            this.player = player;
+        public ShadowVeilEffect(PlayerMetadata caster, double duration, int hitsLeft) {
+            this.player = caster.getPlayer();
+            this.caster = caster;
             this.duration = duration;
             this.loc = player.getLocation();
             this.hitsLeft = hitsLeft;
@@ -77,7 +80,7 @@ public class Shadow_Veil extends SkillHandler<SimpleSkillResult> {
 
                 @Override
                 public void run() {
-                    if (ti++ > duration * 20 || UtilityMethods.isInvalidated(player)) {
+                    if (ti++ > duration * 20 || UtilityMethods.isInvalidated(caster)) {
                         close();
                         return;
                     }

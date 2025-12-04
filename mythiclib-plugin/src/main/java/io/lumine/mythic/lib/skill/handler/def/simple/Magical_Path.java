@@ -102,8 +102,8 @@ public class Magical_Path extends SkillHandler<SimpleSkillResult> {
                 event.setCancelled(true);
                 safe = false;
 
-                player.getWorld().spawnParticle(VParticle.EFFECT.get(), player.getLocation(), 8, .35, 0, .35, .08);
-                player.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), player.getLocation(), 16, .35, 0, .35, .08);
+                VParticle.EFFECT.spawnSafeSpell(player.getLocation(), 8, .35, 0, .35, .08);
+                VParticle.INSTANT_EFFECT.spawnSafeSpell(player.getLocation(), 16, .35, 0, .35, .08);
                 player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDERMAN_HURT, 1, 2);
             }
         }

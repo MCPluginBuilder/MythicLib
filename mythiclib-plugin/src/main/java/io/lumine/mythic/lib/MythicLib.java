@@ -97,6 +97,7 @@ public class MythicLib extends MMOPluginImpl {
 
         try {
             version = new ServerVersion();
+            version.validateMappings(); // After field is initialized
             getLogger().log(Level.INFO, "Detected Bukkit Version: " + version.getCraftBukkitVersion());
         } catch (Exception exception) {
             getLogger().log(Level.WARNING, "Internal error:");

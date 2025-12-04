@@ -46,7 +46,10 @@ public class Frozen_Aura extends SkillHandler<SimpleSkillResult> {
 
                 j += Math.PI / 60;
                 for (double k = 0; k < Math.PI * 2; k += Math.PI / 2)
-                    caster.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), caster.getLocation().add(Math.cos(k + j) * 2, 1 + Math.sin(k + j * 7) / 3, Math.sin(k + j) * 2), 0);
+                    VParticle.INSTANT_EFFECT.spawnSafeSpell(caster.getLocation().add(
+                            Math.cos(k + j) * 2,
+                            1 + Math.sin(k + j * 7) / 3,
+                            Math.sin(k + j) * 2));
 
                 if (ti % 2 == 0)
                     caster.getWorld().playSound(caster.getLocation(), Sounds.BLOCK_SNOW_BREAK, 1, 1);

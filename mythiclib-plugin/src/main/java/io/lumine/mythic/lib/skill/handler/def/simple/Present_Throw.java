@@ -75,7 +75,7 @@ public class Present_Throw extends SkillHandler<SimpleSkillResult> {
                 }
 
                 double currentTrajRatio = item.getEntity().getVelocity().getX() / item.getEntity().getVelocity().getZ();
-                item.getEntity().getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), item.getEntity().getLocation().add(0, .1, 0), 0);
+                VParticle.INSTANT_EFFECT.spawnSafeSpell(item.getEntity().getLocation().add(0, .1, 0));
                 if (item.getEntity().isOnGround() || Math.abs(trajRatio - currentTrajRatio) > .1) {
                     item.getEntity().getWorld().spawnParticle(VParticle.FIREWORK.get(), item.getEntity().getLocation().add(0, .1, 0), 128, 0, 0, 0, .25);
                     item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 1.5f);

@@ -41,9 +41,9 @@ public class ParabolicProjectile extends BukkitRunnable {
         }, 1, (loc) -> loc.getWorld().spawnParticle(particle, loc, 0));
     }
 
-    public ParabolicProjectile(Location source, Location target, Runnable end, int speed, Particle particle) {
+    public ParabolicProjectile(Location source, Location target, Runnable end, int speed, VParticle spellParticle) {
         this(source, target, target.clone().subtract(source).toVector().multiply(.1).setY(6).normalize().multiply(.3), end, speed,
-                (loc) -> loc.getWorld().spawnParticle(particle, loc, 0));
+                spellParticle::spawnSafeSpell);
     }
 
     public ParabolicProjectile(Location source, Location target, Vector vec, Runnable end, int speed, Particle particle) {

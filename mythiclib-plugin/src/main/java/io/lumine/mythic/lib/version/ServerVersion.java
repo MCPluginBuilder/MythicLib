@@ -56,8 +56,9 @@ public class ServerVersion {
             // Ignored
         }
         this.paper = isPaper;
+    }
 
-        // Validate all mappings
+    public void validateMappings() {
         try {
             //Attributes.getAll(); static code wont run
             VEnchantment.values();

@@ -38,8 +38,7 @@ public class Blink extends SkillHandler<SimpleSkillResult> {
         final Vector dir = caster.getEyeLocation().getDirection();
 
         // Effects on prev position
-        caster.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 0);
-        caster.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .1);
+        playParticleEffect(caster.getLocation().add(0, 1, 0));
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
         @Nullable final RayTraceResult rtResult = caster.getWorld().rayTraceBlocks(caster.getEyeLocation(), dir, range, FluidCollisionMode.NEVER, true);
@@ -50,7 +49,11 @@ public class Blink extends SkillHandler<SimpleSkillResult> {
         caster.teleport(loc);
 
         // Effects on newest position
-        caster.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), caster.getLocation().add(0, 1, 0), 0);
-        caster.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), caster.getLocation().add(0, 1, 0), 32, 0, 0, 0, .1);
+        playParticleEffect(caster.getLocation().add(0, 1, 0));
+    }
+
+    private void playParticleEffect(Location loc) {
+        loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
+        VParticle.INSTANT_EFFECT.spawnSafeSpell(loc, 32, 0, 0, 0, .1);
     }
 }

@@ -66,8 +66,8 @@ public class Blizzard extends SkillHandler<SimpleSkillResult> {
                     }
 
                     Location loc = caster.getEyeLocation();
-                    loc.setPitch((float) (loc.getPitch() + (RANDOM.nextDouble() - .5) * inaccuracy));
-                    loc.setYaw((float) (loc.getYaw() + (RANDOM.nextDouble() - .5) * inaccuracy));
+                    loc.setPitch((float) (loc.getPitch() + (Math.random() - .5) * inaccuracy));
+                    loc.setYaw((float) (loc.getYaw() + (Math.random() - .5) * inaccuracy));
 
                     loc.getWorld().playSound(loc, Sounds.ENTITY_SNOWBALL_THROW, 1, 1);
                     Snowball snowball = caster.launchProjectile(Snowball.class);

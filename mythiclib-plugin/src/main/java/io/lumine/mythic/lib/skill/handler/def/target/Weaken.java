@@ -39,7 +39,7 @@ public class Weaken extends SkillHandler<TargetSkillResult> {
 
     private Vector randomVector(Player player) {
         double a = Math.toRadians(player.getEyeLocation().getYaw() + 90);
-        a += (RANDOM.nextBoolean() ? 1 : -1) * (RANDOM.nextDouble() + .5) * Math.PI / 6;
+        a += (RANDOM.nextBoolean() ? 1 : -1) * (Math.random() + .5) * Math.PI / 6;
         return new Vector(Math.cos(a), .8, Math.sin(a)).normalize().multiply(.4);
     }
 

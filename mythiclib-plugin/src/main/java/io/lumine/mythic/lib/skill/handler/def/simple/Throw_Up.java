@@ -49,8 +49,8 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
                 }
 
                 Location loc = caster.getEyeLocation();
-                loc.setPitch((float) (loc.getPitch() + (RANDOM.nextDouble() - .5) * 30));
-                loc.setYaw((float) (loc.getYaw() + (RANDOM.nextDouble() - .5) * 30));
+                loc.setPitch((float) (loc.getPitch() + (Math.random() - .5) * 30));
+                loc.setYaw((float) (loc.getYaw() + (Math.random() - .5) * 30));
 
                 // Deal damage every 10 ticks
                 if (j % 5 == 0)

@@ -45,7 +45,7 @@ public class Freezing_Curse extends SkillHandler<LocationSkillResult> {
                     loc.getWorld().playSound(loc, Sounds.BLOCK_NOTE_BLOCK_PLING, 2, (float) (.5 + ((ti - rads) / (Math.PI * 2) * 1.5)));
                 for (int j = 0; j < 2; j++) {
                     ti += Math.PI / 32;
-                    loc.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), loc.clone().add(Math.cos(ti) * 3, .1, Math.sin(ti) * 3), 0);
+                    VParticle.INSTANT_EFFECT.spawnSafeSpell(loc.clone().add(Math.cos(ti) * 3, .1, Math.sin(ti) * 3));
                 }
 
                 if (ti > Math.PI * 2 + rads) {

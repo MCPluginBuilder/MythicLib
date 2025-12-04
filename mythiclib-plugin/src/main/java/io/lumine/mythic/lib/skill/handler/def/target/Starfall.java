@@ -37,7 +37,7 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
 
     private void playParticleEffect(Location source) {
         new BukkitRunnable() {
-            final double ran = RANDOM.nextDouble() * Math.PI * 2;
+            final double ran = Math.random() * Math.PI * 2;
             final Location origin = source.add(Math.cos(ran) * 3, 6, Math.sin(ran) * 3);
             final Vector vec = source.add(0, .65, 0).toVector().subtract(origin.toVector()).multiply(.05);
             double ti = 0;

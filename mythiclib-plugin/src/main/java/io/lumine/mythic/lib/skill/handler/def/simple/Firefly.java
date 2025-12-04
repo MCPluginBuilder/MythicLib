@@ -76,7 +76,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                     vec = UtilityMethods.rotate(vec, loc.getDirection());
                     loc.add(vec);
                     caster.getWorld().spawnParticle(VParticle.SMOKE.get(), loc, 0);
-                    if (RANDOM.nextDouble() < .3)
+                    if (Math.random() < .3)
                         caster.getWorld().spawnParticle(Particle.FLAME, loc, 0);
                     loc.add(vec.multiply(-1));
                 }
