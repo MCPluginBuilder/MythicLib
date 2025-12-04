@@ -238,8 +238,7 @@ public class DamageManager extends Module {
                 final Projectile projectile = (Projectile) damager;
                 final @Nullable ProjectileMetadata projectileData = ProjectileMetadata.get(projectile);
                 if (projectileData != null) {
-                    // TODO remove usage of array
-                    final AttackMetadata attackMeta = new ProjectileAttackMetadata(new DamageMetadata(event.getDamage(), projectileData.getDamageTypes().toArray(new DamageType[0])), (LivingEntity) event.getEntity(), projectileData.getShooter(), projectile, projectileData);
+                    final AttackMetadata attackMeta = new ProjectileAttackMetadata(new DamageMetadata(event.getDamage(), projectileData.getDamageTypes()), (LivingEntity) event.getEntity(), projectileData.getShooter(), projectile, projectileData);
                     markAsMetadata(attackMeta);
                     return attackMeta;
                 }
@@ -248,8 +247,7 @@ public class DamageManager extends Module {
                 final ProjectileSource source = projectile.getShooter();
                 if (source != null && !source.equals(event.getEntity()) && source instanceof LivingEntity) {
                     final StatProvider attacker = StatProvider.get((LivingEntity) source, EquipmentSlot.MAIN_HAND, true);
-                    // TODO remove usage of array
-                    final AttackMetadata attackMeta = new ProjectileAttackMetadata(new DamageMetadata(event.getDamage(), MythicLib.plugin.getMMOConfig().bowAttackTypes.toArray(new DamageType[0])), (LivingEntity) event.getEntity(), attacker, projectile);
+                    final AttackMetadata attackMeta = new ProjectileAttackMetadata(new DamageMetadata(event.getDamage(), MythicLib.plugin.getMMOConfig().bowAttackTypes), (LivingEntity) event.getEntity(), attacker, projectile);
                     markAsMetadata(attackMeta);
                     return attackMeta;
                 }
@@ -292,10 +290,9 @@ public class DamageManager extends Module {
      * @return The damage types of a vanilla attack
      */
     @NotNull
-    public DamageType[] getVanillaDamageTypes(EntityDamageEvent.DamageCause cause) {
+    public List<DamageType> getVanillaDamageTypes(EntityDamageEvent.DamageCause cause) {
         final var mappings = MythicLib.plugin.getMMOConfig().damageCauseMap;
-        // TODO remove usage of array
-        return mappings.getOrDefault(cause, List.of()).toArray(new DamageType[0]);
+        return mappings.getOrDefault(cause, List.of());
     }
 
     /**
@@ -304,7 +301,7 @@ public class DamageManager extends Module {
      * @return The damage types of a vanilla melee entity attack
      */
     @NotNull
-    public DamageType[] getVanillaDamageTypes(EntityDamageByEntityEvent event, EquipmentSlot hand) {
+    public List<DamageType> getVanillaDamageTypes(EntityDamageByEntityEvent event, EquipmentSlot hand) {
         Validate.isTrue(event.getDamager() instanceof LivingEntity, "Not an entity attack");
         return getVanillaDamageTypes((LivingEntity) event.getDamager(), event.getCause(), hand);
     }
@@ -316,25 +313,25 @@ public class DamageManager extends Module {
      * @return The damage types of a vanilla melee entity attack
      */
     @NotNull
-    public DamageType[] getVanillaDamageTypes(@NotNull LivingEntity damager, @NotNull EntityDamageEvent.DamageCause cause, @NotNull EquipmentSlot hand) {
+    public List<DamageType> getVanillaDamageTypes(@NotNull LivingEntity damager, @NotNull EntityDamageEvent.DamageCause cause, @NotNull EquipmentSlot hand) {
 
         // Not an entity attack
         if (cause != EntityDamageEvent.DamageCause.ENTITY_ATTACK && cause != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK)
-            return MythicLib.plugin.getMMOConfig().meleeRandomAttackTypes.toArray(new DamageType[0]);
+            return MythicLib.plugin.getMMOConfig().meleeRandomAttackTypes;
 
         // Physical attack with bare fists
         // Unarmed attack, allows for interesting gameplay mechanics
         final @Nullable var handItem = UtilityMethods.getHandItem(damager, hand);
         if (isAir(handItem))
-            return MythicLib.plugin.getMMOConfig().meleeUnarmedAttackTypes.toArray(new DamageType[0]);
+            return MythicLib.plugin.getMMOConfig().meleeUnarmedAttackTypes;
 
         // Weapon attack, default attack damage types
         // Replaced later on by MMOItems on PlayerAttackEvent
         if (isWeapon(handItem.getType()))
-            return MythicLib.plugin.getMMOConfig().meleeWeaponAttackTypes.toArray(new DamageType[0]);
+            return MythicLib.plugin.getMMOConfig().meleeWeaponAttackTypes;
 
         // Hitting with a random item
-        return MythicLib.plugin.getMMOConfig().meleeRandomAttackTypes.toArray(new DamageType[0]);
+        return MythicLib.plugin.getMMOConfig().meleeRandomAttackTypes;
     }
 
     @Nullable
@@ -382,7 +379,7 @@ public class DamageManager extends Module {
 
     @Deprecated
     public DamageType[] getVanillaDamageTypes(EntityDamageEvent event) {
-        return getVanillaDamageTypes(event.getCause());
+        return getVanillaDamageTypes(event.getCause()).toArray(new DamageType[0]);
     }
 
     @Deprecated

@@ -24,7 +24,7 @@ import java.util.List;
 public class DamageMechanic extends TargetMechanic {
     private final DoubleFormula amount;
     private final boolean knockback, ignoreImmunity;
-    private final DamageType[] types;
+    private final List<DamageType> types;
 
     /**
      * Cannot save the Element object reference since skills
@@ -41,7 +41,7 @@ public class DamageMechanic extends TargetMechanic {
         amount = config.getDoubleFormula("damage", "dmg", "d", "amount", "amt", "a", "value", "val", "v");
         knockback = config.bool(true, "knockback", "kb", "knock");
         ignoreImmunity = config.bool(false, "ignore_immunity", "ii");
-        types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "magic,skill", "damage_type", "dtype", "dt").toArray(new DamageType[0]);
+        types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "magic,skill", "damage_type", "dtype", "dt");
 
         // Elemental attack?
         elementName = config.contains("element") ? UtilityMethods.enumName(config.getString("element")) : null;

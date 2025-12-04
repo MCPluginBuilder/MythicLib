@@ -27,6 +27,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 @MythicMechanic(
@@ -58,15 +60,13 @@ public class MMODamageMechanic extends DamagingMechanic implements ITargetedEnti
     }
 
     @NotNull
-    private DamageType[] findDamageTypes(SkillCaster caster) {
+    private List<DamageType> findDamageTypes(SkillCaster caster) {
         final String format = this.damageTypes.get(caster);
-        if (format.isEmpty() || format.equals("NONE")) return new DamageType[0];
+        if (format.isEmpty() || format.equals("NONE")) return List.of();
 
-        final String[] split = format.split("\\,");
-        final DamageType[] array = new DamageType[split.length];
-
-        for (int i = 0; i < array.length; i++)
-            array[i] = DamageType.valueOf(UtilityMethods.enumName(split[i]));
+        final var split = format.split("\\,");
+        final var array = new ArrayList<DamageType>(split.length);
+        for (var s : split) array.add(DamageType.valueOf(UtilityMethods.enumName(s)));
 
         return array;
     }
@@ -80,7 +80,7 @@ public class MMODamageMechanic extends DamagingMechanic implements ITargetedEnti
         // Find damageMeta
         final double damage = amount.get(data, target) * data.getPower();
         final Element element = elementName == null ? null : MythicLib.plugin.getElements().get(UtilityMethods.enumName(elementName.get(data.getCaster())));
-        final DamageType[] damageTypes = this.damageTypes == null ? new DamageType[0] : findDamageTypes(data.getCaster());
+        final var damageTypes = this.damageTypes == null ? List.<DamageType>of() : findDamageTypes(data.getCaster());
 
         final AttackMetadata currentAttack;
         if (!ignoreMMOAttack && (currentAttack = MythicLib.plugin.getDamage().getRegisteredAttackMetadata(target.getBukkitEntity())) != null) {

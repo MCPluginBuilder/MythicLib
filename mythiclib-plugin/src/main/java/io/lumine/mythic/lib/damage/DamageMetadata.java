@@ -24,34 +24,27 @@ public class DamageMetadata implements Cloneable {
      * <p>
      * This field is a direct reference of an existing element
      * of the collection returned by {@link #getPackets()}.
-     * <p>
-     * Although not common, it can be null.
      */
-    @Nullable
+    @NotNull
     private final DamagePacket initialPacket;
 
     // TODO change with custom damage types
     private final List<String> critTags = new ArrayList<>();
 
-    /**
-     * Used to register an attack with NO initial packet.
-     */
-    public DamageMetadata() {
-        initialPacket = null;
+    private DamageMetadata(@NotNull DamagePacket initialPacket) {
+        this.initialPacket = Objects.requireNonNull(initialPacket, "Initial packet cannot be null");
     }
 
-    private DamageMetadata(@Nullable DamagePacket initialPacket) {
-        this.initialPacket = initialPacket;
-    }
-
-    /**
-     * Used to register an attack.
-     *
-     * @param damage The attack damage
-     * @param types  The attack damage types
-     */
     public DamageMetadata(double damage, DamageType... types) {
+        this(damage, null, Arrays.asList(types));
+    }
+
+    public DamageMetadata(double damage, @NotNull List<DamageType> types) {
         this(damage, null, types);
+    }
+
+    public DamageMetadata(double damage, @Nullable Element element, @NotNull DamageType... types) {
+        this(damage, element, Arrays.asList(types));
     }
 
     /**
@@ -61,12 +54,12 @@ public class DamageMetadata implements Cloneable {
      * @param element If this is an elemental attack
      * @param types   The attack damage types
      */
-    public DamageMetadata(double damage, @Nullable Element element, DamageType... types) {
+    public DamageMetadata(double damage, @Nullable Element element, @NotNull List<DamageType> types) {
         initialPacket = new DamagePacket(damage, element, types);
         packets.add(initialPacket);
     }
 
-    @Nullable
+    @NotNull
     public DamagePacket getInitialPacket() {
         return initialPacket;
     }
@@ -121,8 +114,7 @@ public class DamageMetadata implements Cloneable {
     @NotNull
     public Set<DamageType> collectTypes() {
         final var collected = new HashSet<DamageType>();
-        for (var packet : packets)
-            collected.addAll(Arrays.asList(packet.getTypes()));
+        for (var packet : packets) collected.addAll(packet.getTypes());
         return collected;
     }
 
@@ -151,6 +143,11 @@ public class DamageMetadata implements Cloneable {
 
     //region Modifiers
 
+    @NotNull
+    public DamageMetadata add(double value, @NotNull DamageType... types) {
+        return add(value, Arrays.asList(types));
+    }
+
     /**
      * Registers a new damage packet.
      *
@@ -160,9 +157,14 @@ public class DamageMetadata implements Cloneable {
      * @return The same modified damage metadata
      */
     @NotNull
-    public DamageMetadata add(double value, @NotNull DamageType... types) {
+    public DamageMetadata add(double value, @NotNull List<DamageType> types) {
         packets.add(new DamagePacket(value, types));
         return this;
+    }
+
+    @NotNull
+    public DamageMetadata add(double value, @Nullable Element element, @NotNull DamageType... types) {
+        return add(value, element, Arrays.asList(types));
     }
 
     /**
@@ -175,7 +177,7 @@ public class DamageMetadata implements Cloneable {
      * @return The same modified damage metadata
      */
     @NotNull
-    public DamageMetadata add(double value, @Nullable Element element, @NotNull DamageType... types) {
+    public DamageMetadata add(double value, @Nullable Element element, @NotNull List<DamageType> types) {
         packets.add(new DamagePacket(value, element, types));
         return this;
     }
@@ -304,6 +306,11 @@ public class DamageMetadata implements Cloneable {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public DamageMetadata() {
+        this(0, List.of(DamageType.MAGIC, DamageType.SKILL));
+    }
 
     @NotNull
     @Deprecated

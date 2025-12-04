@@ -5,7 +5,6 @@ import io.lumine.mythic.lib.damage.DamageMetadata;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -36,10 +35,8 @@ public enum IndicatorGroupMode {
      */
     PACKET(damage -> {
         var list = new ArrayList<DamageIndicator>();
-        for (var packet : damage.getPackets()) {
-            // TODO switch to list instead of array
-            list.add(new DamageIndicator(packet.getFinalValue(), Arrays.asList(packet.getTypes()), packet.getElement()));
-        }
+        for (var packet : damage.getPackets())
+            list.add(new DamageIndicator(packet.getFinalValue(), packet.getTypes(), packet.getElement()));
         return list;
     });
 

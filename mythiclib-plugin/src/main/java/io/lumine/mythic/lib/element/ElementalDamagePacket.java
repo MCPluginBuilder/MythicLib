@@ -2,27 +2,27 @@ package io.lumine.mythic.lib.element;
 
 import io.lumine.mythic.lib.damage.DamagePacket;
 import io.lumine.mythic.lib.damage.DamageType;
-import io.lumine.mythic.lib.element.Element;
-import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Objects;
 
+@Deprecated
 public class ElementalDamagePacket extends DamagePacket {
-    @NotNull
-    private Element element;
 
-    public ElementalDamagePacket(double value, @NotNull Element element, @NotNull DamageType... types) {
-        super(value, types);
+    @Deprecated
+    public ElementalDamagePacket(double value, Element element, DamageType... types) {
+        super(value, Arrays.asList(types));
 
-        this.element = Objects.requireNonNull(element, "Element cannot be null");
+        setElement(element);
     }
 
-    @NotNull
+    @Deprecated
     public Element getElement() {
-        return element;
+        return super.getElement();
     }
 
-    public void setElement(@NotNull Element element) {
-        this.element = Objects.requireNonNull(element, "Element cannot be null");
+    @Deprecated
+    public void setElement(Element element) {
+        super.setElement(Objects.requireNonNull(element, "Element cannot be null"));
     }
 }

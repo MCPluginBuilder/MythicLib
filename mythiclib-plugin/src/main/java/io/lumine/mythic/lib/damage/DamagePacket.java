@@ -5,6 +5,8 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,17 +25,17 @@ import java.util.Objects;
  */
 public class DamagePacket implements Cloneable {
     @NotNull
-    private DamageType[] types;
+    private List<DamageType> types;
     private double value, additive, scalar = 1;
 
     @Nullable
     private Element element;
 
-    public DamagePacket(double value, @NotNull DamageType... types) {
+    public DamagePacket(double value, @NotNull List<DamageType> types) {
         this(value, null, types);
     }
 
-    public DamagePacket(double value, @Nullable Element element, @NotNull DamageType... types) {
+    public DamagePacket(double value, @Nullable Element element, @NotNull List<DamageType> types) {
         this.value = value;
         this.types = types;
         this.element = element;
@@ -44,10 +46,10 @@ public class DamagePacket implements Cloneable {
     }
 
     /**
-     * @return Damage types by which this damage packet scales
+     * @return Damage types of the packet. Not guaranteed to be mutable.
      */
     @NotNull
-    public DamageType[] getTypes() {
+    public List<DamageType> getTypes() {
         return types;
     }
 
@@ -56,8 +58,8 @@ public class DamagePacket implements Cloneable {
         return element;
     }
 
-    public void setTypes(@NotNull DamageType[] types) {
-        this.types = Objects.requireNonNull(types, "Damage type array cannot be null");
+    public void setTypes(@Nullable List<DamageType> types) {
+        this.types = Objects.requireNonNullElse(types, List.of());
     }
 
     /**
@@ -105,11 +107,8 @@ public class DamagePacket implements Cloneable {
      * @return Checks if the current packet has that damage type
      */
     public boolean hasType(DamageType type) {
-
-        for (DamageType checked : this.types)
-            if (checked == type)
-                return true;
-
+        for (var checked : this.types)
+            if (checked == type) return true;
         return false;
     }
 
@@ -165,10 +164,29 @@ public class DamagePacket implements Cloneable {
 
     @Override
     public DamagePacket clone() {
-        DamagePacket clone = new DamagePacket(value, types);
+        var clone = new DamagePacket(value, types);
         clone.additive = additive;
         clone.scalar = scalar;
         clone.element = element;
         return clone;
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public DamagePacket(double value, @NotNull DamageType... types) {
+        this(value, null, Arrays.asList(types));
+    }
+
+    @Deprecated
+    public DamagePacket(double value, @Nullable Element element, @NotNull DamageType... types) {
+        this(value, element, Arrays.asList(types));
+    }
+
+    @Deprecated
+    public void setTypes(DamageType[] types) {
+        this.types = types == null ? List.of() : Arrays.asList(types);
+    }
+
+    //endregion
 }
