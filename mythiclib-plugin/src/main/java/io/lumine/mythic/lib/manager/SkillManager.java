@@ -40,10 +40,7 @@ import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.script.targeter.entity.*;
 import io.lumine.mythic.lib.script.targeter.location.LookingAtTargeter;
 import io.lumine.mythic.lib.script.targeter.location.*;
-import io.lumine.mythic.lib.skill.handler.FabledSkillHandler;
-import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
-import io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler;
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.skill.handler.*;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadException;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -457,6 +454,10 @@ public class SkillManager extends Module {
         // Fabled skill handler type
         if (Bukkit.getPluginManager().getPlugin("Fabled") != null)
             registerSkillHandlerType(config -> config.contains("fabled-skill-id") || config.contains("skillapi-skill-id"), FabledSkillHandler::new);
+
+        // CoreTools skill handler type
+        if (Bukkit.getPluginManager().getPlugin("CoreTools") != null)
+            registerSkillHandlerType(config -> config.contains("coretools-script-id"), CoreToolsSkillHandler::new);
     }
 
     @Override
