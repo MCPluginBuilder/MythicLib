@@ -75,12 +75,6 @@ public class OnHitModule {
         Bukkit.getPluginManager().registerEvents(this.listener, MythicLib.plugin);
     }
 
-    public void postload() {
-        if (!enabled) return;
-
-        for (var type : types.values()) type.getPostLoadAction().performAction();
-    }
-
     @NotNull
     public OnHitEffect getOnHitEffect(String id) {
         return Objects.requireNonNull(types.get(id), "No on-hit effect with ID '" + id + "'");

@@ -13,14 +13,11 @@ public class OnHitEffect implements CooldownObject {
     private final String id, cooldownPath;
     private final boolean skipEvent;
 
-    private @NotNull Script onAttack;
-    private @Nullable Script preAttack;
+    private final @NotNull Script onAttack;
+    private final @Nullable Script preAttack;
     private final @Nullable NumericalExpression cooldownFormula, rollFormula;
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
-        this.onAttack = MythicLib.plugin.getSkills().loadScript(config.get("on_attack"));
-        if (config.contains("pre_attack"))
-            this.preAttack = MythicLib.plugin.getSkills().loadScript(config.get("pre_attack"));
     });
 
     public OnHitEffect(@NotNull ConfigurationSection config) {
@@ -28,10 +25,11 @@ public class OnHitEffect implements CooldownObject {
         this.cooldownPath = "mitigation:" + id;
         this.skipEvent = config.getBoolean("skip_event", false);
 
-        this.postLoadAction.cacheConfig(config);
-
         this.cooldownFormula = config.contains("cooldown") ? NumericalExpression.compile(config.getString("cooldown")) : null;
         this.rollFormula = config.contains("roll") ? NumericalExpression.compile(config.getString("roll")) : null;
+
+        this.onAttack = MythicLib.plugin.getSkills().loadScript(config.get("on_attack"));
+        this.preAttack = config.contains("pre_attack") ? MythicLib.plugin.getSkills().loadScript(config.get("pre_attack")) : null;
     }
 
     public PostLoadAction getPostLoadAction() {

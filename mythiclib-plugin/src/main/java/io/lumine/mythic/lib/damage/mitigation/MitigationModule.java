@@ -76,12 +76,6 @@ public class MitigationModule {
         Bukkit.getPluginManager().registerEvents(this.listener, MythicLib.plugin);
     }
 
-    public void postload() {
-        if (!enabled) return;
-
-        for (var type : types.values()) type.getPostLoadAction().performAction();
-    }
-
     @NotNull
     public MitigationType getMitigationType(String id) {
         return Objects.requireNonNull(types.get(id), "No mitigation type with ID '" + id + "'");

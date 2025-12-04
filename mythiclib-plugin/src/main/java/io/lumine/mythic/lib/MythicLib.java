@@ -255,11 +255,11 @@ public class MythicLib extends MMOPluginImpl {
         getCommand("megaworkbench").setExecutor(MegaWorkbenchMapping.MWB);
         Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
 
-        mitigationModule.reload(); // Nothing depends on it
-        onHitModule.reload(); // Nothing depends on it
         damageManager.enable();
         skillManager.enable(); // Before elements are loaded
         elementManager.enable(); // Before stats are loaded
+        mitigationModule.reload(); // After scripts
+        onHitModule.reload(); // After scripts
 
         // Load player data of online players
         Bukkit.getOnlinePlayers().forEach(MMOPlayerData::setup);
@@ -272,22 +272,17 @@ public class MythicLib extends MMOPluginImpl {
 
         configManager.enable();
         statManager.enable();
-
-        mitigationModule.postload(); // After scripts are loaded
-        onHitModule.postload(); // After scripts are loaded
     }
 
     public void reload() {
         reloadConfig();
-        mitigationModule.reload();
-        onHitModule.reload();
         statManager.reload();
         skillManager.reload();
         configManager.reload();
         elementManager.reload();
         this.indicatorManager.reload(getConfig());
-        mitigationModule.postload(); // After scripts are loaded
-        onHitModule.postload(); // After scripts are loaded
+        mitigationModule.reload();
+        onHitModule.reload();
 
         // Flush outdated data
         for (var online : MMOPlayerData.getLoaded()) online.getStatMap().flushCache();
