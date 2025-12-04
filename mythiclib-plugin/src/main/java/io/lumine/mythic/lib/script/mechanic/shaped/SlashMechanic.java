@@ -31,10 +31,8 @@ public class SlashMechanic extends Mechanic {
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : new CasterLocationTargeter(EntityLocationType.EYES);
         targetLocation = config.contains("target") ? config.getLocationTargeter("target") : new DefaultDirectionTargeter();
 
-        config.validateKeys("tick");
-
+        onTick = MythicLib.plugin.getSkills().getScriptOrThrow(config.string("tick"));
         onStart = config.contains("start") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("start")) : null;
-        onTick = MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("tick"));
         onEnd = config.contains("end") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("end")) : null;
 
         distance = config.getDouble("distance", 3);
@@ -94,7 +92,7 @@ public class SlashMechanic extends Mechanic {
                     final double x = Math.abs(counter - points / 2) * 2d / points;
                     final Script cast = onStart != null && counter == 1 ? onStart : (onEnd != null && counter >= points ? onEnd : onTick);
                     Location intermediate = current.clone().add(dir.clone().multiply(distance * Math.sqrt(1 - x * x)));
-                    cast.cast(meta.clone(source, intermediate, null, null));
+                    cast.cast(meta.clone(source, intermediate, null));
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, timeInterval);

@@ -7,12 +7,8 @@ import io.lumine.mythic.lib.module.ListenerToggle;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.module.ModuleListener;
-import io.lumine.mythic.lib.script.variable.def.EventVariable;
-import io.lumine.mythic.lib.skill.SimpleSkill;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.FileUtils;
-import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -85,12 +81,7 @@ public class OnHitModule extends Module {
 
             // Use a lazy value for performance
             // Only transform it to a raw value after cooldown check
-            final var lazySkillMeta = Lazy.of(() -> {
-                final var temp = new TriggerMetadata(event, TriggerType.ATTACK).toSkillMetadata(SimpleSkill.EMPTY);
-                // TODO add field to skillMetadata
-                temp.getVariableList().registerVariable(new EventVariable("source_event", event));
-                return temp;
-            });
+            final var lazySkillMeta = SkillMetadata.lazyOf(event);
 
             for (var effect : OnHitModule.this.registry.values()) {
 

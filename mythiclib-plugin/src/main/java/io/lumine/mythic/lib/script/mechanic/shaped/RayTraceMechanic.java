@@ -58,7 +58,7 @@ public class RayTraceMechanic extends DirectionMechanic {
 
         if (onTick != null) for (double j = 0; j < length; j += step) {
             Location intermediate = source.clone().add(direction.clone().multiply(j));
-            onTick.cast(meta.clone(source, intermediate, null, null));
+            onTick.cast(meta.clone(source, intermediate, null));
         }
 
         if (result == null) return;
@@ -66,10 +66,10 @@ public class RayTraceMechanic extends DirectionMechanic {
         Location hitPosition = result.getHitPosition().toLocation(source.getWorld());
 
         if (onHitBlock != null && result.getHitBlock() != null)
-            onHitBlock.cast(meta.clone(source, hitPosition, null, null));
+            onHitBlock.cast(meta.clone(source, hitPosition, null));
 
         if (onHitEntity != null && result.getHitEntity() != null)
-            onHitEntity.cast(meta.clone(source, hitPosition, result.getHitEntity(), null));
+            onHitEntity.cast(meta.clone(source, hitPosition, result.getHitEntity()));
     }
 
     private RayTraceResult getResult(SkillMetadata meta, Location source, Vector direction, double range) {

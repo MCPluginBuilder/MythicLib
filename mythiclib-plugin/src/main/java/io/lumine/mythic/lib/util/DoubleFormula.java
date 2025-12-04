@@ -54,7 +54,7 @@ public class DoubleFormula {
         try {
             return NumericalExpression.eval(meta.parseString(value));
         } catch (Exception exception) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Could not evaluate '" + value + "' while casting skill '" + meta.getCast().getHandler().getId() + "': " + exception.getMessage());
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Could not evaluate '" + value + "': " + exception.getMessage());
             return 0;
         }
     }

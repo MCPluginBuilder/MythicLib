@@ -44,12 +44,12 @@ public class RayTraceBlocksMechanic extends DirectionMechanic {
 
         if (onTick != null) for (double j = 0; j < length; j += step) {
             Location intermediate = source.clone().add(dir.clone().multiply(j));
-            onTick.cast(meta.clone(source, intermediate, null, null));
+            onTick.cast(meta.clone(source, intermediate, null));
         }
 
         if (result != null && onHit != null && result.getHitBlock() != null) {
             Location hitPosition = result.getHitPosition().toLocation(source.getWorld());
-            onHit.cast(meta.clone(source, hitPosition, null, null));
+            onHit.cast(meta.clone(source, hitPosition, null));
         }
     }
 }

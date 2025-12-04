@@ -1,11 +1,10 @@
 package io.lumine.mythic.lib.player.skill;
 
-import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.player.modifier.ModifierMap;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.handler.def.passive.Backstab;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.GameMode;
@@ -32,7 +31,7 @@ public class PassiveSkillMap extends ModifierMap<PassiveSkill> {
 
         // Trigger on-join skills
         var playerData = getPlayerData();
-        playerData.triggerSkills(new TriggerMetadata(playerData, TriggerType.LOGIN));
+        playerData.triggerSkills( TriggerType.LOGIN);
     }
 
     /**
@@ -61,7 +60,7 @@ public class PassiveSkillMap extends ModifierMap<PassiveSkill> {
         Validate.isTrue(sessionOpen, "Session not open");
 
         // Optimized. No huge stat map lookups done here
-        final TriggerMetadata triggerMeta = new TriggerMetadata(getPlayerData(), TriggerType.TIMER, EquipmentSlot.MAIN_HAND, null, null, null, null, null);
+        final var lazySkillMetadata = SkillMetadata.lazyOf(getPlayerData());
 
         for (PassiveSkill passive : getModifiers()) {
             if (!passive.getTrigger().equals(TriggerType.TIMER) || getPlayerData().getPlayer().getGameMode() == GameMode.SPECTATOR)
@@ -74,7 +73,7 @@ public class PassiveSkillMap extends ModifierMap<PassiveSkill> {
                 continue;
 
             this.lastCast.put(key, System.currentTimeMillis());
-            passive.getTriggeredSkill().cast(triggerMeta);
+            passive.getTriggeredSkill().cast(lazySkillMetadata.get());
         }
     }
 }

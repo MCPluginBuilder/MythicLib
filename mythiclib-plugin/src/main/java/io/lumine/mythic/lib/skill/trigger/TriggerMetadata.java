@@ -5,10 +5,9 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.player.PlayerMetadata;
-import io.lumine.mythic.lib.script.variable.VariableList;
-import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.Lazy;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +17,12 @@ import java.util.Objects;
 
 /**
  * Contains sufficient information in order to trigger either
- * one or multiple skills.
+ * one or multiple skills. This is an utility class for calling
+ * skills on various events.
+ * <p>
+ * The most prominent feature of this class is the use of a Lazy
+ * value to generate a SkillMetadata only when needed. If the player
+ * has no skill with said trigger, no SkillMetadata is ever created.
  * <p>
  * This class proposes redundancies to reduce the number of useless
  * stat map lookups. You can provide a player stat cache or let the
@@ -30,31 +34,7 @@ public class TriggerMetadata {
     private final MMOPlayerData playerData;
     private final TriggerType triggerType;
     private final EquipmentSlot actionHand;
-
-    @NotNull
-    private final Location source;
-
-    @Nullable
-    private final Entity target;
-
-    @Nullable
-    private final AttackMetadata attack;
-
-    @Nullable
-    private final Location targetLocation;
-
-    /**
-     * The instanciation of a PlayerMetadata can be quite intensive in
-     * computation, especially because it can be up to 20 times a second
-     * for every player in the server. It performs a full stat map lookup
-     * and caches final stat values.
-     * <p>
-     * For this reason, it's best to NOT generate the PlayerMetadata unless
-     * it has been provided beforehand in the constructor, until it's finally
-     * asked for in the getter.
-     */
-    @Nullable
-    private PlayerMetadata caster;
+    private final Lazy<SkillMetadata> skillMetaGenerator;
 
     public TriggerMetadata(@NotNull MMOPlayerData playerData, @NotNull TriggerType triggerType) {
         this(playerData, triggerType, (Entity) null);
@@ -72,9 +52,6 @@ public class TriggerMetadata {
         this(playerData, triggerType, EquipmentSlot.MAIN_HAND, source, null, targetLocation, null, null);
     }
 
-    /**
-     * The player responsible for the attack is the one triggering the skill.
-     */
     public TriggerMetadata(@NotNull PlayerAttackEvent attackEvent, @NotNull TriggerType triggerType) {
         this(attackEvent.getAttacker(), triggerType, attackEvent.getEntity(), attackEvent.getAttack());
     }
@@ -83,35 +60,27 @@ public class TriggerMetadata {
         this(caster.getData(), triggerType, caster.getActionHand(), null, target, null, attack, caster);
     }
 
-    public TriggerMetadata(@NotNull MMOPlayerData playerData, @NotNull TriggerType triggerType, @Nullable EquipmentSlot actionHand, @Nullable Location source, @Nullable Entity target, @Nullable Location targetLocation, @Nullable AttackMetadata attack, @Nullable PlayerMetadata caster) {
+    public TriggerMetadata(@NotNull MMOPlayerData playerData,
+                           @NotNull TriggerType triggerType,
+                           @Nullable EquipmentSlot actionHand,
+                           @Nullable Location source,
+                           @Nullable Entity target,
+                           @Nullable Location targetLocation,
+                           @Nullable AttackMetadata attack,
+                           @Nullable PlayerMetadata caster) {
         this.playerData = Objects.requireNonNull(playerData);
         this.triggerType = Objects.requireNonNull(triggerType);
         this.actionHand = Objects.requireNonNullElse(actionHand, EquipmentSlot.MAIN_HAND);
-        this.source = Objects.requireNonNullElse(source, playerData.getPlayer().getLocation());
-        this.target = target;
-        this.targetLocation = targetLocation;
-        this.attack = attack;
-        this.caster = caster;
-    }
-
-    @Deprecated
-    public TriggerMetadata(@NotNull PlayerAttackEvent attackEvent) {
-        this(attackEvent, TriggerType.API);
-    }
-
-    @Deprecated
-    public TriggerMetadata(@NotNull PlayerMetadata caster, @Nullable Entity target, @Nullable AttackMetadata attack) {
-        this(caster, TriggerType.API, target, attack);
-    }
-
-    @Deprecated
-    public TriggerMetadata(@NotNull AttackMetadata attack, @Nullable Entity target) {
-        this((PlayerMetadata) attack.getAttacker(), TriggerType.API, target, attack);
-    }
-
-    @Deprecated
-    public TriggerMetadata(@NotNull PlayerMetadata caster) {
-        this(caster.getData(), TriggerType.API, EquipmentSlot.MAIN_HAND, null, null, null, null, caster);
+        this.skillMetaGenerator = Lazy.of(() -> SkillMetadata.of(
+                playerData,
+                actionHand,
+                source,
+                target,
+                targetLocation,
+                attack,
+                caster,
+                null
+        ));
     }
 
     @NotNull
@@ -129,36 +98,32 @@ public class TriggerMetadata {
         return actionHand;
     }
 
-    @Nullable
-    public Entity getTarget() {
-        return target;
-    }
-
-    @Nullable
-    public Location getTargetLocation() {
-        return targetLocation;
-    }
-
-    @Nullable
-    public AttackMetadata getAttack() {
-        return attack;
-    }
-
     @NotNull
-    public PlayerMetadata getCachedPlayerMetadata() {
-        if (caster == null) caster = playerData.getStatMap().cache(actionHand);
-        return caster;
+    public SkillMetadata toSkillMetadata(@NotNull Skill cast) {
+        return this.skillMetaGenerator.get().clone(cast);
     }
 
-    /**
-     * Called when casting a skill. This transfers all the useful
-     * information into a skill metadata
-     *
-     * @param cast Skill being cast
-     * @return Skill cast information containing all the previous information
-     */
-    @NotNull
-    public SkillMetadata toSkillMetadata(Skill cast) {
-        return new SkillMetadata(triggerType, cast, getCachedPlayerMetadata(), new VariableList(VariableScope.SKILL), source, targetLocation, target, null, attack);
+    //region Deprecated
+
+    @Deprecated
+    public TriggerMetadata(@NotNull PlayerAttackEvent attackEvent) {
+        this(attackEvent, TriggerType.API);
     }
+
+    @Deprecated
+    public TriggerMetadata(@NotNull PlayerMetadata caster, @Nullable Entity target, @Nullable AttackMetadata attack) {
+        this(caster, TriggerType.API, target, attack);
+    }
+
+    @Deprecated
+    public TriggerMetadata(@NotNull AttackMetadata attack, @Nullable Entity target) {
+        this((PlayerMetadata) Objects.requireNonNull(attack.getAttacker()), TriggerType.API, target, attack);
+    }
+
+    @Deprecated
+    public TriggerMetadata(@NotNull PlayerMetadata caster) {
+        this(caster.getData(), TriggerType.API, EquipmentSlot.MAIN_HAND, null, null, null, null, caster);
+    }
+
+    //endregion
 }

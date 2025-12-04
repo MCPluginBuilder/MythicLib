@@ -109,6 +109,8 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
                     if (!(exception instanceof PermissionException))
                         sender.sendMessage(ChatColor.RED + exception.getMessage());
                     if (exception instanceof MissingArgumentException) sendCommandUsage(sender, targetNode);
+
+                    exception.printStackTrace();
                     return false;
                 }
 

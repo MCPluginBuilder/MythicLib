@@ -12,6 +12,7 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -49,7 +50,7 @@ public class ShootArrowMechanic extends DirectionMechanic {
         arrow.setVelocity(dir.multiply(velocity.evaluate(meta)));
 
         // Trigger on-shoot abilities
-        meta.getCaster().triggerSkills(TriggerType.SHOOT_BOW, arrow, null);
+        meta.getCaster().getData().triggerSkills(new TriggerMetadata(meta.getCaster(), TriggerType.SHOOT_BOW, arrow, null));
 
         final var damageTypes = this.damageTypes != null ? this.damageTypes : MythicLib.plugin.getMMOConfig().bowAttackTypes;
         final var proj = ProjectileMetadata.create(meta.getCaster(), damageTypes, ProjectileType.ARROW, arrow);
@@ -63,7 +64,7 @@ public class ShootArrowMechanic extends DirectionMechanic {
         if (onTick != null) proj.getEffectiveSkills().add(skill(onTick, TriggerType.ARROW_TICK));
     }
 
-    private static final String PASSIVE_SKILL_KEY = "api";
+    private static final String PASSIVE_SKILL_KEY = "ml_shoot_arrow_mechanic";
 
     @NotNull
     private PassiveSkill skill(Script script, TriggerType triggerType) {

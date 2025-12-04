@@ -9,10 +9,7 @@ import io.lumine.mythic.lib.module.ListenerToggle;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.module.ModuleListener;
-import io.lumine.mythic.lib.script.variable.def.EventVariable;
-import io.lumine.mythic.lib.skill.SimpleSkill;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.config.YamlFile;
@@ -90,10 +87,7 @@ public class MitigationModule extends Module {
             final var lazySkillMeta = Lazy.of(() -> {
                 final var attackerProvider = event.getAttack().getAttacker();
                 final var attacker = attackerProvider != null ? attackerProvider.getEntity() : null;
-                final var temp = new TriggerMetadata(playerData, TriggerType.DAMAGED, EquipmentSlot.MAIN_HAND, playerData.getPlayer().getLocation(), attacker, null, event.getAttack(), null).toSkillMetadata(SimpleSkill.EMPTY);
-                // TODO add field to skillMetadata
-                temp.getVariableList().registerVariable(new EventVariable("source_event", event));
-                return temp;
+                return SkillMetadata.of(playerData, EquipmentSlot.MAIN_HAND, playerData.getPlayer().getLocation(), attacker, null, event.getAttack(), null, event);
             });
 
             for (var type : MitigationModule.this.registry.values()) {

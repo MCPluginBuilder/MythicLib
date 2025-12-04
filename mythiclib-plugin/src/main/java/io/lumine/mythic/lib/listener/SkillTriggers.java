@@ -44,9 +44,9 @@ public class SkillTriggers implements Listener {
 
     @EventHandler
     public void killEntity(PlayerKillEntityEvent event) {
-        final PlayerMetadata killer = (PlayerMetadata) event.getAttack().getAttacker();
-        TriggerMetadata triggerMetadata = new TriggerMetadata(killer, TriggerType.KILL_ENTITY, event.getTarget(), null);
-        final Collection<PassiveSkill> isolatedSkills = getSkills(triggerMetadata, killer, event.getAttack());
+        final var killer = (PlayerMetadata) event.getAttack().getAttacker();
+        var triggerMetadata = new TriggerMetadata(killer, TriggerType.KILL_ENTITY, event.getTarget(), null);
+        final var isolatedSkills = getSkills(triggerMetadata, killer, event.getAttack());
         event.getData().triggerSkills(triggerMetadata, isolatedSkills);
         if (event.getTarget() instanceof Player) {
             triggerMetadata = new TriggerMetadata(killer, TriggerType.KILL_PLAYER, event.getTarget(), null);
@@ -70,8 +70,8 @@ public class SkillTriggers implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void attack(PlayerAttackEvent event) {
-        final TriggerMetadata triggerMetadata = new TriggerMetadata(event, TriggerType.ATTACK);
-        final Collection<PassiveSkill> skills = getSkills(triggerMetadata, event.getAttacker(), event.getAttack());
+        final var triggerMetadata = new TriggerMetadata(event, TriggerType.ATTACK);
+        final var skills = getSkills(triggerMetadata, event.getAttacker(), event.getAttack());
         event.getAttacker().getData().triggerSkills(triggerMetadata, skills);
     }
 

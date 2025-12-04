@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.gui.editable.placeholder.EmptyPlaceholders;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.config.YamlUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -37,9 +38,6 @@ public class SimpleItem<T extends GeneratedInventory> extends PhysicalItem<T> {
 
     @Override
     public void onClick(@NotNull T inv, @NotNull InventoryClickEvent event) {
-        if (script != null) {
-            SimpleSkill skill = new SimpleSkill(script);
-            skill.cast(inv.getMMOPlayerData());
-        }
+        if (script != null) script.cast(SkillMetadata.of(inv.getMMOPlayerData()));
     }
 }

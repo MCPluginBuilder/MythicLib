@@ -31,27 +31,18 @@ public abstract class Skill implements CooldownObject {
 
     @NotNull
     public SkillResult cast(@NotNull MMOPlayerData caster) {
-        return cast(caster, TriggerType.CAST);
-    }
-
-    @NotNull
-    public SkillResult cast(@NotNull MMOPlayerData caster, @NotNull TriggerType trigger) {
-        return cast(new TriggerMetadata(caster, trigger));
+        return cast(SkillMetadata.of(caster));
     }
 
     @NotNull
     public SkillResult cast(@NotNull SynchronizedDataHolder caster) {
-        return cast(caster.getMMOPlayerData());
-    }
-
-    @NotNull
-    public SkillResult cast(@NotNull TriggerMetadata triggerMeta) {
-        return cast(triggerMeta.toSkillMetadata(this));
+        return cast(SkillMetadata.of(caster.getMMOPlayerData()));
     }
 
     @SuppressWarnings("unchecked")
     @NotNull
     public <T extends SkillResult> SkillResult cast(@NotNull SkillMetadata meta) {
+        meta = meta.clone(this);
 
         // Lower level skill restrictions
         final var result = ((SkillHandler<T>) getHandler()).getResult(meta);
@@ -61,12 +52,12 @@ public abstract class Skill implements CooldownObject {
         if (!getResult(meta)) return result;
 
         // Call first Bukkit event
-        final PlayerCastSkillEvent called = new PlayerCastSkillEvent(meta, result);
+        final var called = new PlayerCastSkillEvent(this, meta, result);
         Bukkit.getPluginManager().callEvent(called);
         if (called.isCancelled()) return result;
 
         // If the delay is null we cast normally the skill
-        final int delayTicks = (int) (meta.getParameter("delay") * 20);
+        final var delayTicks = (int) (meta.getParameter("delay") * 20);
         if (delayTicks <= 0) castInstantly(meta, result);
         else new CastingDelayHandler(meta, result);
 
@@ -90,7 +81,7 @@ public abstract class Skill implements CooldownObject {
         ((SkillHandler<T>) getHandler()).whenCast(result, meta);
 
         // Call second Bukkit event
-        Bukkit.getPluginManager().callEvent(new SkillCastEvent(meta, result));
+        Bukkit.getPluginManager().callEvent(new SkillCastEvent(this, meta, result));
     }
 
     /**
@@ -140,6 +131,16 @@ public abstract class Skill implements CooldownObject {
     //region Deprecated
 
     private TriggerType backwardsCompatibleTrigger;
+
+    @Deprecated
+    public SkillResult cast(@NotNull TriggerMetadata triggerMeta) {
+        return cast(triggerMeta.toSkillMetadata(this));
+    }
+
+    @Deprecated
+    public SkillResult cast(@NotNull MMOPlayerData caster, @NotNull TriggerType trigger) {
+        return cast(new TriggerMetadata(caster, trigger));
+    }
 
     @Deprecated
     public Skill(@Nullable TriggerType trigger) {

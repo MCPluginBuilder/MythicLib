@@ -6,8 +6,6 @@ import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.AttackSkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -40,6 +38,6 @@ public class Fire_Berserker extends SkillHandler<AttackSkillResult> implements L
         if (skill == null)
             return;
 
-        skill.getTriggeredSkill().cast(new TriggerMetadata(event, TriggerType.API));
+        skill.getTriggeredSkill().cast(SkillMetadata.of(event));
     }
 }

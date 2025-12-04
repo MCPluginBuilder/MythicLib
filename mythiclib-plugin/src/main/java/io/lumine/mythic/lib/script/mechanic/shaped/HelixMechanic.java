@@ -90,7 +90,7 @@ public class HelixMechanic extends Mechanic {
                     for (int j = 0; j < helixes; j++) {
                         final double angle = yaw + Math.PI * 2 / helixes * j;
                         Location loc = source.clone().add(r * Math.cos(angle), y, r * Math.sin(angle));
-                        cast.cast(meta.clone(source, loc, null, null));
+                        cast.cast(meta.clone(source, loc, null));
                     }
                 }
             }

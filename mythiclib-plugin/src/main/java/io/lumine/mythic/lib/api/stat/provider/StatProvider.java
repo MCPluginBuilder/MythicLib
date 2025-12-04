@@ -22,7 +22,11 @@ import org.jetbrains.annotations.NotNull;
 public interface StatProvider {
     double getStat(String stat);
 
+    @NotNull
     LivingEntity getEntity();
+
+    @NotNull
+    EquipmentSlot getActionHand();
 
     @Deprecated
     static StatProvider get(LivingEntity living) {

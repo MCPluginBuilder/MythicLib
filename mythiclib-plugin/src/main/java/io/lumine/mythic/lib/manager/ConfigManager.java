@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
@@ -44,7 +45,7 @@ public class ConfigManager extends Module {
     public InteractionRules interactionRules;
 
     @Nullable
-    public Skill skillCastScript, skillCancelScript;
+    public Script skillCastScript, skillCancelScript;
 
     public ConfigManager(MMOPlugin plugin) {
         super(plugin);
@@ -91,13 +92,13 @@ public class ConfigManager extends Module {
         castingDelayBarStyle = UtilityMethods.resolveField(BarStyle::valueOf, () -> BarStyle.SEGMENTED_20, config.getString("casting-delay.bossbar.style", "SEGMENTED_20"));
         try {
             skillCastScript = config.getBoolean("casting-delay.cast-script.enabled") ?
-                    new SimpleSkill(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cast-script.script"))) : null;
+                    MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cast-script.script")) : null;
         } catch (IllegalArgumentException exception) {
             skillCastScript = null;
         }
         try {
             skillCancelScript = config.getBoolean("casting-delay.cancel-script.enabled") ?
-                    new SimpleSkill(MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cancel-script.script"))) : null;
+                    MythicLib.plugin.getSkills().loadScript(config.get("casting-delay.cancel-script.script")) : null;
         } catch (IllegalArgumentException exception) {
             skillCancelScript = null;
         }

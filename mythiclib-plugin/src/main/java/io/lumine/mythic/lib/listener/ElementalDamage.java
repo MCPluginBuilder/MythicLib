@@ -7,14 +7,12 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.Skill;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DefenseFormula;
+import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-import java.util.Random;
 
 /**
  * Class which implements the elemental damage calculation
@@ -24,13 +22,19 @@ import java.util.Random;
  * @author indyuce
  */
 public class ElementalDamage implements Listener {
-    private static final Random RANDOM = new Random();
 
     @EventHandler(ignoreCancelled = true)
     public void applyElementalDamage(AttackEvent event) {
 
+        // [Backwards compatibility] Although this should be fine by now,
         // Make sure ML can identify the attacker
         if (event.getAttack().getAttacker() == null) return;
+
+        final var lazySkillMeta = Lazy.of(() -> {
+            // Only works if attacker is a player
+            final var caster = (PlayerMetadata) event.getAttack().getAttacker();
+            return SkillMetadata.of(caster, event.getEntity(), event.getAttack(), event);
+        });
 
         // Apply on-hit elemental damage
         final StatProvider attacker = event.getAttack().getAttacker();
@@ -43,7 +47,7 @@ public class ElementalDamage implements Listener {
 
                 if (MythicLib.plugin.getMMOConfig().skipElementalDamageApplication) {
                     ((PlayerMetadata) attacker).setStat(element.getId() + "_DAMAGE", damage); // Update for placeholders
-                    applyElementalScripts(event, element, attacker, critChanceCoef); // Apply scripts first?
+                    applyElementalScripts(lazySkillMeta, event, element, attacker, critChanceCoef); // Apply scripts first?
                 } else event.getDamage().add(damage, element); // Otherwise just set damage
             }
         }
@@ -68,15 +72,14 @@ public class ElementalDamage implements Listener {
 
             // Apply scripts last?
             if (!MythicLib.plugin.getMMOConfig().skipElementalDamageApplication)
-                applyElementalScripts(event, element, attacker, critChanceCoef);
+                applyElementalScripts(lazySkillMeta, event, element, attacker, critChanceCoef);
         }
     }
 
-    private void applyElementalScripts(AttackEvent event, Element element, StatProvider attacker, double critChanceCoef) {
-        final boolean crit = RANDOM.nextDouble() < critChanceCoef;
+    private void applyElementalScripts(Lazy<SkillMetadata> lazySkillMeta, AttackEvent event, Element element, StatProvider attacker, double critChanceCoef) {
+        final boolean crit = Math.random() < critChanceCoef;
         final Skill skill = element.getSkill(crit);
-        if (attacker instanceof PlayerMetadata)
-            skill.cast(new TriggerMetadata((PlayerMetadata) attacker, TriggerType.API, event.getEntity(), event.getAttack()));
+        if (attacker instanceof PlayerMetadata) skill.cast(lazySkillMeta.get());
         if (crit) event.getDamage().registerElementalCriticalStrike(element);
     }
 }

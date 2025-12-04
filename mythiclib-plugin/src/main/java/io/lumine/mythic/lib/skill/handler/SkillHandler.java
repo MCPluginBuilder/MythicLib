@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.skill.handler;
 
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.def.passive.Backstab;
@@ -114,7 +113,8 @@ public abstract class SkillHandler<T extends SkillResult> {
      * <p>
      * This is the option default ML passive skills use.
      *
-     * @return If it should be triggered when calling {@link MMOPlayerData#triggerSkills(io.lumine.mythic.lib.skill.trigger.TriggerMetadata)}
+     * @return False if this skill should never trigger automatically
+     *         without developer intervention through API calls
      */
     public boolean isTriggerable() {
         return triggerable;

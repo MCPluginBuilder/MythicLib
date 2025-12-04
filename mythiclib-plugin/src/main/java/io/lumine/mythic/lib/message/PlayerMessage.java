@@ -8,8 +8,7 @@ import io.lumine.mythic.lib.message.type.MultiLineChatMessage;
 import io.lumine.mythic.lib.message.type.SingleLineChatMessage;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
-import io.lumine.mythic.lib.skill.Skill;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -48,8 +47,7 @@ public abstract class PlayerMessage {
 
         // Cast script if provided
         if (ranOnMessage != null) {
-            Skill skill = new SimpleSkill(ranOnMessage);
-            skill.cast(player, TriggerType.API);
+            ranOnMessage.cast(SkillMetadata.of(player));
         }
 
         // Play sound

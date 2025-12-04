@@ -75,7 +75,7 @@ public class ShulkerBulletMechanic extends DirectionMechanic {
             if (event.getDamager().equals(bullet)) {
                 event.setCancelled(true);
                 close();
-                onHitEntity.cast(skillMetadata.clone(skillMetadata.getSourceLocation(), skillMetadata.getTargetLocationOrNull(), event.getEntity(), skillMetadata.getOrientationOrNull()));
+                onHitEntity.cast(skillMetadata.clone(skillMetadata.getSourceLocation(), skillMetadata.getTargetLocationOrNull(), event.getEntity()));
             }
         }
     }

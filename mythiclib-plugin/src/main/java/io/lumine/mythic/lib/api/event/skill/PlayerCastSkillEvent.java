@@ -1,12 +1,14 @@
 package io.lumine.mythic.lib.api.event.skill;
 
+import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class PlayerCastSkillEvent extends PlayerSkillEvent implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
+    private static final HandlerList HANDLERS = new HandlerList();
 
     private boolean cancelled;
 
@@ -14,11 +16,12 @@ public class PlayerCastSkillEvent extends PlayerSkillEvent implements Cancellabl
      * Called after checking that a skill can be cast by a player
      * right before actually applying its effects
      *
+     * @param skill     Skill being cast
      * @param skillMeta Info of the skill being cast
      * @param result    Skill result
      */
-    public PlayerCastSkillEvent(SkillMetadata skillMeta, SkillResult result) {
-        super(skillMeta, result);
+    public PlayerCastSkillEvent(Skill skill, SkillMetadata skillMeta, SkillResult result) {
+        super(skill, skillMeta, result);
     }
 
     @Override
@@ -32,11 +35,11 @@ public class PlayerCastSkillEvent extends PlayerSkillEvent implements Cancellabl
     }
 
     @Override
-    public HandlerList getHandlers() {
-        return handlers;
+    public @NotNull HandlerList getHandlers() {
+        return HANDLERS;
     }
 
     public static HandlerList getHandlerList() {
-        return handlers;
+        return HANDLERS;
     }
 }

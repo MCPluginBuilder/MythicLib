@@ -376,6 +376,10 @@ public class MMOPlayerData {
         return triggerMetadata.getTriggerType().isActionHandSpecific() ? getPassiveSkillMap().isolateModifiers(triggerMetadata.getActionHand()) : getPassiveSkillMap().getModifiers();
     }
 
+    public void triggerSkills(@NotNull TriggerType trigger) {
+        triggerSkills(new TriggerMetadata(this, trigger));
+    }
+
     public void triggerSkills(@NotNull TriggerMetadata triggerMetadata) {
         triggerSkills(triggerMetadata, isolateSkills(triggerMetadata));
     }
@@ -400,7 +404,7 @@ public class MMOPlayerData {
         for (var skill : skills) {
             final var handler = skill.getTriggeredSkill().getHandler();
             if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
-                skill.getTriggeredSkill().cast(triggerMetadata);
+                skill.getTriggeredSkill().cast(triggerMetadata.toSkillMetadata(skill.getTriggeredSkill()));
         }
     }
 

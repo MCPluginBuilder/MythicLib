@@ -31,6 +31,11 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
         return data;
     }
 
+    @Override
+    public @NotNull EquipmentSlot getActionHand() {
+        return EquipmentSlot.MAIN_HAND;
+    }
+
     /**
      * @param stat The string key of the stat
      * @return The value of the stat after applying stat modifiers

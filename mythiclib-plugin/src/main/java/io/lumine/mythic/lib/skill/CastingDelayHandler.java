@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import org.bukkit.Bukkit;
@@ -110,7 +111,7 @@ public class CastingDelayHandler extends TemporaryHandler {
         return bossbar != null;
     }
 
-    private void castIfNotNull(@Nullable Skill skill) {
+    private void castIfNotNull(@Nullable Script skill) {
         if (skill != null) skill.cast(metadata);
     }
 

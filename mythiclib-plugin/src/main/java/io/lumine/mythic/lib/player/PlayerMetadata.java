@@ -8,10 +8,7 @@ import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +60,7 @@ public class PlayerMetadata implements PlayerStatProvider {
         return playerData;
     }
 
+    @Override
     @NotNull
     public EquipmentSlot getActionHand() {
         return actionHand;
@@ -128,10 +126,6 @@ public class PlayerMetadata implements PlayerStatProvider {
         final AttackMetadata attackMeta = new AttackMetadata(new DamageMetadata(damage, types), target, this);
         MythicLib.plugin.getDamage().registerAttack(attackMeta, knockback, false);
         return attackMeta;
-    }
-
-    public void triggerSkills(TriggerType triggerType, @Nullable Entity entity, @Nullable AttackMetadata attack) {
-        playerData.triggerSkills(new TriggerMetadata(this, triggerType, entity, attack));
     }
 
     @Override

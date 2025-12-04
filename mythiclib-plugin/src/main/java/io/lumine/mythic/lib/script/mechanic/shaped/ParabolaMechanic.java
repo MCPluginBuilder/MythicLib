@@ -117,7 +117,7 @@ public class ParabolaMechanic extends Mechanic {
                     // Intermediate x value and corresponding location
                     double x_i = x + i * xStep;
                     Location loc_i = source.clone().add(axis.clone().multiply(x_i)).add(0, y(a, b, x_i), 0);
-                    cast.cast(meta.clone(source, loc_i, null, null));
+                    cast.cast(meta.clone(source, loc_i, null));
                 }
             }
         }.runTaskTimer(MythicLib.plugin, 0, 1);

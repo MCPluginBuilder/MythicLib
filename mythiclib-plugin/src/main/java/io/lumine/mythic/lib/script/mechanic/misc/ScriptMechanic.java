@@ -100,6 +100,6 @@ public class ScriptMechanic extends Mechanic {
         // Cast with every mathematically possible skill metadata
         for (Location targetLocation : newTargetLocations)
             for (Entity targetEntity : newTargetEntities)
-                subscript.cast(old.clone(sourceLocation, targetLocation, targetEntity, old.getOrientationOrNull()));
+                subscript.cast(old.clone(sourceLocation, targetLocation, targetEntity));
     }
 }

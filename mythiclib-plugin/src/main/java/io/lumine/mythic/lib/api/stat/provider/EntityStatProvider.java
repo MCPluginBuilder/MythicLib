@@ -1,10 +1,12 @@
 package io.lumine.mythic.lib.api.stat.provider;
 
 import io.lumine.mythic.lib.api.item.NBTItem;
+import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -43,7 +45,12 @@ public class EntityStatProvider implements StatProvider {
     }
 
     @Override
-    public LivingEntity getEntity() {
+    public @NotNull EquipmentSlot getActionHand() {
+        return EquipmentSlot.MAIN_HAND;
+    }
+
+    @Override
+    public @NotNull LivingEntity getEntity() {
         return entity;
     }
 

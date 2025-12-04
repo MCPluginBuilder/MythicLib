@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,7 @@ public class CastCommand extends CommandTreeNode {
         }
 
         SkillHandler<?> handler = explorer.parse(argSkill);
-        new SimpleSkill(handler).cast(MMOPlayerData.get((Player) sender), TriggerType.COMMAND);
+        new SimpleSkill(handler).cast(MMOPlayerData.get((Player) sender));
         return CommandResult.SUCCESS;
     }
 }
