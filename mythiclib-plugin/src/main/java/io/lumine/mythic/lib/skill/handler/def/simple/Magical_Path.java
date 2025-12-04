@@ -43,21 +43,25 @@ public class Magical_Path extends SkillHandler<SimpleSkillResult> {
          */
         private boolean safe = true;
 
-        private int j = 0;
+        private final boolean lastAllowFlight, lastFlying;
+
+        private int timer = 0;
 
         public Handler(MMOPlayerData playerData, double duration) {
             super(playerData);
 
             this.player = playerData.getPlayer();
             this.duration = (long) (duration * 10);
+            this.lastAllowFlight = player.getAllowFlight();
+            this.lastFlying = player.isFlying();
 
-            player.setAllowFlight(true);
-            player.setFlying(true);
             player.setVelocity(player.getVelocity().setY(.5));
             player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
             runTask(r -> r.runTaskTimer(MythicLib.plugin, 0, 2));
         }
+
+        private static final int SMALL_DELAY = 2;
 
         @Override
         protected BukkitRunnable newTask() {
@@ -65,22 +69,31 @@ public class Magical_Path extends SkillHandler<SimpleSkillResult> {
 
                 @Override
                 public void run() {
-                    if (j++ > duration) {
+
+                    if (timer++ > duration) {
                         player.getWorld().playSound(player.getLocation(), Sounds.ENTITY_ENDERMAN_TELEPORT, 1, 1);
                         player.setAllowFlight(false);
                         Handler.this.close();
                         return;
                     }
 
-                    player.getWorld().spawnParticle(VParticle.EFFECT.get(), player.getLocation(), 8, .5, 0, .5, .1);
-                    player.getWorld().spawnParticle(VParticle.INSTANT_EFFECT.get(), player.getLocation(), 16, .5, 0, .5, .1);
+                    // Wait a few ticks before enabling flight to avoid it
+                    // being canceled by the block directly below the player
+                    if (timer == SMALL_DELAY) {
+                        player.setAllowFlight(true);
+                        player.setFlying(true);
+                    }
+
+                    VParticle.EFFECT.spawnSafeSpell(player.getLocation(), 8, .5, 0, .5, .1);
+                    VParticle.INSTANT_EFFECT.spawnSafeSpell(player.getLocation(), 16, .5, 0, .5, .1);
                 }
             };
         }
 
         @Override
         protected void onClose() {
-            player.setAllowFlight(false);
+            player.setAllowFlight(lastAllowFlight);
+            player.setFlying(lastFlying);
         }
 
         @EventHandler(priority = EventPriority.LOW)
