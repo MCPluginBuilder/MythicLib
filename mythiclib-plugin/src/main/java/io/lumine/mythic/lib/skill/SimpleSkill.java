@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.skill;
 
 import io.lumine.mythic.lib.script.Script;
+import io.lumine.mythic.lib.skill.handler.EmptySkillHandler;
 import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;

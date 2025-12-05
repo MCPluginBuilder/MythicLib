@@ -3,21 +3,22 @@ package io.lumine.mythic.lib.skill.handler.def.location;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"damage", "knockback", "radius"})
 public class Minor_Explosion extends SkillHandler<LocationSkillResult> {
-    public Minor_Explosion() {
-        super();
-
-        registerModifiers("damage", "knockback", "radius");
+    public Minor_Explosion(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

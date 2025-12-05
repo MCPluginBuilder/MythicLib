@@ -3,12 +3,14 @@ package io.lumine.mythic.lib.skill.handler.def.vector;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,11 +20,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@BuiltinSkillHandler(mods = {"damage", "duration"})
 public class Holy_Missile extends SkillHandler<VectorSkillResult> {
-    public Holy_Missile() {
-        super();
-
-        registerModifiers("damage", "duration");
+    public Holy_Missile(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

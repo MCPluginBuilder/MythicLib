@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -12,6 +13,7 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -21,11 +23,10 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@BuiltinSkillHandler(mods = {"duration", "count", "damage", "ignite"})
 public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
-    public Fire_Rage() {
-        super();
-
-        registerModifiers("duration", "count", "damage", "ignite");
+    public Fire_Rage(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

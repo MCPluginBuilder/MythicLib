@@ -3,23 +3,24 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"damage", "knock-up"})
 public class Sky_Smash extends SkillHandler<SimpleSkillResult> {
-    public Sky_Smash() {
-        super();
-
-        registerModifiers("damage", "knock-up");
+    public Sky_Smash(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

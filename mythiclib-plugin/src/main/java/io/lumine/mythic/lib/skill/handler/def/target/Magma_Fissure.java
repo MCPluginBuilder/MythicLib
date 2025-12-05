@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -9,17 +10,17 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"ignite", "damage"})
 public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
-    public Magma_Fissure() {
-        super();
-
-        registerModifiers("ignite", "damage");
+    public Magma_Fissure(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

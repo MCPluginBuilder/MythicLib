@@ -2,9 +2,11 @@ package io.lumine.mythic.lib.damage;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public enum DamageType {
 
@@ -64,6 +66,12 @@ public enum DamageType {
 
     public String getOffenseStat() {
         return name() + "_DAMAGE";
+    }
+
+    @NotNull
+    public static List<DamageType> listFromConfig(@NotNull List<DamageType> fallback, @Nullable Object object) {
+        if (object == null) return Objects.requireNonNull(fallback, "Fallback damage types cannot be null");
+        return listFromConfig(object);
     }
 
     @NotNull

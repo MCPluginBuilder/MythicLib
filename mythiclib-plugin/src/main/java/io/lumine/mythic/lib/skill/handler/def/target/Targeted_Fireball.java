@@ -3,23 +3,24 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"ignite", "damage"})
 public class Targeted_Fireball extends SkillHandler<TargetSkillResult> {
-    public Targeted_Fireball() {
-        super();
-
-        registerModifiers("ignite", "damage");
+    public Targeted_Fireball(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

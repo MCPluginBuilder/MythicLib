@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
@@ -11,29 +12,30 @@ import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
+@BuiltinSkillHandler(mods = {"damage", "radius", "force"})
 public class Present_Throw extends SkillHandler<SimpleSkillResult> {
-    private final ItemStack present = new ItemStack(Material.PLAYER_HEAD);
+    public Present_Throw(ConfigurationSection config) {
+        super(config);
+    }
 
-    public Present_Throw() {
-        super();
+    private static final ItemStack PRESENT_ITEMSTACK = new ItemStack(Material.PLAYER_HEAD);
 
-        registerModifiers("damage", "radius", "force");
-
+    static {
         try {
-            ItemMeta presentMeta = present.getItemMeta();
+            final var presentMeta = PRESENT_ITEMSTACK.getItemMeta();
             UtilityMethods.setTextureValue((SkullMeta) presentMeta, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTcyNmQ5ZDA2MzJlNDBiZGE1YmNmNjU4MzliYTJjYzk4YTg3YmQ2MTljNTNhZGYwMDMxMGQ2ZmM3MWYwNDJiNSJ9fX0=");
-            present.setItemMeta(presentMeta);
+            PRESENT_ITEMSTACK.setItemMeta(presentMeta);
         } catch (RuntimeException exception) {
             MythicLib.plugin.getLogger().log(Level.WARNING, "Could not apply 'Present Throw' head texture");
         }
@@ -51,7 +53,7 @@ public class Present_Throw extends SkillHandler<SimpleSkillResult> {
 
         Player caster = skillMeta.getCaster().getPlayer();
 
-        final NoClipItem item = new NoClipItem(caster.getLocation().add(0, 1.2, 0), present);
+        final NoClipItem item = new NoClipItem(caster.getLocation().add(0, 1.2, 0), PRESENT_ITEMSTACK);
         item.getEntity().setVelocity(caster.getEyeLocation().getDirection().multiply(1.5 * skillMeta.getParameter("force")));
 
         /*

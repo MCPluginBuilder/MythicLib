@@ -17,7 +17,7 @@ public class CoreToolsSkillHandler extends SkillHandler<CoreToolsSkillResult> {
     public static final String SOURCE = "mythiclib";
 
     public CoreToolsSkillHandler(ConfigurationSection config) {
-        super(config, config.getName());
+        super(config);
 
         this.scriptName = config.getString("coretools-script-id");
     }

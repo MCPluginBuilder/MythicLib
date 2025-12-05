@@ -3,19 +3,20 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"heal"})
 public class Minor_Healings extends SkillHandler<TargetSkillResult> {
-    public Minor_Healings() {
-        super();
-
-        registerModifiers("heal");
+    public Minor_Healings(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

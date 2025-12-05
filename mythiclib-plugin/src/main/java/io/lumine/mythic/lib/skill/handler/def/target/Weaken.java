@@ -2,12 +2,14 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.VParticle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -15,11 +17,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"ratio", "duration"})
 public class Weaken extends SkillHandler<TargetSkillResult> {
-    public Weaken() {
-        super();
-
-        registerModifiers("ratio", "duration");
+    public Weaken(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

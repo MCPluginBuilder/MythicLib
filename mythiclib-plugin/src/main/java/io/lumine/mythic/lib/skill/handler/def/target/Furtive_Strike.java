@@ -2,20 +2,21 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"damage", "extra", "radius"})
 public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
-    public Furtive_Strike() {
-        super();
-
-        registerModifiers("damage", "extra", "radius");
+    public Furtive_Strike(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

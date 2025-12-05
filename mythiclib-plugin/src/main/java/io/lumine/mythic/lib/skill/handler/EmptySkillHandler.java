@@ -1,7 +1,8 @@
-package io.lumine.mythic.lib.skill;
+package io.lumine.mythic.lib.skill.handler;
 
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 @Deprecated
@@ -9,7 +10,7 @@ public class EmptySkillHandler extends SkillHandler<SkillResult> {
 
     @Deprecated
     public EmptySkillHandler() {
-        super("empty");
+        super((ConfigurationSection) null);
     }
 
     @Override

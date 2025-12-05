@@ -43,24 +43,20 @@ import io.lumine.mythic.lib.script.targeter.location.*;
 import io.lumine.mythic.lib.skill.handler.*;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadException;
+import io.lumine.mythic.lib.util.SkillUpdateMigration;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
@@ -101,9 +97,10 @@ public class SkillManager extends Module {
      * - custom Fabled skill handlers
      * - custom ML skill handlers
      */
-    private final Map<String, SkillHandler> handlers = new HashMap<>();
+    private final Map<String, SkillHandler<?>> handlers = new HashMap<>();
 
-    private final Map<Predicate<ConfigurationSection>, Function<ConfigurationSection, SkillHandler>> skillHandlerTypes = new HashMap<>();
+    private final Map<String, Class<? extends SkillHandler<?>>> builtInSkillHandlerTypes = new HashMap<>();
+    private final Map<Predicate<ConfigurationSection>, Function<ConfigurationSection, SkillHandler<?>>> skillHandlerTypes = new HashMap<>();
 
     private boolean registration = true;
 
@@ -249,8 +246,20 @@ public class SkillManager extends Module {
         // Skill handler types
         //////////////////////////////////
 
-        registerSkillHandlerType(config -> config.contains("mythiclib-skill-id"), config -> new MythicLibSkillHandler(config, getScriptOrThrow(config.getString("mythiclib-skill-id"))));
-        registerSkillHandlerType(config -> config.contains("mechanics"), config -> new MythicLibSkillHandler(new Script(config)));
+        registerSkillHandlerType(config -> config.contains("builtin_skill"), this::loadBuiltinSkillHandler);
+        registerSkillHandlerType(config -> config.contains("mythiclib-skill-id"), MythicLibSkillHandler::new);
+    }
+
+    @NotNull
+    private SkillHandler<?> loadBuiltinSkillHandler(@NotNull ConfigurationSection config) {
+        final var builtinId = UtilityMethods.enumName(config.getString("builtin_skill"));
+        final var mapping = builtInSkillHandlerTypes.get(builtinId);
+        Validate.notNull(mapping, "Could not find builtin skill with ID '" + builtinId + "'");
+        try {
+            return mapping.getDeclaredConstructor(ConfigurationSection.class).newInstance(config);
+        } catch (Exception exception) {
+            throw new RuntimeException("Could not instantiate builtin skill handler '" + builtinId + "'", exception);
+        }
     }
 
     /**
@@ -261,11 +270,21 @@ public class SkillManager extends Module {
      * @param provider Function that provides the skill handler given the previous config,
      *                 if the config matches
      */
-    public void registerSkillHandlerType(Predicate<ConfigurationSection> matcher, Function<ConfigurationSection, SkillHandler> provider) {
+    public void registerSkillHandlerType(@NotNull Predicate<ConfigurationSection> matcher, @NotNull Function<ConfigurationSection, SkillHandler<?>> provider) {
         Validate.notNull(matcher);
         Validate.notNull(provider);
 
         skillHandlerTypes.put(matcher, provider);
+    }
+
+    public void registerBuiltinSkillHandlerType(@NotNull Class<? extends SkillHandler<?>> clazz) {
+        Validate.notNull(clazz, "Skill class cannot be null");
+
+        final var annot = clazz.getAnnotation(BuiltinSkillHandler.class);
+        Validate.notNull(annot, "No BuiltinSkillHandler annotation on class " + clazz.getName());
+
+        final var key = UtilityMethods.enumName(clazz.getSimpleName());
+        builtInSkillHandlerTypes.put(key, clazz);
     }
 
     @NotNull
@@ -277,10 +296,10 @@ public class SkillManager extends Module {
         // By type of configuration section
         if (obj instanceof ConfigurationSection) {
             ConfigurationSection config = (ConfigurationSection) obj;
-            for (Map.Entry<Predicate<ConfigurationSection>, Function<ConfigurationSection, SkillHandler>> type : skillHandlerTypes.entrySet())
+            for (var type : skillHandlerTypes.entrySet())
                 if (type.getKey().test(config)) return type.getValue().apply(config);
 
-            throw new IllegalArgumentException("Could not match handler type to config");
+            throw new IllegalArgumentException("Could not match skill type to config");
         }
 
         // TODO support lists
@@ -289,7 +308,7 @@ public class SkillManager extends Module {
     }
 
     public void registerSkillHandler(SkillHandler<?> handler) {
-        Validate.isTrue(handlers.putIfAbsent(handler.getId(), handler) == null, "A skill handler with the same name already exists");
+        Validate.isTrue(handlers.putIfAbsent(handler.getId(), handler) == null, "A skill with the same name already exists");
 
         if (!registration && handler instanceof Listener)
             Bukkit.getPluginManager().registerEvents((Listener) handler, MythicLib.plugin);
@@ -297,18 +316,18 @@ public class SkillManager extends Module {
 
     @NotNull
     public SkillHandler<?> getHandlerOrThrow(String id) {
-        return Objects.requireNonNull(handlers.get(id), "Could not find handler with ID '" + id + "'");
+        return Objects.requireNonNull(handlers.get(id), "Could not find skill with ID '" + id + "'");
     }
 
     /**
      * @return Currently registered skill handlers.
      */
-    public Collection<SkillHandler> getHandlers() {
+    public Collection<SkillHandler<?>> getHandlers() {
         return handlers.values();
     }
 
     @Nullable
-    public SkillHandler getHandler(String handlerId) {
+    public SkillHandler<?> getHandler(String handlerId) {
         return handlers.get(handlerId);
     }
 
@@ -433,6 +452,27 @@ public class SkillManager extends Module {
         return supplier.apply(config);
     }
 
+    @SuppressWarnings("unchecked")
+    private void loadBuiltinSkillHandlerTypes() {
+
+        try {
+            final var file = new JarFile(MythicLib.plugin.getJarFile());
+            for (var enu = file.entries(); enu.hasMoreElements(); ) {
+                String name = enu.nextElement().getName().replace("/", ".");
+                if (!name.contains("$") && name.endsWith(".class") && name.startsWith("io.lumine.mythic.lib.skill.handler.def.")) {
+                    final var clazz = Class.forName(name.substring(0, name.length() - 6));
+
+                    final var annot = clazz.getAnnotation(BuiltinSkillHandler.class);
+                    Validate.notNull(annot, "No BuiltinSkillHandler annotation on class " + clazz.getName());
+                    registerBuiltinSkillHandlerType((Class<? extends SkillHandler<?>>) clazz);
+                }
+            }
+            file.close();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+    }
+
     @Override
     protected void onReset() {
         for (var handler : handlers.values())
@@ -446,6 +486,9 @@ public class SkillManager extends Module {
 
     @Override
     protected void onStartup() {
+
+        // Load built-in skill handler types
+        loadBuiltinSkillHandlerTypes();
 
         // MythicMobs skill handler type
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null)
@@ -479,59 +522,31 @@ public class SkillManager extends Module {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/on_hit_effects.yml");
         }
 
-        // Load default skills
-        try {
-            JarFile file = new JarFile(MythicLib.plugin.getJarFile());
-            for (Enumeration<JarEntry> enu = file.entries(); enu.hasMoreElements(); ) {
-                String name = enu.nextElement().getName().replace("/", ".");
-                if (!name.contains("$") && name.endsWith(".class") && name.startsWith("io.lumine.mythic.lib.skill.handler.def.")) {
-                    SkillHandler<?> ability = (SkillHandler<?>) Class.forName(name.substring(0, name.length() - 6)).getDeclaredConstructor().newInstance();
-                    registerSkillHandler(ability);
-                }
-            }
-            file.close();
-        } catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException |
-                 NoSuchMethodException | InvocationTargetException exception) {
-            exception.printStackTrace();
-        }
-
-        // Initialize custom scripts/skills
+        // Initialize custom scripts
         FileUtils.loadObjectsFromFolder(MythicLib.plugin, "script", false, (key, config) -> {
             registerScript(new Script(Objects.requireNonNull(config, "Config is null")));
         }, "Could not load script '%s' from file '%s': '%s'");
 
-        // Postload custom scripts and register a skill handler
+        // Post-load custom scripts, publish some if needed
         for (var script : scripts.values())
             try {
-                final ConfigurationSection config = script.getPostLoadAction().getCachedConfig();
+                final var skillConfig = script.getPostLoadAction().getCachedConfig();
                 script.getPostLoadAction().performAction();
-                if (script.isPublic()) registerSkillHandler(new MythicLibSkillHandler(config, script));
+                if (script.isPublic()) registerSkillHandler(new MythicLibSkillHandler(skillConfig, script));
             } catch (PostLoadException exception) {
                 // Trying to load an alias, ignore
             } catch (RuntimeException exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load script '" + script.getId() + "': " + exception.getMessage());
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not post-load script '" + script.getId() + "': " + exception.getMessage());
+                exception.printStackTrace();
             }
 
-        // Load skill handlers
-        FileUtils.loadObjectsFromFolderRaw(MythicLib.plugin, "skill", file -> {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        // [skill refactor] /skill folder migration for ML 1.7.1
+        new SkillUpdateMigration(this.builtInSkillHandlerTypes.keySet()).apply();
 
-            // Read as unique skill
-            if (config.contains("modifiers")) try {
-                registerSkillHandler(loadSkillHandler(YamlConfiguration.loadConfiguration(file)));
-            } catch (RuntimeException exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load skill handler '" + file.getName() + "': " + exception.getMessage());
-            }
-            else
-
-                // Read multiple skills in the same configuration file
-                for (String key : config.getKeys(false))
-                    try {
-                        registerSkillHandler(loadSkillHandler(config.getConfigurationSection(key)));
-                    } catch (RuntimeException exception) {
-                        MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load skill handler '" + key + "' from file '" + file.getName() + "': " + exception.getMessage());
-                    }
-        }, "Could not load skill '%s': %s");
+        // Load skills
+        FileUtils.loadObjectsFromFolder(MythicLib.plugin, "skill", false, (key, config) -> {
+            registerSkillHandler(loadSkillHandler(config));
+        }, "Could not load skill '%s' from file '%s': %s");
     }
 
     //region Deprecated

@@ -2,16 +2,17 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"cooldown", "damage"})
 public class Smite extends SkillHandler<TargetSkillResult> {
-    public Smite() {
-        super();
-
-        registerModifiers("cooldown", "damage");
+    public Smite(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

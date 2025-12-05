@@ -2,11 +2,13 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
@@ -19,11 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@BuiltinSkillHandler(mods = {"duration", "damage", "inaccuracy", "force"})
 public class Blizzard extends SkillHandler<SimpleSkillResult> {
-    public Blizzard() {
-        super();
-
-        registerModifiers("duration", "damage", "inaccuracy", "force");
+    public Blizzard(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

@@ -2,11 +2,13 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,11 +22,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@BuiltinSkillHandler(mods = {"duration", "damage", "inaccuracy", "force"})
 public class Chicken_Wraith extends SkillHandler<SimpleSkillResult> {
-    public Chicken_Wraith() {
-        super();
-
-        registerModifiers("damage", "duration", "inaccuracy", "force");
+    public Chicken_Wraith(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

@@ -1,14 +1,21 @@
 package io.lumine.mythic.lib.skill.handler;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.def.passive.Backstab;
+import io.lumine.mythic.lib.skill.parameter.SkillParameter;
+import io.lumine.mythic.lib.skill.parameter.value.ScalingFormula;
 import io.lumine.mythic.lib.skill.result.SkillResult;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -34,75 +41,104 @@ import java.util.*;
  */
 // TODO adapt skill handlers to take in ConfigWrappers, not only config sections. syntax will be alot like MythicMobs
 public abstract class SkillHandler<T extends SkillResult> {
-    private final String id;
-    private final Set<String> parameters = new HashSet<>();
+    private final String id, lowerCaseId, name;
     private final boolean triggerable;
 
+    private final Map<String, SkillParameter> parameters = new HashMap<>();
+
+    private final IconOptions icon;
+    private final List<String> uiLore;
+    private final List<String> categories;
+    private final TriggerType defaultTriggerType;
+
     protected static final Random RANDOM = new Random();
+    private static final IconOptions DEFAULT_ICON = new IconOptions(Material.BOOK);
+    private static final List<String> BASE_MODIFIERS = List.of("cooldown", "mana", "stamina", "timer", "delay");
 
-    @Deprecated
-    protected static final Random random = RANDOM;
+    public SkillHandler(@Nullable ConfigurationSection config) {
 
-    /**
-     * Used by default MythicLib skill handlers
-     */
-    public SkillHandler() {
-        this(true);
+        /////////////////////////////////
+        // Check if it is built-in
+        /////////////////////////////////
+        final var builtinAnnot = this.getClass().getAnnotation(BuiltinSkillHandler.class);
+        Validate.isTrue(builtinAnnot != null || config != null, "Custom skill handler must have a non-null config");
+
+        this.id = inferSkillHandlerId(config, builtinAnnot);
+        this.triggerable = builtinAnnot != null && builtinAnnot.triggerable();
+
+        // Built-in skill parameters
+        if (builtinAnnot != null) for (var mod : builtinAnnot.mods()) initializeModifier(mod, config);
+
+        // Default skill parameters
+        for (var mod : BASE_MODIFIERS) initializeModifier(mod, config);
+
+        // Custom skill parameters
+        if (builtinAnnot == null && config.isConfigurationSection("parameters"))
+            for (var mod : config.getConfigurationSection("parameters").getKeys(false))
+                initializeModifier(mod, config);
+
+        // Basic
+        this.lowerCaseId = this.id.toLowerCase();
+        this.name = config != null ? config.getString("name") : getClass().getSimpleName();
+        this.icon = config != null && config.contains("icon") ? IconOptions.from(config.get("icon")) : DEFAULT_ICON;
+        this.uiLore = config != null ? config.getStringList("ui_lore") : List.of();
+
+        // Default trigger type
+        defaultTriggerType = config != null && triggerable ? UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("default-trigger-type", "CAST"), "No trigger type with name %s") : TriggerType.API;
+
+        // Categories
+        categories = config != null ? config.getStringList("categories") : new ArrayList<>();
+        categories.add(this.id);
+        categories.add(defaultTriggerType.isPassive() ? "PASSIVE" : "ACTIVE");
     }
 
-    /**
-     * Used by default MythicLib skill handlers
-     *
-     * @param triggerable If the skill can be triggered
-     */
-    public SkillHandler(boolean triggerable) {
-        this.id = UtilityMethods.enumName(getClass().getSimpleName());
-        this.triggerable = triggerable;
-
-        registerModifiers("cooldown", "mana", "stamina", "timer", "delay");
+    @NotNull
+    private String inferSkillHandlerId(@Nullable ConfigurationSection config, @Nullable BuiltinSkillHandler annot) {
+        if (config != null) return UtilityMethods.enumName(config.getName());
+        if (annot != null) return UtilityMethods.enumName(getClass().getSimpleName());
+        throw new IllegalStateException("Could not infer skill handler ID");
     }
 
-    /**
-     * Used to register a custom skill handler
-     *
-     * @param id Skill handler identifier
-     */
-    public SkillHandler(@NotNull String id) {
-        this(null, id);
+    private void initializeModifier(@NotNull String modifier, @Nullable ConfigurationSection config) {
+        this.parameters.computeIfAbsent(modifier, m -> {
+            if (config == null) return SkillParameter.empty(modifier);
+            return SkillParameter.fromConfig(config.getConfigurationSection("parameters." + modifier), m);
+        });
     }
 
-    /**
-     * Used to register a custom skill handler
-     *
-     * @param config Configuration section to load the skill handler from
-     * @param id     Skill handler identifier
-     */
-    public SkillHandler(@Nullable ConfigurationSection config, @NotNull String id) {
-        this.id = UtilityMethods.enumName(id);
-        this.triggerable = true;
-
-        // Register custom modifiers
-        if (config != null && config.contains("modifiers"))
-            registerModifiers(config.getStringList("modifiers"));
-
-        // Default modifiers
-        registerModifiers("cooldown", "mana", "stamina", "timer", "delay");
-    }
-
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLowerCaseId() {
-        return id.toLowerCase().replace("_", "-");
+        return lowerCaseId;
     }
 
-    public void registerModifiers(String... mods) {
-        registerModifiers(Arrays.asList(mods));
+    @NotNull
+    public String getName() {
+        return name;
     }
 
-    public void registerModifiers(Collection<String> mods) {
-        parameters.addAll(mods);
+    @NotNull
+    public List<String> getUiLore() {
+        return uiLore;
+    }
+
+    @NotNull
+    public IconOptions getIcon() {
+        return icon;
+    }
+
+    @NotNull
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    @NotNull
+    public TriggerType getDefaultTriggerType() {
+        return defaultTriggerType;
     }
 
     /**
@@ -120,12 +156,42 @@ public abstract class SkillHandler<T extends SkillResult> {
         return triggerable;
     }
 
+    public void addParameter(String parameter, @NotNull SkillParameter config) {
+        parameters.put(parameter, config);
+    }
+
+    @NotNull
+    public String getParameterName(String modifier) {
+        final var mapping = parameters.get(modifier);
+        return mapping != null ? mapping.getTranslate() : modifier;
+    }
+
+    public double getDefaultItemParameter(String modifier) {
+        final var mapping = parameters.get(modifier);
+        return mapping != null ? mapping.getItemDefaultValue() : 0;
+    }
+
+    @NotNull
+    public ScalingFormula getDefaultFormula(String modifier) {
+        final var mapping = parameters.get(modifier);
+        return mapping != null ? mapping.getScalingFormula() : ScalingFormula.ZERO;
+    }
+
+    @NotNull
+    public DecimalFormat getParameterDecimalFormat(String modifier) {
+        final var mapping = parameters.get(modifier);
+        return mapping != null ? mapping.getDecimalFormat() : SkillParameter.DEFAULT_DECIMAL_FORMAT;
+    }
+
     /**
-     * @deprecated Skill modifiers are now called "parameters"
+     * This registers modifiers with default configs i.e default
+     * item value set to 0, no scaling formula, no special decimal format,
+     * no translation, etc
+     *
+     * @param modifiers Modifier String identifiers
      */
-    @Deprecated
-    public Set<String> getModifiers() {
-        return getParameters();
+    public void registerModifiers(@NotNull String... modifiers) {
+        for (var modifier : modifiers) parameters.put(modifier, SkillParameter.empty(modifier));
     }
 
     /**
@@ -141,8 +207,9 @@ public abstract class SkillHandler<T extends SkillResult> {
      *
      * @return The set of all possible parameters of that skill
      */
+    @NotNull
     public Set<String> getParameters() {
-        return parameters;
+        return this.parameters.keySet();
     }
 
     /**
@@ -182,4 +249,36 @@ public abstract class SkillHandler<T extends SkillResult> {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public Set<String> getModifiers() {
+        return getParameters();
+    }
+
+    @Deprecated
+    public void registerModifiers(Collection<String> modifiers) {
+        for (var mod : modifiers) registerModifiers(mod);
+    }
+
+    @Deprecated
+    protected static final Random random = RANDOM;
+
+    @Deprecated
+    public SkillHandler() {
+        throw new RuntimeException("Deprecated");
+    }
+
+    @Deprecated
+    public SkillHandler(boolean triggerable) {
+        throw new RuntimeException("Deprecated");
+    }
+
+    @Deprecated
+    public SkillHandler(@NotNull String id) {
+        throw new RuntimeException("Deprecated");
+    }
+
+    //endregion
 }

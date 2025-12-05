@@ -1,21 +1,22 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"duration", "jump-force", "speed"})
 public class Frog_Mode extends SkillHandler<SimpleSkillResult> {
-    public Frog_Mode() {
-        super("FROG_MODE");
-
-        registerModifiers("duration", "jump-force", "speed");
+    public Frog_Mode(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

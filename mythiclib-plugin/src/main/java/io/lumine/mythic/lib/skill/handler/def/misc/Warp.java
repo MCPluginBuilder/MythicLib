@@ -1,7 +1,8 @@
-package io.lumine.mythic.lib.skill.handler.def;
+package io.lumine.mythic.lib.skill.handler.def.misc;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
@@ -9,16 +10,16 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"range"})
 public class Warp extends SkillHandler<Warp.WarpSkillResult> {
-    public Warp() {
-        super();
-
-        registerModifiers("range");
+    public Warp(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull

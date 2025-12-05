@@ -3,12 +3,14 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,11 +21,10 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@BuiltinSkillHandler(mods = {"knockback", "duration"})
 public class Control extends SkillHandler<TargetSkillResult> {
-    public Control() {
-        super();
-
-        registerModifiers("knockback", "duration");
+    public Control(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

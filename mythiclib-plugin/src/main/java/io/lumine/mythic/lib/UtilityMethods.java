@@ -383,15 +383,6 @@ public class UtilityMethods {
         return found != null ? found : (instance != null ? instance.getDefaultValue() : 0);
     }
 
-    /**
-     * Equivalent of String#formatted(String... args)
-     * which is not implemented yet in Java 8
-     */
-    @NotNull
-    public static String format(@NotNull String input, @NotNull Object... args) {
-        return new Formatter().format(input, args).toString();
-    }
-
     private static final String[] PREVIOUS_ATTRIBUTE_MODIFIER_NAMES = {"mmolib.", "mmoitems.", "mythiclib."};
 
     /**
@@ -683,6 +674,18 @@ public class UtilityMethods {
     }
 
     //region Deprecated
+
+    /**
+     * Equivalent of String#formatted(String... args)
+     * which is not implemented yet in Java 8
+     *
+     * @see String#format(String, Object...)
+     * @deprecated
+     */
+    @Deprecated
+    public static String format(@NotNull String input, @NotNull Object... args) {
+        return new Formatter().format(input, args).toString();
+    }
 
     /**
      * @see FileUtils#copyDefaultFile(Plugin, String)

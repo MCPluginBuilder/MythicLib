@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.util;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
@@ -61,13 +60,13 @@ public class FileUtils {
                 final String name = file.getName().substring(0, file.getName().length() - 4);
                 action.accept(name, config);
             } catch (Throwable throwable) {
-                plugin.getLogger().log(Level.WARNING, UtilityMethods.format(errorMessageFormat, file.getName(), throwable.getMessage()));
+                plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, file.getName(), throwable.getMessage()));
             }
             else for (String key : config.getKeys(false))
                 try {
                     action.accept(key, config.getConfigurationSection(key));
                 } catch (Throwable throwable) {
-                    plugin.getLogger().log(Level.WARNING, UtilityMethods.format(errorMessageFormat, key, file.getName(), throwable.getMessage()));
+                    plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, key, file.getName(), throwable.getMessage()));
                 }
         };
 
@@ -75,34 +74,9 @@ public class FileUtils {
         exploreFolderRecursively(getFile(plugin, path), fileAction);
     }
 
-    /**
-     * Prefer using the other method which allows to save multiple objects within the
-     * same configuration file. This method is mostly for YML syntax backwards compatibility.
-     *
-     * @see #loadObjectsFromFolder(Plugin, String, boolean, BiConsumer, String)
-     */
-    @Deprecated
-    @BackwardsCompatibility(version = "unspecified")
-    public static void loadObjectsFromFolderRaw(@NotNull Plugin plugin,
-                                                @NotNull String path,
-                                                @NotNull Consumer<File> action,
-                                                @NotNull String errorMessageFormat) {
+    public static void exploreFolderRecursively(@Nullable File file, @NotNull Consumer<File> action) {
+        if (file == null || !file.exists()) return;
 
-        // Action to perform
-        final Consumer<File> fileAction = file -> {
-            try {
-                action.accept(file);
-            } catch (Throwable throwable) {
-                plugin.getLogger().log(Level.WARNING, UtilityMethods.format(errorMessageFormat, file.getName(), throwable.getMessage()));
-            }
-        };
-
-        // Perform on all paths
-        exploreFolderRecursively(getFile(plugin, path), fileAction);
-    }
-
-    private static void exploreFolderRecursively(@Nullable File file, @NotNull Consumer<File> action) {
-        if (!file.exists()) return;
         if (file.isFile()) action.accept(file);
         else Arrays.stream(file.listFiles()).sorted().forEach(subfile -> exploreFolderRecursively(subfile, action));
     }
@@ -143,5 +117,32 @@ public class FileUtils {
         } catch (Throwable throwable) {
             throw new RuntimeException("Could not load default file '" + path + "'", throwable);
         }
+    }
+
+    /**
+     * Prefer using the other method which allows to save multiple objects within the
+     * same configuration file. This method is mostly for YML syntax backwards compatibility.
+     *
+     * @see #loadObjectsFromFolder(Plugin, String, boolean, BiConsumer, String)
+     * @deprecated
+     */
+    @Deprecated
+    @BackwardsCompatibility(version = "unspecified")
+    public static void loadObjectsFromFolderRaw(@NotNull Plugin plugin,
+                                                @NotNull String path,
+                                                @NotNull Consumer<File> action,
+                                                @NotNull String errorMessageFormat) {
+
+        // Action to perform
+        final Consumer<File> fileAction = file -> {
+            try {
+                action.accept(file);
+            } catch (Throwable throwable) {
+                plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, file.getName(), throwable.getMessage()));
+            }
+        };
+
+        // Perform on all paths
+        exploreFolderRecursively(getFile(plugin, path), fileAction);
     }
 }

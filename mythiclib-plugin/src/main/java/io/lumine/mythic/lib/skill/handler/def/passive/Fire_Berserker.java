@@ -4,18 +4,19 @@ import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.AttackSkillResult;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"extra"}, triggerable = false)
 public class Fire_Berserker extends SkillHandler<AttackSkillResult> implements Listener {
-    public Fire_Berserker() {
-        super(false);
-
-        registerModifiers("extra");
+    public Fire_Berserker(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

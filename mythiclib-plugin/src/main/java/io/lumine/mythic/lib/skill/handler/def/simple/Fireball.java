@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.CustomProjectileHandler;
@@ -13,6 +14,7 @@ import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -20,11 +22,10 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@BuiltinSkillHandler(mods = {"damage", "ignite", "ratio"})
 public class Fireball extends SkillHandler<SimpleSkillResult> {
-    public Fireball() {
-        super();
-
-        registerModifiers("damage", "ignite", "ratio");
+    public Fireball(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull
@@ -77,7 +78,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                                 return;
                             }
 
-                            double range = 2.5 * (1 + RANDOM.nextDouble());
+                            double range = 2.5 * (1 + Math.random());
                             Vector dir = randomDirection();
                             loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1.5f);
 

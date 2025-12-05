@@ -1,9 +1,11 @@
 package io.lumine.mythic.lib.script.util;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.script.condition.generic.CompareCondition;
 import io.lumine.mythic.lib.script.mechanic.shaped.RayTraceMechanic;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
@@ -24,4 +26,7 @@ public class Parsers {
 
     public static final Function<String, CompareCondition.Comparator> COMPARATOR =
             input -> UtilityMethods.prettyValueOf(CompareCondition.Comparator::fromString, input, "No comparator with ID %s");
+
+    public static final Function<String, SkillHandler<?>> SKILL_HANDLER =
+            input -> MythicLib.plugin.getSkills().getHandlerOrThrow(UtilityMethods.enumName(input));
 }

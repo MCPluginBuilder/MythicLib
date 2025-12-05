@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.SmallParticleEffect;
@@ -12,6 +13,7 @@ import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -19,13 +21,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"radius", "ratio", "extra"})
 public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
     private static final double PARTICLES_PER_METER = 5;
 
-    public Empowered_Attack() {
-        super();
-
-        registerModifiers("radius", "ratio", "extra");
+    public Empowered_Attack(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

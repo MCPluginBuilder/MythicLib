@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.LocationSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -11,8 +12,8 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Snowman;
 import org.bukkit.event.EventHandler;
@@ -26,11 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@BuiltinSkillHandler(mods = {"duration", "damage", "radius"})
 public class Snowman_Turret extends SkillHandler<LocationSkillResult> {
-    public Snowman_Turret() {
-        super();
-
-        registerModifiers("duration", "damage", "radius");
+    public Snowman_Turret(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

@@ -1,29 +1,34 @@
 package io.lumine.mythic.lib.skill.handler;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.MechanicQueue;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicLibSkillResult;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
- * A skill behaviour based on a custom MythicLib script
+ * A skill handler based on a custom MythicLib script
  */
 public class MythicLibSkillHandler extends SkillHandler<MythicLibSkillResult> {
     private final Script script;
 
-    public MythicLibSkillHandler(ConfigurationSection config, Script script) {
-        // it's not supposed to be the script ID used as skill handler ID
-        // but rather the name of the config object
-        // TODO clear this up with the script/skill update.
-        super(config, script.getId());
-
-        this.script = script;
+    public MythicLibSkillHandler(@NotNull ConfigurationSection config) {
+        this(config, MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("mythiclib-skill-id")));
     }
 
-    public MythicLibSkillHandler(Script script) {
-        super(script.getId());
+    public MythicLibSkillHandler(@NotNull ConfigurationSection config, @NotNull Script script) {
+        super(config);
+
+        this.script = Objects.requireNonNull(script, "Script cannot be null");
+    }
+
+    public MythicLibSkillHandler(@NotNull Script script) {
+        super(new YamlConfiguration() );
 
         this.script = script;
     }

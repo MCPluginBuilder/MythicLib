@@ -5,11 +5,13 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.version.Sounds;
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
@@ -25,11 +27,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+@BuiltinSkillHandler(mods = {"damage", "fangs"})
 public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
-    public Corrupted_Fangs() {
-        super();
-
-        registerModifiers("damage", "fangs");
+    public Corrupted_Fangs(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

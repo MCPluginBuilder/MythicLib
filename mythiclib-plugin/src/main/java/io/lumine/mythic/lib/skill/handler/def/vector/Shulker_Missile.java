@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -13,6 +14,7 @@ import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,11 +28,10 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ShulkerMissile extends SkillHandler<VectorSkillResult> {
-    public ShulkerMissile() {
-        super("SHULKER_MISSILE");
-
-        registerModifiers("damage", "effect-duration", "duration");
+@BuiltinSkillHandler(mods = {"damage", "effect-duration", "duration"})
+public class Shulker_Missile extends SkillHandler<VectorSkillResult> {
+    public Shulker_Missile(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull

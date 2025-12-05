@@ -1,21 +1,22 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"amplifier", "duration"})
 public class Swiftness extends SkillHandler<SimpleSkillResult> {
-    public Swiftness() {
-        super();
-
-        registerModifiers("amplifier", "duration");
+    public Swiftness(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

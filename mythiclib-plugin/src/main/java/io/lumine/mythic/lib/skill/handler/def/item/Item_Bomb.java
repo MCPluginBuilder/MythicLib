@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.skill.handler.def.item;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.ItemSkillResult;
 import io.lumine.mythic.lib.util.NoClipItem;
@@ -11,6 +12,7 @@ import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,11 +20,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-public class Item_Bomb extends SkillHandler<ItemSkillResult> {
-    public Item_Bomb() {
-        super();
+import java.util.List;
 
-        registerModifiers("damage", "radius", "slow-duration", "slow-amplifier");
+@BuiltinSkillHandler(mods = {"damage", "radius", "slow-duration", "slow-amplifier"})
+public class Item_Bomb extends SkillHandler<ItemSkillResult> {
+    private final List<DamageType> damageTypes;
+
+    public Item_Bomb(ConfigurationSection config) {
+        super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), config.get("damage_types"));
     }
 
     @Override

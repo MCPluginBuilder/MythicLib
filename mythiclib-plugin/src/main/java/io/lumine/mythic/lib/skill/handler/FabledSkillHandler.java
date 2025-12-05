@@ -16,7 +16,7 @@ public class FabledSkillHandler extends SkillHandler<FabledSkillResult> {
     private final Skill skill;
 
     public FabledSkillHandler(ConfigurationSection config) {
-        super(config.getString("fabled-skill-id", config.getString("skillapi-skill-id")));
+        super(config);
 
         String skillName = config.getString("fabled-skill-id", config.getString("skillapi-skill-id"));
         this.skill = Objects.requireNonNull(Fabled.getSkill(skillName), "Could not find Fabled skill with name '" + skillName + "'");

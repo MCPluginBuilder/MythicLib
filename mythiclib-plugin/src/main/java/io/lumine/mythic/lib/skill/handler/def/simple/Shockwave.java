@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -10,6 +11,7 @@ import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -19,11 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@BuiltinSkillHandler(mods = {"knock-up", "length"})
 public class Shockwave extends SkillHandler<SimpleSkillResult> {
-    public Shockwave() {
-        super();
-
-        registerModifiers("knock-up", "length");
+    public Shockwave(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

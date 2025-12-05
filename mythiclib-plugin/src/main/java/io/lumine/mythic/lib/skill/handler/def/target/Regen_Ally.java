@@ -3,19 +3,20 @@ package io.lumine.mythic.lib.skill.handler.def.target;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.TargetSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import org.bukkit.Particle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"heal", "duration"})
 public class Regen_Ally extends SkillHandler<TargetSkillResult> {
-    public Regen_Ally() {
-        super();
-
-        registerModifiers("heal", "duration");
+    public Regen_Ally(ConfigurationSection config) {
+        super(config);
     }
 
     @Override

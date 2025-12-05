@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.skill.handler.def.vector;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.VectorSkillResult;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -11,6 +12,7 @@ import io.lumine.mythic.lib.version.VParticle;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,11 +20,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"damage", "knockback", "radius"})
 public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
-    public Fire_Meteor() {
-        super();
-
-        registerModifiers("damage", "knockback", "radius");
+    public Fire_Meteor(ConfigurationSection config) {
+        super(config);
     }
 
     @Override
