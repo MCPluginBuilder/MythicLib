@@ -54,7 +54,6 @@ import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.SpigotPlugin;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,7 +123,7 @@ public class MythicLib extends MMOPlugin {
         new MythicPacketSniffer(this, version);
 
         // Detect MMO plugins
-        for (Plugin plugin : Bukkit.getPluginManager().getPlugins())
+        for (var plugin : Bukkit.getPluginManager().getPlugins())
             if (plugin instanceof MMOPlugin) mmoPlugins.add((MMOPlugin) plugin);
 
         // Register listeners
@@ -483,5 +482,10 @@ public class MythicLib extends MMOPlugin {
     @NotNull
     public HologramFactory getHologramFactory() {
         return hologramFactory;
+    }
+
+    @Override
+    public boolean hasData() {
+        return false;
     }
 }

@@ -12,7 +12,10 @@ public class NoProfileHandler implements ProfileHandler {
     private final List<NamespacedKey> modules;
 
     public NoProfileHandler() {
-        modules = MythicLib.plugin.getMMOPlugins().stream().map(MMOPlugin::getNamespacedKey).collect(Collectors.toList());
+        modules = MythicLib.plugin.getMMOPlugins().stream()
+                .filter(MMOPlugin::hasData)
+                .map(MMOPlugin::getNamespacedKey)
+                .collect(Collectors.toList());
     }
 
     @Override
