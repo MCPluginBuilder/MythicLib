@@ -38,7 +38,7 @@ public class RayTraceMechanic extends DirectionMechanic {
         ignorePassable = config.bool(false, "ignore_passable", "ip");
         neutral = config.bool(true, "neutral");
         offense = config.bool(true, "offense");
-        rayTraceType = config.parse(Parsers.RAY_TRACE_TYPE, "mode", "m");
+        rayTraceType = config.parse(RayTraceType.DEFAULT, Parsers.RAY_TRACE_TYPE, "mode", "m");
 
         range = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_RANGE), "range", "rng", "length", "len", "distance", "dist");
         size = config.getDoubleFormula(DoubleFormula.constant(DEFAULT_SIZE), "size", "width", "wide");
