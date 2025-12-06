@@ -16,7 +16,7 @@ import java.util.Objects;
 public class Element {
     private final String id, name, loreIcon, color;
     private final Material icon;
-    private final SkillHandler<?> criticalStrike, regularAttack;
+    private final Skill criticalStrike, regularAttack;
 
     private static final String DEFAULT_LORE_ICON = "❖";
     private static final String DEFAULT_MATERIAL = "DIRT";
@@ -30,8 +30,8 @@ public class Element {
         this.name = Objects.requireNonNull(config.getString("name"), "Please specify an element name");
         this.loreIcon = config.getString("lore-icon", DEFAULT_LORE_ICON);
         this.color = config.getString("color", DEFAULT_COLOR);
-        this.regularAttack = MythicLib.plugin.getSkills().loadSkillHandler(Objects.requireNonNull(config.get("regular-attack"), "Could not find skill for regular attacks"));
-        this.criticalStrike = config.contains("crit-strike") ? MythicLib.plugin.getSkills().loadSkillHandler(config.get("crit-strike")) : null;
+        this.regularAttack = new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(Objects.requireNonNull(config.get("regular-attack"), "Could not find skill for regular attacks")));
+        this.criticalStrike = config.contains("crit-strike") ? new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(config.get("crit-strike"))) : null;
     }
 
     public String getId() {
@@ -57,8 +57,7 @@ public class Element {
 
     @NotNull
     public Skill getSkill(boolean criticalStrike) {
-        final SkillHandler<?> handler = criticalStrike && this.criticalStrike != null ? this.criticalStrike : regularAttack;
-        return new SimpleSkill(handler);
+        return criticalStrike && this.criticalStrike != null ? this.criticalStrike : regularAttack;
     }
 
     @Override

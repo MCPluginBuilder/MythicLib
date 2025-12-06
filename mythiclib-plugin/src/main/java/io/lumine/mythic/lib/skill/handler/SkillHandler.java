@@ -9,7 +9,6 @@ import io.lumine.mythic.lib.skill.parameter.SkillParameter;
 import io.lumine.mythic.lib.skill.parameter.value.ScalingFormula;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -61,9 +60,7 @@ public abstract class SkillHandler<T extends SkillResult> {
         // Check if it is built-in
         /////////////////////////////////
         final var builtinAnnot = this.getClass().getAnnotation(BuiltinSkillHandler.class);
-        Validate.isTrue(builtinAnnot != null || config != null, "Custom skill handler must have a non-null config");
-
-        this.id = inferSkillHandlerId(config, builtinAnnot);
+        this.id = inferSkillHandlerId(config);
         this.triggerable = builtinAnnot != null && builtinAnnot.triggerable();
 
         // Built-in skill parameters
@@ -73,7 +70,7 @@ public abstract class SkillHandler<T extends SkillResult> {
         for (var mod : BASE_MODIFIERS) initializeModifier(mod, config);
 
         // Custom skill parameters
-        if (builtinAnnot == null && config.isConfigurationSection("parameters"))
+        if (builtinAnnot == null && config != null && config.isConfigurationSection("parameters"))
             for (var mod : config.getConfigurationSection("parameters").getKeys(false))
                 initializeModifier(mod, config);
 
@@ -93,10 +90,10 @@ public abstract class SkillHandler<T extends SkillResult> {
     }
 
     @NotNull
-    private String inferSkillHandlerId(@Nullable ConfigurationSection config, @Nullable BuiltinSkillHandler annot) {
+    private String inferSkillHandlerId(@Nullable ConfigurationSection config) {
         if (config != null) return UtilityMethods.enumName(config.getName());
-        if (annot != null) return UtilityMethods.enumName(getClass().getSimpleName());
-        throw new IllegalStateException("Could not infer skill handler ID");
+        //if (annot != null) return UtilityMethods.enumName(getClass().getSimpleName());
+        return UtilityMethods.enumName(getClass().getSimpleName());
     }
 
     private void initializeModifier(@NotNull String modifier, @Nullable ConfigurationSection config) {
