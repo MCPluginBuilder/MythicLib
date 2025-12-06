@@ -508,11 +508,14 @@ public class SkillManager extends Module {
         registration = false;
 
         // mkdir skill folder
-        File skillsFolder = new File(MythicLib.plugin.getDataFolder() + "/skill");
-        if (!skillsFolder.exists()) skillsFolder.mkdir();
+        final var skillsFolder = new File(MythicLib.plugin.getDataFolder() + "/skill");
+        if (!skillsFolder.exists()) {
+            FileUtils.copyDefaultFile(MythicLib.plugin, "skill/example_skills.yml");
+            FileUtils.copyDefaultFile(MythicLib.plugin, "skill/default_skills.yml");
+        }
 
         // mkdir script folder
-        File scriptFolder = new File(MythicLib.plugin.getDataFolder() + "/script");
+        final var scriptFolder = new File(MythicLib.plugin.getDataFolder() + "/script");
         if (!scriptFolder.exists()) {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/elemental_attacks.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mmoitems_scripts.yml");
