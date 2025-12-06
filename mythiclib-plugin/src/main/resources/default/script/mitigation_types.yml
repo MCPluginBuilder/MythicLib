@@ -31,7 +31,7 @@ mitigation_block_particle_effect_1:
 
 mitigation_block_particle_effect_2:
   mechanics:
-    - 'set_double{variable=angle;value="PI / 180.0 * (<dir.yaw> + 90 + <max_angle> * ( <counter_a> / 10 - 0.5))"}'
+    - 'set_double{variable=angle;value="pi / 180.0 * (<dir.yaw> + 90 + <max_angle> * ( <counter_a> / 10 - 0.5))"}'
     - 'copy_vector{variable=inter;value=src}'
     - 'add_vector{variable=inter;x="cos(<angle>)";y=".25 + <counter_z> * 1.5/8";z="sin(<angle>)"}'
     - 'particle{particle=REDSTONE;target={type=variable;name=inter};color={red=128;green=128;blue=128}}'

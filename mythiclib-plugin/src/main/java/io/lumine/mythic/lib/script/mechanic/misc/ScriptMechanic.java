@@ -6,9 +6,10 @@ import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.script.variable.def.IntegerVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
@@ -27,7 +28,7 @@ public class ScriptMechanic extends Mechanic {
      * Allows to cast the same script multiple times in a row but
      * everytime the counter is increased by 1 just like in a for loop
      */
-    private final DoubleFormula iterations;
+    private final NumericExpression iterations;
 
     /**
      * Variable name used to save the iteration counter
@@ -47,7 +48,7 @@ public class ScriptMechanic extends Mechanic {
 
         // Multiple skill casts
         counterVarName = config.getString("counter", "counter");
-        iterations = config.getDoubleFormula(DoubleFormula.constant(1), "iterations", "ite", "iter", "times");
+        iterations = config.numericExpr(ConstantNumericExpression.ONE, "iterations", "ite", "iter", "times");
 
         // Targeters
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : null;

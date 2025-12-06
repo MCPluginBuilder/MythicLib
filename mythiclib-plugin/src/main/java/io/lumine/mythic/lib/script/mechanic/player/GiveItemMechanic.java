@@ -2,8 +2,9 @@ package io.lumine.mythic.lib.script.mechanic.player;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Material;
@@ -13,13 +14,13 @@ import org.bukkit.inventory.ItemStack;
 
 public class GiveItemMechanic extends TargetMechanic {
     private final Material material;
-    private final DoubleFormula amount;
+    private final NumericExpression amount;
 
     public GiveItemMechanic(ConfigObject config) {
         super(config);
 
         material = UtilityMethods.prettyValueOf(Material::valueOf, config.string("material", "mat", "m"), "No material with ID %s");
-        amount = config.getDoubleFormula(DoubleFormula.constant(1), "amount", "amt", "a", "count", "cnt", "c", "number", "num", "nb", "n");
+        amount = config.numericExpr(ConstantNumericExpression.ONE, "amount", "amt", "a", "count", "cnt", "c", "number", "num", "nb", "n");
     }
 
     @Override

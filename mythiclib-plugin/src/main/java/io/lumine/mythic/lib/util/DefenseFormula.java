@@ -1,11 +1,12 @@
 package io.lumine.mythic.lib.util;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 
 import java.util.logging.Level;
 
 public class DefenseFormula {
+    // TODO precompile
 
     @Deprecated
     private final boolean elemental;
@@ -30,7 +31,7 @@ public class DefenseFormula {
         final String expression = formula.replace("#defense#", String.valueOf(defense)).replace("#damage#", String.valueOf(damage));
 
         try {
-            return Math.max(0, NumericalExpression.eval(expression));
+            return Math.max(0, NumericExpression.eval(expression));
         } catch (Exception exception) {
 
             /**

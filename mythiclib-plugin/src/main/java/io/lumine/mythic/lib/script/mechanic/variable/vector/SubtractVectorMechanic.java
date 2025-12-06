@@ -2,10 +2,9 @@ package io.lumine.mythic.lib.script.mechanic.variable.vector;
 
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.variable.VariableMechanic;
-import io.lumine.mythic.lib.script.variable.Variable;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.script.variable.def.PositionVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -13,16 +12,16 @@ import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SubtractVectorMechanic extends VariableMechanic {
-    private final DoubleFormula x, y, z;
+    private final NumericExpression x, y, z;
     private final String varToSubstract;
 
     public SubtractVectorMechanic(ConfigObject config) {
         super(config);
 
         // Term by term addition
-        x = config.getDoubleFormula((DoubleFormula) null, "x");
-        y = config.getDoubleFormula((DoubleFormula) null, "y");
-        z = config.getDoubleFormula((DoubleFormula) null, "z");
+        x = config.numericExpr((NumericExpression) null, "x");
+        y = config.numericExpr((NumericExpression) null, "y");
+        z = config.numericExpr((NumericExpression) null, "z");
 
         // Vector addition
         varToSubstract = config.stringFb(null, "subtracted", "subtract", "sub", "other", "rhs", "value", "val", "v");

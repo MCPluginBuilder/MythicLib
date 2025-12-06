@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.targeter.entity;
 
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.FluidCollisionMode;
@@ -18,12 +18,12 @@ import java.util.List;
  * Targets the entity the player is looking at
  */
 public class LookingAtTargeter implements EntityTargeter {
-    private final DoubleFormula range, size;
+    private final NumericExpression range, size;
     private final boolean ignorePassable;
 
     public LookingAtTargeter(ConfigObject config) {
-        size = config.getDoubleFormula(DoubleFormula.constant(.2f), "size", "width", "wide");
-        range = config.getDoubleFormula(DoubleFormula.constant(50), "length", "len", "l");
+        size = config.numericExpr(NumericExpression.of(.2f), "size", "width", "wide");
+        range = config.numericExpr(NumericExpression.of(50), "length", "len", "l");
         ignorePassable = config.getBoolean("ignore_passable", true);
     }
 

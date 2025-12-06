@@ -425,22 +425,23 @@ public class SkillMetadata {
     public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = UtilityMethods.internalPlaceholderPattern('<', '>');
 
     @NotNull
-    public String parseString(String str) {
+    public String parseString(String input) {
 
-        // Internal placeholders
-        Matcher match = INTERNAL_PLACEHOLDER_PATTERN.matcher(str);
-        while (match.find()) {
-            final String placeholder = str.substring(match.start() + 1, match.end() - 1);
-            // TODO not use replace, make use of indices provided maybe with a StringBuilder
-            str = str.replace("<" + placeholder + ">", getVariable(placeholder).toString());
-            // TODO not necessary to re-match everytime a new placeholder is parsed i.e 'match' could be final
-            match = INTERNAL_PLACEHOLDER_PATTERN.matcher(str);
+        // Resolve internal placeholders
+        final var matcher = INTERNAL_PLACEHOLDER_PATTERN.matcher(input);
+        final var sb = new StringBuilder(input.length());
+        while (matcher.find()) {
+            final var variableName = matcher.group(1);
+            final var replacement = getVariable(variableName).toString();
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
+        matcher.appendTail(sb);
+        input = sb.toString();
 
         // Parse any placeholders and apply color codes
-        str = MythicLib.plugin.getPlaceholderParser().parse(getCaster().getPlayer(), str);
+        input = MythicLib.plugin.getPlaceholderParser().parse(getCaster().getPlayer(), input);
 
-        return str;
+        return input;
     }
 
     //region Generators

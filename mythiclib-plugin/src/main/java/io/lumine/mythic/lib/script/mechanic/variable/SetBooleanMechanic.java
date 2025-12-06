@@ -1,10 +1,10 @@
 package io.lumine.mythic.lib.script.mechanic.variable;
 
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
+import io.lumine.mythic.lib.script.util.expression.bool.BooleanExpression;
 import io.lumine.mythic.lib.script.variable.def.BooleanVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import io.lumine.mythic.lib.util.formula.BooleanExpression;
 import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata

@@ -7,8 +7,8 @@ import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.script.targeter.location.ConstantLocationTargeter;
 import io.lumine.mythic.lib.script.targeter.location.DefaultLocationTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * Draws a helix of particles around the target
  */
 public class HelixMechanic extends Mechanic {
-    private final DoubleFormula radius;
+    private final NumericExpression radius;
     private final double yawSpread, height;
     private final long points, timeInterval, pointsPerTick, helixes;
     private final LocationTargeter direction, targetLocation;
@@ -31,15 +31,13 @@ public class HelixMechanic extends Mechanic {
         targetLocation = config.contains("source") ? config.getLocationTargeter("source") : new DefaultLocationTargeter();
         direction = config.contains("direction") ? config.getLocationTargeter("direction") : new ConstantLocationTargeter(1, 0, 0);
 
-        config.validateKeys("tick");
-
         onStart = config.contains("start") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("start")) : null;
-        onTick = MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("tick"));
+        onTick = MythicLib.plugin.getSkills().getScriptOrThrow(config.string("tick"));
         onEnd = config.contains("end") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("end")) : null;
 
         yawSpread = config.getDouble("yaw", 360);
         height = config.getDouble("height", 3);
-        radius = config.contains("radius") ? new DoubleFormula(config.getString("radius")) : new DoubleFormula(2);
+        radius = config.numericExpr(NumericExpression.of(2), "radius", "rad", "r");
 
         points = config.getInt("points", 40);
         timeInterval = config.getInt("time_interval", 1);

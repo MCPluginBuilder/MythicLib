@@ -67,7 +67,7 @@ propagate_damage:
 slash_attack_effect:
   mechanics:
     - 'copy_vector{variable=src;value=caster.location}'
-    - 'set_double{variable=p;value="<caster.eye_direction.pitch> * -PI / 180"}'
+    - 'set_double{variable=p;value="<caster.eye_direction.pitch> * -pi / 180"}'
     - 'add_vector{variable=src;y=1}'
     - 'script{name=sae1;counter=c2;iterations="20"}'
 
@@ -78,7 +78,7 @@ sae1:
 
 sae2:
   mechanics:
-    - 'set_double{variable=a;value="PI / 180.0 * (90 + <caster.eye_direction.yaw> + <angle> * (-0.5 + (<c1> - 0.5) / <c1_max>))"}'
+    - 'set_double{variable=a;value="pi / 180.0 * (90 + <caster.eye_direction.yaw> + <angle> * (-0.5 + (<c1> - 0.5) / <c1_max>))"}'
     - 'set_double{variable=d;value=".4 + <c2> / 3"}'
     - 'copy_vector{variable=inter;value=src}'
     - 'add_vector{variable=inter;x="cos(<p>) * cos(<a>) * <d>";y="sin(<p>) * <d>";z="cos(<p>) *sin(<a>) * <d>"}'
@@ -145,7 +145,7 @@ staff_mana_tick_2:
   conditions:
     - 'boolean{formula="<random.double> < .6"}'
   mechanics:
-    - 'set_double{variable=a;value="<random.double> * 2 * PI"}'
+    - 'set_double{variable=a;value="<random.double> * 2 * pi"}'
     - 'copy_vector{variable=curr;value=target_location}'
     - 'set_vector{variable=diff;x="<rad> * cos(<a>)",y="<rad> * sin(<a>)";z=0}'
     - 'orient_vector{variable=diff;axis=dir}'
@@ -287,7 +287,7 @@ staff_sunfire_success_entity:
 staff_sunfire_success_2:
   mechanics:
     - 'sound{sound=ENTITY_WITHER_SHOOT;volume=2;pitch=2}'
-    - 'set_double{variable=angle;value="<random.unif> * PI * 2"}'
+    - 'set_double{variable=angle;value="<random.unif> * pi * 2"}'
     - 'set_vector{variable=meteor_src;x="<meteor_tgt.x> + 4 * cos(<angle>)";y="<meteor_tgt.y> + 10";z="<meteor_tgt.z> + 4 * sin(<angle>)"}'
     - 'copy_vector{variable=meteor_dir;value=meteor_tgt}'
     - 'sub_vec{variable=meteor_dir;subtracted=meteor_src}'
@@ -347,7 +347,7 @@ staff_thunder_success_entity:
 staff_thunder_success_2:
   mechanics:
     - 'sound{sound=ENTITY_WITHER_SHOOT;volume=2;pitch=2}'
-    - 'set_double{variable=angle;value="<random.unif> * PI * 2"}'
+    - 'set_double{variable=angle;value="<random.unif> * pi * 2"}'
     - 'set_vector{variable=meteor_src;x="<meteor_tgt.x> + 4 * cos(<angle>)";y="<meteor_tgt.y> + 10";z="<meteor_tgt.z> + 4 * sin(<angle>)"}'
     - 'copy_vector{variable=meteor_dir;value=meteor_tgt}'
     - 'sub_vec{variable=meteor_dir;subtracted=meteor_src}'

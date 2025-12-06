@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 @Deprecated
 @MechanicMetadata
 public class RayTraceEntitiesMechanic extends DirectionMechanic {
-    private final DoubleFormula range, size, step;
+    private final NumericExpression range, size, step;
     private final Script onHit, onTick;
 
     public RayTraceEntitiesMechanic(ConfigObject config) {
@@ -28,9 +28,9 @@ public class RayTraceEntitiesMechanic extends DirectionMechanic {
         onTick = config.contains("tick") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("tick")) : null;
         onHit = config.contains("hit_entity") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("hit_entity")) : null;
 
-        range = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_RANGE), "range");
-        size = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_SIZE), "size");
-        step = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_STEP), "step");
+        range = config.numericExpr(NumericExpression.of(50), "range");
+        size = config.numericExpr(NumericExpression.of(.2), "size");
+        step = config.numericExpr(NumericExpression.of(.4), "step");
     }
 
     @Override

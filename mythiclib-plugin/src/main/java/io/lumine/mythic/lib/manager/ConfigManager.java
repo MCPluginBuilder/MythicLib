@@ -9,13 +9,10 @@ import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
 import io.lumine.mythic.lib.script.Script;
-import io.lumine.mythic.lib.skill.SimpleSkill;
-import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +28,7 @@ public class ConfigManager extends Module {
     public final DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
 
     public DecimalFormat decimal, decimals;
-    public boolean playerAbilityDamage, castingDelayCancelOnMove, enableCastingDelayBossbar, fixTooLargePackets, debugMode,
+    public boolean playerAbilityDamage, castingDelayCancelOnMove, enableCastingDelayBossbar, fixTooLargePackets, debugMode = true,
             ignoreShiftTriggers, ignoreOffhandClickTriggers, skipElementalDamageApplication, flagCheckSkills;
     public String naturalDefenseFormula, elementalDefenseFormula, castingDelayBossbarFormat;
     public BarColor castingDelayBarColor;

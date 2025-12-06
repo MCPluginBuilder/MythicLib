@@ -124,7 +124,7 @@ public class UtilityMethods {
 
     @NotNull
     public static Pattern internalPlaceholderPattern(char start, char end) {
-        return Pattern.compile(start + "[^&|!=" + start + end + "]*?" + end);
+        return Pattern.compile(start + "([^&|!=" + start + end + "]+)" + end);
     }
 
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {

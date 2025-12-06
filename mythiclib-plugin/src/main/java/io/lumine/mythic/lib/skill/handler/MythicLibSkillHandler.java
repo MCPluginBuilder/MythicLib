@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicLibSkillResult;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -28,7 +27,7 @@ public class MythicLibSkillHandler extends SkillHandler<MythicLibSkillResult> {
     }
 
     public MythicLibSkillHandler(@NotNull Script script) {
-        super(new YamlConfiguration() );
+        super((ConfigurationSection) null);
 
         this.script = script;
     }

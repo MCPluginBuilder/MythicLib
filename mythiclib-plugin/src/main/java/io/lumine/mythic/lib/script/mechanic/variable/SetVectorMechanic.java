@@ -1,23 +1,24 @@
 package io.lumine.mythic.lib.script.mechanic.variable;
 
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
+import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.script.variable.def.PositionVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.Position;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.jetbrains.annotations.NotNull;
 
 @MechanicMetadata
 public class SetVectorMechanic extends VariableMechanic {
-    private final DoubleFormula x, y, z;
+    private final NumericExpression x, y, z;
 
     public SetVectorMechanic(ConfigObject config) {
         super(config);
 
-        x = config.getDoubleFormula(DoubleFormula.ZERO, "x");
-        y = config.getDoubleFormula(DoubleFormula.ZERO, "y");
-        z = config.getDoubleFormula(DoubleFormula.ZERO, "z");
+        x = config.numericExpr(ConstantNumericExpression.ZERO, "x");
+        y = config.numericExpr(ConstantNumericExpression.ZERO, "y");
+        z = config.numericExpr(ConstantNumericExpression.ZERO, "z");
     }
 
     @Override

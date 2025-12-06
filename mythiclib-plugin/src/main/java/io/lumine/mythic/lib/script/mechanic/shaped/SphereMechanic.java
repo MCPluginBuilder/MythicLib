@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.script.mechanic.shaped;
 
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.LocationMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -20,7 +20,7 @@ import org.bukkit.util.Vector;
  * amount of points specified by the user.
  */
 public class SphereMechanic extends LocationMechanic {
-    private final DoubleFormula radius, points;
+    private final NumericExpression radius, points;
 
     private final Script onTick;
 
@@ -28,8 +28,8 @@ public class SphereMechanic extends LocationMechanic {
         super(config);
 
         onTick = config.getScript("tick");
-        radius = config.getDoubleFormula(DoubleFormula.constant(2), "radius", "rad", "r");
-        points = config.getDoubleFormula("points");
+        radius = config.numericExpr(NumericExpression.of(2), "radius", "rad", "r");
+        points = config.numericExpr("points");
     }
 
     @Override

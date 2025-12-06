@@ -8,8 +8,9 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.OfflinePlayer;
@@ -19,7 +20,7 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 public class AddStatModifierMechanic extends TargetMechanic {
-    private final DoubleFormula amount, lifetime;
+    private final NumericExpression amount, lifetime;
     private final String stat, key;
     private final boolean relative, unique;
 
@@ -29,9 +30,9 @@ public class AddStatModifierMechanic extends TargetMechanic {
 
         stat = config.string("stat");
         key = config.stringFb("default", "key", "k");
-        lifetime = config.contains("time") ? new DoubleFormula(config.getString("time")) : DoubleFormula.ZERO;
+        lifetime = config.numericExpr(ConstantNumericExpression.ZERO, "time", "duration", "dur", "d", "ticks", "t");
         relative = config.getBoolean("relative", false);
-        amount = new DoubleFormula(config.string("amount", "a", "value", "v"));
+        amount = config.numericExpr("amount", "a", "value", "v");
         unique = config.bool("unique", "u");
     }
 

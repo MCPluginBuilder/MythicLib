@@ -6,6 +6,7 @@ GENERAL
 -  support for scoreboards
 -  support for metadata and variables on entities
 -  support for bossbars
+** numeric expression parsing into precompilation
 ** support for scopes in variable mechanics
 -  skill arguments: skills can cache source/target location/entity OR more info like projectiles
       - this would allow for mechanics to change the current direction of a projectile or thrown item

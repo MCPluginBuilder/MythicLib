@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * Ticks from point A to point B
  */
 public class LineMechanic extends Mechanic {
-    private final DoubleFormula step;
+    private final NumericExpression step;
     private final LocationTargeter source, target;
 
     private final Script onStart, onTick, onEnd;
@@ -31,7 +31,7 @@ public class LineMechanic extends Mechanic {
         source = config.getLocationTargeter("source");
         target = config.getLocationTargeter("target");
 
-        step = config.getDoubleFormula(DoubleFormula.constant(.5), "step");
+        step = config.numericExpr(NumericExpression.of(.5), "step");
         instant = config.getBoolean("instant", false);
         pointsPerTick = config.getInt("points_per_tick", 1);
         Validate.isTrue(pointsPerTick > 0, "PPT must be strictly positive");

@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
 import io.lumine.mythic.lib.script.Script;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +14,7 @@ public class MitigationType implements CooldownObject {
 
     private final @NotNull Script onDamage;
     private final @Nullable Script preDamage;
-    private final @Nullable NumericalExpression cooldownFormula, rollFormula;
+    private final @Nullable NumericExpression cooldownFormula, rollFormula;
 
     /**
      * Used for still calling old events from the API
@@ -26,15 +26,15 @@ public class MitigationType implements CooldownObject {
         this.cooldownPath = "mitigation:" + id;
 
         this.legacy = config.contains("legacy") ? UtilityMethods.prettyValueOf(LegacyMitigationType::valueOf, config.getString("legacy"), "No legacy mitigation mechanic with ID %s") : null;
-        this.cooldownFormula = config.contains("cooldown") ? NumericalExpression.compile(config.getString("cooldown")) : null;
-        this.rollFormula = config.contains("roll") ? NumericalExpression.compile(config.getString("roll")) : null;
+        this.cooldownFormula = config.contains("cooldown") ? NumericExpression.compile(config.getString("cooldown")) : null;
+        this.rollFormula = config.contains("roll") ? NumericExpression.compile(config.getString("roll")) : null;
 
         this.onDamage = MythicLib.plugin.getSkills().loadScript(config.get("on_damage"));
         this.preDamage = config.contains("pre_damage") ? MythicLib.plugin.getSkills().loadScript(config.get("pre_damage")) : null;
     }
 
     @Nullable
-    public NumericalExpression getCooldown() {
+    public NumericExpression getCooldown() {
         return cooldownFormula;
     }
 
@@ -43,7 +43,7 @@ public class MitigationType implements CooldownObject {
     }
 
     @Nullable
-    public NumericalExpression getRoll() {
+    public NumericExpression getRoll() {
         return rollFormula;
     }
 

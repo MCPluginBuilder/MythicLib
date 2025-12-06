@@ -10,11 +10,12 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class ShootArrowMechanic extends DirectionMechanic {
     private final boolean fromItem, playerAttackDamage;
-    private final DoubleFormula velocity;
+    private final NumericExpression velocity;
     private final List<DamageType> damageTypes;
 
     @Nullable
@@ -40,7 +41,7 @@ public class ShootArrowMechanic extends DirectionMechanic {
         onHit = config.getScriptOrNull("hit");
         onLand = config.getScriptOrNull("land");
         onTick = config.getScriptOrNull("tick");
-        velocity = config.getDoubleFormula(DoubleFormula.constant(1), "velocity", "vel", "speed", "sp");
+        velocity = config.numericExpr(ConstantNumericExpression.ONE, "velocity", "vel", "speed", "sp");
         damageTypes = config.contains("damage_types") ? DamageType.listFromConfig(config.getObject("damage_types")) : null;
     }
 

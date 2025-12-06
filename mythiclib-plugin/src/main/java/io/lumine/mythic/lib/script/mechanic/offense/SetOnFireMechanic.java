@@ -2,14 +2,14 @@ package io.lumine.mythic.lib.script.mechanic.offense;
 
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.entity.Entity;
 
 @MechanicMetadata
 public class SetOnFireMechanic extends TargetMechanic {
-    private final DoubleFormula ticks;
+    private final NumericExpression ticks;
     private final boolean stack, min, max;
 
     public SetOnFireMechanic(ConfigObject config) {
@@ -18,7 +18,7 @@ public class SetOnFireMechanic extends TargetMechanic {
         stack = config.bool(false, "stack", "add");
         min = config.getBoolean("min", false);
         max = config.getBoolean("max", false);
-        ticks = config.getDoubleFormula("ticks", "t", "duration", "dur", "d", "time");
+        ticks = config.numericExpr("ticks", "t", "duration", "dur", "d", "time");
     }
 
     @Override

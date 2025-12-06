@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.script.mechanic.projectile;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -18,16 +18,14 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 public class ShulkerBulletMechanic extends DirectionMechanic {
-    private final DoubleFormula lifeSpan;
+    private final NumericExpression lifeSpan;
     private final Script onHitEntity;
-
-    private static final DoubleFormula DEFAULT_LIFE_SPAN = DoubleFormula.constant(60);
 
     public ShulkerBulletMechanic(ConfigObject config) {
         super(config);
 
         onHitEntity = config.contains("hit_entity") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("hit_entity")) : null;
-        lifeSpan = config.getDoubleFormula(DEFAULT_LIFE_SPAN, "life_span", "lifespan", "lifetime", "l", "ticks", "duration", "dur", "d");
+        lifeSpan = config.numericExpr(NumericExpression.of(60), "life_span", "lifespan", "lifetime", "l", "ticks", "duration", "dur", "d");
     }
 
     @Override

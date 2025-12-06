@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.script.condition.generic;
 
 import io.lumine.mythic.lib.script.condition.Condition;
 import io.lumine.mythic.lib.script.util.Parsers;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 import java.util.function.BiPredicate;
@@ -17,7 +17,7 @@ import java.util.function.BiPredicate;
 @Deprecated
 public class CompareCondition extends Condition {
     private final Comparator comparator;
-    private final DoubleFormula first, second;
+    private final NumericExpression first, second;
 
     private static final double SMALLEST_DIFFERENCE = .0000001;
 
@@ -25,8 +25,8 @@ public class CompareCondition extends Condition {
     public CompareCondition(ConfigObject config) {
         super(config);
 
-        first = config.getDoubleFormula("first");
-        second = config.getDoubleFormula("second");
+        first = config.numericExpr("first");
+        second = config.numericExpr("second");
         comparator = config.parse(Parsers.COMPARATOR, "comparator");
     }
 

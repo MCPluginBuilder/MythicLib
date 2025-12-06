@@ -1,9 +1,9 @@
 package io.lumine.mythic.lib.script.condition.generic;
 
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.expression.bool.BooleanExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import io.lumine.mythic.lib.util.formula.BooleanExpression;
 
 /**
  * Checks if the specified algebraic expression returns true

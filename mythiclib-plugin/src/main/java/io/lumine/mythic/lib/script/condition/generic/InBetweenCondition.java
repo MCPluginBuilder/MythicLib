@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.condition.generic;
 
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 /**
@@ -11,15 +11,15 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
  */
 @Deprecated
 public class InBetweenCondition extends Condition {
-    private final DoubleFormula first, second, third;
+    private final NumericExpression first, second, third;
 
     @Deprecated
     public InBetweenCondition(ConfigObject config) {
         super(config);
 
-        first = config.getDoubleFormula("first");
-        second = config.getDoubleFormula("second");
-        third = config.getDoubleFormula("third");
+        first = config.numericExpr("first");
+        second = config.numericExpr("second");
+        third = config.numericExpr("third");
     }
 
     @Override

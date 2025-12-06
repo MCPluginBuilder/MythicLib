@@ -9,8 +9,8 @@ import io.lumine.mythic.lib.element.Element;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.script.util.Parsers;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.entity.Entity;
@@ -22,7 +22,7 @@ import java.util.List;
 
 @MechanicMetadata
 public class DamageMechanic extends TargetMechanic {
-    private final DoubleFormula amount;
+    private final NumericExpression amount;
     private final boolean knockback, ignoreImmunity;
     private final List<DamageType> types;
 
@@ -38,7 +38,7 @@ public class DamageMechanic extends TargetMechanic {
     public DamageMechanic(ConfigObject config) {
         super(config);
 
-        amount = config.getDoubleFormula("damage", "dmg", "d", "amount", "amt", "a", "value", "val", "v");
+        amount = config.numericExpr("damage", "dmg", "d", "amount", "amt", "a", "value", "val", "v");
         knockback = config.bool(true, "knockback", "kb", "knock");
         ignoreImmunity = config.bool(false, "ignore_immunity", "ii");
         types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "magic,skill", "damage_type", "dtype", "dt");

@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.Contract;
@@ -111,25 +112,16 @@ public interface ConfigObject {
     }
 
     @NotNull
-    default DoubleFormula getDoubleFormula(@NotNull String... aliases) {
-        for (var key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+    default NumericExpression numericExpr(@NotNull String... aliases) {
+        for (var key : aliases) if (contains(key)) return NumericExpression.compile(getString(key));
         throw new MissingArgumentException(aliases);
     }
 
     @Contract("!null, _ -> !null")
     @Nullable
-    default DoubleFormula getDoubleFormula(@Nullable DoubleFormula defaultValue, @NotNull String... aliases) {
-        for (String key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+    default NumericExpression numericExpr(@Nullable NumericExpression defaultValue, @NotNull String... aliases) {
+        for (String key : aliases) if (contains(key)) return NumericExpression.compile(getString(key));
         return defaultValue;
-    }
-
-    /**
-     * @deprecated
-     * @see #getDoubleFormula(DoubleFormula, String...)
-     */
-    @Deprecated
-    default DoubleFormula getDoubleFormula(String key, DoubleFormula defaultValue) {
-        return contains(key) ? getDoubleFormula(key) : Objects.requireNonNull(defaultValue, "Default value cannot be null");
     }
 
     @Nullable
@@ -174,6 +166,17 @@ public interface ConfigObject {
         return getKey() != null;
     }
 
+    //region Deprecated
+
+    /**
+     * @deprecated
+     * @see #numericExpr(NumericExpression, String...)
+     */
+    @Deprecated
+    default DoubleFormula getDoubleFormula(String key, DoubleFormula defaultValue) {
+        return contains(key) ? getDoubleFormula(key) : Objects.requireNonNull(defaultValue, "Default value cannot be null");
+    }
+
     /**
      * Throws an IAE if any of the given key
      * is not found in the config object
@@ -195,8 +198,27 @@ public interface ConfigObject {
      * Throws IAE if the config has less than X parameters
      *
      * @param count The amount of arguments
+     * @deprecated Use finders instead
      */
+    @Deprecated
     default void validateArgs(int count) {
         Validate.isTrue(getKeys().size() >= count, "Config must have at least " + count + " parameters");
     }
+
+    @NotNull
+    @Deprecated
+    default DoubleFormula getDoubleFormula(@NotNull String... aliases) {
+        for (var key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+        throw new MissingArgumentException(aliases);
+    }
+
+    @Contract("!null, _ -> !null")
+    @Nullable
+    @Deprecated
+    default DoubleFormula getDoubleFormula(@Nullable DoubleFormula defaultValue, @NotNull String... aliases) {
+        for (String key : aliases) if (contains(key)) return new DoubleFormula(getString(key));
+        return defaultValue;
+    }
+
+    //endregion
 }

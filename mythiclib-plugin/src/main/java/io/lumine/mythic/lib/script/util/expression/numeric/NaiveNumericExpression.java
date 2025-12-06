@@ -1,0 +1,26 @@
+package io.lumine.mythic.lib.script.util.expression.numeric;
+
+import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.Lazy;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * When MythicLib fails to precompile a numerical expression into a
+ * NumericalExpression object, this class is used as a fallback.
+ */
+public class NaiveNumericExpression extends NumericExpression {
+    private final String expression;
+
+    public NaiveNumericExpression(@NotNull String expression) {
+        this.expression = expression;
+    }
+
+    public double evaluate(@NotNull Lazy<SkillMetadata> meta) {
+        return NumericExpression.eval(meta.get().parseString(this.expression));
+    }
+
+    @Override
+    public double evaluate(@NotNull SkillMetadata skillMetadata) {
+        return NumericExpression.eval(skillMetadata.parseString(this.expression));
+    }
+}

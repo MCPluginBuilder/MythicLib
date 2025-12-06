@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.comp.formula;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.util.formula.BooleanExpression;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.bool.BooleanExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ public class FormulaParser {
     public Object eval(@NotNull String str) {
 
         try {
-            return NumericalExpression.eval(str);
+            return NumericExpression.eval(str);
         } catch (Exception ignored) {
             try {
                 return BooleanExpression.eval(str);

@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.listener.option;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,7 +42,7 @@ public class VanillaDamageModifiers implements Listener {
 
         try {
             formula = applyPlaceholders(formula, event, player);
-            final double result = NumericalExpression.eval(formula);
+            final double result = NumericExpression.eval(formula);
             event.setDamage(result);
         } catch (Exception exception) {
             MythicLib.plugin.getLogger().log(Level.WARNING, "Could not evaluate formula '" + formula + "' for player '" + player.getUniqueId() + "': " + exception.getMessage());

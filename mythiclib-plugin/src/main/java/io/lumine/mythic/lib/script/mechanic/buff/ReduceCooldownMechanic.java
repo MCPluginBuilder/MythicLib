@@ -3,26 +3,24 @@ package io.lumine.mythic.lib.script.mechanic.buff;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.cooldown.CooldownInfo;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.entity.Entity;
 
 import java.util.function.BiConsumer;
 
 public class ReduceCooldownMechanic extends TargetMechanic {
-    private final DoubleFormula value;
+    private final NumericExpression value;
     private final ReductionType type;
     private final String cooldownPath;
 
     public ReduceCooldownMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("value", "path");
-
-        this.cooldownPath = config.getString("path");
+        this.cooldownPath = config.string("path");
         this.type = config.contains("reduction") ? ReductionType.valueOf(UtilityMethods.enumName(config.getString("reduction"))) : ReductionType.FLAT;
-        this.value = new DoubleFormula(config.getString("value"));
+        this.value = config.numericExpr("value", "val", "v");
     }
 
     @Override

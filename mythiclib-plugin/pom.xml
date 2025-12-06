@@ -58,6 +58,11 @@
             <id>aikar</id>
             <url>https://repo.aikar.co/nexus/content/groups/aikar/</url>
         </repository>
+        <!-- Repo for Crunch math expression evaluator -->
+        <repository>
+            <id>crunch_repo</id>
+            <url>https://redempt.dev</url>
+        </repository>
         <!-- WG has too many dependencies
         <repository>
             <id>sk89q-repo</id>
@@ -124,9 +129,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>net.objecthunter</groupId>
-            <artifactId>exp4j</artifactId>
-            <version>0.4.8</version>
+            <groupId>com.github.Redempt</groupId>
+            <artifactId>Crunch</artifactId>
+            <version>2.0.3</version>
             <optional>true</optional>
         </dependency>
 

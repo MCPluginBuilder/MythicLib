@@ -1,17 +1,17 @@
 package io.lumine.mythic.lib.script.condition.misc;
 
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 public class RandomChanceCondition extends Condition {
-    private final DoubleFormula chance;
+    private final NumericExpression chance;
 
     public RandomChanceCondition(ConfigObject config) {
         super(config);
 
-        this.chance = config.getDoubleFormula("chance", "c", "percentage", "percent", "p");
+        this.chance = config.numericExpr("chance", "c", "percentage", "percent", "p");
     }
 
     @Override

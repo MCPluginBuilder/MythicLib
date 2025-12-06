@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.targeter.location;
 
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
-import io.lumine.mythic.lib.util.DoubleFormula;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 
@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Orientable
 public class CustomLocationTargeter extends LocationTargeter {
-    private final DoubleFormula x, y, z;
+    private final NumericExpression x, y, z;
     private final boolean relative, source;
 
     public CustomLocationTargeter(ConfigObject config) {
@@ -22,9 +22,9 @@ public class CustomLocationTargeter extends LocationTargeter {
 
         config.validateKeys("x", "y", "z");
 
-        this.x = config.getDoubleFormula("x");
-        this.y = config.getDoubleFormula("y");
-        this.z = config.getDoubleFormula("z");
+        this.x = config.numericExpr("x");
+        this.y = config.numericExpr("y");
+        this.z = config.numericExpr("z");
 
         relative = config.getBoolean("relative", true);
         source = config.getBoolean("source", false);

@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.skill.parameter.value;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +59,7 @@ public class CustomScalingFormula implements ScalingFormula {
             if (papi && player != null) parsed = MythicLib.plugin.getPlaceholderParser().parse(player, parsed);
 
             // Evaluate formula
-            return NumericalExpression.eval(parsed);
+            return NumericExpression.eval(parsed);
 
         } catch (RuntimeException exception) {
             throw new FormulaFailsafeException(exception, failsafe);

@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.command.mythiclib.mythiclib.debug;
 
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +17,7 @@ public class ParseCommand extends CommandTreeNode {
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         final String expression = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         // TODO use stat formula instead
-        sender.sendMessage(String.valueOf(NumericalExpression.eval(expression)));
+        sender.sendMessage(String.valueOf(NumericExpression.eval(expression)));
         return CommandResult.SUCCESS;
     }
 }

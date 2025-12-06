@@ -1,9 +1,5 @@
-package io.lumine.mythic.lib.util.formula;
+package io.lumine.mythic.lib.script.util.expression;
 
-import io.lumine.mythic.lib.util.annotation.NotUsed;
-
-@NotUsed
-@Deprecated
 public class EvaluationException extends RuntimeException {
     public EvaluationException(Throwable cause) {
         super(cause);

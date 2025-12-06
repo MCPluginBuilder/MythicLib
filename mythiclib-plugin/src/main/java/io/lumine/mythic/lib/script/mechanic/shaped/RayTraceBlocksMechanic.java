@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.FluidCollisionMode;
@@ -16,7 +16,7 @@ import org.bukkit.util.Vector;
 @Deprecated
 @MechanicMetadata
 public class RayTraceBlocksMechanic extends DirectionMechanic {
-    private final DoubleFormula range, step;
+    private final NumericExpression range, step;
     private final Script onHit, onTick;
     private final boolean ignorePassable;
 
@@ -27,8 +27,8 @@ public class RayTraceBlocksMechanic extends DirectionMechanic {
         onHit = config.contains("hit_block") ? MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("hit_block")) : null;
         ignorePassable = config.getBoolean("ignore_passable", false);
 
-        range = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_RANGE), "range");
-        step = config.getDoubleFormula(DoubleFormula.constant(RayTraceMechanic.DEFAULT_STEP), "step");
+        range = config.numericExpr(NumericExpression.of(50), "range");
+        step = config.numericExpr(NumericExpression.of(.4), "step");
     }
 
     @Override

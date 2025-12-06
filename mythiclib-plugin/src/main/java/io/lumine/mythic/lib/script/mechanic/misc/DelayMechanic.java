@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.script.mechanic.misc;
 import io.lumine.mythic.lib.script.MechanicQueue;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,12 +15,10 @@ import org.jetbrains.annotations.NotNull;
  */
 @MechanicMetadata
 public class DelayMechanic extends Mechanic {
-    private final DoubleFormula delay;
+    private final NumericExpression delay;
 
     public DelayMechanic(ConfigObject config) {
-        config.validateKeys("amount");
-
-        delay = new DoubleFormula(config.getString("amount"));
+        delay = config.numericExpr("amount");
     }
 
     /**

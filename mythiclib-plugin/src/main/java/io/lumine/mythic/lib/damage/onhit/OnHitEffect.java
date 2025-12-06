@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.damage.onhit;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
 import io.lumine.mythic.lib.script.Script;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.util.PostLoadAction;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +15,7 @@ public class OnHitEffect implements CooldownObject {
 
     private final @NotNull Script onAttack;
     private final @Nullable Script preAttack;
-    private final @Nullable NumericalExpression cooldownFormula, rollFormula;
+    private final @Nullable NumericExpression cooldownFormula, rollFormula;
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
     });
@@ -25,8 +25,8 @@ public class OnHitEffect implements CooldownObject {
         this.cooldownPath = "mitigation:" + id;
         this.skipEvent = config.getBoolean("skip_event", false);
 
-        this.cooldownFormula = config.contains("cooldown") ? NumericalExpression.compile(config.getString("cooldown")) : null;
-        this.rollFormula = config.contains("roll") ? NumericalExpression.compile(config.getString("roll")) : null;
+        this.cooldownFormula = config.contains("cooldown") ? NumericExpression.compile(config.getString("cooldown")) : null;
+        this.rollFormula = config.contains("roll") ? NumericExpression.compile(config.getString("roll")) : null;
 
         this.onAttack = MythicLib.plugin.getSkills().loadScript(config.get("on_attack"));
         this.preAttack = config.contains("pre_attack") ? MythicLib.plugin.getSkills().loadScript(config.get("pre_attack")) : null;
@@ -37,7 +37,7 @@ public class OnHitEffect implements CooldownObject {
     }
 
     @Nullable
-    public NumericalExpression getCooldown() {
+    public NumericExpression getCooldown() {
         return cooldownFormula;
     }
 
@@ -46,7 +46,7 @@ public class OnHitEffect implements CooldownObject {
     }
 
     @Nullable
-    public NumericalExpression getRoll() {
+    public NumericExpression getRoll() {
         return rollFormula;
     }
 
