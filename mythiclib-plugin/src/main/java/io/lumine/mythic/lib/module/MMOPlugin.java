@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.module;
 
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -35,9 +34,6 @@ public abstract class MMOPlugin extends JavaPlugin {
         return namespacedKey;
     }
 
-    @NotNull
-    public abstract SynchronizedDataManager<?, ?> getRawPlayerDataManager();
-
     public void debug(@NotNull String message) {
         UtilityMethods.debug(this, message);
     }
@@ -45,14 +41,5 @@ public abstract class MMOPlugin extends JavaPlugin {
     public void debug(@Nullable String source, @NotNull String message) {
         UtilityMethods.debug(this, source, message);
     }
-
-    //region Deprecated
-
-    @Deprecated
-    public boolean hasProfiles() {
-        return isProfilePlugin();
-    }
-
-    //endregion
 }
 

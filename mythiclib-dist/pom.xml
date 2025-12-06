@@ -83,7 +83,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <!--
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-vr</artifactId>
@@ -210,7 +209,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        -->
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-v1_21_r3</artifactId>
@@ -218,7 +216,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <!--
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-v1_21_r4</artifactId>
@@ -233,7 +230,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        -->
         <dependency>
             <groupId>io.lumine</groupId>
             <artifactId>mythiclib-v1_21_r6</artifactId>

@@ -43,7 +43,6 @@ import java.util.logging.Level;
 public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements Closeable {
     private final MMOPlugin owning;
     private final Map<UUID, H> activeData = Collections.synchronizedMap(new HashMap<>());
-    private final boolean profilePlugin;
 
     private Database<H, O> database;
     private DataSaveQueue<H> saveQueue;
@@ -51,7 +50,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     public SynchronizedDataManager(@NotNull MMOPlugin owning) {
         this.owning = Objects.requireNonNull(owning, "Plugin cannot be null");
-        this.profilePlugin = owning.isProfilePlugin();
     }
 
     @NotNull
@@ -167,11 +165,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, joinEventPriority, event -> setup(event.getPlayer()), owning, false);
 
         // Save data on logout
-        if (profilePlugin || !MythicLib.plugin.hasProfiles())
+        if (owning.isProfilePlugin() || !MythicLib.plugin.hasProfiles())
             UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SaveReason.LOG_OUT), owning, false);
 
         // ProfileAPI compatibility
-        if (!profilePlugin && MythicLib.plugin.hasProfiles()) {
+        if (!owning.isProfilePlugin() && MythicLib.plugin.hasProfiles()) {
             owning.getLogger().log(Level.INFO, "Hooked onto ProfileAPI");
 
             // Placeholders for MMOProfiles
@@ -284,7 +282,13 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         if (holder.isSessionReady()) return false;
 
         // Profile plugins always require on-login sync
-        if (profilePlugin) return true;
+        if (owning.isProfilePlugin()) {
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
+                MythicLib.plugin.onLoginProfileCallback.accept(holder);
+                return false;
+            }
+            return true;
+        }
 
         // No profile plugin - sync like usual
         if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) return true;

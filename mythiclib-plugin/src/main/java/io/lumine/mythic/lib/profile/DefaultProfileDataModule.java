@@ -28,9 +28,11 @@ import org.jetbrains.annotations.NotNull;
 public class DefaultProfileDataModule implements ProfileDataModule {
     private final MMOPlugin plugin;
     private final NamespacedKey namespacedKey;
+    private final SynchronizedDataManager<?, ?> playerDataManager;
 
-    public DefaultProfileDataModule(@NotNull MMOPlugin plugin) {
-        this.plugin = plugin;
+    public DefaultProfileDataModule(@NotNull SynchronizedDataManager<?, ?> playerDataManager) {
+        this.plugin = playerDataManager.getOwningPlugin();
+        this.playerDataManager = playerDataManager;
         this.namespacedKey = plugin.getNamespacedKey();
     }
 
@@ -48,15 +50,13 @@ public class DefaultProfileDataModule implements ProfileDataModule {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @EventHandler
     public void onProfileSelect(ProfileSelectEvent event) {
-        final SynchronizedDataManager manager = plugin.getRawPlayerDataManager();
-        final var playerData = manager.get(event.getPlayer());
-
-        manager.loadData(playerData);
+        final var playerData = this.playerDataManager.get(event.getPlayer());
+        ((SynchronizedDataManager) this.playerDataManager).loadData(playerData);
     }
 
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
-        plugin.getRawPlayerDataManager().unregister(event.getPlayer(), adapt(event.getReason()));
+        playerDataManager.unregister(event.getPlayer(), adapt(event.getReason()));
     }
 
     @EventHandler
@@ -80,7 +80,7 @@ public class DefaultProfileDataModule implements ProfileDataModule {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLogout(PlayerQuitEvent event) {
         // garbage collect player data
-        plugin.getRawPlayerDataManager().garbageCollect(event.getPlayer());
+        playerDataManager.garbageCollect(event.getPlayer());
     }
 
     @NotNull
