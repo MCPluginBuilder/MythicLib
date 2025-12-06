@@ -18,10 +18,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "radius"})
 public class Overload extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Overload(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -42,7 +48,7 @@ public class Overload extends SkillHandler<SimpleSkillResult> {
 
         for (Entity entity : caster.getNearbyEntities(radius, radius, radius))
             if (UtilityMethods.canTarget(caster, entity))
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
 
         double step = 12 + (radius * 2.5);
         for (double j = 0; j < Math.PI * 2; j += Math.PI / step) {

@@ -16,10 +16,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "limit", "radius"})
 public class Sparkle extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Sparkle(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -36,7 +42,7 @@ public class Sparkle extends SkillHandler<TargetSkillResult> {
         double radius = skillMeta.getParameter("radius");
         double limit = skillMeta.getParameter("limit");
 
-        skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC);
+        skillMeta.getCaster().attack(target, damage, damageTypes);
         target.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), target.getLocation().add(0, 1, 0), 0);
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 2);
 
@@ -44,7 +50,7 @@ public class Sparkle extends SkillHandler<TargetSkillResult> {
         for (Entity entity : target.getNearbyEntities(radius, radius, radius))
             if (count < limit && UtilityMethods.canTarget(caster, entity)) {
                 count++;
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 entity.getWorld().playSound(entity.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 2);
                 Location loc_t = target.getLocation().add(0, .75, 0);
                 Location loc_ent = entity.getLocation().add(0, .75, 0);

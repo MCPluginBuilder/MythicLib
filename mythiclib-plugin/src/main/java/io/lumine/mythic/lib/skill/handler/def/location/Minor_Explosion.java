@@ -15,10 +15,16 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knockback", "radius"})
 public class Minor_Explosion extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Minor_Explosion(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -41,7 +47,7 @@ public class Minor_Explosion extends SkillHandler<LocationSkillResult> {
 
         for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
             if (entity.getLocation().distanceSquared(loc) < radiusSquared && UtilityMethods.canTarget(caster, entity)) {
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 entity.setVelocity(UtilityMethods.safeNormalize(entity.getLocation().subtract(loc).toVector().setY(0)).setY(.2).multiply(2 * knockback));
             }
     }

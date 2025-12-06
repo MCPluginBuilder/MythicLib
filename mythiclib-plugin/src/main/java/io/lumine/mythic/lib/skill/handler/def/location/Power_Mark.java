@@ -27,10 +27,16 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration", "stun", "ratio"})
 public class Power_Mark extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Power_Mark(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -45,7 +51,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
         loc.getWorld().playSound(loc, Sounds.BLOCK_END_PORTAL_FRAME_FILL, 2, 1);
     }
 
-    static class PowerMark extends TemporaryHandler {
+    class PowerMark extends TemporaryHandler {
         private final PlayerMetadata caster;
         private final Location loc;
 
@@ -90,7 +96,7 @@ public class Power_Mark extends SkillHandler<LocationSkillResult> {
                         for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                             if (entity.getLocation().distanceSquared(loc) < 25 && UtilityMethods.canTarget(caster.getPlayer(), entity)) {
                                 ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), (int) (stun * 20), 10, false, false));
-                                caster.attack((LivingEntity) entity, accumulate, DamageType.SKILL, DamageType.MAGIC);
+                                caster.attack((LivingEntity) entity, accumulate, damageTypes);
                                 entity.setVelocity(format(entity.getLocation().subtract(loc).toVector().setY(0)).setY(.3));
                             }
                         return;

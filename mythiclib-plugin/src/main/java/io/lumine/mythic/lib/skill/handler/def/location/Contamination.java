@@ -19,10 +19,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "duration"})
 public class Contamination extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Contamination(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), "damage_types");
     }
 
     @Override
@@ -62,7 +68,7 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
                     loc.getWorld().playSound(loc, Sounds.ENTITY_ENDERMAN_HURT, 2, 1);
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) <= 25)
-                            skillMeta.getCaster().attack((LivingEntity) entity, dps, false, DamageType.SKILL, DamageType.MAGIC);
+                            skillMeta.getCaster().attack((LivingEntity) entity, dps, false, damageTypes);
                 }
             }
         });

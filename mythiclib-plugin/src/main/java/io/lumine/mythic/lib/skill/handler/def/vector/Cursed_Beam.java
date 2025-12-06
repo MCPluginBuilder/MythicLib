@@ -25,8 +25,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"damage", "duration"})
 public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Cursed_Beam(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -72,7 +76,7 @@ public class Cursed_Beam extends SkillHandler<VectorSkillResult> {
                             // Damage nearby entities
                             for (Entity entity : entities)
                                 if (UtilityMethods.canTarget(caster, entity) && loc.distanceSquared(entity.getLocation().add(0, 1, 0)) < 9) {
-                                    skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                                    skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                                     ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, (int) (duration * 20), 0));
                                 }
 

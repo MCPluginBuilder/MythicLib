@@ -19,10 +19,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knockback", "radius"})
 public class Life_Ender extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Life_Ender(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -67,7 +73,7 @@ public class Life_Ender extends SkillHandler<LocationSkillResult> {
 
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(source))
                         if (entity.getLocation().distanceSquared(source) < radius * radius && UtilityMethods.canTarget(caster, entity)) {
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                             entity.setVelocity(entity.getLocation().subtract(source).toVector().setY(.75).normalize().multiply(knockback));
                         }
 

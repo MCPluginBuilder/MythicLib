@@ -15,10 +15,16 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "duration", "amplifier"})
 public class Death_Mark extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Death_Mark(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), "damage_types");
     }
 
     @Override
@@ -45,7 +51,7 @@ public class Death_Mark extends SkillHandler<TargetSkillResult> {
                 VParticle.INSTANT_EFFECT.spawnSafeSpell(target.getLocation(), 4, .2, 0, .2, 0);
 
                 if (ti % 20 == 0)
-                    skillMeta.getCaster().attack(target, dps, false, DamageType.SKILL, DamageType.MAGIC);
+                    skillMeta.getCaster().attack(target, dps, false, damageTypes);
             }
         });
 

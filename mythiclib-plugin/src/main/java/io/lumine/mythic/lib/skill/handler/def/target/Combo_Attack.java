@@ -18,10 +18,16 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "count"})
 public class Combo_Attack extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Combo_Attack(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -38,7 +44,7 @@ public class Combo_Attack extends SkillHandler<TargetSkillResult> {
         final LivingEntity target = result.getTarget();
 
         playEffect(target);
-        skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.PHYSICAL);
+        skillMeta.getCaster().attack(target, damage, damageTypes);
 
         TemporaryHandler.task(skillMeta.getCaster().getData(),
                 runnable -> runnable.runTaskTimer(MythicLib.plugin, ATTACK_PERIOD, ATTACK_PERIOD),

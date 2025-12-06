@@ -26,8 +26,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"damage", "duration", "amplifier"})
 public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Ice_Crystal(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -79,7 +83,7 @@ public class Ice_Crystal extends SkillHandler<VectorSkillResult> {
                             loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
                             loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 48, 0, 0, 0, .2);
                             loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 2, 1);
-                            skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), damageTypes);
                             ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(),
                                     (int) (skillMeta.getParameter("duration") * 20), (int) skillMeta.getParameter("amplifier")));
                             handler.close();

@@ -29,7 +29,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
     public Item_Bomb(ConfigurationSection config) {
         super(config);
 
-        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), config.get("damage_types"));
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Item_Bomb extends SkillHandler<ItemSkillResult> {
 
                     for (Entity entity : item.getEntity().getNearbyEntities(radius, radius, radius))
                         if (UtilityMethods.canTarget(caster, entity)) {
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.PHYSICAL);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                             UtilityMethods.forcePotionEffect((LivingEntity) entity, VPotionEffectType.SLOWNESS.get(), slowDuration, (int) slowAmplifier);
                         }
 

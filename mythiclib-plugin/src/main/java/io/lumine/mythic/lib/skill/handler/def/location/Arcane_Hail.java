@@ -18,10 +18,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "duration", "radius"})
 public class Arcane_Hail extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Arcane_Hail(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -51,7 +57,7 @@ public class Arcane_Hail extends SkillHandler<LocationSkillResult> {
                 loc1.getWorld().playSound(loc1, Sounds.ENTITY_ENDERMAN_HURT, 1, 0);
                 for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc1))
                     if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc1) <= 4)
-                        skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                        skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 loc1.getWorld().spawnParticle(VParticle.WITCH.get(), loc1, 12, 0, 0, 0, .1);
                 loc1.getWorld().spawnParticle(VParticle.SMOKE.get(), loc1, 6, 0, 0, 0, .1);
 

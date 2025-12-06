@@ -21,12 +21,18 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "slow"})
 public class Ice_Spikes extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     private static final double RADIUS = 3;
 
     public Ice_Spikes(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @NotNull
@@ -62,7 +68,7 @@ public class Ice_Spikes extends SkillHandler<LocationSkillResult> {
                 Line3D line = new Line3D(loc, new Vector(0, 1, 0));
                 for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc1))
                     if (line.distanceSquared(entity.getLocation().toVector()) < RADIUS && Math.abs(entity.getLocation().getY() - loc1.getY()) < 10 && UtilityMethods.canTarget(caster, entity)) {
-                        skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                        skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                         ((LivingEntity) entity).addPotionEffect(new PotionEffect(VPotionEffectType.SLOWNESS.get(), slow, 0));
                     }
             }

@@ -22,8 +22,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"damage", "duration"})
 public class Holy_Missile extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Holy_Missile(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -70,7 +74,7 @@ public class Holy_Missile extends SkillHandler<VectorSkillResult> {
                             loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 1);
                             loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 32, 0, 0, 0, .2);
                             loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 2, 1);
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                             handler.close();
                             return;
                         }

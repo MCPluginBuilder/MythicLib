@@ -20,10 +20,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration", "damage", "knockback"})
 public class Firefly extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Firefly(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -66,7 +72,7 @@ public class Firefly extends SkillHandler<SimpleSkillResult> {
                         caster.getWorld().spawnParticle(Particle.FLAME, caster.getLocation().add(0, 1, 0), 24, 0, 0, 0, .3);
                         entity.setVelocity(caster.getVelocity().setY(0.3).multiply(1.7 * knockback));
                         caster.setVelocity(caster.getEyeLocation().getDirection().multiply(-3).setY(.5));
-                        skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                        skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                         handler.close();
                         return;
                     }

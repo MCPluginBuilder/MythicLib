@@ -21,12 +21,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"radius", "ratio", "extra"})
 public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     private static final double PARTICLES_PER_METER = 5;
 
     public Empowered_Attack(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -41,7 +47,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
         new EmpoweredAttack(skillMeta.getCaster(), skillMeta.getParameter("extra"), skillMeta.getParameter("ratio"), skillMeta.getParameter("radius"));
     }
 
-    static class EmpoweredAttack extends TemporaryHandler {
+    class EmpoweredAttack extends TemporaryHandler {
         private final PlayerMetadata caster;
         private final double c, r, rad;
 
@@ -85,7 +91,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
                 for (Entity entity : target.getNearbyEntities(rad, rad, rad))
                     if (UtilityMethods.canTarget(caster.getPlayer(), entity)) {
                         drawVector(src, entity.getLocation().add(0, entity.getHeight() / 2, 0).subtract(src).toVector());
-                        event.getAttacker().attack((LivingEntity) entity, sweep, DamageType.SKILL, DamageType.PHYSICAL);
+                        event.getAttacker().attack((LivingEntity) entity, sweep, damageTypes);
                     }
 
                 /*

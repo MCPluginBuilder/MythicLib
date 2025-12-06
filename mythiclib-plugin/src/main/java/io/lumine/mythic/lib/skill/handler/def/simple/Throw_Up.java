@@ -22,10 +22,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration", "damage"})
 public class Throw_Up extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Throw_Up(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -57,7 +63,7 @@ public class Throw_Up extends SkillHandler<SimpleSkillResult> {
                 if (j % 5 == 0)
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (entity.getLocation().distanceSquared(loc) < 40 && caster.getEyeLocation().getDirection().angle(entity.getLocation().toVector().subtract(caster.getLocation().toVector())) < Math.PI / 6 && UtilityMethods.canTarget(caster, entity))
-                            skillMeta.getCaster().attack((LivingEntity) entity, dps, DamageType.SKILL, DamageType.PHYSICAL, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) entity, dps, damageTypes);
 
                 loc.getWorld().playSound(loc, Sounds.ENTITY_ZOMBIE_HURT, 1, 1);
 

@@ -17,10 +17,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knockback"})
 public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Heavy_Charge(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -55,7 +61,7 @@ public class Heavy_Charge extends SkillHandler<VectorSkillResult> {
                         caster.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), target.getLocation().add(0, 1, 0), 0);
                         target.setVelocity(caster.getVelocity().setY(0.3).multiply(1.7 * knockback));
                         caster.setVelocity(caster.getVelocity().setX(0).setY(0).setZ(0));
-                        skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.PHYSICAL);
+                        skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), damageTypes);
                         handler.close();
                         break;
                     }

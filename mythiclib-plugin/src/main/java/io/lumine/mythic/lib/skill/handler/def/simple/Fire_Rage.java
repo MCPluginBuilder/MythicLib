@@ -23,10 +23,16 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration", "count", "damage", "ignite"})
 public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Fire_Rage(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.PROJECTILE, DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -39,7 +45,7 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
         new Handler(skillMeta);
     }
 
-    static class Handler extends TemporaryHandler {
+    class Handler extends TemporaryHandler {
         private final PlayerMetadata caster;
         private final int maxCount, ignite;
         private final double damage;
@@ -134,7 +140,7 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
                             loc.getWorld().spawnParticle(Particle.FLAME, loc, 32, 0, 0, 0, .1);
                             loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                             target.setFireTicks(target.getFireTicks() + ignite);
-                            caster.attack((LivingEntity) target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            caster.attack((LivingEntity) target, damage, damageTypes);
                             handler.close();
                         }
                 }

@@ -19,10 +19,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "ignite", "speed", "radius"})
 public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Bouncy_Fireball(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -76,7 +82,7 @@ public class Bouncy_Fireball extends SkillHandler<VectorSkillResult> {
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (entity.getLocation().distanceSquared(loc) < radius * radius)
                             if (UtilityMethods.canTarget(caster, entity)) {
-                                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                                 entity.setFireTicks((int) (ignite * 20));
                             }
 

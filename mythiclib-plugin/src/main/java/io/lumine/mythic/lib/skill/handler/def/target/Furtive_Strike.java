@@ -13,10 +13,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "extra", "radius"})
 public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Furtive_Strike(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -39,6 +45,6 @@ public class Furtive_Strike extends SkillHandler<TargetSkillResult> {
             damage *= 1 + skillMeta.getParameter("extra") / 100;
         }
 
-        skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.PHYSICAL);
+        skillMeta.getCaster().attack(target, damage, damageTypes);
     }
 }

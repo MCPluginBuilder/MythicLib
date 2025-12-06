@@ -18,10 +18,16 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage"})
 public class Thrust extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Thrust(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -43,7 +49,7 @@ public class Thrust extends SkillHandler<VectorSkillResult> {
             loc.add(vec);
             for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                 if (UtilityMethods.canTarget(caster, loc, entity))
-                    skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.PHYSICAL);
+                    skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
             loc.getWorld().spawnParticle(VParticle.LARGE_SMOKE.get(), loc, 0);
         }
     }

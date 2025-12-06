@@ -20,10 +20,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knockback", "radius"})
 public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Fire_Meteor(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -61,7 +67,7 @@ public class Fire_Meteor extends SkillHandler<VectorSkillResult> {
                     double radius = skillMeta.getParameter("radius");
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
                         if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) < radius * radius) {
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                             entity.setVelocity(entity.getLocation().toVector().subtract(loc.toVector()).multiply(.1 * knockback).setY(.4 * knockback));
                         }
 

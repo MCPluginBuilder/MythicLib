@@ -20,10 +20,16 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knockback", "length", "max", "extra"})
 public class Void_Zapper extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Void_Zapper(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @NotNull
@@ -80,7 +86,7 @@ public class Void_Zapper extends SkillHandler<SimpleSkillResult> {
 
         void hit(LivingEntity target, Vector dir) {
             double damage = skillMeta.getParameter("damage") * (1 + skillMeta.getParameter("extra") * bounces / 100d);
-            skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+            skillMeta.getCaster().attack(target, damage, damageTypes);
             target.setVelocity(dir.multiply(skillMeta.getParameter("knockback")));
         }
 

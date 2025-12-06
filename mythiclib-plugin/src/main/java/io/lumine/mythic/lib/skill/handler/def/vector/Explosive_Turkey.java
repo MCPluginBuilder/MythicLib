@@ -20,10 +20,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "radius", "duration", "knockback"})
 public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Explosive_Turkey(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -62,7 +68,7 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
     /**
      * This fixes an issue where chickens sometimes drop
      */
-    static class Handler extends TemporaryHandler {
+    class Handler extends TemporaryHandler {
         private final Chicken chicken;
         private final Vector vec;
         private final PlayerMetadata caster;
@@ -112,7 +118,7 @@ public class Explosive_Turkey extends SkillHandler<VectorSkillResult> {
                         for (Entity entity : UtilityMethods.getNearbyChunkEntities(chicken.getLocation()))
                             if (!entity.isDead() && entity.getLocation().distanceSquared(chicken.getLocation()) < radiusSquared
                                     && UtilityMethods.canTarget(caster.getPlayer(), entity)) {
-                                caster.attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                                caster.attack((LivingEntity) entity, damage, damageTypes);
                                 entity.setVelocity(entity.getLocation().toVector().subtract(chicken.getLocation().toVector()).multiply(.1 * knockback)
                                         .setY(.4 * knockback));
                             }

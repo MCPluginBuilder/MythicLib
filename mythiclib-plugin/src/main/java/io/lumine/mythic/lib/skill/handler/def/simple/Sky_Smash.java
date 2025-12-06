@@ -17,10 +17,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "knock-up"})
 public class Sky_Smash extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Sky_Smash(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -43,7 +49,7 @@ public class Sky_Smash extends SkillHandler<SimpleSkillResult> {
 
         for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
             if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) < 10) {
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.PHYSICAL);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 Location loc1 = caster.getEyeLocation().clone();
                 loc1.setPitch(-70);
                 entity.setVelocity(loc1.getDirection().multiply(1.2 * knockUp));

@@ -19,10 +19,16 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "duration", "amplifier"})
 public class Corrupt extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Corrupt(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -51,7 +57,7 @@ public class Corrupt extends SkillHandler<LocationSkillResult> {
 
         for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
             if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) <= radius * radius) {
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 ((LivingEntity) entity).removePotionEffect(PotionEffectType.WITHER);
                 ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.WITHER, (int) (duration * 20), (int) amplifier));
             }

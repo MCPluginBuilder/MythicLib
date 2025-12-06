@@ -23,8 +23,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"damage", "ignite"})
 public class Firebolt extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Firebolt(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -66,7 +70,7 @@ public class Firebolt extends SkillHandler<VectorSkillResult> {
                             loc.getWorld().spawnParticle(Particle.LAVA, loc, 8, 0, 0, 0, 0);
                             loc.getWorld().spawnParticle(VParticle.LARGE_EXPLOSION.get(), loc, 0);
                             loc.getWorld().playSound(loc, Sounds.ENTITY_GENERIC_EXPLODE, 3, 1);
-                            skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) target, skillMeta.getParameter("damage"), damageTypes);
                             target.setFireTicks((int) skillMeta.getParameter("ignite") * 20);
                             handler.close();
                             return;

@@ -18,10 +18,16 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "radius", "knockback"})
 public class Circular_Slash extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Circular_Slash(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -39,7 +45,7 @@ public class Circular_Slash extends SkillHandler<SimpleSkillResult> {
 
         for (Entity entity : caster.getNearbyEntities(radius, radius, radius))
             if (UtilityMethods.canTarget(caster, entity)) {
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.PHYSICAL);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                 Vector v1 = entity.getLocation().toVector();
                 Vector v2 = caster.getLocation().toVector();
                 double y = .5;

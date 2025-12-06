@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -116,7 +117,7 @@ public class AttackMetadata {
 
     /**
      * @deprecated Cloning is now ambiguous because no target entity is specified. Please use the
-     *         new constructor/{@link PlayerMetadata#attack(LivingEntity, double, DamageType...)} instead of cloning
+     *         new constructor/{@link PlayerMetadata#attack(LivingEntity, double, java.util.List)} instead of cloning
      */
     @Deprecated
     public AttackMetadata clone() {
@@ -125,7 +126,7 @@ public class AttackMetadata {
 
     /**
      * @deprecated There is no longer such a method in the AttackMetadata class.
-     *         Use {@link PlayerMetadata#attack(LivingEntity, double, DamageType...)} instead to have a player
+     *         Use {@link PlayerMetadata#attack(LivingEntity, double, java.util.List)} instead to have a player
      *         deal damage.
      */
     @Deprecated
@@ -135,7 +136,7 @@ public class AttackMetadata {
 
     /**
      * @deprecated There is no longer such a method in the AttackMetadata class.
-     *         Use {@link PlayerMetadata#attack(LivingEntity, double, DamageType...)} instead to have a player
+     *         Use {@link PlayerMetadata#attack(LivingEntity, double, java.util.List)} instead to have a player
      *         deal damage.
      */
     @Deprecated
@@ -189,7 +190,7 @@ public class AttackMetadata {
     public AttackMetadata attack(LivingEntity target, double damage, DamageType... types) {
         Validate.notNull(attacker, "No attacker was found");
         Validate.isTrue(attacker instanceof PlayerMetadata, "Attacker is not a player");
-        return ((PlayerMetadata) attacker).attack(target, damage, types);
+        return ((PlayerMetadata) attacker).attack(target, damage, Arrays.asList(types));
     }
 
     /**
@@ -199,6 +200,6 @@ public class AttackMetadata {
     public AttackMetadata attack(LivingEntity target, double damage, boolean knockback, DamageType... types) {
         Validate.notNull(attacker, "No attacker was found");
         Validate.isTrue(attacker instanceof PlayerMetadata, "Attacker is not a player");
-        return ((PlayerMetadata) attacker).attack(target, damage, knockback, types);
+        return ((PlayerMetadata) attacker).attack(target, damage, knockback, Arrays.asList(types));
     }
 }

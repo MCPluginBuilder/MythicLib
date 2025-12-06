@@ -17,10 +17,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"ignite", "damage"})
 public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Magma_Fissure(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -54,7 +60,7 @@ public class Magma_Fissure extends SkillHandler<TargetSkillResult> {
                 if (target.getLocation().distanceSquared(loc) < 1) {
                     loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
-                    skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
+                    skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), damageTypes);
                     handler.close();
                 }
             }

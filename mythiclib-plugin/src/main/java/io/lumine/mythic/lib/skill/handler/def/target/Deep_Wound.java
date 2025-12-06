@@ -14,10 +14,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "extra"})
 public class Deep_Wound extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Deep_Wound(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @NotNull
@@ -37,6 +43,6 @@ public class Deep_Wound extends SkillHandler<TargetSkillResult> {
         final double max = target.getAttribute(Attributes.MAX_HEALTH).getValue();
         final double ratio = (max - target.getHealth()) / max;
         final double damage = skillMeta.getParameter("damage") * (1 + skillMeta.getParameter("extra") * ratio / 100);
-        skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.PHYSICAL);
+        skillMeta.getCaster().attack(target, damage, damageTypes);
     }
 }

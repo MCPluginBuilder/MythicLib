@@ -22,8 +22,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"damage", "length"})
 public class Light_Dash extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Light_Dash(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -55,7 +59,7 @@ public class Light_Dash extends SkillHandler<SimpleSkillResult> {
                 for (Entity entity : caster.getNearbyEntities(1, 1, 1))
                     if (!hit.contains(entity.getEntityId()) && UtilityMethods.canTarget(caster, entity)) {
                         hit.add(entity.getEntityId());
-                        skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.PHYSICAL);
+                        skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                     }
             }
         });

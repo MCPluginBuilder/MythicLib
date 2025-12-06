@@ -17,10 +17,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "ignite"})
 public class Fire_Storm extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Fire_Storm(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -54,7 +60,7 @@ public class Fire_Storm extends SkillHandler<TargetSkillResult> {
                         randomVector(caster.getPlayer()), () -> {
                     target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 1, 2);
                     target.getWorld().spawnParticle(VParticle.SMOKE.get(), target.getLocation().add(0, target.getHeight() / 2, 0), 8, 0, 0, 0, .15);
-                    skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                    skillMeta.getCaster().attack(target, damage, damageTypes);
                     target.setFireTicks(ignite);
 
                 }, 2, Particle.FLAME);

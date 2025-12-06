@@ -17,10 +17,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"ignite", "damage"})
 public class Targeted_Fireball extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Targeted_Fireball(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @Override
@@ -58,7 +64,7 @@ public class Targeted_Fireball extends SkillHandler<TargetSkillResult> {
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 32, 0, 0, 0, .1);
                     loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
-                    skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                    skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), damageTypes);
                     handler.close();
                 }
             }

@@ -25,12 +25,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @BuiltinSkillHandler(mods = {"damage", "fangs"})
 public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Corrupted_Fangs(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -46,7 +51,7 @@ public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
         new Handler(skillMeta, result.getTarget());
     }
 
-    static class Handler extends TemporaryHandler {
+    class Handler extends TemporaryHandler {
         final Set<Integer> entities = new HashSet<>();
         final PlayerMetadata caster;
         final double skillDamage;
@@ -96,7 +101,7 @@ public class Corrupted_Fangs extends SkillHandler<VectorSkillResult> {
                 event.setCancelled(true);
 
                 if (UtilityMethods.canTarget(caster.getPlayer(), event.getEntity()))
-                    caster.attack((LivingEntity) event.getEntity(), skillDamage, DamageType.MAGIC, DamageType.SKILL);
+                    caster.attack((LivingEntity) event.getEntity(), skillDamage, damageTypes);
             }
         }
     }

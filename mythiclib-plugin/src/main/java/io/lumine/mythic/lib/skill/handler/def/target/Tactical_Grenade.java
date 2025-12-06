@@ -24,8 +24,12 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"knock-up", "damage", "radius"})
 public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Tactical_Grenade(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -71,7 +75,7 @@ public class Tactical_Grenade extends SkillHandler<TargetSkillResult> {
                         if (entity.equals(target)) handler.close();
                         else hit.add(entity.getEntityId());
 
-                        skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
+                        skillMeta.getCaster().attack((LivingEntity) entity, skillMeta.getParameter("damage"), damageTypes);
                         entity.setVelocity(entity.getVelocity().add(offsetVector(knockup)));
                     }
             }

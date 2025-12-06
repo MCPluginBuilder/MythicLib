@@ -22,10 +22,16 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "ignite", "ratio"})
 public class Fireball extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Fireball(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     @NotNull
@@ -66,7 +72,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                     loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
                     double damage = skillMeta.getParameter("damage");
-                    skillMeta.getCaster().attack(target, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                    skillMeta.getCaster().attack(target, damage, damageTypes);
 
                     TemporaryHandler.task(skillMeta.getCaster().getData(), r -> r.runTaskTimer(MythicLib.plugin, 3, 3), handler1 -> new BukkitRunnable() {
                         int i = 0;
@@ -84,7 +90,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
 
                             RayTrace result = new RayTrace(loc, dir, range, entity -> UtilityMethods.canTarget(caster, entity));
                             if (result.hasHit())
-                                skillMeta.getCaster().attack(result.getHit(), damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                                skillMeta.getCaster().attack(result.getHit(), damage, damageTypes);
                             result.draw(.13, tick -> tick.getWorld().spawnParticle(Particle.FLAME, tick, 0));
                         }
                     });

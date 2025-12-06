@@ -14,9 +14,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A class representing a player at a specific point in time. It is
@@ -97,7 +95,7 @@ public class PlayerMetadata implements PlayerStatProvider {
      * @return The (modified) attack metadata
      */
     @NotNull
-    public AttackMetadata attack(LivingEntity target, double damage, DamageType... types) {
+    public AttackMetadata attack(LivingEntity target, double damage, @NotNull List<DamageType> types) {
         return attack(target, damage, true, types);
     }
 
@@ -114,16 +112,16 @@ public class PlayerMetadata implements PlayerStatProvider {
      * @return The (modified) attack metadata
      */
     @NotNull
-    public AttackMetadata attack(LivingEntity target, double damage, boolean knockback, DamageType... types) {
+    public AttackMetadata attack(LivingEntity target, double damage, boolean knockback, @NotNull List<DamageType> types) {
 
         // Check if entity is not already being damaged
-        final @Nullable AttackMetadata opt = MythicLib.plugin.getDamage().getRegisteredAttackMetadata(target);
+        final @Nullable var opt = MythicLib.plugin.getDamage().getRegisteredAttackMetadata(target);
         if (opt != null) {
             opt.getDamage().add(damage, types);
             return opt;
         }
 
-        final AttackMetadata attackMeta = new AttackMetadata(new DamageMetadata(damage, types), target, this);
+        final var attackMeta = new AttackMetadata(new DamageMetadata(damage, types), target, this);
         MythicLib.plugin.getDamage().registerAttack(attackMeta, knockback, false);
         return attackMeta;
     }
@@ -133,4 +131,18 @@ public class PlayerMetadata implements PlayerStatProvider {
         // Data is already cached
         return this;
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public AttackMetadata attack(LivingEntity target, double damage, DamageType... types) {
+        return attack(target, damage, Arrays.asList(types));
+    }
+
+    @Deprecated
+    public AttackMetadata attack(LivingEntity target, double damage, boolean knockback, DamageType... types) {
+        return attack(target, damage, knockback, Arrays.asList(types));
+    }
+
+    //endregion
 }

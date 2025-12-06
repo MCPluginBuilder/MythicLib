@@ -21,12 +21,17 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.logging.Level;
 
 @BuiltinSkillHandler(mods = {"damage", "radius", "force"})
 public class Present_Throw extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Present_Throw(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE), config.get("damage_types"));
     }
 
     private static final ItemStack PRESENT_ITEMSTACK = new ItemStack(Material.PLAYER_HEAD);
@@ -83,7 +88,7 @@ public class Present_Throw extends SkillHandler<SimpleSkillResult> {
                     item.getEntity().getWorld().playSound(item.getEntity().getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_TWINKLE, 2, 1.5f);
                     for (Entity entity : UtilityMethods.getNearbyChunkEntities(item.getEntity().getLocation()))
                         if (entity.getLocation().distanceSquared(item.getEntity().getLocation()) < radiusSquared && UtilityMethods.canTarget(caster, entity))
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC, DamageType.PROJECTILE);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
                     item.close();
                     handler.close();
                 }

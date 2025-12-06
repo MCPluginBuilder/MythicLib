@@ -21,10 +21,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration", "damage"})
 public class Burning_Hands extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Burning_Hands(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -66,7 +72,7 @@ public class Burning_Hands extends SkillHandler<SimpleSkillResult> {
                                 && caster.getEyeLocation().getDirection()
                                 .angle(entity.getLocation().toVector().subtract(caster.getLocation().toVector())) < Math.PI / 6
                                 && MythicLib.plugin.getEntities().canInteract(caster, entity, InteractionType.OFFENSE_SKILL))
-                            skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                            skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
 
             }
         });

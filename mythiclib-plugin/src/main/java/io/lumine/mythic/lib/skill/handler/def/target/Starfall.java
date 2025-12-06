@@ -15,10 +15,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage"})
 public class Starfall extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Starfall(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -33,7 +39,7 @@ public class Starfall extends SkillHandler<TargetSkillResult> {
         this.playParticleEffect(target.getLocation());
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITHER_SHOOT, 2, 2);
 
-        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
+        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), damageTypes);
     }
 
     private void playParticleEffect(Location source) {

@@ -9,10 +9,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"cooldown", "damage"})
 public class Smite extends SkillHandler<TargetSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Smite(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -23,7 +29,7 @@ public class Smite extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
-        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), DamageType.SKILL, DamageType.MAGIC);
+        skillMeta.getCaster().attack(target, skillMeta.getParameter("damage"), damageTypes);
         target.getWorld().strikeLightningEffect(target.getLocation());
     }
 }

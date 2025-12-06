@@ -16,10 +16,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"damage", "radius"})
 public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
+    private final List<DamageType> damageTypes;
+
     public Lightning_Beam(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.MAGIC), config.get("damage_types"));
     }
 
     @Override
@@ -37,7 +43,7 @@ public class Lightning_Beam extends SkillHandler<LocationSkillResult> {
 
         for (Entity entity : UtilityMethods.getNearbyChunkEntities(loc))
             if (UtilityMethods.canTarget(caster, entity) && entity.getLocation().distanceSquared(loc) <= radius * radius)
-                skillMeta.getCaster().attack((LivingEntity) entity, damage, DamageType.SKILL, DamageType.MAGIC);
+                skillMeta.getCaster().attack((LivingEntity) entity, damage, damageTypes);
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_FIREWORK_ROCKET_BLAST, 1, 0);
         loc.getWorld().spawnParticle(VParticle.FIREWORK.get(), loc, 64, 0, 0, 0, .2);

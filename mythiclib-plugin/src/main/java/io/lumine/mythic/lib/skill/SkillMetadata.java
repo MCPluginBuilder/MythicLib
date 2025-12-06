@@ -527,12 +527,12 @@ public class SkillMetadata {
     //region Deprecated
 
     /**
-     * @deprecated Use {@link PlayerMetadata#attack(LivingEntity, double, DamageType...)} instead
+     * @deprecated Use {@link PlayerMetadata#attack(LivingEntity, double, List)} instead
      */
     @NotNull
     @Deprecated
     public AttackMetadata attack(@NotNull LivingEntity target, double damage, DamageType... types) {
-        return caster.attack(target, damage, types);
+        return caster.attack(target, damage, Arrays.asList(types));
     }
 
     /**
