@@ -12,4 +12,6 @@ public @interface BackwardsCompatibility {
      * were not implemented.
      */
     String version();
+
+    String reason() default "";
 }

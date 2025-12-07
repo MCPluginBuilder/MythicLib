@@ -163,6 +163,14 @@ public class SkillUpdateMigration {
         for (var internalScriptNamePath : INTERNAL_ID_PATHS)
             if (skillRootConfig.contains(internalScriptNamePath))
                 return skillRootConfig.getString(internalScriptNamePath);
+
+        final var source = skillRootConfig.get("source");
+        if (source != null && source instanceof String) {
+            final var asString = (String) source;
+            if (!asString.contains(":")) return asString;
+            return asString.split(":", 2)[0];
+        }
+
         return null;
     }
 
@@ -315,7 +323,7 @@ public class SkillUpdateMigration {
             final Pair<File, String> backwardSkill;
             if (builtinSkills.contains(legacySkillHandlerId)) {
                 // default skill
-                sourceYamlFile.set("builtin_skill", legacySkillHandlerId);
+                sourceYamlFile.set("source", "default:" + legacySkillHandlerId);
                 targetYamlFile = defaultSkills.getContent();
                 configKey = legacySkillHandlerId;
                 targetFile = defaultSkills.getFile();

@@ -11,12 +11,10 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 
 public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> {
@@ -28,19 +26,7 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
      */
     private final Map<CheatType, Integer> antiCheat;
 
-    public MythicMobsSkillHandler(@NotNull String skillName) {
-        // TODO remove need for dummy config section
-        super(new YamlConfiguration().createSection(skillName));
-
-        antiCheat = Map.of();
-
-        final var skillManager = MythicBukkit.inst().getSkillManager();
-        final var skillOpt = skillManager.getSkill(skillName);
-        Validate.isTrue(skillOpt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
-        skill = skillOpt.get();
-    }
-
-    public MythicMobsSkillHandler(@NotNull ConfigurationSection config) {
+    public MythicMobsSkillHandler(@NotNull ConfigurationSection config, @NotNull String skillName) {
         super(config);
 
         final var skillManager = MythicBukkit.inst().getSkillManager();
@@ -58,11 +44,12 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
                 }
         }
 
-        String skillName = config.getString("mythicmobs-skill-id");
-        Optional<Skill> opt = skillManager.getSkill(skillName);
-        Validate.isTrue(opt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
-        skill = opt.get();
+        // Find corresponding MM skill
+        final var mmSkillOpt = skillManager.getSkill(skillName);
+        Validate.isTrue(mmSkillOpt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
+        skill = mmSkillOpt.get();
 
+        // Disable anticheat feature?
         if (config.isConfigurationSection("disable-anti-cheat") && MythicLib.plugin.hasAntiCheat()) {
             antiCheat = new HashMap<>();
             for (String key : config.getConfigurationSection("disable-anti-cheat").getKeys(false)) {

@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.skill.handler;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.CoreToolsSkillResult;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import ranet.coretools.scripts.casting.queue.ScriptQueue;
 
@@ -17,16 +16,10 @@ public class CoreToolsSkillHandler extends SkillHandler<CoreToolsSkillResult> {
 
     public static final String CORETOOLS_SOURCE = "mythiclib";
 
-    public CoreToolsSkillHandler(String scriptName) {
-        super(new YamlConfiguration().createSection(scriptName));
-
-        this.scriptName = scriptName;
-    }
-
-    public CoreToolsSkillHandler(ConfigurationSection config) {
+    public CoreToolsSkillHandler(ConfigurationSection config, String scriptName) {
         super(config);
 
-        this.scriptName = config.getString("coretools-script-id");
+        this.scriptName = scriptName;
     }
 
     @Override

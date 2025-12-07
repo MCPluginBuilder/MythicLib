@@ -1,50 +1,47 @@
 package io.lumine.mythic.lib.skill.handler;
 
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.BiFunction;
 
 public class SkillHandlerSource {
     private final String key;
-    private final Predicate<ConfigurationSection> matcher;
-    private final Function<ConfigurationSection, SkillHandler<?>> constructor;
-    private final Function<String, SkillHandler<?>> skillFetcher;
+    private final BiFunction<ConfigurationSection, String, SkillHandler<?>> constructor;
+    @BackwardsCompatibility(version = "1.7.1-SNAPSHOT", reason = "List of internal skill config paths used in previous MythicLib versions")
+    private final List<String> legacyInternalSkillPaths;
+
+    public SkillHandlerSource(@NotNull String key,
+                              @NotNull BiFunction<ConfigurationSection, String, SkillHandler<?>> constructor) {
+        this(key, constructor, List.of());
+    }
 
     /**
      * @param key         Unique key for the skill handler type
-     * @param matcher     If a certain skill config redirects to the skill handler
-     *                    Example: a config which the following key should be handled
-     *                    by {@link io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler}
-     *                    <code>mythic-mobs-skill-id: WarriorStrike</code>
      * @param constructor Function that provides the skill handler given the previous config,
      *                    if the config matches
      */
+    @BackwardsCompatibility(version = "1.7.1-SNAPSHOT")
     public SkillHandlerSource(@NotNull String key,
-                              @NotNull Predicate<ConfigurationSection> matcher,
-                              @NotNull Function<ConfigurationSection, SkillHandler<?>> constructor,
-                              @NotNull Function<String, SkillHandler<?>> skillFetcher) {
+                              @NotNull BiFunction<ConfigurationSection, String, SkillHandler<?>> constructor,
+                              @NotNull List<String> legacyInternalSkillPaths) {
         this.key = Objects.requireNonNull(key, "Key cannot be null");
-        this.matcher = Objects.requireNonNull(matcher, "Matcher cannot be null");
+        this.legacyInternalSkillPaths = Objects.requireNonNull(legacyInternalSkillPaths, "Legacy internal skill paths cannot be null");
         this.constructor = Objects.requireNonNull(constructor, "Constructor cannot be null");
-        this.skillFetcher = Objects.requireNonNull(skillFetcher, "Skill fetcher cannot be null");
     }
 
     public String getKey() {
         return key;
     }
 
-    public Predicate<ConfigurationSection> getMatcher() {
-        return matcher;
+    public List<String> getLegacyInternalSkillPaths() {
+        return legacyInternalSkillPaths;
     }
 
-    public Function<ConfigurationSection, SkillHandler<?>> getConstructor() {
+    public BiFunction<ConfigurationSection, String, SkillHandler<?>> getConstructor() {
         return constructor;
-    }
-
-    public Function<String, SkillHandler<?>> getSkillFetcher() {
-        return skillFetcher;
     }
 }

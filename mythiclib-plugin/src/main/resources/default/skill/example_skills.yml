@@ -1,6 +1,6 @@
 
 CUSTOM_STAFF_ATTACK:
-  mythiclib-skill-id: staff_attack
+  source: 'mythiclib:staff_attack'
   name: 'Custom Staff Attack'
   ui_lore:
     - 'A powerful magical attack from a custom staff.'

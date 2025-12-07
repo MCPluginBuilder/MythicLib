@@ -44,6 +44,7 @@ import io.lumine.mythic.lib.skill.handler.*;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadException;
 import io.lumine.mythic.lib.util.SkillUpdateMigration;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
@@ -246,14 +247,8 @@ public class SkillManager extends Module {
         // Skill handler types
         //////////////////////////////////
 
-        registerSkillHandlerSource(new SkillHandlerSource("builtin",
-                config -> config.contains("builtin_skill"),
-                this::loadBuiltinSkillHandler,
-                this::loadBuiltinSkillHandler));
-        registerSkillHandlerSource(new SkillHandlerSource("mythiclib",
-                config -> config.contains("mythiclib-skill-id"),
-                MythicLibSkillHandler::new,
-                this::loadScriptAsSkillHandler));
+        registerSkillHandlerSource(new SkillHandlerSource("default", this::loadBuiltinSkillHandler));
+        registerSkillHandlerSource(new SkillHandlerSource("mythiclib", MythicLibSkillHandler::new, List.of("mythiclib-skill-id")));
     }
 
     public void registerSkillHandlerSource(@NotNull SkillHandlerSource skillHandlerSource) {
@@ -265,22 +260,7 @@ public class SkillManager extends Module {
     //region Loading from config files
 
     @NotNull
-    private SkillHandler<?> loadScriptAsSkillHandler(@NotNull String mythiclibScriptName) {
-        return new MythicLibSkillHandler(getScriptOrThrow(mythiclibScriptName));
-    }
-
-    @NotNull
-    private SkillHandler<?> loadBuiltinSkillHandler(@NotNull String builtinId) {
-        // TODO remove need for dummy config section
-        final var parentConfig = new YamlConfiguration();
-        final var section = parentConfig.createSection(builtinId);
-        section.set("builtin_skill", builtinId);
-        return loadBuiltinSkillHandler(section);
-    }
-
-    @NotNull
-    private SkillHandler<?> loadBuiltinSkillHandler(@NotNull ConfigurationSection config) {
-        final var builtinId = UtilityMethods.enumName(config.getString("builtin_skill"));
+    private SkillHandler<?> loadBuiltinSkillHandler(@NotNull ConfigurationSection config, @NotNull String builtinId) {
         final var mapping = builtInSkillHandlerTypes.get(UtilityMethods.enumName(builtinId));
         Validate.notNull(mapping, "Could not find builtin skill with ID '" + builtinId + "'");
         try {
@@ -308,10 +288,14 @@ public class SkillManager extends Module {
             // Support format 'source:InternalScriptName'
             if (asString.contains(":")) {
                 final var asSplit = asString.split(":", 2);
-                final var handlerTypeKey = asSplit[0];
-                final var handlerType = this.skillHandlerSources.get(handlerTypeKey);
-                Validate.notNull(handlerType, "Could not find skill source '" + handlerTypeKey + "'");
-                return handlerType.getSkillFetcher().apply(asSplit[1]);
+                final var handlerSourceKey = asSplit[0];
+                final var skillHandlerSource = this.skillHandlerSources.get(handlerSourceKey);
+                Validate.notNull(skillHandlerSource, "Could not find skill source '" + handlerSourceKey + "'");
+
+                final var emulatedConfigParent = new YamlConfiguration();
+                final var config = emulatedConfigParent.createSection(UNIDENTIFIED_SCRIPT_ID);
+                config.set("source", asSplit);
+                return skillHandlerSource.getConstructor().apply(config, asSplit[1]);
             }
 
             return getHandlerOrThrow(UtilityMethods.enumName((String) configObject));
@@ -319,11 +303,22 @@ public class SkillManager extends Module {
 
         // Configuration Section
         if (configObject instanceof ConfigurationSection) {
-            ConfigurationSection config = (ConfigurationSection) configObject;
-            for (var handlerType : skillHandlerSources.values())
-                if (handlerType.getMatcher().test(config)) return handlerType.getConstructor().apply(config);
+            final var config = (ConfigurationSection) configObject;
+            final var source = config.getString("source");
 
-            throw new IllegalArgumentException("Could not match skill type to config");
+            // [Backwards compatibility]
+            if (source == null) {
+                final var legacySkillHandler = findLegacySkillSource(config);
+                if (legacySkillHandler != null) return legacySkillHandler;
+                throw new IllegalArgumentException("Could not find skill source");
+            }
+
+            Validate.isTrue(source.contains(":"), "Source must be in the format 'source:InternalSkillName'");
+            final var asSplit = source.split(":", 2);
+            final var handlerSourceKey = asSplit[0];
+            final var skillHandlerSource = this.skillHandlerSources.get(handlerSourceKey);
+            Validate.notNull(skillHandlerSource, "Could not find skill source '" + handlerSourceKey + "'");
+            return skillHandlerSource.getConstructor().apply(config, asSplit[1]);
         }
 
         // List of mechanics => load MythicLib script
@@ -332,6 +327,17 @@ public class SkillManager extends Module {
         }
 
         throw new IllegalArgumentException("Provide either a string or configuration section instead of " + configObject.getClass().getSimpleName());
+    }
+
+    @Nullable
+    @BackwardsCompatibility(version = "1.7.1-SNAPSHOT")
+    private SkillHandler<?> findLegacySkillSource(@NotNull ConfigurationSection config) {
+        for (var skillSource : this.skillHandlerSources.values())
+            for (var legacyPath : skillSource.getLegacyInternalSkillPaths()) {
+                final var skillId = config.getString(legacyPath);
+                if (skillId != null) return skillSource.getConstructor().apply(config, skillId);
+            }
+        return null;
     }
 
     @NotNull
@@ -364,8 +370,7 @@ public class SkillManager extends Module {
         // Adapt a list to a config section
         if (genericInput instanceof List) {
             Validate.notNull(fallbackScriptId, "Cannot use unidentified script here");
-            @SuppressWarnings("unchecked")
-            Script skill = new Script(fallbackScriptId, (List<String>) genericInput);
+            @SuppressWarnings("unchecked") final var skill = new Script(fallbackScriptId, (List<String>) genericInput);
             skill.getPostLoadAction().performAction();
             return skill;
         }
@@ -545,24 +550,15 @@ public class SkillManager extends Module {
 
         // MythicMobs skill handler type
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null)
-            registerSkillHandlerSource(new SkillHandlerSource("mythicmobs",
-                    config -> config.contains("mythicmobs-skill-id"),
-                    MythicMobsSkillHandler::new,
-                    MythicMobsSkillHandler::new));
+            registerSkillHandlerSource(new SkillHandlerSource("mythicmobs", MythicMobsSkillHandler::new, List.of("mythicmobs-skill-id")));
 
         // Fabled skill handler type
         if (Bukkit.getPluginManager().getPlugin("Fabled") != null)
-            registerSkillHandlerSource(new SkillHandlerSource("fabled",
-                    config -> config.contains("fabled-skill-id") || config.contains("skillapi-skill-id"),
-                    FabledSkillHandler::new,
-                    FabledSkillHandler::new));
+            registerSkillHandlerSource(new SkillHandlerSource("fabled", FabledSkillHandler::new, List.of("fabled-skill-id", "skillapi-skill-id")));
 
         // CoreTools skill handler type
         if (Bukkit.getPluginManager().getPlugin("CoreTools") != null)
-            registerSkillHandlerSource(new SkillHandlerSource("coretools",
-                    config -> config.contains("coretools-script-id"),
-                    CoreToolsSkillHandler::new,
-                    CoreToolsSkillHandler::new));
+            registerSkillHandlerSource(new SkillHandlerSource("coretools", CoreToolsSkillHandler::new));
     }
 
     @Override

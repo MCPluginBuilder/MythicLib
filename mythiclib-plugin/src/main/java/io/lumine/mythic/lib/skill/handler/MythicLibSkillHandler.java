@@ -16,8 +16,8 @@ import java.util.Objects;
 public class MythicLibSkillHandler extends SkillHandler<MythicLibSkillResult> {
     private final Script script;
 
-    public MythicLibSkillHandler(@NotNull ConfigurationSection config) {
-        this(config, MythicLib.plugin.getSkills().getScriptOrThrow(config.getString("mythiclib-skill-id")));
+    public MythicLibSkillHandler(@NotNull ConfigurationSection config, @NotNull String scriptId) {
+        this(config, MythicLib.plugin.getSkills().getScriptOrThrow(scriptId));
     }
 
     public MythicLibSkillHandler(@NotNull ConfigurationSection config, @NotNull Script script) {
