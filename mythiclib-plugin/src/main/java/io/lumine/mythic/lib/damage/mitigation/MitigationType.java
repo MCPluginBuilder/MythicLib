@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class MitigationType implements CooldownObject {
     private final String id, cooldownPath;
+    private final boolean skipEvent;
 
     private final @NotNull Script onDamage;
     private final @Nullable Script preDamage;
@@ -24,6 +25,7 @@ public class MitigationType implements CooldownObject {
     public MitigationType(@NotNull ConfigurationSection config) {
         this.id = config.getName();
         this.cooldownPath = "mitigation:" + id;
+        this.skipEvent = config.getBoolean("skip_event", false);
 
         this.legacy = config.contains("legacy") ? UtilityMethods.prettyValueOf(LegacyMitigationType::valueOf, config.getString("legacy"), "No legacy mitigation mechanic with ID %s") : null;
         this.cooldownFormula = config.contains("cooldown") ? NumericExpression.compile(config.getString("cooldown")) : null;
@@ -40,6 +42,10 @@ public class MitigationType implements CooldownObject {
 
     public boolean hasCooldown() {
         return cooldownFormula != null;
+    }
+
+    public boolean skipsEvent() {
+        return skipEvent;
     }
 
     @Nullable

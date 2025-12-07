@@ -103,12 +103,14 @@ public class MitigationModule extends Module {
 
                 // Call Bukkit Event, check for cancellation
                 // [Backwards compatibility] Use previously defined events
-                final DamageMitigationEvent bukkitEvent;
-                if (type.asLegacy() != null)
-                    bukkitEvent = type.asLegacy().generateLegacyEvent(playerData, event.toBukkit(), type);
-                else bukkitEvent = new DamageMitigationEvent(playerData, type, event.toBukkit());
-                Bukkit.getPluginManager().callEvent(bukkitEvent);
-                if (bukkitEvent.isCancelled()) continue;
+                if (!type.skipsEvent()) {
+                    final DamageMitigationEvent bukkitEvent;
+                    if (type.asLegacy() != null)
+                        bukkitEvent = type.asLegacy().generateLegacyEvent(playerData, event.toBukkit(), type);
+                    else bukkitEvent = new DamageMitigationEvent(playerData, type, event.toBukkit());
+                    Bukkit.getPluginManager().callEvent(bukkitEvent);
+                    if (bukkitEvent.isCancelled()) continue;
+                }
 
                 // Apply cooldown
                 if (type.hasCooldown())
