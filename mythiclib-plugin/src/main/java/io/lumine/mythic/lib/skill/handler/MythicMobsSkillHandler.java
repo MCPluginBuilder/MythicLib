@@ -5,14 +5,13 @@ import io.lumine.mythic.api.skills.Skill;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.config.MythicConfigImpl;
 import io.lumine.mythic.core.skills.MetaSkill;
-import io.lumine.mythic.core.skills.SkillExecutor;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.comp.anticheat.CheatType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.MythicMobsSkillResult;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -29,10 +28,18 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
      */
     private final Map<CheatType, Integer> antiCheat = new HashMap<>();
 
-    public MythicMobsSkillHandler(ConfigurationSection config) {
+        antiCheat = Map.of();
+
+        final var skillManager = MythicBukkit.inst().getSkillManager();
+        final var skillOpt = skillManager.getSkill(skillName);
+        Validate.isTrue(skillOpt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
+        skill = skillOpt.get();
+    }
+
+    public MythicMobsSkillHandler(@NotNull ConfigurationSection config) {
         super(config);
 
-        final SkillExecutor skillManager = MythicBukkit.inst().getSkillManager();
+        final var skillManager = MythicBukkit.inst().getSkillManager();
 
         // Register extra skills first
         if (config.contains("extra-skills")) {
@@ -49,14 +56,16 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
 
         String skillName = config.getString("mythicmobs-skill-id");
         Optional<Skill> opt = skillManager.getSkill(skillName);
-        Validate.isTrue(opt.isPresent(), "Could not find MM skill with name '" + skillName + "'");
+        Validate.isTrue(opt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
         skill = opt.get();
 
-        if (config.isConfigurationSection("disable-anti-cheat"))
+        if (config.isConfigurationSection("disable-anti-cheat") && MythicLib.plugin.hasAntiCheat()) {
+            antiCheat = new HashMap<>();
             for (String key : config.getConfigurationSection("disable-anti-cheat").getKeys(false)) {
                 CheatType cheatType = CheatType.valueOf(key.toUpperCase().replace(" ", "_").replace("-", "_"));
                 this.antiCheat.put(cheatType, config.getInt("disable-anti-cheat." + key));
             }
+        } else antiCheat = Map.of();
     }
 
     private MythicConfig findParentMythicConfig(ConfigurationSection section, String extraConfigPath) {
