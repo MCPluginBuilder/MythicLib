@@ -19,10 +19,16 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"duration"})
 public class Evade extends SkillHandler<SimpleSkillResult> {
+    private final List<DamageType> cancelDamageTypes;
+
     public Evade(ConfigurationSection config) {
         super(config);
+
+        cancelDamageTypes = DamageType.listFromConfig(List.of(DamageType.WEAPON, DamageType.UNARMED), config.get("cancel_damage_types"));
     }
 
     @Override
@@ -38,7 +44,7 @@ public class Evade extends SkillHandler<SimpleSkillResult> {
         new Handler(skillMeta.getCaster().getData(), skillMeta.getParameter("duration"));
     }
 
-    static class Handler extends TemporaryHandler {
+    class Handler extends TemporaryHandler {
         private final MMOPlayerData playerData;
         private final Player caster;
 
@@ -63,8 +69,7 @@ public class Evade extends SkillHandler<SimpleSkillResult> {
 
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         public void b(PlayerAttackEvent event) {
-            if ((event.getAttack().getDamage().hasType(DamageType.WEAPON) || event.getAttack().getDamage().hasType(DamageType.UNARMED))
-                    && event.getAttacker().getData().equals(playerData))
+            if (event.getAttacker().getData().equals(playerData) && event.getAttack().getDamage().hasAnyType(cancelDamageTypes))
                 close();
         }
     }
