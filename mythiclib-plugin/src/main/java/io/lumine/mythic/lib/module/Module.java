@@ -16,13 +16,13 @@ import java.util.Objects;
  * at runtime based on configuration files.
  */
 public abstract class Module {
-    protected final MMOPlugin plugin;
-    protected final NamespacedKey key;
+    private final MMOPlugin plugin;
+    private final NamespacedKey key;
 
     // Runtime flags
     // enabled = if the module is running
     // startup = toggled on once while calling #onStartup()
-    protected boolean enabled, startup;
+    private boolean enabled, startup;
 
     private final List<Listener> moduleListeners = new ArrayList<>();
     private final List<ListenerToggle> moduleListenerToggles = new ArrayList<>();
@@ -187,7 +187,7 @@ public abstract class Module {
     */
 
     @NotNull
-    public NamespacedKey getKey() {
+    public NamespacedKey getModuleKey() {
         return key;
     }
 

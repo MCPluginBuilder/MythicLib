@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +36,7 @@ import java.util.*;
  * all of this data which is SPECIFIC to the plugin using the skills.
  * Other plugins like MMOCore and MMOItems store {@link Skill} instances.
  *
- * @param <T> Skill result class being used by that skill behaviour
+ * @param <T> Skill result class being used by that skill behavior
  * @author jules
  */
 // TODO adapt skill handlers to take in ConfigWrappers, not only config sections. syntax will be alot like MythicMobs
@@ -264,17 +265,17 @@ public abstract class SkillHandler<T extends SkillResult> {
 
     @Deprecated
     public SkillHandler() {
-        throw new RuntimeException("Deprecated");
+        this(new YamlConfiguration());
     }
 
     @Deprecated
     public SkillHandler(boolean triggerable) {
-        throw new RuntimeException("Deprecated");
+        this(new YamlConfiguration());
     }
 
     @Deprecated
     public SkillHandler(@NotNull String id) {
-        throw new RuntimeException("Deprecated");
+        this(new YamlConfiguration().createSection(id));
     }
 
     //endregion

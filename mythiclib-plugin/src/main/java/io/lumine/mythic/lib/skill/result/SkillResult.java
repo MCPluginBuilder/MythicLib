@@ -20,7 +20,7 @@ public interface SkillResult {
      * extra ability conditions (player must be on the ground, must look at an entity...)
      * @implNote Any calculation should be ideally made in the constructor,
      * or in the worst case, cached as to minimize the impact on performance
-     * of this method. FOr this reason, no instance of metadata is provided as parameter.
+     * of this method. For this reason, no instance of metadata is provided as parameter.
      */
     public boolean isSuccessful();
 

@@ -22,8 +22,8 @@ block:
   # Note that, by default, block rating is capped at 80% (see stats.yml)
   roll: '<stat.block_rating> / 100'
 
-  # Script/skill ran on damage
-  on_damage: mitigation_on_block
+  # Skill ran on damage
+  on_damage: 'mythiclib:mitigation_on_block'
 
 
 ######################################
@@ -40,7 +40,7 @@ dodge:
 
   cooldown: '3 * (1 - <stat.dodge_cooldown_reduction> / 100)' # Cooldown between two consecutive dodges (in seconds)
   roll: '<stat.dodge_rating> / 100' # Chance to successfully dodge an attack
-  on_damage: 'mitigation_on_dodge' # Script/skill ran on damage
+  on_damage: 'mythiclib:mitigation_on_dodge' # Skill ran on damage
 
 
 ######################################
@@ -58,7 +58,7 @@ parry:
 
   cooldown: '3 * (1 - <stat.parry_cooldown_reduction> / 100)' # Cooldown between two consecutive parries (in seconds)
   roll: '<stat.parry_rating> / 100' # Chance to successfully parry an attack
-  on_damage: 'mitigation_on_parry' # Script/skill ran on damage
+  on_damage: 'mythiclib:mitigation_on_parry' # Skill ran on damage
 
 # You can edit existing mitigation types, add your own, copy and duplicate existing ones, etc.
 # There are no limits on the number of mitigation types you can have.

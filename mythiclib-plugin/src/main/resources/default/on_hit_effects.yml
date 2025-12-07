@@ -11,7 +11,7 @@
 lifesteal_and_spellsteal:
   skip_event: true # For performance
   # No cooldown, no roll
-  on_attack: lifesteal_and_spellsteal_script
+  on_attack: 'mythiclib:lifesteal_and_spellsteal_script'
 
 ######################################
 # Weapon Critical Strikes
@@ -30,8 +30,8 @@ weapon_crits:
   # Note that, by default, weapon crit strike is capped at 80% (see stats.yml)
   roll: '<stat.critical_strike_chance> / 100'
 
-  # Script/skill ran on weapon crit
-  on_attack: weapon_crit_script
+  # Skill ran on weapon crit
+  on_attack: 'mythiclib:weapon_crit_script'
 
 
 ######################################
@@ -51,6 +51,6 @@ skill_crits:
   # Note that, by default, skill crit strike is capped at 80% (see stats.yml)
   roll: '<stat.skill_critical_strike_chance> / 100'
 
-  # Script/skill ran on skill crit
-  on_attack: skill_crit_script
+  # Skill ran on skill crit
+  on_attack: 'mythiclib:skill_crit_script'
 

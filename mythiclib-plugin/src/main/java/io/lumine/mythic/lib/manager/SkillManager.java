@@ -48,6 +48,7 @@ import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +57,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
@@ -100,7 +100,7 @@ public class SkillManager extends Module {
     private final Map<String, SkillHandler<?>> handlers = new HashMap<>();
 
     private final Map<String, Class<? extends SkillHandler<?>>> builtInSkillHandlerTypes = new HashMap<>();
-    private final Map<Predicate<ConfigurationSection>, Function<ConfigurationSection, SkillHandler<?>>> skillHandlerTypes = new HashMap<>();
+    private final Map<String, SkillHandlerSource> skillHandlerSources = new HashMap<>();
 
     private boolean registration = true;
 
@@ -246,14 +246,42 @@ public class SkillManager extends Module {
         // Skill handler types
         //////////////////////////////////
 
-        registerSkillHandlerType(config -> config.contains("builtin_skill"), this::loadBuiltinSkillHandler);
-        registerSkillHandlerType(config -> config.contains("mythiclib-skill-id"), MythicLibSkillHandler::new);
+        registerSkillHandlerSource(new SkillHandlerSource("builtin",
+                config -> config.contains("builtin_skill"),
+                this::loadBuiltinSkillHandler,
+                this::loadBuiltinSkillHandler));
+        registerSkillHandlerSource(new SkillHandlerSource("mythiclib",
+                config -> config.contains("mythiclib-skill-id"),
+                MythicLibSkillHandler::new,
+                this::loadScriptAsSkillHandler));
+    }
+
+    public void registerSkillHandlerSource(@NotNull SkillHandlerSource skillHandlerSource) {
+        Validate.notNull(skillHandlerSource, "Skill handler type cannot be null");
+
+        Validate.isTrue(skillHandlerSources.put(skillHandlerSource.getKey(), skillHandlerSource) == null, "A skill source with the same ID already exists");
+    }
+
+    //region Loading from config files
+
+    @NotNull
+    private SkillHandler<?> loadScriptAsSkillHandler(@NotNull String mythiclibScriptName) {
+        return new MythicLibSkillHandler(getScriptOrThrow(mythiclibScriptName));
+    }
+
+    @NotNull
+    private SkillHandler<?> loadBuiltinSkillHandler(@NotNull String builtinId) {
+        // TODO remove need for dummy config section
+        final var parentConfig = new YamlConfiguration();
+        final var section = parentConfig.createSection(builtinId);
+        section.set("builtin_skill", builtinId);
+        return loadBuiltinSkillHandler(section);
     }
 
     @NotNull
     private SkillHandler<?> loadBuiltinSkillHandler(@NotNull ConfigurationSection config) {
         final var builtinId = UtilityMethods.enumName(config.getString("builtin_skill"));
-        final var mapping = builtInSkillHandlerTypes.get(builtinId);
+        final var mapping = builtInSkillHandlerTypes.get(UtilityMethods.enumName(builtinId));
         Validate.notNull(mapping, "Could not find builtin skill with ID '" + builtinId + "'");
         try {
             return mapping.getDeclaredConstructor(ConfigurationSection.class).newInstance(config);
@@ -262,94 +290,68 @@ public class SkillManager extends Module {
         }
     }
 
-    /**
-     * @param matcher  If a certain skill config redirects to the skill handler
-     *                 Example: a config which the following key should be handled
-     *                 by {@link io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler}
-     *                 <code>mythic-mobs-skill-id: WarriorStrike</code>
-     * @param provider Function that provides the skill handler given the previous config,
-     *                 if the config matches
-     */
-    public void registerSkillHandlerType(@NotNull Predicate<ConfigurationSection> matcher, @NotNull Function<ConfigurationSection, SkillHandler<?>> provider) {
-        Validate.notNull(matcher);
-        Validate.notNull(provider);
+    private static final String UNIDENTIFIED_SCRIPT_ID = "UnidentifiedScript";
 
-        skillHandlerTypes.put(matcher, provider);
-    }
-
-    public void registerBuiltinSkillHandlerType(@NotNull Class<? extends SkillHandler<?>> clazz) {
-        Validate.notNull(clazz, "Skill class cannot be null");
-
-        final var annot = clazz.getAnnotation(BuiltinSkillHandler.class);
-        Validate.notNull(annot, "No BuiltinSkillHandler annotation on class " + clazz.getName());
-
-        final var key = UtilityMethods.enumName(clazz.getSimpleName());
-        builtInSkillHandlerTypes.put(key, clazz);
+    @NotNull
+    public SkillHandler<?> loadSkillHandler(Object configObject) {
+        return loadSkillHandler(UNIDENTIFIED_SCRIPT_ID, configObject);
     }
 
     @NotNull
-    public SkillHandler<?> loadSkillHandler(Object obj) throws IllegalArgumentException, IllegalStateException {
+    public SkillHandler<?> loadSkillHandler(@Nullable String fallbackSkillHandlerId, @NotNull Object configObject) {
+        Validate.notNull(configObject, "Input cannot be null");
 
-        // By handler name
-        if (obj instanceof String) return getHandlerOrThrow(UtilityMethods.enumName((String) obj));
+        // Handler name
+        if (configObject instanceof String) {
+            final var asString = (String) configObject;
 
-        // By type of configuration section
-        if (obj instanceof ConfigurationSection) {
-            ConfigurationSection config = (ConfigurationSection) obj;
-            for (var type : skillHandlerTypes.entrySet())
-                if (type.getKey().test(config)) return type.getValue().apply(config);
+            // Support format 'source:InternalScriptName'
+            if (asString.contains(":")) {
+                final var asSplit = asString.split(":", 2);
+                final var handlerTypeKey = asSplit[0];
+                final var handlerType = this.skillHandlerSources.get(handlerTypeKey);
+                Validate.notNull(handlerType, "Could not find skill source '" + handlerTypeKey + "'");
+                return handlerType.getSkillFetcher().apply(asSplit[1]);
+            }
+
+            return getHandlerOrThrow(UtilityMethods.enumName((String) configObject));
+        }
+
+        // Configuration Section
+        if (configObject instanceof ConfigurationSection) {
+            ConfigurationSection config = (ConfigurationSection) configObject;
+            for (var handlerType : skillHandlerSources.values())
+                if (handlerType.getMatcher().test(config)) return handlerType.getConstructor().apply(config);
 
             throw new IllegalArgumentException("Could not match skill type to config");
         }
 
-        // TODO support lists
+        // List of mechanics => load MythicLib script
+        if (configObject instanceof List) {
+            return new MythicLibSkillHandler(loadScript(fallbackSkillHandlerId, configObject));
+        }
 
-        throw new IllegalArgumentException("Provide either a string or configuration section instead of " + obj.getClass().getSimpleName());
-    }
-
-    public void registerSkillHandler(SkillHandler<?> handler) {
-        Validate.isTrue(handlers.putIfAbsent(handler.getId(), handler) == null, "A skill with the same name already exists");
-
-        if (!registration && handler instanceof Listener)
-            Bukkit.getPluginManager().registerEvents((Listener) handler, MythicLib.plugin);
+        throw new IllegalArgumentException("Provide either a string or configuration section instead of " + configObject.getClass().getSimpleName());
     }
 
     @NotNull
-    public SkillHandler<?> getHandlerOrThrow(String id) {
-        return Objects.requireNonNull(handlers.get(id), "Could not find skill with ID '" + id + "'");
-    }
-
-    /**
-     * @return Currently registered skill handlers.
-     */
-    public Collection<SkillHandler<?>> getHandlers() {
-        return handlers.values();
+    public SkillHandler<?> getHandlerOrThrow(@NotNull String handlerId) {
+        return Objects.requireNonNull(handlers.get(handlerId), "Could not find skill with ID '" + handlerId + "'");
     }
 
     @Nullable
-    public SkillHandler<?> getHandler(String handlerId) {
+    public SkillHandler<?> getHandler(@NotNull String handlerId) {
         return handlers.get(handlerId);
     }
 
-    public void registerScript(@NotNull Script script) {
-        Validate.isTrue(!scripts.containsKey(script.getId()), "A script with the same name already exists");
-        scripts.put(script.getId(), script);
+    @NotNull
+    public Script loadScript(Object genericInput) {
+        return loadScript(UNIDENTIFIED_SCRIPT_ID, genericInput);
     }
 
     @NotNull
-    public Script getScriptOrThrow(String name) {
-        return Objects.requireNonNull(scripts.get(name), "Could not find script with name '" + name + "'");
-    }
-
-    @NotNull
-    public Script loadScript(Object obj) {
-        // Arbitrary default script name
-        return loadScript("UnidentifiedScript", obj);
-    }
-
-    @NotNull
-    public Script loadScript(@NotNull String key, @NotNull Object genericInput) {
-        Validate.notNull(genericInput, "Object cannot be null");
+    public Script loadScript(@Nullable String fallbackScriptId, @NotNull Object genericInput) {
+        Validate.notNull(genericInput, "Input cannot be null");
 
         if (genericInput instanceof String) return getScriptOrThrow(genericInput.toString());
 
@@ -361,8 +363,9 @@ public class SkillManager extends Module {
 
         // Adapt a list to a config section
         if (genericInput instanceof List) {
-            Validate.notNull(key, "Key cannot be null");
-            Script skill = new Script(key, (List<String>) genericInput);
+            Validate.notNull(fallbackScriptId, "Cannot use unidentified script here");
+            @SuppressWarnings("unchecked")
+            Script skill = new Script(fallbackScriptId, (List<String>) genericInput);
             skill.getPostLoadAction().performAction();
             return skill;
         }
@@ -371,15 +374,82 @@ public class SkillManager extends Module {
     }
 
     @NotNull
-    public Collection<Script> getScripts() {
-        return scripts.values();
+    public Script getScriptOrThrow(@NotNull String scriptName) {
+        return Objects.requireNonNull(scripts.get(scriptName), "Could not find script with name '" + scriptName + "'");
     }
+
+    @Nullable
+    public Script getScript(@NotNull String scriptName) {
+        return scripts.get(scriptName);
+    }
+
+    //region Script objects
 
     @NotNull
     private String findEffectiveObjectType(String objectType, ConfigObject config) {
         if (config.contains("type")) return config.getString("type");
         else if (config.hasKey()) return config.getKey();
         else throw new IllegalArgumentException("Could not find " + objectType + " type");
+    }
+
+    @NotNull
+    public Condition loadCondition(ConfigObject config) {
+        final String key = findEffectiveObjectType("condition", config);
+        final Function<ConfigObject, Condition> supplier = conditions.get(key);
+        Validate.notNull(supplier, "Could not match condition to '" + key + "'");
+        return supplier.apply(config);
+    }
+
+    @NotNull
+    public Mechanic loadMechanic(ConfigObject config) {
+        final String key = findEffectiveObjectType("mechanic", config);
+        final Function<ConfigObject, Mechanic> supplier = mechanics.get(key);
+        Validate.notNull(supplier, "Could not match mechanic to '" + key + "'");
+        return supplier.apply(config);
+    }
+
+    @NotNull
+    public LocationTargeter loadLocationTargeter(ConfigObject config) {
+        final String key = findEffectiveObjectType("targeter", config);
+        final Function<ConfigObject, LocationTargeter> supplier = locationTargets.get(key);
+        Validate.notNull(supplier, "Could not match targeter to '" + key + "'");
+        return supplier.apply(config);
+    }
+
+    @NotNull
+    public EntityTargeter loadEntityTargeter(ConfigObject config) {
+        final String key = findEffectiveObjectType("targeter", config);
+        final Function<ConfigObject, EntityTargeter> supplier = entityTargets.get(key);
+        Validate.notNull(supplier, "Could not match targeter to '" + key + "'");
+        return supplier.apply(config);
+    }
+
+    //endregion
+
+    //endregion
+
+    public void registerSkillHandler(SkillHandler<?> handler) {
+        Validate.isTrue(handlers.putIfAbsent(handler.getId(), handler) == null, "A skill with the same name already exists");
+
+        if (!registration && handler instanceof Listener)
+            Bukkit.getPluginManager().registerEvents((Listener) handler, MythicLib.plugin);
+    }
+
+    /**
+     * @return Currently registered skill handlers.
+     */
+    public Collection<SkillHandler<?>> getHandlers() {
+        return handlers.values();
+    }
+
+    public void registerScript(@NotNull Script script) {
+        Validate.isTrue(!scripts.containsKey(script.getId()), "A script with the same name already exists");
+        scripts.put(script.getId(), script);
+    }
+
+    @NotNull
+    public Collection<Script> getScripts() {
+        return scripts.values();
     }
 
     public void registerCondition(String name, Function<ConfigObject, Condition> condition, String... aliases) {
@@ -393,14 +463,6 @@ public class SkillManager extends Module {
             registerCondition(alias, condition);
     }
 
-    @NotNull
-    public Condition loadCondition(ConfigObject config) {
-        final String key = findEffectiveObjectType("condition", config);
-        final Function<ConfigObject, Condition> supplier = conditions.get(key);
-        Validate.notNull(supplier, "Could not match condition to '" + key + "'");
-        return supplier.apply(config);
-    }
-
     public void registerMechanic(@NotNull String name, @NotNull Function<ConfigObject, Mechanic> mechanic, String... aliases) {
         Validate.isTrue(registration, "Mechanic registration is disabled");
         Validate.isTrue(!mechanics.containsKey(name), "A mechanic with the name '" + name + "' already exists");
@@ -412,14 +474,6 @@ public class SkillManager extends Module {
             registerMechanic(alias, mechanic);
     }
 
-    @NotNull
-    public Mechanic loadMechanic(ConfigObject config) {
-        final String key = findEffectiveObjectType("mechanic", config);
-        final Function<ConfigObject, Mechanic> supplier = mechanics.get(key);
-        Validate.notNull(supplier, "Could not match mechanic to '" + key + "'");
-        return supplier.apply(config);
-    }
-
     public void registerEntityTargeter(String name, Function<ConfigObject, EntityTargeter> entityTarget) {
         Validate.isTrue(registration, "Targeter registration is disabled");
         Validate.isTrue(!entityTargets.containsKey(name), "A targeter with the same name already exists");
@@ -428,28 +482,12 @@ public class SkillManager extends Module {
         entityTargets.put(name, entityTarget);
     }
 
-    @NotNull
-    public EntityTargeter loadEntityTargeter(ConfigObject config) {
-        final String key = findEffectiveObjectType("targeter", config);
-        final Function<ConfigObject, EntityTargeter> supplier = entityTargets.get(key);
-        Validate.notNull(supplier, "Could not match targeter to '" + key + "'");
-        return supplier.apply(config);
-    }
-
     public void registerLocationTargeter(String name, Function<ConfigObject, LocationTargeter> locationTarget) {
         Validate.isTrue(registration, "Targeter registration is disabled");
         Validate.isTrue(!locationTargets.containsKey(name), "A targeter with the same name already exists");
         Validate.notNull(locationTarget, "Function cannot be null");
 
         locationTargets.put(name, locationTarget);
-    }
-
-    @NotNull
-    public LocationTargeter loadLocationTargeter(ConfigObject config) {
-        final String key = findEffectiveObjectType("targeter", config);
-        final Function<ConfigObject, LocationTargeter> supplier = locationTargets.get(key);
-        Validate.notNull(supplier, "Could not match targeter to '" + key + "'");
-        return supplier.apply(config);
     }
 
     @SuppressWarnings("unchecked")
@@ -464,13 +502,28 @@ public class SkillManager extends Module {
 
                     final var annot = clazz.getAnnotation(BuiltinSkillHandler.class);
                     Validate.notNull(annot, "No BuiltinSkillHandler annotation on class " + clazz.getName());
-                    registerBuiltinSkillHandlerType((Class<? extends SkillHandler<?>>) clazz);
+                    registerBuiltinSkillHandlerSource((Class<? extends SkillHandler<?>>) clazz);
                 }
             }
             file.close();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    /**
+     * Register a new built-in skill handler source. Such skill handlers
+     * can be used by plugins to hard code skills instead of using a script
+     * framework such as MythicMobs or MMOLib.
+     */
+    public void registerBuiltinSkillHandlerSource(@NotNull Class<? extends SkillHandler<?>> clazz) {
+        Validate.notNull(clazz, "Skill class cannot be null");
+
+        final var annot = clazz.getAnnotation(BuiltinSkillHandler.class);
+        Validate.notNull(annot, "No BuiltinSkillHandler annotation on class " + clazz.getName());
+
+        final var key = UtilityMethods.enumName(clazz.getSimpleName());
+        builtInSkillHandlerTypes.put(key, clazz);
     }
 
     @Override
@@ -492,15 +545,24 @@ public class SkillManager extends Module {
 
         // MythicMobs skill handler type
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null)
-            registerSkillHandlerType(config -> config.contains("mythicmobs-skill-id"), MythicMobsSkillHandler::new);
+            registerSkillHandlerSource(new SkillHandlerSource("mythicmobs",
+                    config -> config.contains("mythicmobs-skill-id"),
+                    MythicMobsSkillHandler::new,
+                    MythicMobsSkillHandler::new));
 
         // Fabled skill handler type
         if (Bukkit.getPluginManager().getPlugin("Fabled") != null)
-            registerSkillHandlerType(config -> config.contains("fabled-skill-id") || config.contains("skillapi-skill-id"), FabledSkillHandler::new);
+            registerSkillHandlerSource(new SkillHandlerSource("fabled",
+                    config -> config.contains("fabled-skill-id") || config.contains("skillapi-skill-id"),
+                    FabledSkillHandler::new,
+                    FabledSkillHandler::new));
 
         // CoreTools skill handler type
         if (Bukkit.getPluginManager().getPlugin("CoreTools") != null)
-            registerSkillHandlerType(config -> config.contains("coretools-script-id"), CoreToolsSkillHandler::new);
+            registerSkillHandlerSource(new SkillHandlerSource("coretools",
+                    config -> config.contains("coretools-script-id"),
+                    CoreToolsSkillHandler::new,
+                    CoreToolsSkillHandler::new));
     }
 
     @Override
@@ -553,6 +615,11 @@ public class SkillManager extends Module {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public void registerBuiltinSkillHandlerType(@NotNull Class<? extends SkillHandler<?>> clazz) {
+        this.registerBuiltinSkillHandlerSource(clazz);
+    }
 
     @Deprecated
     public void initialize(boolean clearFirst) {

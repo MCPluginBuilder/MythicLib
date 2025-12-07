@@ -100,7 +100,7 @@ public class ProjectileMetadata extends TemporaryHandler {
         // Cache important stuff
         this.shooter = shooter;
         this.cachedSkills = shooter.getData().getPassiveSkillMap().isolateModifiers(shooter.getActionHand());
-        // TODO use SkillMetadata directly instead to avoid re-instanciating TriggerMetadata every tick
+        // TODO use SkillMetadata directly instead to avoid re-instantiating TriggerMetadata every tick
         this.tickTriggerMetadata = new TriggerMetadata(shooter, projectileType.getTickTrigger(), projectile, null);
 
         // Trigger skills

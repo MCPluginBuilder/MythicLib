@@ -26,7 +26,11 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
      * Maps the amount of ticks during which the anticheat
      * must stop checking for hacks; for every cheat type
      */
-    private final Map<CheatType, Integer> antiCheat = new HashMap<>();
+    private final Map<CheatType, Integer> antiCheat;
+
+    public MythicMobsSkillHandler(@NotNull String skillName) {
+        // TODO remove need for dummy config section
+        super(new YamlConfiguration().createSection(skillName));
 
         antiCheat = Map.of();
 

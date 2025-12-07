@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.script.condition.Condition;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.PostLoadAction;
-import io.lumine.mythic.lib.util.PreloadedObject;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
 import org.bukkit.configuration.ConfigurationSection;
@@ -26,7 +25,7 @@ import java.util.logging.Level;
  *
  * @author jules
  */
-public class Script implements PreloadedObject {
+public class Script {
     private final String id;
     private final boolean publik;
     private final List<Condition> conditions = new ArrayList<>();
@@ -74,7 +73,6 @@ public class Script implements PreloadedObject {
     }
 
     @NotNull
-    @Override
     public PostLoadAction getPostLoadAction() {
         return postLoadAction;
     }
