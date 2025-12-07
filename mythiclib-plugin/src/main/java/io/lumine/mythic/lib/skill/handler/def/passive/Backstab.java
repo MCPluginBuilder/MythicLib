@@ -18,10 +18,16 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"extra"}, triggerable = false)
 public class Backstab extends SkillHandler<AttackSkillResult> implements Listener {
+    private final List<DamageType> damageTypes;
+
     public Backstab(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.PHYSICAL), config.get("damage_types"));
     }
 
     @Override
@@ -32,7 +38,7 @@ public class Backstab extends SkillHandler<AttackSkillResult> implements Listene
     @Override
     public void whenCast(AttackSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = (LivingEntity) skillMeta.getTargetEntityOrNull();
-        result.getAttack().getDamage().multiplicativeModifier(1 + skillMeta.getParameter("extra") / 100, DamageType.PHYSICAL);
+        result.getAttack().getDamage().multiplicativeModifier(1 + skillMeta.getParameter("extra") / 100, damageTypes);
         target.getWorld().spawnParticle(VParticle.ENCHANTED_HIT.get(), target.getLocation().add(0, target.getHeight() / 2, 0), 32, 0, 0, 0, .5);
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_ENDERMAN_HURT, 1, 1.5f);
     }

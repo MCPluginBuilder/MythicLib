@@ -12,12 +12,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.EnumMap;
 import java.util.logging.Level;
 
 public class VanillaDamageModifiers implements Listener {
-    private final Map<EntityDamageEvent.DamageCause, String> formulas = new HashMap<>();
+    private final EnumMap<EntityDamageEvent.DamageCause, String> formulas = new EnumMap<>(EntityDamageEvent.DamageCause.class);
 
     public VanillaDamageModifiers(@NotNull ConfigurationSection config) {
         config = config.getConfigurationSection("source");

@@ -35,7 +35,7 @@ public class ConfigManager extends Module {
     public BarStyle castingDelayBarStyle;
     public double castingDelaySlowness;
     public int maxSyncTries;
-    public List<DamageType> meleeWeaponAttackTypes, meleeUnarmedAttackTypes, meleeRandomAttackTypes, bowAttackTypes;
+    public List<DamageType> meleeWeaponAttackTypes, meleeUnarmedAttackTypes, meleeRandomAttackTypes, bowAttackTypes, skillAttackTypes;
     public final EnumMap<EntityDamageEvent.DamageCause, List<DamageType>> damageCauseMap = new EnumMap<>(EntityDamageEvent.DamageCause.class);
 
     @NotNull
@@ -125,6 +125,12 @@ public class ConfigManager extends Module {
             bowAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.bow"));
         } catch (Exception exception) {
             bowAttackTypes = List.of(DamageType.PHYSICAL, DamageType.PROJECTILE, DamageType.WEAPON);
+        }
+
+        try {
+            skillAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.skills"));
+        } catch (Exception exception) {
+            bowAttackTypes = List.of(DamageType.SKILL, DamageType.MAGIC);
         }
 
         ///////////////////

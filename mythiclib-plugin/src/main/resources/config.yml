@@ -72,6 +72,7 @@ damage_types:
     melee_unarmed: [ UNARMED, PHYSICAL ]  # Punching with bare hands
     melee_default: [ PHYSICAL ]           # Hitting with a random non-weapon item
     bow: [ WEAPON, PROJECTILE, PHYSICAL ] # Bows, crossbows, all projectiles
+    skills: [SKILL,MAGIC]                 # Default damage of Fabled/MythicMobs/... skills
 
   # Links Bukkit DamageCause's to MythicLib damage types.
   # For instance, you can map damage dealt by Ender Dragon Breath

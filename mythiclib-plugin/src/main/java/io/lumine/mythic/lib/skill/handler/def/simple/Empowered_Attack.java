@@ -25,7 +25,7 @@ import java.util.List;
 
 @BuiltinSkillHandler(mods = {"radius", "ratio", "extra"})
 public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
-    private final List<DamageType> damageTypes;
+    private final List<DamageType> damageTypes, triggerDamageTypes;
 
     private static final double PARTICLES_PER_METER = 5;
 
@@ -33,6 +33,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
         super(config);
 
         damageTypes = DamageType.listFromConfig(List.of(DamageType.SKILL, DamageType.PHYSICAL), config.get("damage_types"));
+        triggerDamageTypes = DamageType.listFromConfig(List.of(DamageType.WEAPON), config.get("trigger_damage_types"));
     }
 
     @Override
@@ -68,7 +69,8 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
         @EventHandler
         public void a(PlayerAttackEvent event) {
             if (!caster.getData().isOnline()) return;
-            if (event.getAttacker().getPlayer().equals(caster.getPlayer()) && event.getAttack().getDamage().hasType(DamageType.WEAPON)) {
+            if (event.getAttacker().getPlayer().equals(caster.getPlayer())
+                    && event.getAttack().getDamage().hasAnyType(triggerDamageTypes)) {
                 close();
 
                 Entity target = event.getEntity();
@@ -98,7 +100,7 @@ public class Empowered_Attack extends SkillHandler<SimpleSkillResult> {
                  * Apply damage afterwards otherwise the damage dealt to nearby
                  * entities scale with the extra ability damage.
                  */
-                event.getAttack().getDamage().multiplicativeModifier(c, DamageType.WEAPON);
+                event.getAttack().getDamage().multiplicativeModifier(c, triggerDamageTypes);
             }
         }
     }

@@ -13,6 +13,7 @@ public class PAPIPlaceholder implements ExpressionPlaceholder {
 
     @Override
     public Double parse(@NotNull SkillMetadata skillMetadata) {
+        // Using {..} is arbitrary, could use %..% instead
         final var parsed = PlaceholderAPI.setBracketPlaceholders(skillMetadata.getCaster().getPlayer(), this.placeholderName);
         return Double.parseDouble(parsed);
     }

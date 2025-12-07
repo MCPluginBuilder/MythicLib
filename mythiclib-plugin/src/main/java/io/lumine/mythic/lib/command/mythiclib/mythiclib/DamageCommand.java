@@ -13,6 +13,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class DamageCommand extends CommandTreeNode {
     private final Argument<Player> argPlayer;
     private final Argument<LivingEntity> argTarget;
@@ -36,7 +38,7 @@ public class DamageCommand extends CommandTreeNode {
 
         // Register attack
         final var playerData = MMOPlayerData.get(player.getUniqueId()).getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        final var damage = new DamageMetadata(value); // TODO damage types & elements
+        final var damage = new DamageMetadata(value, List.of()); // TODO damage types & elements
         final var attack = new AttackMetadata(damage, target, playerData);
         MythicLib.plugin.getDamage().registerAttack(attack);
 

@@ -34,6 +34,7 @@ public class PrecompiledNumericExpression extends NumericExpression {
         expression = resolvePlaceholders(expression, PAPI_PLACEHOLDER_PATTERN, PAPIPlaceholder::new);
 
         // TODO recognize recursive placeholders? need lexer&parser for that...
+        // TODO further precompile <stat.xxxx> placeholders into StatInstance#getFinal
 
         // Finally, try to precompile
         // Might fail if unparsed placeholders remain

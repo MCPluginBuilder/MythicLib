@@ -35,16 +35,8 @@ public class DamageMetadata implements Cloneable {
         this.initialPacket = Objects.requireNonNull(initialPacket, "Initial packet cannot be null");
     }
 
-    public DamageMetadata(double damage, DamageType... types) {
-        this(damage, null, Arrays.asList(types));
-    }
-
     public DamageMetadata(double damage, @NotNull List<DamageType> types) {
         this(damage, null, types);
-    }
-
-    public DamageMetadata(double damage, @Nullable Element element, @NotNull DamageType... types) {
-        this(damage, element, Arrays.asList(types));
     }
 
     /**
@@ -120,12 +112,20 @@ public class DamageMetadata implements Cloneable {
 
     /**
      * @return Iterates through all registered damage packets and
+     *         see if any has one of the given damage types.
+     */
+    public boolean hasAnyType(@NotNull List<DamageType> damageTypes) {
+        for (var candidate : damageTypes)
+            for (var packet : packets) if (packet.hasType(candidate)) return true;
+        return false;
+    }
+
+    /**
+     * @return Iterates through all registered damage packets and
      *         see if any has this damage type.
      */
     public boolean hasType(DamageType type) {
-        for (DamagePacket packet : packets)
-            if (packet.hasType(type)) return true;
-
+        for (var packet : packets) if (packet.hasType(type)) return true;
         return false;
     }
 
@@ -224,8 +224,21 @@ public class DamageMetadata implements Cloneable {
      */
     @NotNull
     public DamageMetadata multiplicativeModifier(double coefficient, @NotNull DamageType damageType) {
-        for (DamagePacket packet : packets)
-            if (packet.hasType(damageType)) packet.multiplicativeModifier(coefficient);
+        for (var packet : packets) if (packet.hasType(damageType)) packet.multiplicativeModifier(coefficient);
+        return this;
+    }
+
+    /**
+     * Register a multiplicative damage modifier for a specific damage type.
+     *
+     * @param coefficient Multiplicative coefficient. 1.5 will
+     *                    increase final damage by 50%
+     * @param damageType  Specific damage type
+     * @return The same damage metadata
+     */
+    @NotNull
+    public DamageMetadata multiplicativeModifier(double coefficient, @NotNull List<DamageType> damageType) {
+        for (var packet : packets) if (packet.hasAnyType(damageType)) packet.multiplicativeModifier(coefficient);
         return this;
     }
 
@@ -239,7 +252,7 @@ public class DamageMetadata implements Cloneable {
      */
     @NotNull
     public DamageMetadata multiplicativeModifier(double coefficient, @Nullable Element element) {
-        for (DamagePacket packet : packets)
+        for (var packet : packets)
             if (Objects.equals(packet.getElement(), element)) packet.multiplicativeModifier(coefficient);
         return this;
     }
@@ -308,8 +321,18 @@ public class DamageMetadata implements Cloneable {
     //region Deprecated
 
     @Deprecated
+    public DamageMetadata(double damage, DamageType... types) {
+        this(damage, null, Arrays.asList(types));
+    }
+
+    @Deprecated
+    public DamageMetadata(double damage, @Nullable Element element, @NotNull DamageType... types) {
+        this(damage, element, Arrays.asList(types));
+    }
+
+    @Deprecated
     public DamageMetadata() {
-        this(0, List.of(DamageType.MAGIC, DamageType.SKILL));
+        this(0, List.of());
     }
 
     @NotNull
