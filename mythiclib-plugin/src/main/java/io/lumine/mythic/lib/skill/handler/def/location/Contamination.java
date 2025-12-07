@@ -28,7 +28,7 @@ public class Contamination extends SkillHandler<LocationSkillResult> {
     public Contamination(ConfigurationSection config) {
         super(config);
 
-        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), "damage_types");
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.MAGIC, DamageType.SKILL), config.get("damage_types"));
     }
 
     @Override
