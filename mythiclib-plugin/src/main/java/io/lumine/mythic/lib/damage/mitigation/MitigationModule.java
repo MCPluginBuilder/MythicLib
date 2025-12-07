@@ -93,7 +93,7 @@ public class MitigationModule extends Module {
             for (var type : MitigationModule.this.registry.values()) {
 
                 // Pre-damage script
-                if (type.preDamage() != null && !type.preDamage().cast(lazySkillMeta.get())) continue;
+                if (type.preDamage() != null && !type.preDamage().cast(lazySkillMeta.get()).isSuccessful()) continue;
 
                 // Check cooldown
                 if (type.hasCooldown() && playerData.getCooldownMap().isOnCooldown(type)) continue;

@@ -86,7 +86,7 @@ public class OnHitModule extends Module {
             for (var effect : OnHitModule.this.registry.values()) {
 
                 // Predamage script
-                if (effect.preAttack() != null && !effect.preAttack().cast(lazySkillMeta.get())) continue;
+                if (effect.preAttack() != null && !effect.preAttack().cast(lazySkillMeta.get()).isSuccessful()) continue;
 
                 // Check cooldown
                 if (effect.hasCooldown() && playerData.getCooldownMap().isOnCooldown(effect)) continue;

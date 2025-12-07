@@ -2,8 +2,9 @@ package io.lumine.mythic.lib.damage.onhit;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
-import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
+import io.lumine.mythic.lib.skill.SimpleSkill;
+import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.util.PostLoadAction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -13,8 +14,8 @@ public class OnHitEffect implements CooldownObject {
     private final String id, cooldownPath;
     private final boolean skipEvent;
 
-    private final @NotNull Script onAttack;
-    private final @Nullable Script preAttack;
+    private final @NotNull Skill onAttack;
+    private final @Nullable Skill preAttack;
     private final @Nullable NumericExpression cooldownFormula, rollFormula;
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
@@ -28,8 +29,8 @@ public class OnHitEffect implements CooldownObject {
         this.cooldownFormula = config.contains("cooldown") ? NumericExpression.compile(config.getString("cooldown")) : null;
         this.rollFormula = config.contains("roll") ? NumericExpression.compile(config.getString("roll")) : null;
 
-        this.onAttack = MythicLib.plugin.getSkills().loadScript(config.get("on_attack"));
-        this.preAttack = config.contains("pre_attack") ? MythicLib.plugin.getSkills().loadScript(config.get("pre_attack")) : null;
+        this.onAttack = new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(config.get("on_attack")));
+        this.preAttack = config.contains("pre_attack") ? new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(config.get("pre_attack"))) : null;
     }
 
     public PostLoadAction getPostLoadAction() {
@@ -45,22 +46,22 @@ public class OnHitEffect implements CooldownObject {
         return cooldownFormula != null;
     }
 
+    public boolean skipsEvent() {
+        return skipEvent;
+    }
+
     @Nullable
     public NumericExpression getRoll() {
         return rollFormula;
     }
 
     @NotNull
-    public Script onAttack() {
+    public Skill onAttack() {
         return onAttack;
     }
 
-    public boolean skipsEvent() {
-        return skipEvent;
-    }
-
     @Nullable
-    public Script preAttack() {
+    public Skill preAttack() {
         return preAttack;
     }
 

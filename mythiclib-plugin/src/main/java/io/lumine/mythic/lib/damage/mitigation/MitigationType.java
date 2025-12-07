@@ -3,8 +3,9 @@ package io.lumine.mythic.lib.damage.mitigation;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
-import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
+import io.lumine.mythic.lib.skill.SimpleSkill;
+import io.lumine.mythic.lib.skill.Skill;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,8 +14,8 @@ public class MitigationType implements CooldownObject {
     private final String id, cooldownPath;
     private final boolean skipEvent;
 
-    private final @NotNull Script onDamage;
-    private final @Nullable Script preDamage;
+    private final @NotNull Skill onDamage;
+    private final @Nullable Skill preDamage;
     private final @Nullable NumericExpression cooldownFormula, rollFormula;
 
     /**
@@ -31,8 +32,8 @@ public class MitigationType implements CooldownObject {
         this.cooldownFormula = config.contains("cooldown") ? NumericExpression.compile(config.getString("cooldown")) : null;
         this.rollFormula = config.contains("roll") ? NumericExpression.compile(config.getString("roll")) : null;
 
-        this.onDamage = MythicLib.plugin.getSkills().loadScript(config.get("on_damage"));
-        this.preDamage = config.contains("pre_damage") ? MythicLib.plugin.getSkills().loadScript(config.get("pre_damage")) : null;
+        this.onDamage = new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(config.get("on_damage")));
+        this.preDamage = config.contains("pre_damage") ? new SimpleSkill(MythicLib.plugin.getSkills().loadSkillHandler(config.get("pre_damage"))) : null;
     }
 
     @Nullable
@@ -54,12 +55,12 @@ public class MitigationType implements CooldownObject {
     }
 
     @NotNull
-    public Script onDamage() {
+    public Skill onDamage() {
         return onDamage;
     }
 
     @Nullable
-    public Script preDamage() {
+    public Skill preDamage() {
         return preDamage;
     }
 
