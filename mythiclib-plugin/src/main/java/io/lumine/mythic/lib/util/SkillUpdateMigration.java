@@ -55,7 +55,10 @@ public class SkillUpdateMigration {
 
         // fix skill handler ids......
         // only fix if at least one skill is transferred from mmoitems/mmocore
-        if (updateRequired) updateLegacySkillHandlerIds();
+        if (updateRequired) {
+            updateLegacySkillHandlerIds();
+            updateLegacySources();
+        }
     }
 
     private void convertMythicLibSkills() {
@@ -149,18 +152,18 @@ public class SkillUpdateMigration {
         }
     }
 
-    private static final List<String> INTERNAL_ID_PATHS = List.of(
-            "mythiclib-skill-id",
-            "fabled-skill-id",
-            "coretools-script-id",
-            "skillapi-skill-id",
-            "builtin_skill",
-            "mythicmobs-skill-id"
+    private static final Map<String, String> INTERNAL_ID_PATHS = Map.of(
+            "mythiclib-skill-id", "mythiclib",
+            "fabled-skill-id", "fabled",
+            "skillapi-skill-id", "fabled",
+            "coretools-script-id", "coretools",
+            "builtin_skill", "default",
+            "mythicmobs-skill-id", "mythicmobs"
     );
 
     @Nullable
     private String getLegacySkillHandlerId(ConfigurationSection skillRootConfig) {
-        for (var internalScriptNamePath : INTERNAL_ID_PATHS)
+        for (var internalScriptNamePath : INTERNAL_ID_PATHS.keySet())
             if (skillRootConfig.contains(internalScriptNamePath))
                 return skillRootConfig.getString(internalScriptNamePath);
 
@@ -214,7 +217,7 @@ public class SkillUpdateMigration {
             for (var key : sourceYamlFile.getKeys(false)) {
                 if (key.equals("parameters")
                         || key.equals("ui_lore")
-                        || INTERNAL_ID_PATHS.contains(key)
+                        || INTERNAL_ID_PATHS.containsKey(key)
                         || key.equals("icon")
                         || key.equals("name"))
                     continue;
@@ -420,6 +423,42 @@ public class SkillUpdateMigration {
                     save = true;
                     MythicLib.plugin.getLogger().log(Level.INFO, "- Updated skill ID from '" + key + "' to '" + legacySkillHandlerId + "' in file " + file.getName());
                 }
+            }
+
+            if (save) try {
+                config0.save(file);
+            } catch (Exception e) {
+                MythicLib.plugin.getLogger().log(Level.INFO, "X Could not update skill IDs in file " + file.getName());
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void updateLegacySources() {
+
+        MythicLib.plugin.getLogger().log(Level.INFO, "Updating legacy skill sources...");
+
+        FileUtils.exploreFolderRecursively(new File(MythicLib.plugin.getDataFolder() + "/skill"), file -> {
+
+            final var config0 = YamlConfiguration.loadConfiguration(file);
+            var save = false;
+
+            skillLoop:
+            for (var key : config0.getKeys(false)) {
+                final var subconfig = config0.getConfigurationSection(key);
+                if (subconfig == null) {
+                    MythicLib.plugin.getLogger().log(Level.WARNING, "X Skill '" + key + "' in file '" + file.getName() + "' is not a config section, skipping (3)");
+                    continue;
+                }
+
+                for (var internalScriptNamePath : INTERNAL_ID_PATHS.keySet())
+                    if (subconfig.contains(internalScriptNamePath)) {
+                        final var newSource = INTERNAL_ID_PATHS.get(internalScriptNamePath);
+                        subconfig.set("source", newSource + ":" + subconfig.getString(internalScriptNamePath));
+                        save = true;
+                        MythicLib.plugin.getLogger().log(Level.INFO, "- Updated skill source for '" + key + "' in file " + file.getName());
+                        continue skillLoop;
+                    }
             }
 
             if (save) try {

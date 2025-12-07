@@ -8,7 +8,7 @@ AMBERS:
     - ''
     - '&e{cooldown}s Cooldown'
   icon: EMERALD
-  builtin_skill: AMBERS
+  source: default:AMBERS
   parameters:
     timer:
       player: 0
@@ -56,7 +56,7 @@ ARCANE_HAIL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: END_ROD
-  builtin_skill: ARCANE_HAIL
+  source: default:ARCANE_HAIL
   parameters:
     timer:
       player: 0
@@ -110,7 +110,7 @@ ARCANE_RIFT:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: ARCANE_RIFT
+  source: default:ARCANE_RIFT
   parameters:
     timer:
       player: 0
@@ -169,7 +169,7 @@ BACKSTAB:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: FLINT
-  builtin_skill: BACKSTAB
+  source: default:BACKSTAB
   parameters:
     timer:
       player: 0
@@ -215,7 +215,7 @@ BLACK_HOLE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BLACK_DYE
-  builtin_skill: BLACK_HOLE
+  source: default:BLACK_HOLE
   parameters:
     delay:
       player: 0
@@ -263,7 +263,7 @@ BLIND:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: ENDER_EYE
-  builtin_skill: BLIND
+  source: default:BLIND
   parameters:
     timer:
       player: 0
@@ -303,7 +303,7 @@ BLINK:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: ENDER_PEARL
-  builtin_skill: BLINK
+  source: default:BLINK
   parameters:
     delay:
       player: 0
@@ -345,7 +345,7 @@ BLIZZARD:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SNOWBALL
-  builtin_skill: BLIZZARD
+  source: default:BLIZZARD
   parameters:
     timer:
       player: 0
@@ -403,7 +403,7 @@ BLOODBATH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: REDSTONE
-  builtin_skill: BLOODBATH
+  source: default:BLOODBATH
   parameters:
     timer:
       player: 0
@@ -447,7 +447,7 @@ BOUNCY_FIREBALL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: FIRE_CHARGE
-  builtin_skill: BOUNCY_FIREBALL
+  source: default:BOUNCY_FIREBALL
   parameters:
     timer:
       player: 0
@@ -508,7 +508,7 @@ BUNNY_MODE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: RABBIT_FOOT
-  builtin_skill: BUNNY_MODE
+  source: default:BUNNY_MODE
   parameters:
     timer:
       player: 0
@@ -561,7 +561,7 @@ BURN:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: BURN
+  source: default:BURN
   parameters:
     timer:
       player: 0
@@ -601,7 +601,7 @@ BURNING_HANDS:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: CAMPFIRE
-  builtin_skill: BURNING_HANDS
+  source: default:BURNING_HANDS
   parameters:
     timer:
       player: 0
@@ -647,7 +647,7 @@ CHICKEN_WRAITH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: EGG
-  builtin_skill: CHICKEN_WRAITH
+  source: default:CHICKEN_WRAITH
   parameters:
     timer:
       player: 0
@@ -707,7 +707,7 @@ CIRCULAR_SLASH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: IRON_SWORD
-  builtin_skill: CIRCULAR_SLASH
+  source: default:CIRCULAR_SLASH
   parameters:
     timer:
       player: 0
@@ -760,7 +760,7 @@ COMBO_ATTACK:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: IRON_SWORD
-  builtin_skill: COMBO_ATTACK
+  source: default:COMBO_ATTACK
   parameters:
     timer:
       player: 0
@@ -814,7 +814,7 @@ CONFUSE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: CONFUSE
+  source: default:CONFUSE
   parameters:
     timer:
       player: 0
@@ -849,7 +849,7 @@ CONTAMINATION:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SOUL_SAND
-  builtin_skill: CONTAMINATION
+  source: default:CONTAMINATION
   parameters:
     timer:
       player: 0
@@ -900,7 +900,7 @@ CONTROL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: MAGENTA_DYE
-  builtin_skill: CONTROL
+  source: default:CONTROL
   parameters:
     timer:
       player: 0
@@ -955,7 +955,7 @@ CORROSION:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: LIME_DYE
-  builtin_skill: CORROSION
+  source: default:CORROSION
   parameters:
     timer:
       player: 0
@@ -1013,7 +1013,7 @@ CORRUPT:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: CORRUPT
+  source: default:CORRUPT
   parameters:
     timer:
       player: 0
@@ -1070,7 +1070,7 @@ CORRUPTED_FANGS:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: CORRUPTED_FANGS
+  source: default:CORRUPTED_FANGS
   parameters:
     timer:
       player: 0
@@ -1115,7 +1115,7 @@ CURSED_BEAM:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: CURSED_BEAM
+  source: default:CURSED_BEAM
   parameters:
     timer:
       player: 0
@@ -1162,7 +1162,7 @@ DEATH_MARK:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: DEATH_MARK
+  source: default:DEATH_MARK
   parameters:
     timer:
       player: 0
@@ -1215,7 +1215,7 @@ DEEP_WOUND:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: REDSTONE
-  builtin_skill: DEEP_WOUND
+  source: default:DEEP_WOUND
   parameters:
     timer:
       player: 0
@@ -1266,7 +1266,7 @@ EARTHQUAKE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: EARTHQUAKE
+  source: default:EARTHQUAKE
   parameters:
     timer:
       player: 0
@@ -1320,7 +1320,7 @@ EMPOWERED_ATTACK:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BONE_MEAL
-  builtin_skill: EMPOWERED_ATTACK
+  source: default:EMPOWERED_ATTACK
   parameters:
     timer:
       player: 0
@@ -1380,7 +1380,7 @@ EVADE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: LEATHER_BOOTS
-  builtin_skill: EVADE
+  source: default:EVADE
   parameters:
     timer:
       player: 0
@@ -1427,7 +1427,7 @@ EXPLOSIVE_TURKEY:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: EXPLOSIVE_TURKEY
+  source: default:EXPLOSIVE_TURKEY
   parameters:
     timer:
       player: 0
@@ -1483,7 +1483,7 @@ FIRE_BERSERKER:
   ui_lore:
     - You deal &c{extra}% &7more damage when on fire.
   icon: FLINT_AND_STEEL
-  builtin_skill: FIRE_BERSERKER
+  source: default:FIRE_BERSERKER
   parameters:
     mana:
       player:
@@ -1526,7 +1526,7 @@ FIRE_METEOR:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: FIRE_CHARGE
-  builtin_skill: FIRE_METEOR
+  source: default:FIRE_METEOR
   parameters:
     timer:
       player: 0
@@ -1579,7 +1579,7 @@ FIRE_RAGE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: FIRE_CHARGE
-  builtin_skill: FIRE_RAGE
+  source: default:FIRE_RAGE
   parameters:
     timer:
       player: 0
@@ -1645,7 +1645,7 @@ FIRE_STORM:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BLAZE_POWDER
-  builtin_skill: FIRE_STORM
+  source: default:FIRE_STORM
   parameters:
     timer:
       player: 0
@@ -1706,7 +1706,7 @@ FIREBALL:
     - '&9Costs {mana} {mana_name}'
   icon:
     item: EMERALD
-  builtin_skill: FIREBALL
+  source: default:FIREBALL
   parameters:
     mana:
       player: 15 + 1.0 * {level}
@@ -1767,7 +1767,7 @@ FIREBOLT:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: FIREBOLT
+  source: default:FIREBOLT
   parameters:
     timer:
       player:
@@ -1826,7 +1826,7 @@ FIREFLY:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: FLINT_AND_STEEL
-  builtin_skill: FIREFLY
+  source: default:FIREFLY
   parameters:
     duration:
       player:
@@ -1891,7 +1891,7 @@ FREEZE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SNOWBALL
-  builtin_skill: FREEZE
+  source: default:FREEZE
   parameters:
     duration:
       player:
@@ -1956,7 +1956,7 @@ FREEZING_CURSE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SNOWBALL
-  builtin_skill: FREEZING_CURSE
+  source: default:FREEZING_CURSE
   parameters:
     duration:
       player:
@@ -2028,7 +2028,7 @@ FROG_MODE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: FROG_MODE
+  source: default:FROG_MODE
   parameters:
     duration:
       player:
@@ -2093,7 +2093,7 @@ FROZEN_AURA:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: FROZEN_AURA
+  source: default:FROZEN_AURA
   parameters:
     duration:
       player:
@@ -2157,7 +2157,7 @@ FURTIVE_STRIKE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: COAL
-  builtin_skill: FURTIVE_STRIKE
+  source: default:FURTIVE_STRIKE
   parameters:
     damage:
       player:
@@ -2215,7 +2215,7 @@ GRAND_HEAL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: GRAND_HEAL
+  source: default:GRAND_HEAL
   parameters:
     timer:
       player:
@@ -2273,7 +2273,7 @@ GREATER_HEALINGS:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: GOLDEN_APPLE
-  builtin_skill: GREATER_HEALINGS
+  source: default:GREATER_HEALINGS
   parameters:
     mana:
       player:
@@ -2319,7 +2319,7 @@ HEAL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: HEAL
+  source: default:HEAL
   parameters:
     timer:
       player:
@@ -2372,7 +2372,7 @@ HEAVY_CHARGE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: HEAVY_CHARGE
+  source: default:HEAVY_CHARGE
   parameters:
     timer:
       player:
@@ -2432,7 +2432,7 @@ HOEARTHQUAKE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: HOEARTHQUAKE
+  source: default:HOEARTHQUAKE
   parameters:
     timer:
       player:
@@ -2479,7 +2479,7 @@ HOLY_MISSILE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: HOLY_MISSILE
+  source: default:HOLY_MISSILE
   parameters:
     duration:
       player:
@@ -2540,7 +2540,7 @@ HUMAN_SHIELD:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: TOTEM_OF_UNDYING
-  builtin_skill: HUMAN_SHIELD
+  source: default:HUMAN_SHIELD
   parameters:
     redirect:
       player:
@@ -2609,7 +2609,7 @@ ICE_CRYSTAL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: ICE_CRYSTAL
+  source: default:ICE_CRYSTAL
   parameters:
     duration:
       player:
@@ -2675,7 +2675,7 @@ ICE_SPIKES:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SNOWBALL
-  builtin_skill: ICE_SPIKES
+  source: default:ICE_SPIKES
   parameters:
     damage:
       player:
@@ -2728,7 +2728,7 @@ IGNITE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: IGNITE
+  source: default:IGNITE
   parameters:
     duration:
       player:
@@ -2793,7 +2793,7 @@ ITEM_BOMB:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: ITEM_BOMB
+  source: default:ITEM_BOMB
   parameters:
     timer:
       player:
@@ -2864,7 +2864,7 @@ ITEM_THROW:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: ITEM_THROW
+  source: default:ITEM_THROW
   parameters:
     timer:
       player:
@@ -2923,7 +2923,7 @@ LEAP:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: LEAP
+  source: default:LEAP
   parameters:
     timer:
       player:
@@ -2976,7 +2976,7 @@ LIFE_ENDER:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: LIFE_ENDER
+  source: default:LIFE_ENDER
   parameters:
     timer:
       player:
@@ -3042,7 +3042,7 @@ LIGHT_DASH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: LIGHT_DASH
+  source: default:LIGHT_DASH
   parameters:
     timer:
       player:
@@ -3101,7 +3101,7 @@ LIGHTNING_BEAM:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: LIGHTNING_BEAM
+  source: default:LIGHTNING_BEAM
   parameters:
     timer:
       player:
@@ -3160,7 +3160,7 @@ MAGICAL_PATH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: MAGICAL_PATH
+  source: default:MAGICAL_PATH
   parameters:
     duration:
       player:
@@ -3212,7 +3212,7 @@ MAGICAL_SHIELD:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: MAGICAL_SHIELD
+  source: default:MAGICAL_SHIELD
   parameters:
     duration:
       player:
@@ -3276,7 +3276,7 @@ MAGMA_FISSURE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: MAGMA_FISSURE
+  source: default:MAGMA_FISSURE
   parameters:
     timer:
       player:
@@ -3334,7 +3334,7 @@ MINOR_EXPLOSION:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: MINOR_EXPLOSION
+  source: default:MINOR_EXPLOSION
   parameters:
     timer:
       player:
@@ -3406,7 +3406,7 @@ MINOR_HEALINGS:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: GOLDEN_APPLE
-  builtin_skill: MINOR_HEALINGS
+  source: default:MINOR_HEALINGS
   parameters:
     mana:
       player:
@@ -3448,7 +3448,7 @@ NEPTUNE_GIFT:
   ui_lore:
     - Resource regeneration is increased by &8{extra}% &7when standing in water.
   icon: LILY_PAD
-  builtin_skill: NEPTUNE_GIFT
+  source: default:NEPTUNE_GIFT
   parameters:
     extra:
       player:
@@ -3485,7 +3485,7 @@ OVERLOAD:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: OVERLOAD
+  source: default:OVERLOAD
   parameters:
     timer:
       player:
@@ -3547,7 +3547,7 @@ POISON:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: POISON
+  source: default:POISON
   parameters:
     duration:
       player:
@@ -3611,7 +3611,7 @@ POWER_MARK:
     - ''
     - '&e{cooldown}s Cooldown'
   icon: WITHER_SKELETON_SKULL
-  builtin_skill: POWER_MARK
+  source: default:POWER_MARK
   parameters:
     duration:
       player:
@@ -3669,7 +3669,7 @@ PRESENT_THROW:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: PRESENT_THROW
+  source: default:PRESENT_THROW
   parameters:
     timer:
       player:
@@ -3734,7 +3734,7 @@ REGEN_ALLY:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: REGEN_ALLY
+  source: default:REGEN_ALLY
   parameters:
     duration:
       player:
@@ -3792,7 +3792,7 @@ SHADOW_VEIL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SHADOW_VEIL
+  source: default:SHADOW_VEIL
   parameters:
     duration:
       player:
@@ -3849,7 +3849,7 @@ SHOCK:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SHOCK
+  source: default:SHOCK
   parameters:
     duration:
       player:
@@ -3902,7 +3902,7 @@ SHOCKWAVE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SHOCKWAVE
+  source: default:SHOCKWAVE
   parameters:
     timer:
       player:
@@ -3963,7 +3963,7 @@ SHULKER_MISSILE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: SHULKER_SHELL
-  builtin_skill: SHULKER_MISSILE
+  source: default:SHULKER_MISSILE
   parameters:
     timer:
       player: 0
@@ -4018,7 +4018,7 @@ SKY_SMASH:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SKY_SMASH
+  source: default:SKY_SMASH
   parameters:
     timer:
       player:
@@ -4078,7 +4078,7 @@ SLOW:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SLOW
+  source: default:SLOW
   parameters:
     duration:
       player:
@@ -4141,7 +4141,7 @@ SMITE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SMITE
+  source: default:SMITE
   parameters:
     timer:
       player:
@@ -4194,7 +4194,7 @@ SNEAKY_PICKY:
     - ''
     - '&9Costs {mana} {mana_name}'
   icon: DIAMOND_SWORD
-  builtin_skill: SNEAKY_PICKY
+  source: default:SNEAKY_PICKY
   parameters:
     mana:
       player:
@@ -4241,7 +4241,7 @@ SNOWMAN_TURRET:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SNOWMAN_TURRET
+  source: default:SNOWMAN_TURRET
   parameters:
     duration:
       player:
@@ -4306,7 +4306,7 @@ SPARKLE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SPARKLE
+  source: default:SPARKLE
   parameters:
     timer:
       player:
@@ -4373,7 +4373,7 @@ STARFALL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: STARFALL
+  source: default:STARFALL
   parameters:
     timer:
       player:
@@ -4426,7 +4426,7 @@ STUN:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: STUN
+  source: default:STUN
   parameters:
     duration:
       player:
@@ -4479,7 +4479,7 @@ SWIFTNESS:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: SWIFTNESS
+  source: default:SWIFTNESS
   parameters:
     duration:
       player:
@@ -4540,7 +4540,7 @@ TACTICAL_GRENADE:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: TACTICAL_GRENADE
+  source: default:TACTICAL_GRENADE
   parameters:
     timer:
       player:
@@ -4602,7 +4602,7 @@ TARGETED_FIREBALL:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: TARGETED_FIREBALL
+  source: default:TARGETED_FIREBALL
   parameters:
     timer:
       player:
@@ -4661,7 +4661,7 @@ TELEKINESY:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: MAGENTA_DYE
-  builtin_skill: TELEKINESY
+  source: default:TELEKINESY
   parameters:
     duration:
       player:
@@ -4716,7 +4716,7 @@ THROW_UP:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: THROW_UP
+  source: default:THROW_UP
   parameters:
     duration:
       player:
@@ -4773,7 +4773,7 @@ THRUST:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: THRUST
+  source: default:THRUST
   parameters:
     timer:
       player:
@@ -4827,7 +4827,7 @@ TNT_THROW:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: TNT_THROW
+  source: default:TNT_THROW
   parameters:
     timer:
       player:
@@ -4880,7 +4880,7 @@ VAMPIRISM:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: VAMPIRISM
+  source: default:VAMPIRISM
   parameters:
     timer:
       player:
@@ -4930,7 +4930,7 @@ VOID_ZAPPER:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: VOID_ZAPPER
+  source: default:VOID_ZAPPER
   parameters:
     timer:
       player:
@@ -5000,7 +5000,7 @@ WARP:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: ENDER_PEARL
-  builtin_skill: WARP
+  source: default:WARP
   parameters:
     mana:
       player:
@@ -5048,7 +5048,7 @@ WEAKEN_TARGET:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: WEAKEN_TARGET
+  source: default:WEAKEN_TARGET
   parameters:
     duration:
       player:
@@ -5105,7 +5105,7 @@ WEAKEN:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: MAGENTA_DYE
-  builtin_skill: WEAKEN
+  source: default:WEAKEN
   parameters:
     duration:
       player:
@@ -5159,7 +5159,7 @@ WITHER:
     - '&e{cooldown}s Cooldown'
     - '&9Costs {mana} {mana_name}'
   icon: BOOK
-  builtin_skill: WITHER
+  source: default:WITHER
   parameters:
     timer:
       player: 0
