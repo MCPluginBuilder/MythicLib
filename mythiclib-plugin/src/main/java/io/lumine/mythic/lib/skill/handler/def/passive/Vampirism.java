@@ -23,10 +23,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @BuiltinSkillHandler(mods = {"drain"}, triggerable = false)
 public class Vampirism extends SkillHandler<AttackSkillResult> implements Listener {
+    private final List<DamageType> damageTypes;
+
     public Vampirism(ConfigurationSection config) {
         super(config);
+
+        damageTypes = DamageType.listFromConfig(List.of("weapon"), config.get("damage_types"));
     }
 
     @Override
@@ -66,12 +72,10 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void a(PlayerAttackEvent event) {
-        if (!event.getAttack().getDamage().hasType(DamageType.WEAPON))
-            return;
+        if (!event.getAttack().getDamage().hasAnyType(damageTypes)) return;
 
         PassiveSkill skill = event.getAttacker().getData().getPassiveSkillMap().getSkill(this);
-        if (skill == null)
-            return;
+        if (skill == null) return;
 
         skill.getTriggeredSkill().cast(SkillMetadata.of(event));
     }

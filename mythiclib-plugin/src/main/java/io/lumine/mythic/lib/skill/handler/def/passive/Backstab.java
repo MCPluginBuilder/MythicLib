@@ -47,7 +47,7 @@ public class Backstab extends SkillHandler<AttackSkillResult> implements Listene
     public void a(PlayerAttackEvent event) {
         MMOPlayerData data = event.getAttacker().getData();
         LivingEntity target = event.getEntity();
-        if (!event.getAttack().getDamage().hasType(DamageType.WEAPON)
+        if (!event.getAttack().getDamage().hasAnyType(damageTypes)
                 || event.getAttacker().getPlayer().getEyeLocation().getDirection().angle(target.getEyeLocation().getDirection()) > Math.PI / 3
                 || event.getAttacker().getPlayer().getGameMode() == GameMode.SPECTATOR)
             return;
