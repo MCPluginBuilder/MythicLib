@@ -59,7 +59,7 @@ public class Combo_Attack extends SkillHandler<TargetSkillResult> {
                         }
 
                         playEffect(target);
-                        MythicLib.plugin.getDamage().registerAttack(new AttackMetadata(new DamageMetadata(damage, DamageType.SKILL, DamageType.PHYSICAL), target, skillMeta.getCaster()), true, true);
+                        MythicLib.plugin.getDamage().registerAttack(new AttackMetadata(new DamageMetadata(damage, damageTypes), target, skillMeta.getCaster()), true, true);
                     }
                 });
     }
