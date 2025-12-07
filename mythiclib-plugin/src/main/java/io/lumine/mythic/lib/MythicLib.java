@@ -389,7 +389,6 @@ public class MythicLib extends MMOPlugin {
      * Enables support for legacy (spigot-based) MMOProfiles.
      */
     public void useLegacyProfiles() {
-        getLogger().log(Level.INFO, "================== LEGACY PROFILE MODE ENABLED ==================");
         validateNoProfileMode();
 
         this.profileMode = ProfileMode.LEGACY;
@@ -397,7 +396,6 @@ public class MythicLib extends MMOPlugin {
     }
 
     public void useNoProfiles() {
-        getLogger().log(Level.INFO, "================== NO PROFILES MODE ENABLED ==================");
         validateNoProfileMode();
 
         this.profileMode = ProfileMode.NONE;
@@ -413,7 +411,6 @@ public class MythicLib extends MMOPlugin {
      * Enables support for proxy-based MMOProfiles
      */
     public void useProxyProfiles() {
-        getLogger().log(Level.INFO, "================== PROXY PROFILES MODE ENABLED ==================");
         validateNoProfileMode();
 
         this.profileMode = ProfileMode.PROXY;
