@@ -20,7 +20,7 @@ public class ConstantNumericExpression extends NumericExpression {
 
     @Override
     public double evaluate(@NotNull SkillMetadata skillMetadata) {
-        return 0;
+        return this.constantValue;
     }
 
     public double evaluate(@NotNull Lazy<SkillMetadata> meta) {
