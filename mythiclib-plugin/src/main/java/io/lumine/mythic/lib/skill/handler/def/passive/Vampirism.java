@@ -32,7 +32,7 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
     public Vampirism(ConfigurationSection config) {
         super(config);
 
-        damageTypes = DamageType.listFromConfig(List.of("weapon"), config.get("damage_types"));
+        damageTypes = DamageType.listFromConfig(List.of(DamageType.WEAPON), config.get("damage_types"));
     }
 
     @Override
