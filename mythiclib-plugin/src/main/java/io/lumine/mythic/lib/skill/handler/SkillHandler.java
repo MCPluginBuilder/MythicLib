@@ -62,7 +62,7 @@ public abstract class SkillHandler<T extends SkillResult> {
         /////////////////////////////////
         final var builtinAnnot = this.getClass().getAnnotation(BuiltinSkillHandler.class);
         this.id = inferSkillHandlerId(config);
-        this.triggerable = builtinAnnot != null && builtinAnnot.triggerable();
+        this.triggerable = builtinAnnot == null || builtinAnnot.triggerable();
 
         // Built-in skill parameters
         if (builtinAnnot != null) for (var mod : builtinAnnot.mods()) initializeModifier(mod, config);
@@ -82,7 +82,9 @@ public abstract class SkillHandler<T extends SkillResult> {
         this.uiLore = config != null ? config.getStringList("ui_lore") : List.of();
 
         // Default trigger type
-        defaultTriggerType = config != null && triggerable ? UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("default-trigger-type", "CAST"), "No trigger type with name %s") : TriggerType.API;
+        // For builtin non triggerable skills, it's API
+        // For custom skills, defaults to CAST unless user specifies otherwise
+        defaultTriggerType = !triggerable ? TriggerType.API : config == null ? TriggerType.CAST : UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("default-trigger-type", "CAST"), "No trigger type with name %s");
 
         // Categories
         categories = config != null ? config.getStringList("categories") : new ArrayList<>();
