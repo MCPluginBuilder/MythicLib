@@ -43,8 +43,9 @@ public abstract class NumericExpression extends AbstractExpression {
         try {
             return new PrecompiledNumericExpression(expression);
         } catch (Exception e) {
-            MythicLib.plugin.debug("PRECOMPILE FAILURE");
-            e.printStackTrace();
+            // Fail silently
+            //MythicLib.plugin.debug("PRECOMPILE FAILURE");
+            //e.printStackTrace();
         }
 
         // Runtime compilation and evaluation fallback
