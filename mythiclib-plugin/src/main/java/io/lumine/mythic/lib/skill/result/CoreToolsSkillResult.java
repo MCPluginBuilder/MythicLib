@@ -14,6 +14,9 @@ public class CoreToolsSkillResult implements SkillResult {
     public CoreToolsSkillResult(@NotNull SkillMetadata skillMeta, @NotNull String scriptName) {
         this.context = adaptToContext(skillMeta);
         this.conditionsMet = Lazy.of(() -> ScriptQueue.cast(scriptName, context, CoreToolsSkillHandler.SOURCE, true, false));
+
+        // Store skillMetadata inside CoreTools context
+        context.setMythiclib_meta(skillMeta);
     }
 
     private Context adaptToContext(SkillMetadata skillMeta) {
