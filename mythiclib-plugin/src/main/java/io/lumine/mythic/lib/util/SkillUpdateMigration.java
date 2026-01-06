@@ -166,15 +166,16 @@ public class SkillUpdateMigration {
 
     @Nullable
     private String getLegacySkillHandlerId(ConfigurationSection skillRootConfig) {
-        for (var internalScriptNamePath : INTERNAL_ID_PATHS.keySet())
-            if (skillRootConfig.contains(internalScriptNamePath))
-                return skillRootConfig.getString(internalScriptNamePath);
+        for (var internalScriptNamePath : INTERNAL_ID_PATHS.keySet()) {
+            final var key = skillRootConfig.getString(internalScriptNamePath);
+            if (key != null && !key.isEmpty()) return UtilityMethods.enumName(key);
+        }
 
         final var source = skillRootConfig.get("source");
         if (source != null && source instanceof String) {
             final var asString = (String) source;
             if (!asString.contains(":")) return asString;
-            return asString.split(":", 2)[0];
+            return UtilityMethods.enumName(asString.split(":", 2)[0]);
         }
 
         return null;
@@ -475,6 +476,7 @@ public class SkillUpdateMigration {
                     if (subconfig.contains(internalScriptNamePath)) {
                         final var newSource = INTERNAL_ID_PATHS.get(internalScriptNamePath);
                         subconfig.set("source", newSource + ":" + subconfig.getString(internalScriptNamePath));
+                        subconfig.set(internalScriptNamePath, null);
                         save = true;
                         MythicLib.plugin.getLogger().log(Level.INFO, "- Updated skill source for '" + key + "' in file " + file.getName());
                         continue skillLoop;
