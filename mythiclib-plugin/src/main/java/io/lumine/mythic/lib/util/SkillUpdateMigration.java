@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlFile;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -109,7 +111,8 @@ public class SkillUpdateMigration {
 
                 final var legacySkillHandlerId = getLegacySkillHandlerId(subconfig);
                 if (legacySkillHandlerId == null) {
-                    MythicLib.plugin.getLogger().log(Level.WARNING, "X Skill '" + key + "' in file '" + file.getName() + "' has no skill type, skipping (5)");
+                    // This log shows everytime a skill handler is found with no source
+                    // MythicLib.plugin.getLogger().log(Level.WARNING, "X Skill '" + key + "' in file '" + file.getName() + "' has no skill type, skipping (5)");
                     continue;
                 }
 
@@ -297,14 +300,18 @@ public class SkillUpdateMigration {
         // this file will contain all default skill handlers
         // (ambers, fireball........)
         final var defaultSkills = new YamlFile(MythicLib.plugin, "skill", "default_skills");
-        var saveDefault = false;
+        var saveDefault = new AtomicBoolean(false);
 
         // this file is used to store any skills that fail to be mapped
         // maybe the skill no longer exists?
         final var fallbackSkills = new YamlFile(MythicLib.plugin, "skill", "error_skills");
-        var saveFallback = false;
+        var saveFallback = new AtomicBoolean(false);
 
-        for (final var file : Objects.requireNonNull(pluginSkillFolder.listFiles())) {
+        // Technically users were not allowed to have subfolders
+        // but some of them will have them anyways, just to avoid
+        // log spams, take this into consideration and convert all
+        // files on a best-effort basis
+        FileUtils.exploreFolderRecursively(pluginSkillFolder, file -> {
             final var sourceYamlFile = YamlConfiguration.loadConfiguration(file);
             // ID of skill handler
             var legacySkillHandlerId = file.getName().substring(0, file.getName().length() - 4).toUpperCase().replace(" ", "_").replace("-", "_");
@@ -330,7 +337,7 @@ public class SkillUpdateMigration {
                 targetYamlFile = defaultSkills.getContent();
                 configKey = legacySkillHandlerId;
                 targetFile = defaultSkills.getFile();
-                saveDefault = true;
+                saveDefault.set(true);
                 saveFile = false;
                 MythicLib.plugin.getLogger().log(Level.INFO, "- Found builtin skill config " + legacySkillHandlerId + ", moved to default_skills.yml");
             } else if ((backwardSkill = backwardMap.get(legacySkillHandlerId)) != null) {
@@ -347,7 +354,7 @@ public class SkillUpdateMigration {
                 targetYamlFile = fallbackSkills.getContent();
                 configKey = legacySkillHandlerId;
                 targetFile = fallbackSkills.getFile();
-                saveFallback = true;
+                saveFallback.set(true);
                 saveFile = false;
                 MythicLib.plugin.getLogger().log(Level.WARNING, "- Found " + pluginName + " skill '" + legacySkillHandlerId + "' with no MythicLib counterpart, moved to error_skills");
             }
@@ -366,14 +373,27 @@ public class SkillUpdateMigration {
                 e.printStackTrace();
             }
             file.delete();
+        });
+
+        if (saveFallback.get()) fallbackSkills.save();
+        if (saveDefault.get()) defaultSkills.save();
+
+        try {
+            // Delete plugin skill folder if empty
+            // [[[comment out this line for testing]]]
+            recursiveEmptyDirectoryRemove(pluginSkillFolder);
+        } catch (Exception exception) {
+            MythicLib.plugin.getLogger().log(Level.WARNING, "X Could not delete " + pluginName + " skill folder: " + exception.getMessage());
         }
+    }
 
-        if (saveFallback) fallbackSkills.save();
-        if (saveDefault) defaultSkills.save();
-
-        // Delete plugin skill folder if empty
-        // [[[comment out this line for testing]]]
-        pluginSkillFolder.delete();
+    private void recursiveEmptyDirectoryRemove(File folder) {
+        // Only delete the folder if it is empty
+        // It's okay if it contains subfolders as long as
+        // they are empty too
+        Validate.isTrue(folder.isDirectory(), "Not a folder: " + folder.getPath());
+        for (var file : Objects.requireNonNull(folder.listFiles())) recursiveEmptyDirectoryRemove(file);
+        if (!folder.delete()) throw new RuntimeException("Could not delete folder " + folder.getPath());
     }
 
     private boolean isSkillParamUseless(ConfigurationSection config, String paramKey) {
