@@ -196,11 +196,7 @@ public class SkillMetadata {
 
     @NotNull
     public Event getSourceEvent() {
-        final var varFound = getVariable("source_event");
-        // TODO does this method return null or non null ????
-        Validate.notNull(varFound, "Skill has no source event variable");
-        if (!(varFound instanceof EventVariable)) throw new NullPointerException("Skill has no source event");
-        return (Event) varFound.getStored();
+        return Objects.requireNonNull(sourceEvent, "Skill has no source event");
     }
 
     public boolean hasOrientation() {
