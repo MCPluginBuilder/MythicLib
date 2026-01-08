@@ -57,11 +57,10 @@
                                     <pattern>com.zaxxer.hikari</pattern>
                                     <shadedPattern>io.lumine.mythic.lib.sql.hikari</shadedPattern>
                                 </relocation>
-                                <!-- TODO rellocate CRUNCH evaluator now
                                 <relocation>
-                                    <pattern>ne/pattern>
-                                    <shadedPattern>i</shadedPattern>
-                                </relocation> -->
+                                    <pattern>redempt.crunch</pattern>
+                                    <shadedPattern>io.lumine.mythic.lib.crunch</shadedPattern>
+                                </relocation>
                                 <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>io.lumine.mythic.lib.metrics</shadedPattern>
