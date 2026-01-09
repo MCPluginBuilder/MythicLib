@@ -5,7 +5,6 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -175,7 +174,7 @@ public class SkillUpdateMigration {
         if (source != null && source instanceof String) {
             final var asString = (String) source;
             if (!asString.contains(":")) return asString;
-            return UtilityMethods.enumName(asString.split(":", 2)[0]);
+            return UtilityMethods.enumName(asString.split(":", 2)[1]);
         }
 
         return null;
@@ -210,9 +209,9 @@ public class SkillUpdateMigration {
 
     private void mmocoreSkillPreprocessor(ConfigurationSection sourceYamlFile) {
 
-        // replace "lore" and "material" keys
-        replaceKey(sourceYamlFile, "lore", "ui_lore");
+        // replace "passive-type" and "material" keys
         replaceKey(sourceYamlFile, "material", "icon");
+        replaceKey(sourceYamlFile, "passive-type", "trigger");
 
         // if does not contain "parameters", create and move modifiers inside
         if (!sourceYamlFile.contains("parameters")) {
@@ -220,8 +219,8 @@ public class SkillUpdateMigration {
             // transfer all keys to inside "parameters"
             for (var key : sourceYamlFile.getKeys(false)) {
                 if (key.equals("parameters")
-                        || key.equals("ui_lore")
-                        || key.equals("passive-type")
+                        || key.equals("lore")
+                        || key.equals("trigger")
                         || INTERNAL_ID_PATHS.containsKey(key)
                         || key.equals("icon")
                         || key.equals("name"))
@@ -251,9 +250,9 @@ public class SkillUpdateMigration {
             if (sourceYamlFile.getString("name", "").equals(UtilityMethods.caseOnWords(legacySkillHandlerId.replace("_", " ").toLowerCase())))
                 sourceYamlFile.set("name", null);
             // empty lore
-            var lore = sourceYamlFile.getStringList("ui_lore");
+            var lore = sourceYamlFile.getStringList("lore");
             if (!lore.isEmpty() && lore.get(0).equals("This is the default skill description"))
-                sourceYamlFile.set("ui_lore", null);
+                sourceYamlFile.set("lore", null);
             // empty material
             if (sourceYamlFile.getString("icon", "").equals("BOOK"))
                 sourceYamlFile.set("icon", null);
@@ -340,7 +339,7 @@ public class SkillUpdateMigration {
                 targetFile = defaultSkills.getFile();
                 saveDefault.set(true);
                 saveFile = false;
-                MythicLib.plugin.getLogger().log(Level.INFO, "- Found builtin skill config " + legacySkillHandlerId + ", moved to default_skills.yml");
+                MythicLib.plugin.getLogger().log(Level.INFO, "- Found builtin skill " + legacySkillHandlerId + " -> " + targetFile.getPath());
             } else if ((backwardSkill = backwardMap.get(legacySkillHandlerId)) != null) {
 
                 simplifier.accept(sourceYamlFile, legacySkillHandlerId); // simplify config to reduce clutter
@@ -349,7 +348,7 @@ public class SkillUpdateMigration {
                 configKey = backwardSkill.getRight();
                 targetFile = backwardSkill.getLeft();
                 saveFile = true;
-                MythicLib.plugin.getLogger().log(Level.INFO, "- Found skill config " + legacySkillHandlerId + ", moved to " + targetFile.getPath());
+                MythicLib.plugin.getLogger().log(Level.INFO, "- Found skill " + legacySkillHandlerId + " -> " + targetFile.getPath());
             } else {
                 // fallback. some skills might not exist anymore
                 targetYamlFile = fallbackSkills.getContent();
@@ -357,7 +356,7 @@ public class SkillUpdateMigration {
                 targetFile = fallbackSkills.getFile();
                 saveFallback.set(true);
                 saveFile = false;
-                MythicLib.plugin.getLogger().log(Level.WARNING, "- Found " + pluginName + " skill '" + legacySkillHandlerId + "' with no MythicLib counterpart, moved to error_skills");
+                MythicLib.plugin.getLogger().log(Level.WARNING, "- Found " + pluginName + " skill '" + legacySkillHandlerId + "' with no MythicLib counterpart -> " + targetFile.getPath());
             }
 
             ///////////////////////////////////

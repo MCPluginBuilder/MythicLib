@@ -1,6 +1,6 @@
 AMBERS:
   name: Mana Ambers
-  ui_lore:
+  lore:
     - Dealing magic damage has &630% &7chance
     - of dropping an amber on the ground.
     - ''
@@ -49,7 +49,7 @@ AMBERS:
       item: 0
 ARCANE_HAIL:
   name: Arcane Hail
-  ui_lore:
+  lore:
     - Surprise your foes with this
     - quick firing hail of magic
     - ''
@@ -103,7 +103,7 @@ ARCANE_HAIL:
       item: 3.0
 ARCANE_RIFT:
   name: Arcane Rift
-  ui_lore:
+  lore:
     - Summon a magical rift
     - to damage your enemy
     - ''
@@ -163,7 +163,7 @@ ARCANE_RIFT:
       item: 1.0
 BACKSTAB:
   name: Backstab
-  ui_lore:
+  lore:
     - Backstabs deal &c{extra}%&7 damage.
     - ''
     - '&e{cooldown}s Cooldown'
@@ -206,7 +206,7 @@ BACKSTAB:
       item: 0
 BLACK_HOLE:
   name: Black Hole
-  ui_lore:
+  lore:
     - Trap anyone in a black hole
     - they will be unable to move
     - for the duration of this
@@ -256,7 +256,7 @@ BLACK_HOLE:
       item: 2.0
 BLIND:
   name: Blind
-  ui_lore:
+  lore:
     - Envelop your enemies in a dark
     - thread, rendering them blind
     - ''
@@ -296,7 +296,7 @@ BLIND:
       item: 5.0
 BLINK:
   name: Blink
-  ui_lore:
+  lore:
     - Teleport yourself around by
     - looking at your destination
     - ''
@@ -337,7 +337,7 @@ BLINK:
       item: 8.0
 BLIZZARD:
   name: Blizzard
-  ui_lore:
+  lore:
     - Launch a barrage of
     - snowballs directly at
     - your enemies. Aim true!
@@ -396,7 +396,7 @@ BLIZZARD:
       item: 1.0
 BLOODBATH:
   name: Bloodbath
-  ui_lore:
+  lore:
     - Steals &c{amount} &7food from your
     - target, restoring your hunger.
     - ''
@@ -439,7 +439,7 @@ BOUNCY_FIREBALL:
   name: Bouncy Fireball
   categories:
     - ACTIVE
-  ui_lore:
+  lore:
     - Unleash a bouncing fireball that
     - tracks and hits its target,
     - creating a devastating impact.
@@ -501,7 +501,7 @@ BOUNCY_FIREBALL:
       item: 1.0
 BUNNY_MODE:
   name: Bunny Mode
-  ui_lore:
+  lore:
     - Move quickly by hopping
     - around with great agility
     - ''
@@ -555,7 +555,7 @@ BUNNY_MODE:
       item: 1.0
 BURN:
   name: Burn
-  ui_lore:
+  lore:
     - Ignite your target with a burst of flames
     - ''
     - '&e{cooldown}s Cooldown'
@@ -594,7 +594,7 @@ BURN:
       item: 3.0
 BURNING_HANDS:
   name: Burning Hands
-  ui_lore:
+  lore:
     - Gather your magical energy and unleash
     - a cone of flames towards your target
     - ''
@@ -640,7 +640,7 @@ BURNING_HANDS:
       item: 2.0
 CHICKEN_WRAITH:
   name: Chicken Wraith
-  ui_lore:
+  lore:
     - Unleash chaos by using
     - this rapid egg shooter
     - ''
@@ -700,7 +700,7 @@ CHICKEN_WRAITH:
       item: 1.0
 CIRCULAR_SLASH:
   name: Circular Slash
-  ui_lore:
+  lore:
     - Unleash a powerful strike
     - that sends nearby targets flying
     - ''
@@ -753,7 +753,7 @@ CIRCULAR_SLASH:
       item: 3.0
 COMBO_ATTACK:
   name: Combo Attack
-  ui_lore:
+  lore:
     - Violenty slashes your target &8{count}
     - times for a total of &8{damage} &7damage.
     - ''
@@ -807,7 +807,7 @@ COMBO_ATTACK:
       item: 0
 CONFUSE:
   name: Confuse
-  ui_lore:
+  lore:
     - Confuse your enemies by performing
     - a quick 180-degree flip on your target
     - ''
@@ -842,7 +842,7 @@ CONFUSE:
       item: 7.0
 CONTAMINATION:
   name: Contamination
-  ui_lore:
+  lore:
     - Contaminates the target area, dealing &c{damage}
     - every second to nearby enemies for &c{duration} &7seconds.
     - ''
@@ -890,7 +890,7 @@ CONTAMINATION:
       item: 2.0
 CONTROL:
   name: Control
-  ui_lore:
+  lore:
     - Your target is temporarily slowed for &8{duration} &7seconds.
     - As soon as you left click, it gets pushed back in the
     - direction you're facing.
@@ -947,7 +947,7 @@ CONTROL:
       item: 0
 CORROSION:
   name: Corrosion
-  ui_lore:
+  lore:
     - Cast a spell that instantly corrodes the target area,
     - inflicting Poison &c{amplifier}&7 for &8{duration} &7seconds to all
     - enemies within &8{radius} &7blocks.
@@ -1005,7 +1005,7 @@ CORROSION:
       item: 4.0
 CORRUPT:
   name: Corrupt
-  ui_lore:
+  lore:
     - Corrupts the target area, dealing &c{damage} &7instant
     - damage to enemies within &8{radius} &7blocks, and
     - inflicting Wither &c{amplifier}&7 for &8{duration} &7seconds.
@@ -1062,7 +1062,7 @@ CORRUPT:
       item: 1.0
 CORRUPTED_FANGS:
   name: Corrupted Fangs
-  ui_lore:
+  lore:
     - Summon the fangs of the underworld
     - with your magic and use them
     - to attack your target
@@ -1108,7 +1108,7 @@ CORRUPTED_FANGS:
       item: 6.0
 CURSED_BEAM:
   name: Cursed Beam
-  ui_lore:
+  lore:
     - Unleash a cursed beam of dark energy
     - directly at your target, causing on-hit damage
     - ''
@@ -1154,7 +1154,7 @@ CURSED_BEAM:
       item: 8.0
 DEATH_MARK:
   name: Death Mark
-  ui_lore:
+  lore:
     - Mark your target with a death hex, slowing the target
     - for &c{duration} &7seconds and dealing &c{damage} &7damage
     - over time.
@@ -1207,7 +1207,7 @@ DEATH_MARK:
       item: 1.0
 DEEP_WOUND:
   name: Deep Wound
-  ui_lore:
+  lore:
     - You puncture your target, dealing &c{damage} &7damage.
     - Damage is increased up to &c+{extra}% &7based
     - on your target's missing health.
@@ -1260,7 +1260,7 @@ DEEP_WOUND:
       item: 0
 EARTHQUAKE:
   name: Earthquake
-  ui_lore:
+  lore:
     - Unleash a rippling wave of energy
     - ''
     - '&e{cooldown}s Cooldown'
@@ -1311,7 +1311,7 @@ EARTHQUAKE:
       item: 1.0
 EMPOWERED_ATTACK:
   name: Empowered Attack
-  ui_lore:
+  lore:
     - You charge your weapon with lightning.
     - Your next attack deals &f{extra}% &7extra damage
     - and spreads to enemies within &f{radius} &7blocks
@@ -1373,7 +1373,7 @@ EMPOWERED_ATTACK:
       item: 0
 EVADE:
   name: Evade
-  ui_lore:
+  lore:
     - You become imune to damage for &8{duration} &7seconds.
     - Cancels when dealing weapon damage.
     - ''
@@ -1419,7 +1419,7 @@ EVADE:
       item: 0
 EXPLOSIVE_TURKEY:
   name: Explosive Turkey
-  ui_lore:
+  lore:
     - Launch an explosive turkey
     - by aiming at the ground
     - near your target
@@ -1480,7 +1480,7 @@ EXPLOSIVE_TURKEY:
       item: 4.0
 FIRE_BERSERKER:
   name: Fire Berserker
-  ui_lore:
+  lore:
     - You deal &c{extra}% &7more damage when on fire.
   icon: FLINT_AND_STEEL
   source: default:FIRE_BERSERKER
@@ -1519,7 +1519,7 @@ FIRE_BERSERKER:
       item: 0
 FIRE_METEOR:
   name: Fire Meteor
-  ui_lore:
+  lore:
     - Unleash the fury of hell with
     - this devasting meteor strike
     - ''
@@ -1570,7 +1570,7 @@ FIRE_METEOR:
       item: 4.0
 FIRE_RAGE:
   name: Fire Rage
-  ui_lore:
+  lore:
     - For &8{duration} &7seconds, you slow down and are able
     - to cast up to &c{count} &7fireballs by left clicking.
     - ''
@@ -1636,7 +1636,7 @@ FIRE_RAGE:
       item: 0
 FIRE_STORM:
   name: Fire Storm
-  ui_lore:
+  lore:
     - Casts a flurry of 6 fire projectiles onto
     - nearby enemies, proritizing the initial
     - target. Each projectile deals &c{damage} &7damage
@@ -1690,7 +1690,7 @@ FIRE_STORM:
       item: 0
 FIREBALL:
   name: Fireball
-  ui_lore:
+  lore:
     - Casts a deadly fireball onto your
     - target, dealing &c{damage} &7damage upon contact
     - and igniting it for &c{ignite} &7seconds.
@@ -1759,7 +1759,7 @@ FIREBALL:
       item: 0
 FIREBOLT:
   name: Firebolt
-  ui_lore:
+  lore:
     - You conjure a flaming
     - ball and hurl it at
     - your targets
@@ -1818,7 +1818,7 @@ FIREBOLT:
       item: 10.0
 FIREFLY:
   name: Firefly
-  ui_lore:
+  lore:
     - Propel yourself forward like a rocket
     - and damage any targets who don't move out
     - the way in time
@@ -1883,7 +1883,7 @@ FIREFLY:
       item: 1.0
 FREEZE:
   name: Freeze
-  ui_lore:
+  lore:
     - Launch a rapid snowball
     - that inflicts a slowing effect
     - on any entity within its range
@@ -1948,7 +1948,7 @@ FREEZE:
       item: 5.0
 FREEZING_CURSE:
   name: Freezing Curse
-  ui_lore:
+  lore:
     - Swiftly inscribe a cursed circle of
     - magic, which momentarily inflicts
     - your target with slowness
@@ -2019,7 +2019,7 @@ FREEZING_CURSE:
       item: 3.0
 FROG_MODE:
   name: Frog Mode
-  ui_lore:
+  lore:
     - Use this agility-based ability to dive
     - in and out of water with ease,
     - granting you a crucial advantage
@@ -2085,7 +2085,7 @@ FROG_MODE:
       item: 1.0
 FROZEN_AURA:
   name: Frozen Aura
-  ui_lore:
+  lore:
     - Sorrund yourself with a
     - frigid aura that slows
     - down nearby entities
@@ -2150,7 +2150,7 @@ FROZEN_AURA:
       item: 10.0
 FURTIVE_STRIKE:
   name: Furtive Strike
-  ui_lore:
+  lore:
     - Deals &c{damage} &7damage, increased by &c{extra}% &7if
     - there are not any enemies within &c{radius} &7blocks.
     - ''
@@ -2208,7 +2208,7 @@ FURTIVE_STRIKE:
       item: 0
 GRAND_HEAL:
   name: Grand Heal
-  ui_lore:
+  lore:
     - Restore health to yourself
     - and nearby allies
     - ''
@@ -2266,7 +2266,7 @@ GRAND_HEAL:
       item: 5.0
 GREATER_HEALINGS:
   name: Greater Healings
-  ui_lore:
+  lore:
     - Instantly grants &a{heal} &7HP to the
     - target. Sneak to cast it on yourself.
     - ''
@@ -2312,7 +2312,7 @@ GREATER_HEALINGS:
       item: 0
 HEAL:
   name: Heal
-  ui_lore:
+  lore:
     - Use this ability for a rapid
     - healing effect
     - ''
@@ -2364,7 +2364,7 @@ HEAL:
       item: 4.0
 HEAVY_CHARGE:
   name: Heavy Charge
-  ui_lore:
+  lore:
     - Charge forward at lightning speeds
     - towards your target. Dealing devasting
     - damage upon impact
@@ -2423,7 +2423,7 @@ HEAVY_CHARGE:
       item: 1.0
 HOEARTHQUAKE:
   name: Hoearthquake
-  ui_lore:
+  lore:
     - Unleash this ground moving projectile
     - that ripples the earth, damaging
     - and disorienting your enemies in
@@ -2471,7 +2471,7 @@ HOEARTHQUAKE:
       item: 10.0
 HOLY_MISSILE:
   name: Holy Missile
-  ui_lore:
+  lore:
     - Launch a swift and sacred projectile
     - towards your intended target
     - inflicting divine damage upon impact
@@ -2530,7 +2530,7 @@ HOLY_MISSILE:
       item: 10.0
 HUMAN_SHIELD:
   name: Human Shield
-  ui_lore:
+  lore:
     - Casts a protection charm onto target ally,
     - reducing damage taken by &a{reduction}%&7.
     - '&a{redirect}% &7of this damage is redirected to you.'
@@ -2601,7 +2601,7 @@ HUMAN_SHIELD:
       item: 0
 ICE_CRYSTAL:
   name: Ice Crystal
-  ui_lore:
+  lore:
     - Unleash a frigid crystal projectile
     - that ones in on your target. Encasing them
     - in ice and slows them down
@@ -2666,7 +2666,7 @@ ICE_CRYSTAL:
       item: 1.0
 ICE_SPIKES:
   name: Ice Spikes
-  ui_lore:
+  lore:
     - Ice spikes summon from the ground
     - and shatter, each dealing &9{damage} &7damage
     - to hit enemies and slowing them down
@@ -2720,7 +2720,7 @@ ICE_SPIKES:
       item: 0
 IGNITE:
   name: Ignite
-  ui_lore:
+  lore:
     - Set your target aflame with
     - a fierce blaze using this
     - powerful ability
@@ -2785,7 +2785,7 @@ IGNITE:
       item: 5.0
 ITEM_BOMB:
   name: Item Bomb
-  ui_lore:
+  lore:
     - Channel your power and transmute the
     - object in your hand, into an volatile
     - explosive that can be thrown
@@ -2856,7 +2856,7 @@ ITEM_BOMB:
       item: 6.0
 ITEM_THROW:
   name: Item Throw
-  ui_lore:
+  lore:
     - Swiftly hurl the object in your
     - hand at your target with
     - dealy accuracy
@@ -2915,7 +2915,7 @@ ITEM_THROW:
       item: 1.0
 LEAP:
   name: Leap
-  ui_lore:
+  lore:
     - Blast yourself away with
     - explosive force. Hurling
     - through the air
@@ -2968,7 +2968,7 @@ LEAP:
       item: 1.0
 LIFE_ENDER:
   name: Life Ender
-  ui_lore:
+  lore:
     - Harness the power of the End
     - and summon a devasting meteor
     - from the sky with cataclysmic force
@@ -3033,7 +3033,7 @@ LIFE_ENDER:
       item: 4.0
 LIGHT_DASH:
   name: Light Dash
-  ui_lore:
+  lore:
     - Propel yourself forward
     - at incredible speeds
     - striking and damaging any
@@ -3093,7 +3093,7 @@ LIGHT_DASH:
       item: 1.0
 LIGHTNING_BEAM:
   name: Lightning Beam
-  ui_lore:
+  lore:
     - Summon a powerful
     - and eletricfying beam of
     - lightning from the heavens
@@ -3152,7 +3152,7 @@ LIGHTNING_BEAM:
       item: 5.0
 MAGICAL_PATH:
   name: Magical Path
-  ui_lore:
+  lore:
     - Manifest a solid magical platform
     - in midair, allowing you
     - to traverse inaccessible areas
@@ -3205,7 +3205,7 @@ MAGICAL_PATH:
       item: 15.0
 MAGICAL_SHIELD:
   name: Magical Shield
-  ui_lore:
+  lore:
     - Erect a powerful and ephemeral
     - dome-shaped shield of magical power
     - ''
@@ -3269,7 +3269,7 @@ MAGICAL_SHIELD:
       item: 5.0
 MAGMA_FISSURE:
   name: Magma Fissure
-  ui_lore:
+  lore:
     - Unleash a scorching and destructive
     - line of molten magma towards the target
     - ''
@@ -3327,7 +3327,7 @@ MAGMA_FISSURE:
       item: 10.0
 MINOR_EXPLOSION:
   name: Minor Explosion
-  ui_lore:
+  lore:
     - Generate a small
     - controlled explosion
     - ''
@@ -3399,7 +3399,7 @@ MINOR_EXPLOSION:
       item: 5.0
 MINOR_HEALINGS:
   name: Minor Healings
-  ui_lore:
+  lore:
     - Instantly grants &a{heal} &7HP to the
     - target. Sneak to cast it on yourself.
     - ''
@@ -3445,7 +3445,7 @@ MINOR_HEALINGS:
       item: 0
 NEPTUNE_GIFT:
   name: Neptune's Gift
-  ui_lore:
+  lore:
     - Resource regeneration is increased by &8{extra}% &7when standing in water.
   icon: LILY_PAD
   source: default:NEPTUNE_GIFT
@@ -3474,7 +3474,7 @@ NEPTUNE_GIFT:
       item: 0
 OVERLOAD:
   name: Overload
-  ui_lore:
+  lore:
     - Channel an explosive
     - and volatile power
     - within yourself
@@ -3538,7 +3538,7 @@ OVERLOAD:
       item: 6.0
 POISON:
   name: Poison
-  ui_lore:
+  lore:
     - Launch venomous and debilitating
     - poison attack upon your attack
     - ''
@@ -3596,7 +3596,7 @@ POISON:
       item: 1.0
 POWER_MARK:
   name: Power Mark
-  ui_lore:
+  lore:
     - Attacking an enemy applies a deadly
     - magical mark which spreads accross the
     - ground. This mark accumulates &6{ratio}%
@@ -3662,7 +3662,7 @@ POWER_MARK:
       item: 0
 PRESENT_THROW:
   name: Present Throw
-  ui_lore:
+  lore:
     - Hurl a festive and explosive
     - present towards your target
     - ''
@@ -3726,7 +3726,7 @@ PRESENT_THROW:
       item: 4.0
 REGEN_ALLY:
   name: Regen Ally
-  ui_lore:
+  lore:
     - Provide a potent and restorative
     - healing effact to any ally
     - in close proximity
@@ -3785,7 +3785,7 @@ REGEN_ALLY:
       item: 7.0
 SHADOW_VEIL:
   name: Shadow Veil
-  ui_lore:
+  lore:
     - Shroud yourself in a
     - veil of invisibility
     - ''
@@ -3841,7 +3841,7 @@ SHADOW_VEIL:
       item: 35.0
 SHOCK:
   name: Shock
-  ui_lore:
+  lore:
     - Inflict a painful effect
     - wearing down your enemy
     - null
@@ -3894,7 +3894,7 @@ SHOCK:
       item: 8.0
 SHOCKWAVE:
   name: Shockwave
-  ui_lore:
+  lore:
     - Send your target soaring
     - into the sky with a stunning
     - and forceful blow
@@ -3955,7 +3955,7 @@ SHOCKWAVE:
       item: 1.0
 SHULKER_MISSILE:
   name: Shulker Missile
-  ui_lore:
+  lore:
     - Shoots four shulker projectiles that
     - explode on impact, dealing &c{damage} &7damage and
     - inflicting &cLevitation &7for &c{effect-duration}s&7.
@@ -4010,7 +4010,7 @@ SHULKER_MISSILE:
       item: 5.0
 SKY_SMASH:
   name: Sky Smash
-  ui_lore:
+  lore:
     - Launch your enemy skyward
     - with this visible, impactful,
     - and, disorienting attack
@@ -4069,7 +4069,7 @@ SKY_SMASH:
       item: 1.0
 SLOW:
   name: Slow
-  ui_lore:
+  lore:
     - Impose a debilitating slowdown
     - effect upon your enemy. Reducing
     - their movement speed and leaving them
@@ -4133,7 +4133,7 @@ SLOW:
       item: 1.0
 SMITE:
   name: Smite
-  ui_lore:
+  lore:
     - Harness the immense power
     - of lightning to smite your
     - enemies!
@@ -4188,7 +4188,7 @@ SMITE:
       item: 10.0
 SNEAKY_PICKY:
   name: Sneaky Picky
-  ui_lore:
+  lore:
     - Your attack is empowered by &f{extra}% &7when
     - delivering the first blow during a fight.
     - ''
@@ -4231,7 +4231,7 @@ SNEAKY_PICKY:
       item: 0
 SNOWMAN_TURRET:
   name: Snowman Turret
-  ui_lore:
+  lore:
     - Summon a hired snowman
     - to aid in your attack
     - ''
@@ -4298,7 +4298,7 @@ SNOWMAN_TURRET:
       item: 20.0
 SPARKLE:
   name: Sparkle
-  ui_lore:
+  lore:
     - Send a shimmering blast
     - of damage, leaving them
     - reeling from the attack
@@ -4365,7 +4365,7 @@ SPARKLE:
       item: 6.0
 STARFALL:
   name: Starfall
-  ui_lore:
+  lore:
     - Unleash a devasting attack
     - causing magic stars to fall
     - upon your target
@@ -4418,7 +4418,7 @@ STARFALL:
       item: 8.0
 STUN:
   name: Stun
-  ui_lore:
+  lore:
     - Induce a temporary
     - state of paralysis
     - in your target
@@ -4471,7 +4471,7 @@ STUN:
       item: 10.0
 SWIFTNESS:
   name: Swiftness
-  ui_lore:
+  lore:
     - Grant yourself a burst
     - agility with a quick boost
     - of speed and jump boost
@@ -4532,7 +4532,7 @@ SWIFTNESS:
       item: 1.0
 TACTICAL_GRENADE:
   name: Tactical Grenade
-  ui_lore:
+  lore:
     - Launch a homing grenade
     - at your target, propelling
     - them into the air upon impact
@@ -4593,7 +4593,7 @@ TACTICAL_GRENADE:
       item: 1.0
 TARGETED_FIREBALL:
   name: Targeted Fireball
-  ui_lore:
+  lore:
     - Launch a homing fireball
     - towards your target
     - causing them to fruitlessly
@@ -4653,7 +4653,7 @@ TARGETED_FIREBALL:
       item: 10.0
 TELEKINESY:
   name: Telekinesy
-  ui_lore:
+  lore:
     - You take the control over your target
     - for &9{duration} &7seconds. Left click to throw him.
     - 'Knockback force: &f{knockback}%'
@@ -4708,7 +4708,7 @@ TELEKINESY:
       item: 0
 THROW_UP:
   name: Throw Up
-  ui_lore:
+  lore:
     - Hurl pieces of decaying
     - flesh at your target
     - dealing damage on impact
@@ -4765,7 +4765,7 @@ THROW_UP:
       item: 10.0
 THRUST:
   name: Thrust
-  ui_lore:
+  lore:
     - Charge forward towards
     - your target, dealing significant
     - damage upon impact
@@ -4818,7 +4818,7 @@ THRUST:
       item: 10.0
 TNT_THROW:
   name: Tnt Throw
-  ui_lore:
+  lore:
     - Hurl a powerful explosive
     - obliterating the target
     - and blocks around the
@@ -4872,7 +4872,7 @@ TNT_THROW:
       item: 1.0
 VAMPIRISM:
   name: Vampirism
-  ui_lore:
+  lore:
     - Gives health depending on
     - the amount of damage
     - you dealt to your target
@@ -4921,7 +4921,7 @@ VAMPIRISM:
       item: 10.0
 VOID_ZAPPER:
   name: Void Zapper
-  ui_lore:
+  lore:
     - Drawing devasting power
     - from the void, attack
     - your enemy with this
@@ -4993,7 +4993,7 @@ VOID_ZAPPER:
       item: 1
 WARP:
   name: Warp
-  ui_lore:
+  lore:
     - Teleports you to target location.
     - 'Max. Range: &5{range}'
     - ''
@@ -5041,7 +5041,7 @@ WARP:
       item: 0
 WEAKEN_TARGET:
   name: Weaken Target
-  ui_lore:
+  lore:
     - Inflict the choosen target
     - with the Weakness Effect
     - ''
@@ -5097,7 +5097,7 @@ WEAKEN_TARGET:
       item: 40.0
 WEAKEN:
   name: Weaken
-  ui_lore:
+  lore:
     - The target is weakened for
     - '&8{duration} &7seconds and is dealt'
     - '&7extra &8{ratio}% &7damage.'
@@ -5152,7 +5152,7 @@ WEAKEN:
       item: 0
 WITHER:
   name: Wither
-  ui_lore:
+  lore:
     - You will inflict your target
     - with the wither effect
     - ''

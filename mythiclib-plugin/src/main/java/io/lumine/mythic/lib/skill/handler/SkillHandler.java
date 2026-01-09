@@ -47,7 +47,7 @@ public abstract class SkillHandler<T extends SkillResult> {
     private final Map<String, SkillParameter> parameters = new HashMap<>();
 
     private final IconOptions icon;
-    private final List<String> uiLore;
+    private final List<String> lore;
     private final List<String> categories;
     private final TriggerType defaultTriggerType;
 
@@ -79,14 +79,14 @@ public abstract class SkillHandler<T extends SkillResult> {
         this.lowerCaseId = this.id.toLowerCase();
         this.name = config != null ? config.getString("name") : getClass().getSimpleName();
         this.icon = config != null && config.contains("icon") ? IconOptions.from(config.get("icon")) : DEFAULT_ICON;
-        this.uiLore = config != null ? config.getStringList("ui_lore") : List.of();
+        this.lore = config != null ? config.getStringList("lore") : List.of();
 
         // Default trigger type
         // For builtin non triggerable skills, it's API
         // For custom skills, defaults to CAST unless user specifies otherwise
         defaultTriggerType = !triggerable ? TriggerType.API
                 : config == null ? TriggerType.CAST
-                : UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("trigger-type", "CAST"), "No trigger type with name %s");
+                : UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("trigger", "CAST"), "No trigger with name %s");
 
         // Categories
         categories = config != null ? config.getStringList("categories") : new ArrayList<>();
@@ -124,8 +124,8 @@ public abstract class SkillHandler<T extends SkillResult> {
     }
 
     @NotNull
-    public List<String> getUiLore() {
-        return uiLore;
+    public List<String> getLore() {
+        return lore;
     }
 
     @NotNull
@@ -280,6 +280,11 @@ public abstract class SkillHandler<T extends SkillResult> {
     @Deprecated
     public SkillHandler(@NotNull String id) {
         this(new YamlConfiguration().createSection(id));
+    }
+
+    @Deprecated
+    public List<String> getUiLore() {
+        return lore;
     }
 
     //endregion

@@ -2,5 +2,5 @@
 CUSTOM_STAFF_ATTACK:
   source: 'mythiclib:staff_attack'
   name: 'Custom Staff Attack'
-  ui_lore:
+  lore:
     - 'A powerful magical attack from a custom staff.'
