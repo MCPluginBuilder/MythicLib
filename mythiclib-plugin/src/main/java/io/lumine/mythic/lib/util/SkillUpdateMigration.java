@@ -221,6 +221,7 @@ public class SkillUpdateMigration {
             for (var key : sourceYamlFile.getKeys(false)) {
                 if (key.equals("parameters")
                         || key.equals("ui_lore")
+                        || key.equals("passive-type")
                         || INTERNAL_ID_PATHS.containsKey(key)
                         || key.equals("icon")
                         || key.equals("name"))
