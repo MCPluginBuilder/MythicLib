@@ -283,14 +283,13 @@ public class SkillUpdateMigration {
         }
     }
 
-    private void transferLegacySkills(String pluginName, String skillFolderName,
+    private void transferLegacySkills(String pluginName,
+                                      String skillFolderName,
                                       Consumer<ConfigurationSection> preprocessor,
                                       BiConsumer<ConfigurationSection, String> simplifier,
                                       TriConsumer<ConfigurationSection, FileConfiguration, String> merger) {
-        final var mmocore = Bukkit.getPluginManager().getPlugin(pluginName);
-        if (mmocore == null) return;
 
-        final var pluginSkillFolder = new File(mmocore.getDataFolder() + "/" + skillFolderName);
+        final var pluginSkillFolder = new File(MythicLib.plugin.getDataFolder().getParentFile() + "/" + pluginName + "/" + skillFolderName);
         if (!pluginSkillFolder.exists()) return;
 
         ///////////////////////////////
