@@ -418,7 +418,7 @@ public class SkillMetadata {
         return var;
     }
 
-    public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = UtilityMethods.internalPlaceholderPattern('<', '>');
+    public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = Pattern.compile("<([^#&|!=<>]+)>" );
 
     @NotNull
     public String parseString(String str) {

@@ -122,11 +122,6 @@ public class UtilityMethods {
                 : type.equals(PotionEffectType.BLINDNESS) ? 140 : 80;
     }
 
-    @NotNull
-    public static Pattern internalPlaceholderPattern(char start, char end) {
-        return Pattern.compile(start + "[^&|!=" + start + end + "]*?" + end);
-    }
-
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
         Set<EntityType> set = new HashSet<>();
         for (String undeadEntityTypeCandidate : Arrays.asList(
@@ -381,15 +376,6 @@ public class UtilityMethods {
     public static double getPlayerDefaultBaseValue(@NotNull Attribute attribute, @Nullable AttributeInstance instance) {
         final Double found = MythicLib.plugin.getStats().getPlayerDefaultBaseValue(attribute);
         return found != null ? found : (instance != null ? instance.getDefaultValue() : 0);
-    }
-
-    /**
-     * Equivalent of String#formatted(String... args)
-     * which is not implemented yet in Java 8
-     */
-    @NotNull
-    public static String format(@NotNull String input, @NotNull Object... args) {
-        return new Formatter().format(input, args).toString();
     }
 
     private static final String[] PREVIOUS_ATTRIBUTE_MODIFIER_NAMES = {"mmolib.", "mmoitems.", "mythiclib."};
@@ -683,6 +669,23 @@ public class UtilityMethods {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public static Pattern internalPlaceholderPattern(char start, char end) {
+        return Pattern.compile(start + "([^&|!=" + start + end + "]+)" + end);
+    }
+
+    /**
+     * Equivalent of String#formatted(String... args)
+     * which is not implemented yet in Java 8
+     *
+     * @see String#format(String, Object...)
+     * @deprecated
+     */
+    @Deprecated
+    public static String format(@NotNull String input, @NotNull Object... args) {
+        return new Formatter().format(input, args).toString();
+    }
 
     /**
      * @see FileUtils#copyDefaultFile(Plugin, String)
