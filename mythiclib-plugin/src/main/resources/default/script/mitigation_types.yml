@@ -20,6 +20,8 @@ mitigation_on_block:
 
 # Used for both slashing and piercing
 mitigation_block_particle_effect:
+  conditions:
+    - 'variable_exists{var=target}' # only if target exists
   mechanics:
     - 'copy_vector{variable=dir;value=target.location}'
     - 'copy_vector{variable=src;value=caster.location}'
