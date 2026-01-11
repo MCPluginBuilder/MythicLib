@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.script.condition.generic;
 
 import io.lumine.mythic.lib.script.condition.Condition;
-import io.lumine.mythic.lib.script.util.VariableNotFoundException;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
@@ -22,7 +21,10 @@ public class HasVariableCondition extends Condition {
         try {
             meta.getVariable(variableName);
             return true;
-        } catch (VariableNotFoundException exception) {
+        } catch (Exception exception) {
+            // Need to catch all possible exceptions
+            // VariableNotFound for custom variables
+            // NullPointerExceptions and IllegalArgumentExceptions for reserved variables
             return false;
         }
     }
