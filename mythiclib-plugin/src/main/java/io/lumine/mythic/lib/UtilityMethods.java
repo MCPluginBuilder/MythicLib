@@ -122,11 +122,6 @@ public class UtilityMethods {
                 : type.equals(PotionEffectType.BLINDNESS) ? 140 : 80;
     }
 
-    @NotNull
-    public static Pattern internalPlaceholderPattern(char start, char end) {
-        return Pattern.compile(start + "([^&|!=" + start + end + "]+)" + end);
-    }
-
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
         Set<EntityType> set = new HashSet<>();
         for (String undeadEntityTypeCandidate : Arrays.asList(
@@ -674,6 +669,11 @@ public class UtilityMethods {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public static Pattern internalPlaceholderPattern(char start, char end) {
+        return Pattern.compile(start + "([^&|!=" + start + end + "]+)" + end);
+    }
 
     /**
      * Equivalent of String#formatted(String... args)

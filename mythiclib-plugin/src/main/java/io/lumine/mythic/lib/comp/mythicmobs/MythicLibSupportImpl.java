@@ -19,6 +19,7 @@ import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.comp.mythicmobs.condition.CanTargetCondition;
 import io.lumine.mythic.lib.comp.mythicmobs.mechanic.MMODamageMechanic;
 import io.lumine.mythic.lib.comp.mythicmobs.mechanic.MultiplyDamageMechanic;
+import io.lumine.mythic.lib.comp.mythicmobs.mechanic.SetMMODamageSplits;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.manager.StatManager;
@@ -49,6 +50,10 @@ public class MythicLibSupportImpl extends ReloadableModule<MythicBukkit> impleme
             // Multiply damage mechanic
             if (event.getMechanicName().equalsIgnoreCase("multiplydamage"))
                 event.register(new MultiplyDamageMechanic(event.getConfig()));
+
+            // Set MMO damage types
+            if (event.getMechanicName().equalsIgnoreCase("setmmodamagesplits"))
+                event.register(new SetMMODamageSplits(event.getConfig()));
 
         });
 
