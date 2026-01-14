@@ -12,11 +12,10 @@ import java.util.Map;
  * @author jules
  */
 public class ModifiableSkill extends Skill {
-    private final SkillHandler<?> handler;
     private final Map<String, Double> modifiers = new HashMap<>();
 
-    public ModifiableSkill(SkillHandler<?> handler) {
-        this.handler = handler;
+    public ModifiableSkill(@NotNull SkillHandler<?> handler) {
+        super(handler);
     }
 
     @Override
@@ -32,12 +31,6 @@ public class ModifiableSkill extends Skill {
     @Override
     public double getParameter(String path) {
         return modifiers.getOrDefault(path, 0d);
-    }
-
-    @Override
-    @NotNull
-    public SkillHandler<?> getHandler() {
-        return handler;
     }
 
     public void registerModifier(String path, double value) {

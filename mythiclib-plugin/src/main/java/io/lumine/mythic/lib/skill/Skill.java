@@ -26,7 +26,10 @@ import java.util.Objects;
  * @author jules
  */
 public abstract class Skill implements CooldownObject {
-    public Skill() {
+    protected final SkillHandler<?> handler;
+
+    public Skill(@NotNull SkillHandler<?> handler) {
+        this.handler = Objects.requireNonNull(handler, "Skill handler cannot be null");
     }
 
     @NotNull
@@ -108,7 +111,9 @@ public abstract class Skill implements CooldownObject {
     public abstract void whenCast(@NotNull SkillMetadata skillMeta);
 
     @NotNull
-    public abstract SkillHandler<?> getHandler();
+    public SkillHandler<?> getHandler() {
+        return handler;
+    }
 
     /**
      * !! WARNING !! Final skill parameter values also depend
@@ -143,7 +148,13 @@ public abstract class Skill implements CooldownObject {
     }
 
     @Deprecated
+    public Skill() {
+        this.handler = null;
+    }
+
+    @Deprecated
     public Skill(@Nullable TriggerType trigger) {
+        this.handler = null;
         backwardsCompatibleTrigger = trigger;
     }
 

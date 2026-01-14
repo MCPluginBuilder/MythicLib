@@ -9,10 +9,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public class SimpleSkill extends Skill {
-    private final SkillHandler<?> handler;
-
     public SimpleSkill(@NotNull SkillHandler<?> handler) {
-        this.handler = handler;
+        super(handler);
     }
 
     public SimpleSkill(@NotNull Script script) {
@@ -33,13 +31,6 @@ public class SimpleSkill extends Skill {
     public double getParameter(String path) {
         return 0;
     }
-
-    @Override
-    @NotNull
-    public SkillHandler<?> getHandler() {
-        return handler;
-    }
-
     //region Deprecated
 
     @Deprecated
