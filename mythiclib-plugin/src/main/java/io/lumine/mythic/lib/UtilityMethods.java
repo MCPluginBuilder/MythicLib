@@ -58,6 +58,11 @@ public class UtilityMethods {
         return new Location(Bukkit.getWorld(config.getString("world")), config.getDouble("x"), config.getDouble("y"), config.getDouble("z"), (float) config.getDouble("yaw"), (float) config.getDouble("pitch"));
     }
 
+    @NotNull
+    public static <T> T getLast(List<T> list) {
+        return list.get(list.size() - 1);
+    }
+
     public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
         try {
             return evaluate.apply(enumName(rawInput));

@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.command;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.command.CommandSender;
@@ -58,7 +59,7 @@ public abstract class CommandTreeNode {
     public <T> Argument<T> addArgument(Argument<T> argument) {
 
         // If last is optional, make sure this one is too
-        if (!arguments.isEmpty() && arguments.getLast().isOptional())
+        if (!arguments.isEmpty() && UtilityMethods.getLast(arguments).isOptional())
             Validate.isTrue(argument.isOptional(), "Cannot add non-optional argument after an optional one");
 
         // Register and return
