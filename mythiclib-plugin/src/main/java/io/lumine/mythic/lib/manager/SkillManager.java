@@ -558,7 +558,7 @@ public class SkillManager extends Module {
 
         // CoreTools skill handler type
         if (Bukkit.getPluginManager().getPlugin("CoreTools") != null)
-            registerSkillHandlerSource(new SkillHandlerSource("coretools", CoreToolsSkillHandler::new, List.of("coretools-script-id")));
+            registerSkillHandlerSource(new SkillHandlerSource("coretools", CoreToolsSkillHandler::new, List.of("coretools-script-id", "coretools-skill-id")));
     }
 
     @Override
