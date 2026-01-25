@@ -13,7 +13,7 @@ mitigation_on_block:
 
     # Send message and play sound effect
     - 'set_double{variable="damaged_blocked";value="<attack.damage> * <block_coef>"}'
-    - 'action_bar{m="&cYou blocked <damaged_blocked> damage!";target=caster;priority=31}'
+    - 'action_bar{m="&cYou blocked <damaged_blocked.round.2> damage!";target=caster;priority=31}'
     - 'play_sound{sound=ENTITY_ZOMBIE_ATTACK_IRON_DOOR;volume=1;pitch=2}'
     - 'set_double{variable=max_angle;value=120}'
     - 'script{name=mitigation_block_particle_effect}'
