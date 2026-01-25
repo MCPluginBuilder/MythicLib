@@ -35,7 +35,7 @@ public class StatModCommand extends CommandTreeNode {
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        sender.sendMessage("/ml statmod is deprecated. Use instead /ml tempstat ...");
+        sender.sendMessage("/ml statmod is deprecated, use '/ml stat' instead");
         if (args.length < 4)
             return CommandResult.THROW_USAGE;
 

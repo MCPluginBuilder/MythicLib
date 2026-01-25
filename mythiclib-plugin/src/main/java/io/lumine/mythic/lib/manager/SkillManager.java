@@ -141,6 +141,7 @@ public class SkillManager extends Module {
         // Offense
         registerMechanic("additive_damage_buff", AdditiveDamageBuffMechanic::new);
         registerMechanic("damage", DamageMechanic::new, "deal_damage", "dmg", "deal_dmg", "dealdamage", "dealdmg", "attack", "atk");
+        registerMechanic("mark_crit", MarkCritMechanic::new, "mark_as_crit");
         registerMechanic("multiply_damage", MultiplyDamageMechanic::new);
         registerMechanic("potion", PotionMechanic::new, "peffect", "potion_effect", "p_effect", "apply_potion", "apply_potion_effect", "apply_peffect");
         registerMechanic("remove_potion", RemovePotionMechanic::new);

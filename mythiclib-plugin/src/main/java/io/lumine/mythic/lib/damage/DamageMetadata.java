@@ -393,6 +393,11 @@ public class DamageMetadata implements Cloneable {
     }
 
     @Deprecated
+    public void registerCrits(List<String> tags) {
+        this.critTags.addAll(tags);
+    }
+
+    @Deprecated
     public boolean isElementalCriticalStrike(Element el) {
         return critTags.contains(el.getId());
     }

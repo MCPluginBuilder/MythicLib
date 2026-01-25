@@ -15,6 +15,7 @@ weapon_crit_script:
     - 'set_double{var=crit_coef;val="<stat.critical_strike_power> / 100"}'
     - 'multiply_damage{scalar="<crit_coef>";dtype=WEAPON}'
     - 'multiply_damage{scalar="<crit_coef>";dtype=UNARMED}'
+    - 'mark_crit{dtype="WEAPON,UNARMED"}'
 
     # play sound and particle effect
     #Uncomment for an action bar message
@@ -36,6 +37,7 @@ skill_crit_script:
   public: true
   mechanics:
     - 'multiply_damage{scalar="<stat.skill_critical_strike_power> / 100";dtype=SKILL}'
+    - 'mark_crit{dtype=SKILL}'
 
     # play sound and particle effect
     - "play_sound{sound=ENTITY_PLAYER_ATTACK_CRIT;volume=1;pitch=1}"
