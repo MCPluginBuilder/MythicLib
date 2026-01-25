@@ -98,8 +98,10 @@ public abstract class CommandTreeNode {
     public List<String> calculateTabCompletion(CommandTreeExplorer explorer, int parameterIndex) {
 
         // Add extra child keys
+        // Ignore deprecated commands
         final var list = new ArrayList<String>();
-        getChildren().forEach(child -> list.add(child.getId()));
+        for (var child : getChildren())
+            if (!child.getClass().isAnnotationPresent(Deprecated.class)) list.add(child.getId());
 
         /*
          * If the player is at the end of a command branch, display the
