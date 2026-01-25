@@ -85,7 +85,7 @@ public class ConvertItemNBTCommandNode<H extends SynchronizedDataHolder, O exten
             return CommandResult.FAILURE;
 
         } catch (Throwable throwable) {
-            sender.sendMessage("An error occured: " + throwable.getMessage());
+            sender.sendMessage("An error occurred: " + throwable.getMessage());
             sender.sendMessage("Please check console for more information.");
             throwable.printStackTrace();
             return CommandResult.FAILURE;
