@@ -231,7 +231,7 @@ public class DamageIndicators extends Module {
         if (indicator.getElement() != null) {
             if (!empty) build.append(damageTypeIconJoin);
             empty = false;
-            build.append(indicator.getElement().getLoreIcon());
+            build.append(indicator.getElement().getColor() + indicator.getElement().getLoreIcon());
         }
 
         return build.toString();
