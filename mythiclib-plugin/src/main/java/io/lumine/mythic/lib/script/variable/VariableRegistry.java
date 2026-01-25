@@ -27,7 +27,4 @@ public interface VariableRegistry<T> {
      */
     @NotNull
     public Variable<?> accessVariable(@NotNull T t, @NotNull String name);
-
-    @Deprecated
-    public boolean hasVariable(String name);
 }

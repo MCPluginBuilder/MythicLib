@@ -27,11 +27,6 @@ public class AttackMetadataVariable extends Variable<AttackMetadata> {
 
             throw new VariableNotFoundException(name, AttackMetadata.class);
         }
-
-        @Override
-        public boolean hasVariable(String name) {
-            return true;
-        }
     };
 
     public AttackMetadataVariable(String name, AttackMetadata attackMetadata) {

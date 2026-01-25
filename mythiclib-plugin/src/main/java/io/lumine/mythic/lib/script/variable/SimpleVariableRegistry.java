@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.script.variable;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> {
 
@@ -56,24 +54,20 @@ public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> 
     }
 
     /**
-     * @param name Subvariable name
-     * @return If there exists a variable which such name
-     */
-    public boolean hasVariable(String name) {
-        return registered.containsKey(name);
-    }
-
-    /**
      * Registers all variables from another variable registry.
      * For example, the player variable type inherits all the
      * variables from the entity variable type.
      *
      * @param registry Parent variable registry
+     * @deprecated No guarantee if parent map has already been statically initialized
      */
+    @Deprecated
     public <E extends D> void transferTo(@NotNull SimpleVariableRegistry<E> registry) {
+        /*
         MythicLib.plugin.getLogger().log(Level.INFO, "================");
         MythicLib.plugin.getLogger().log(Level.INFO, "Transferring " + this.registered.keySet().toString() + " to " + registry.registered.keySet().toString());
         MythicLib.plugin.getLogger().log(Level.INFO, "================");
+         */
         this.registered.forEach((key, getter) -> registry.registered.put(key, getter::apply));
     }
 
@@ -90,7 +84,6 @@ public class SimpleVariableRegistry<D> implements VariableRegistry<Variable<D>> 
 
         registered.put(name, supplier);
 
-        for (String alias : aliases)
-            registerVariable(alias, supplier);
+        for (var alias : aliases) registerVariable(alias, supplier);
     }
 }
