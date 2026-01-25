@@ -77,7 +77,7 @@ public abstract class SkillHandler<T extends SkillResult> {
 
         // Basic
         this.lowerCaseId = this.id.toLowerCase();
-        this.name = config != null ? config.getString("name") : getClass().getSimpleName();
+        this.name = config != null ? Objects.requireNonNullElseGet(config.getString("name"), this::inferSkillName) : inferSkillName();
         this.icon = config != null && config.contains("icon") ? IconOptions.from(config.get("icon")) : DEFAULT_ICON;
         this.lore = config != null ? config.getStringList("lore") : List.of();
 
@@ -99,6 +99,10 @@ public abstract class SkillHandler<T extends SkillResult> {
         if (config != null) return UtilityMethods.enumName(config.getName());
         //if (annot != null) return UtilityMethods.enumName(getClass().getSimpleName());
         return UtilityMethods.enumName(getClass().getSimpleName());
+    }
+
+    private String inferSkillName() {
+        return UtilityMethods.caseOnWords(this.lowerCaseId.replace("_", " "));
     }
 
     private void initializeModifier(@NotNull String modifier, @Nullable ConfigurationSection config) {
