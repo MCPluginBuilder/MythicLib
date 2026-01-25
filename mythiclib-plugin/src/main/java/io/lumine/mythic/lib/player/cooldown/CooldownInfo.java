@@ -78,7 +78,7 @@ public class CooldownInfo {
     public void reduceInitialCooldown(double p) {
         Validate.isTrue(p >= 0 && p <= 1, "p must be between 0 and 1");
 
-        nextUse -= initialCooldown * p;
+        nextUse -= (long) (initialCooldown * p);
     }
 
     /**
@@ -87,6 +87,6 @@ public class CooldownInfo {
      * @param t Amount of seconds to take off
      */
     public void reduceFlat(double t) {
-        nextUse -= 1000 * t;
+        nextUse -= (long) (1000 * t);
     }
 }

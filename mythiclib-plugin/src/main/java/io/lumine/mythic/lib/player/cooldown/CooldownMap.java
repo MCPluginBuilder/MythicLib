@@ -20,7 +20,8 @@ public class CooldownMap extends PlayerDataMap {
      * @param cooldown Initial skill or action cooldown
      * @return The newly registered cooldown info
      */
-    public CooldownInfo applyCooldown(CooldownObject obj, double cooldown) {
+    @NotNull
+    public CooldownInfo applyCooldown(@NotNull CooldownObject obj, double cooldown) {
         return applyCooldown(obj.getCooldownPath(), cooldown);
     }
 
@@ -32,21 +33,23 @@ public class CooldownMap extends PlayerDataMap {
      * @param cooldown Initial skill or action cooldown
      * @return The newly registered cooldown info
      */
-    public CooldownInfo applyCooldown(String path, double cooldown) {
-        final String key = UtilityMethods.enumName(path);
-        @Nullable CooldownInfo current = map.get(key);
-        if (current != null && current.getRemaining() >= cooldown * 1000) return current;
+    @NotNull
+    public CooldownInfo applyCooldown(@NotNull String path, double cooldown) {
+        tryFlush(); // Only flush when adding new cooldowns
 
-        current = new CooldownInfo(cooldown);
-        map.put(key, current);
-        return current;
+        final var key = UtilityMethods.enumName(path);
+        return map.compute(key, (k, current) -> {
+            if (current == null) return new CooldownInfo(cooldown);
+            if (current.getRemaining() >= cooldown * 1000) return current;
+            return new CooldownInfo(cooldown);
+        });
     }
 
     /**
      * @return Finds the cooldown info for a specific action or skill
      */
     @Nullable
-    public CooldownInfo getInfo(CooldownObject obj) {
+    public CooldownInfo getInfo(@NotNull CooldownObject obj) {
         return getInfo(obj.getCooldownPath());
     }
 
@@ -54,7 +57,7 @@ public class CooldownMap extends PlayerDataMap {
      * @return Finds the cooldown info for a specific action or skill
      */
     @Nullable
-    public CooldownInfo getInfo(String path) {
+    public CooldownInfo getInfo(@NotNull String path) {
         return map.get(UtilityMethods.enumName(path));
     }
 
@@ -62,7 +65,7 @@ public class CooldownMap extends PlayerDataMap {
      * @param obj The skill or action
      * @return Retrieves the remaining cooldown in seconds
      */
-    public double getCooldown(CooldownObject obj) {
+    public double getCooldown(@NotNull CooldownObject obj) {
         return getCooldown(obj.getCooldownPath());
     }
 
@@ -70,8 +73,8 @@ public class CooldownMap extends PlayerDataMap {
      * @param path The skill or action path, must be completely unique
      * @return Retrieves the remaining cooldown in seconds
      */
-    public double getCooldown(String path) {
-        final @Nullable CooldownInfo info = map.get(UtilityMethods.enumName(path));
+    public double getCooldown(@NotNull String path) {
+        final @Nullable var info = map.get(UtilityMethods.enumName(path));
         return info == null ? 0 : (double) info.getRemaining() / 1000;
     }
 
@@ -79,7 +82,7 @@ public class CooldownMap extends PlayerDataMap {
      * @param obj The skill or action
      * @return If the mechanic can be used by the player
      */
-    public boolean isOnCooldown(CooldownObject obj) {
+    public boolean isOnCooldown(@NotNull CooldownObject obj) {
         return isOnCooldown(obj.getCooldownPath());
     }
 
@@ -87,8 +90,8 @@ public class CooldownMap extends PlayerDataMap {
      * @param path The skill or action path, must be completely unique
      * @return If the mechanic can be used by the player
      */
-    public boolean isOnCooldown(String path) {
-        final @Nullable CooldownInfo found = map.get(UtilityMethods.enumName(path));
+    public boolean isOnCooldown(@NotNull String path) {
+        final @Nullable var found = map.get(UtilityMethods.enumName(path));
         return found != null && !found.hasEnded();
     }
 
@@ -97,7 +100,7 @@ public class CooldownMap extends PlayerDataMap {
      *
      * @param obj The skill or action
      */
-    public void resetCooldown(CooldownObject obj) {
+    public void resetCooldown(@NotNull CooldownObject obj) {
         resetCooldown(obj.getCooldownPath());
     }
 
@@ -106,7 +109,7 @@ public class CooldownMap extends PlayerDataMap {
      *
      * @param path The skill or action path, must be completely unique
      */
-    public void resetCooldown(String path) {
+    public void resetCooldown(@NotNull String path) {
         map.remove(UtilityMethods.enumName(path));
     }
 
@@ -118,4 +121,19 @@ public class CooldownMap extends PlayerDataMap {
     public void clearAllCooldowns() {
         map.clear();
     }
+
+    //region Map flushing
+
+    private long nextFlush = System.currentTimeMillis() + FLUSH_INTERVAL;
+
+    private static final long FLUSH_INTERVAL = 60 * 1000;
+
+    private void tryFlush() {
+        if (System.currentTimeMillis() < nextFlush) return;
+
+        nextFlush = System.currentTimeMillis() + FLUSH_INTERVAL;
+        map.values().removeIf(CooldownInfo::hasEnded);
+    }
+
+    //endregion
 }
