@@ -97,11 +97,6 @@ public class VersionWrapper_1_21_R3 implements VersionWrapper {
         return generatorOutputs.contains(material);
     }
 
-    @Override
-    public boolean isHelmet(Material material) {
-        return material.getEquipmentSlot() == EquipmentSlot.HEAD;
-    }
-
     private static final OreDrops
             IRON_ORE = new OreDrops(Material.IRON_INGOT),
             GOLD_ORE = new OreDrops(Material.GOLD_INGOT),

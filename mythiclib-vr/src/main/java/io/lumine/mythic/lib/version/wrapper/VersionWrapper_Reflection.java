@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
@@ -27,10 +26,8 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
@@ -133,11 +130,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     @Override
     public boolean isGeneratorOutput(Material material) {
         return generatorOutputs.contains(material);
-    }
-
-    @Override
-    public boolean isHelmet(Material material) {
-        return material.getEquipmentSlot() == EquipmentSlot.HEAD;
     }
 
     private static final OreDrops IRON_ORE = new OreDrops(Material.IRON_INGOT),

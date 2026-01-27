@@ -40,7 +40,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
@@ -101,11 +104,6 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
     @Override
     public boolean isGeneratorOutput(Material material) {
         return generatorOutputs.contains(material);
-    }
-
-    @Override
-    public boolean isHelmet(Material material) {
-        return material.getEquipmentSlot() == EquipmentSlot.HEAD;
     }
 
     private static final OreDrops

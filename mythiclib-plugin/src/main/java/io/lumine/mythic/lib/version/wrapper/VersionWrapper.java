@@ -16,6 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -126,7 +127,15 @@ public interface VersionWrapper {
     // Mostly NMS based methods from here
     NBTItem getNBTItem(ItemStack item);
 
-    boolean isHelmet(Material material);
+    /**
+     * {@link Material#getEquipmentSlot()} was only introduced in 1.17+
+     *
+     * @param material Material to check
+     * @return If given material is, by default, a helmet
+     */
+    default EquipmentSlot getEquipmentSlot(Material material) {
+        return material.getEquipmentSlot();
+    }
 
     default void sendActionBar(Player player, String message) {
         sendActionBarRaw(player, "{\"text\": \"" + message + "\"}");

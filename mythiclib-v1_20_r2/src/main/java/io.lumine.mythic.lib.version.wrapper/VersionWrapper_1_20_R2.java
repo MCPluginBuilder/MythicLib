@@ -26,7 +26,6 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -42,7 +41,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 
@@ -99,11 +101,6 @@ public class VersionWrapper_1_20_R2 implements VersionWrapper {
     @Override
     public boolean isGeneratorOutput(Material material) {
         return generatorOutputs.contains(material);
-    }
-
-    @Override
-    public boolean isHelmet(Material material) {
-        return material.getEquipmentSlot() == EquipmentSlot.HEAD;
     }
 
     private static final OreDrops

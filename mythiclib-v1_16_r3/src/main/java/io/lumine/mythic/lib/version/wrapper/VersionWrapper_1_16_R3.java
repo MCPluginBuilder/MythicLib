@@ -29,9 +29,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
@@ -94,10 +93,58 @@ public class VersionWrapper_1_16_R3 implements VersionWrapper {
     }
 
     @Override
-    public boolean isHelmet(Material material) {
-        return material.name().endsWith("HELMET") || material == Material.CARVED_PUMPKIN
-                || material == Material.PLAYER_HEAD || material == Material.CREEPER_HEAD
-                || material == Material.SKELETON_SKULL || material == Material.WITHER_SKELETON_SKULL;
+    public EquipmentSlot getEquipmentSlot(Material material) {
+        switch (material) {
+
+            // Helmets
+            case LEATHER_HELMET: // Armor
+            case CHAINMAIL_HELMET:
+            case DIAMOND_HELMET:
+            case GOLDEN_HELMET:
+            case IRON_HELMET:
+            case NETHERITE_HELMET:
+            case TURTLE_HELMET: // Unconventional
+            case CARVED_PUMPKIN:
+            case PLAYER_HEAD:
+            case CREEPER_HEAD:
+            case DRAGON_HEAD:
+            case ZOMBIE_HEAD:
+            case SKELETON_SKULL:
+            case WITHER_SKELETON_SKULL:
+                return EquipmentSlot.HEAD;
+
+            // Chestplates
+            case GOLDEN_CHESTPLATE: // Armor
+            case IRON_CHESTPLATE:
+            case LEATHER_CHESTPLATE:
+            case CHAINMAIL_CHESTPLATE:
+            case DIAMOND_CHESTPLATE:
+            case NETHERITE_CHESTPLATE:
+            case ELYTRA: // Unconventional
+                return EquipmentSlot.CHEST;
+
+            // Leggings
+            case LEATHER_LEGGINGS:
+            case CHAINMAIL_LEGGINGS:
+            case DIAMOND_LEGGINGS:
+            case GOLDEN_LEGGINGS:
+            case IRON_LEGGINGS:
+            case NETHERITE_LEGGINGS:
+                return EquipmentSlot.LEGS;
+
+            // Boots
+            case LEATHER_BOOTS:
+            case CHAINMAIL_BOOTS:
+            case DIAMOND_BOOTS:
+            case GOLDEN_BOOTS:
+            case IRON_BOOTS:
+            case NETHERITE_BOOTS:
+                return EquipmentSlot.FEET;
+
+            // Anything else
+            default:
+                return null;
+        }
     }
 
     private static final OreDrops
