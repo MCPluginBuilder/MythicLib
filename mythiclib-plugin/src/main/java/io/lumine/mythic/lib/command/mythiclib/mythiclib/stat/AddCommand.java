@@ -38,7 +38,7 @@ public class AddCommand extends CommandTreeNode {
     }
 
     public static final Argument<@NotNull Pair<ModifierType, Double>> VALUE = new Argument<>("value",
-            (explorer, completions) -> completions.addAll(Arrays.asList("0.1", "0.5", "2")),
+            (explorer, completions) -> completions.addAll(Arrays.asList("0.1", "1", "2", "10%", "100%")),
             (explorer, input) -> {
                 try {
                     return ModifierType.pairFromString(input);

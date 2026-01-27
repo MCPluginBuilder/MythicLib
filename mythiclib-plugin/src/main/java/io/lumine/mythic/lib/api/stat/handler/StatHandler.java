@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Used to handle complex stat behaviours, including updates
+ * Used to handle complex stat behaviors, including updates
  * ran whenever a player stat changes or stat base values.
  *
  * @author jules
