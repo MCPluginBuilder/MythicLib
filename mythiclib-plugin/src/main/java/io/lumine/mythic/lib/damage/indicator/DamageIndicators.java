@@ -70,14 +70,11 @@ public class DamageIndicators extends Module {
     private ConfigurationSection config;
 
     @Override
-    protected void onStartup() {
-        FileUtils.copyDefaultFile(MythicLib.plugin, "indicators.yml");
-    }
-
-    @Override
     protected boolean shouldEnable() {
+        FileUtils.copyDefaultFile(MythicLib.plugin, "indicators.yml");
+
         this.config = new YamlFile("indicators").getContent().getConfigurationSection("damage_indicators");
-        Validate.notNull(config, "Config cannot be null");
+        Validate.notNull(config, "Damage indicators config section cannot be null");
         return config.getBoolean("enabled");
     }
 
