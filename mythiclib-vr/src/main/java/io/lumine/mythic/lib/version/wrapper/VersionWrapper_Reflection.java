@@ -488,7 +488,7 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     public String getSkullValue(Block block) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         if (skull.getOwnerProfile() == null) return "";
-        return skull.getOwnerProfile().partialProfile().getProperties().get("textures").iterator().next().value();
+        return skull.getOwnerProfile().partialProfile().properties().get("textures").iterator().next().value();
     }
 
     @Override
