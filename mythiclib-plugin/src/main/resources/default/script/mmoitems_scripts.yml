@@ -440,7 +440,7 @@ crossbow_attack:
   mechanics:
     - 'take_ammo{item=ARROW;creative_infinite=true;item_ignore_tag=MMOITEMS_DISABLE_ARROW_CONSUMPTION}'
     - 'play_sound{sound=ENTITY_ARROW_SHOOT;pitch=.5}'
-    - 'shoot_arrow{from_item=true;player_attack_damage=true;tick=crossbow_arrow_tick;velocity="non_zero(<stat.arrow_velocity>, 1) * 3"}'
+    - 'shoot_arrow{from_item=true;player_attack_damage=true;tick=crossbow_arrow_tick;velocity="non_zero(<stat.arrow_velocity>, 1) * 3";damage_types="WEAPON,PROJECTILE"}'
 
 crossbow_arrow_tick:
   mechanics:
