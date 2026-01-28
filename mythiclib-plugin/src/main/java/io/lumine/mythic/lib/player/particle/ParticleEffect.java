@@ -33,7 +33,7 @@ public abstract class ParticleEffect extends PlayerModifier implements Closeable
     public ParticleEffect(ConfigObject obj) {
         super(obj.getString("key"), EquipmentSlot.OTHER, ModifierSource.OTHER);
 
-        particle = new ParticleInformation(obj.getObject("particle"));
+        particle = ParticleInformation.fromConfig(obj.getObject("particle"));
     }
 
     @NotNull

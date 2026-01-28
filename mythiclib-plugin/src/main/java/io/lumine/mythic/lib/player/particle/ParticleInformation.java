@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.player.particle;
 
 import com.google.gson.JsonObject;
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.configobject.ConfigSectionObject;
@@ -13,8 +14,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 /**
  * Enough information to fully display one particle.
@@ -32,89 +31,16 @@ public class ParticleInformation {
     private final int amount;
     private final double rOffset, speed;
 
-    // Colored particle data
+    // Custom data
     @Nullable
-    private final Color color;
-    private final float size;
+    private final Object data;
 
-    // Block particle data
-    @Nullable
-    private final BlockData blockData;
-
-    /**
-     * Generic particle
-     */
-    public ParticleInformation(Particle particle) {
-        this(particle, 1, 0, 0, null, 1);
-    }
-
-    /**
-     * Colored particle
-     */
-    public ParticleInformation(Particle particle, int amount, float speed, double rOffset, Color color, float size) {
+    public ParticleInformation(Particle particle, int amount, float speed, double rOffset, @Nullable Object data) {
         this.particle = particle;
         this.amount = amount;
         this.rOffset = rOffset;
         this.speed = speed;
-
-        this.color = color;
-        this.size = size;
-        this.blockData = null;
-    }
-
-    /**
-     * Block particle
-     */
-    public ParticleInformation(Particle particle, int amount, float speed, double rOffset, Material mat) {
-        this.particle = particle;
-        this.amount = amount;
-        this.rOffset = rOffset;
-        this.speed = speed;
-
-        this.color = null;
-        this.size = 1;
-        this.blockData = mat.createBlockData();
-    }
-
-    /**
-     * Used by particle effects and therefore does NOT need the speed,
-     * offsets and amount parameters to be read from the config.
-     *
-     * @param obj Config to read data from
-     * @see ParticleEffect
-     */
-    public ParticleInformation(ConfigObject obj) {
-        particle = UtilityMethods.prettyValueOf(Particle::valueOf, obj.string("name", "particle"), "No particle with name '%s'");
-        color = obj.contains("color") ? readColor(obj.getObject("color")) : null;
-        size = (float) obj.getDouble("size", 1);
-
-        // Not used
-        rOffset = speed = 0;
-        amount = 1;
-        blockData = null;
-    }
-
-    /**
-     * Used by MMOItems to display projectile (arrows/tridents) particles
-     * and therefore require all the parameters input.
-     *
-     * @param object Json object to read data from
-     */
-    public ParticleInformation(JsonObject object) {
-        particle = Particle.valueOf(object.get("Particle").getAsString());
-        amount = object.get("Amount").getAsInt();
-        rOffset = object.get("Offset").getAsDouble();
-
-        // TODO safeguard, use red color if no color is provided
-        boolean colored = object.get("Colored").getAsBoolean();
-        color = colored ? Color.fromRGB(object.get("Red").getAsInt(), object.get("Green").getAsInt(), object.get("Blue").getAsInt()) : null;
-        speed = colored ? 0 : object.get("Speed").getAsFloat();
-
-        // Not used
-        size = 1;
-
-        // TODO safeguard, add DIRT if none provided
-        blockData = !colored && object.has("Material") ? Material.valueOf(object.get("Material").getAsString()).createBlockData() : null;
+        this.data = data;
     }
 
     /**
@@ -132,38 +58,151 @@ public class ParticleInformation {
     }
 
     /**
-     * Displays particle at target location by overriding amount, offset and particle speed
+     * Displays particle at target location and overrides amount, offset and particle speed
      */
     public void display(Location loc, int amount, double x, double y, double z, double speed) {
-        final @Nullable Class<?> dataType = particle.getDataType();
-        if (dataType == Particle.DustOptions.class)
-            loc.getWorld().spawnParticle(particle, loc, amount, x, y, z, speed, new Particle.DustOptions(Objects.requireNonNull(color, "No color provided"), size));
-        else if (dataType == BlockData.class)
-            loc.getWorld().spawnParticle(particle, loc, amount, x, y, z, speed, Objects.requireNonNull(blockData, "No material provided"));
-        else
-            loc.getWorld().spawnParticle(particle, loc, amount, x, y, z, speed);
-    }
-
-    private Color readColor(ConfigObject obj) {
-        return Color.fromRGB(obj.getInt("red"), obj.getInt("green"), obj.getInt("blue"));
+        loc.getWorld().spawnParticle(particle, loc, amount, x, y, z, speed, this.data);
     }
 
     //region Static methods
 
+    /**
+     * When reading from a YAML config file
+     *
+     * @param obj Either a string or YML configuration section
+     * @return Read particle information
+     */
     @NotNull
     public static ParticleInformation fromConfig(@NotNull Object obj) {
         Validate.notNull(obj, "Cannot read particle from null object");
 
+        // String
         if (obj instanceof String) {
             final var particle = UtilityMethods.prettyValueOf(Particle::valueOf, (String) obj, "No particle with name '%s'");
-            return new ParticleInformation(particle);
+            return of(particle);
         }
 
+        // Config section
         if (obj instanceof ConfigurationSection) {
-            return new ParticleInformation(new ConfigSectionObject((ConfigurationSection) obj));
+            return fromConfig(new ConfigSectionObject((ConfigurationSection) obj));
+        }
+
+        // Line config object
+        if (obj instanceof ConfigObject) {
+            final var config = (ConfigObject) obj;
+            final var particle = UtilityMethods.prettyValueOf(Particle::valueOf, config.string("name", "particle"), "No particle with name '%s'");
+            final var rOffset = config.getDouble("offset", 0);
+            final var speed = (float) config.getDouble("speed", 0);
+            final var amount = config.getInt("amount", 1);
+            final var dataType = particle.getDataType();
+            final Object data;
+
+            ////////////////
+            // Dust
+            ////////////////
+            if (dataType == Particle.DustOptions.class) {
+                // Fallback to color "red" (255, 0, 0)
+                final ConfigObject colorObj = config.contains("color") ? config.getObject("color") : config;
+                final int red = colorObj.getInt("red", 255);
+                final var green = colorObj.getInt("green", 0);
+                final var blue = colorObj.getInt("blue", 0);
+                final var size = (float) config.getDouble("size", 1);
+                data = new Particle.DustOptions(Color.fromRGB(red, green, blue), size);
+            }
+
+            ///////////////
+            // Blocks
+            ///////////////
+            else if (dataType == BlockData.class) {
+                // Use fallback if not provided
+                final Material mat = config.parse(Material.DIRT, Material::valueOf, "material");
+                data = mat.createBlockData();
+            }
+
+            ///////////////
+            // Spell (1.21.10+)
+            ///////////////
+            else if (MythicLib.plugin.getVersion().isAbove(1, 21, 9) && dataType == Particle.Spell.class) {
+                // Fallback to white color
+                final ConfigObject colorObj = config.contains("color") ? config.getObject("color") : config;
+                final int red = colorObj.getInt("red", 255);
+                final var green = colorObj.getInt("green", 255);
+                final int blue = colorObj.getInt("blue", 255);
+                final var power = (float) config.getDouble("power", 1);
+                data = new Particle.Spell(Color.fromRGB(red, green, blue), power);
+            }
+
+            // Any other
+            else data = null;
+
+            return new ParticleInformation(particle, amount, speed, rOffset, data);
         }
 
         throw new IllegalArgumentException("Cannot read particle from " + obj.getClass().getSimpleName());
+    }
+
+    /**
+     * Used by MMOItems to display projectile (arrows/tridents) particles
+     * and therefore require all the parameters input.
+     *
+     * @param object Json object to read data from
+     */
+    @NotNull
+    public static ParticleInformation fromJson(JsonObject object) {
+        var particle = Particle.valueOf(object.get("Particle").getAsString());
+        var amount = object.get("Amount").getAsInt();
+        var rOffset = object.get("Offset").getAsDouble();
+        var speed = object.has("Speed") ? object.get("Speed").getAsFloat() : 0;
+        final var dataType = particle.getDataType();
+
+        final Object data;
+
+        ////////////////
+        // Dust
+        ////////////////
+        if (dataType == Particle.DustOptions.class) {
+            // mmoitems > "Arrow particles" format
+            // Note that "Item Particles" uses a slightly different format
+            final Color color = Color.fromRGB(object.get("Red").getAsInt(), object.get("Green").getAsInt(), object.get("Blue").getAsInt());
+            data = new Particle.DustOptions(color, 1);
+        }
+
+        ///////////////
+        // Blocks
+        ///////////////
+        else if (dataType == BlockData.class) {
+            // mmoitems does not have block data
+            // use fallback
+            data = Material.DIRT.createBlockData();
+        }
+
+        ///////////////
+        // Spell (1.21.10+)
+        ///////////////
+        else if (MythicLib.plugin.getVersion().isAbove(1, 21, 9) && dataType == Particle.Spell.class) {
+            // mmoitems does not have spell color/power
+            // use fallback
+            data = new Particle.Spell(Color.WHITE, 1);
+        }
+
+        // Any other
+        else data = null;
+
+        return new ParticleInformation(particle, amount, speed, rOffset, data);
+    }
+
+    @NotNull
+    public static ParticleInformation of(Particle particle) {
+        final var dataType = particle.getDataType();
+
+        final var amount = 1;
+        final var speed = 0;
+        final var rOffset = 0;
+        final Object data = dataType == Particle.DustOptions.class ? new Particle.DustOptions(Color.RED, 1)
+                : dataType == BlockData.class ? Material.DIRT.createBlockData()
+                : MythicLib.plugin.getVersion().isAbove(1, 21, 9) && dataType == Particle.Spell.class ? new Particle.Spell(Color.WHITE, 1) : null;
+
+        return new ParticleInformation(particle, amount, speed, rOffset, data);
     }
 
     //endregion
