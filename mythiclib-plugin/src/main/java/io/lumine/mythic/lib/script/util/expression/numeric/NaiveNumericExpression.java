@@ -7,6 +7,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * When MythicLib fails to precompile a numerical expression into a
  * NumericalExpression object, this class is used as a fallback.
+ * <p>
+ * Precompiled numeric expressions do not support recursive PAPI
+ * placeholders, for this reason users are advised to use existing
+ * math primitives instead of recursive PAPI placeholders for performance.
+ *
+ * @author jules
  */
 public class NaiveNumericExpression extends NumericExpression {
     private final String expression;

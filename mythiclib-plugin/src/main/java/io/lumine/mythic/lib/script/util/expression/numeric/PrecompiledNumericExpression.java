@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.script.util.expression.placeholder.PAPIPlaceholder;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.Lazy;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import redempt.crunch.CompiledExpression;
 import redempt.crunch.Crunch;
 
@@ -26,19 +27,27 @@ public class PrecompiledNumericExpression extends NumericExpression {
     private final List<ExpressionPlaceholder> placeholders = new ArrayList<>();
 
     private static final Pattern PAPI_PLACEHOLDER_PATTERN = Pattern.compile("%[^!&|<>=%]+%");
+    private static final Pattern CUSTOM_PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]*)}");
 
-    public PrecompiledNumericExpression(@NotNull String expression) {
+    public PrecompiledNumericExpression(@NotNull String expression,
+                                        @Nullable Function<String, ExpressionPlaceholder> customPlaceholders) {
+        this.originalExpression = expression;
 
-        // Internal placeholders
+        // Internal (skill) placeholders
         expression = resolvePlaceholders(expression, SkillMetadata.INTERNAL_PLACEHOLDER_PATTERN, MythicLibVariablePlaceholder::new);
+
+        // PAPI placeholders
         expression = resolvePlaceholders(expression, PAPI_PLACEHOLDER_PATTERN, PAPIPlaceholder::new);
 
-        // TODO recognize recursive placeholders? need lexer&parser for that...
+        // Custom placeholders
+        if (customPlaceholders != null)
+            expression = resolvePlaceholders(expression, CUSTOM_PLACEHOLDER_PATTERN, customPlaceholders);
+
         // TODO further precompile <stat.xxxx> placeholders into StatInstance#getFinal
+        // TODO recognize recursive (PAPI?) placeholders? need custom parser for that...
 
         // Finally, try to precompile
         // Might fail if unparsed placeholders remain
-        this.originalExpression = expression;
         this.precompiled = Crunch.compileExpression(expression, ENV);
     }
 
