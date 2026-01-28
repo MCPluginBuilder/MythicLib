@@ -585,7 +585,7 @@ public class SkillManager extends Module {
         }
 
         // Initialize custom scripts
-        FileUtils.loadObjectsFromFolder(MythicLib.plugin, "script", false, (key, config) -> {
+        FileUtils.loadObjectsFromFolder(MythicLib.plugin, "script", (key, config) -> {
             registerScript(new Script(Objects.requireNonNull(config, "Config is null")));
         }, "Could not load script '%s' from file '%s': '%s'");
 
@@ -606,7 +606,7 @@ public class SkillManager extends Module {
         new SkillUpdateMigration(this.builtInSkillHandlerTypes.keySet()).apply();
 
         // Load skills
-        FileUtils.loadObjectsFromFolder(MythicLib.plugin, "skill", false, (key, config) -> {
+        FileUtils.loadObjectsFromFolder(MythicLib.plugin, "skill", (key, config) -> {
             registerSkillHandler(loadSkillHandler(config));
         }, "Could not load skill '%s' from file '%s': %s");
     }

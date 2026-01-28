@@ -9,7 +9,9 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 /**
- * @deprecated Replaced by {@link FileUtils#loadObjectsFromFolder(Plugin, String, boolean, BiConsumer, String)}
+ * @see FileUtils#loadSingleObjectsFromFolder(Plugin, String, BiConsumer, String)
+ * @see FileUtils#loadObjectsFromFolder(Plugin, String, BiConsumer, String)
+ * @see FileUtils#loadRawObjectsFromFolder(Plugin, String, Consumer, String)
  */
 @Deprecated
 public class RecursiveFolderExplorer {
