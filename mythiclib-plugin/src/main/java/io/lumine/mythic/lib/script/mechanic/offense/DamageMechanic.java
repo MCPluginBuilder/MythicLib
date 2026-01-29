@@ -41,7 +41,7 @@ public class DamageMechanic extends TargetMechanic {
         amount = config.numericExpr("damage", "dmg", "d", "amount", "amt", "a", "value", "val", "v");
         knockback = config.bool(true, "knockback", "kb", "knock");
         ignoreImmunity = config.bool(false, "ignore_immunity", "ii");
-        types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "magic,skill", "damage_type", "dtype", "dt");
+        types = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "damage_type", "dtype", "dt");
 
         // Elemental attack?
         elementName = config.contains("element") ? UtilityMethods.enumName(config.getString("element")) : null;
