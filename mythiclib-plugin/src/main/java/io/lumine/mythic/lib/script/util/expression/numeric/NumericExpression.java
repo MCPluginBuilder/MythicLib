@@ -51,11 +51,11 @@ public abstract class NumericExpression {
      * @return Value of numerical expression
      */
     public static double eval(@NotNull String expression) {
-        return Crunch.evaluateExpression(expression);
+        return Crunch.compileExpression(expression, ENV).evaluate();
     }
 
     public static boolean evalBoolean(@NotNull String expression) {
-        return Crunch.evaluateExpression(expression) > BOOLEAN_EPSILON;
+        return Crunch.compileExpression(expression, ENV).evaluate() > BOOLEAN_EPSILON;
     }
 
     @NotNull

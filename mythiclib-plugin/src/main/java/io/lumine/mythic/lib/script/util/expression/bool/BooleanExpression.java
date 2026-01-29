@@ -8,6 +8,6 @@ public abstract class BooleanExpression extends AbstractExpression {
 
     public static boolean eval(@NotNull String expression) {
         // maybe check for nullity directly instead of checking abs > EPSILON
-        return Math.abs(Crunch.evaluateExpression(expression)) > EPSILON;
+        return Math.abs(Crunch.compileExpression(expression, ENV).evaluate()) > EPSILON;
     }
 }
