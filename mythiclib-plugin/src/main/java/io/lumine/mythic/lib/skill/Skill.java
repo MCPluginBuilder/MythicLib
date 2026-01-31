@@ -149,13 +149,12 @@ public abstract class Skill implements CooldownObject {
 
     @Deprecated
     public Skill() {
-        this.handler = null;
+        throw new IllegalArgumentException("Use Skill(SkillHandler<?>)");
     }
 
     @Deprecated
     public Skill(@Nullable TriggerType trigger) {
-        this.handler = null;
-        backwardsCompatibleTrigger = trigger;
+        throw new IllegalArgumentException("Use Skill(SkillHandler<?>)");
     }
 
     /**

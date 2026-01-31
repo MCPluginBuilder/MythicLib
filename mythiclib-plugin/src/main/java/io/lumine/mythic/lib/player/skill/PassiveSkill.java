@@ -55,6 +55,8 @@ public class PassiveSkill extends PlayerModifier {
 
         this.trigger = trigger;
         this.triggered = triggered;
+
+        Validate.notNull(triggered.getHandler(), "Null skill handler"); // TODO remove
     }
 
     public PassiveSkill(ConfigObject obj) {
@@ -62,6 +64,8 @@ public class PassiveSkill extends PlayerModifier {
 
         triggered = new SimpleSkill(MythicLib.plugin.getSkills().getHandlerOrThrow(obj.getString("skill")));
         trigger = TriggerType.valueOf(obj.getString("trigger"));
+
+        Validate.notNull(triggered.getHandler(), "Null skill handler"); // TODO remove
     }
 
     /**
@@ -76,6 +80,8 @@ public class PassiveSkill extends PlayerModifier {
         Validate.isTrue(backwardsCompatibleTrigger.isPassive(), "Skill is active");
         this.triggered = Objects.requireNonNull(triggered, "Skill cannot be null");
         this.trigger = backwardsCompatibleTrigger;
+
+        Validate.notNull(triggered.getHandler(), "Null skill handler"); // TODO remove
     }
 
     @NotNull
