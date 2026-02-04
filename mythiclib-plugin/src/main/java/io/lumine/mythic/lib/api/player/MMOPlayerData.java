@@ -48,7 +48,6 @@ public class MMOPlayerData {
     // Information shared across all sessions
     private final ActionBarHandler actionBar = new ActionBarHandler(this);
     private final List<TemporaryHandler> tempHandlers = new ArrayList<>();
-    private final Map<String, Object> externalData = new HashMap<>();
     private final VariableList variableList = new VariableList(VariableScope.PLAYER);
 
     /**
@@ -417,20 +416,6 @@ public class MMOPlayerData {
         getPermanentEffectMap().applyPermanentPotionEffects();
     }
 
-    @Nullable
-    public <T> T getExternalData(String key, Class<T> objectType) {
-        final @Nullable Object found = externalData.get(key);
-        return found == null ? null : (T) found;
-    }
-
-    public void setExternalData(String key, Object obj) {
-        externalData.put(key, obj);
-    }
-
-    public boolean hasExternalData(String key) {
-        return externalData.containsKey(key);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -556,6 +541,28 @@ public class MMOPlayerData {
     //endregion
 
     //region Deprecated
+
+    /*
+    @Deprecated
+    private final Lazy<Map<String, Object>> externalData = Lazy.of(HashMap::new);
+
+    @Deprecated
+    @Nullable
+    public <T> T getExternalData(String key, Class<T> objectType) {
+        final @Nullable Object found = externalData.get().get(key);
+        return found == null ? null : (T) found;
+    }
+
+    @Deprecated
+    public void setExternalData(String key, Object obj) {
+        externalData.get().put(key, obj);
+    }
+
+    @Deprecated
+    public boolean hasExternalData(String key) {
+        return externalData.get().containsKey(key);
+    }
+     */
 
     /**
      * @see #forEachPlaying(Consumer)
