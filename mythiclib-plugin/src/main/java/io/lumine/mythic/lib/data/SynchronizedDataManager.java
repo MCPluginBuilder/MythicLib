@@ -255,7 +255,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * the main thread with SQL requests. Therefore, the object returned by that
      * function is always empty.
      *
-     * @param player Player UUID (not profile)
+     * @param player Player who just logged in
      * @return The empty player data, which will be loaded in a near future.
      * @see #unregister(Player, SaveReason)
      */
@@ -324,10 +324,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         return saveData(playerData, reason);
     }
 
-    public void fake(H data) {
-        activeData.put(data.getUniqueId(), data);
-    }
-
     /**
      * @param playerData Data of player who just logged in
      * @return A new instance of player data
@@ -351,6 +347,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     //region Deprecated
+
+    @Deprecated
+    public void fake(H data) {
+        activeData.put(data.getUniqueId(), data);
+    }
 
     @Deprecated
     public SynchronizedDataManager(@NotNull MMOPlugin owning, boolean profilePlugin) {
