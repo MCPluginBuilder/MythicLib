@@ -542,27 +542,20 @@ public class MMOPlayerData {
 
     //region Deprecated
 
-    /*
     @Deprecated
-    private final Lazy<Map<String, Object>> externalData = Lazy.of(HashMap::new);
-
-    @Deprecated
-    @Nullable
     public <T> T getExternalData(String key, Class<T> objectType) {
-        final @Nullable Object found = externalData.get().get(key);
-        return found == null ? null : (T) found;
+        return null;
     }
 
     @Deprecated
     public void setExternalData(String key, Object obj) {
-        externalData.get().put(key, obj);
+        // Nothing
     }
 
     @Deprecated
     public boolean hasExternalData(String key) {
-        return externalData.get().containsKey(key);
+        return false;
     }
-     */
 
     /**
      * @see #forEachPlaying(Consumer)
