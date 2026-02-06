@@ -73,7 +73,9 @@ public class SkillUpdateMigration {
 
             // if file contains one of these keys then it should be converted to keyed config
             // this makes sure MythicLib can use loadObjectsFromFolder from now on
-            if (config0.contains("modifiers")) {
+            // TODO there should be more keys than that but this should cover 99.9% skills
+            if (config0.contains("modifiers") ||
+                    config0.contains("mythiclib-skill-id") || config0.contains("mythicmobs-skill-id")) {
                 // Infer skill ID and use as config key
                 final var inferredSkillId = file.getName().substring(0, file.getName().length() - 4).toUpperCase().replace(" ", "_").replace("-", "_");
                 // Clear config first
