@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.skill.parameter;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.parameter.value.NonScalingFormula;
 import io.lumine.mythic.lib.skill.parameter.value.ScalingFormula;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,10 +30,15 @@ public class SkillParameter {
     }
 
     private SkillParameter(ConfigurationSection config) {
-        this.translate = config.getString("name");
+        this.translate = Objects.requireNonNullElseGet(config.getString("name"), () -> inferModifierName(config.getName()));
         this.itemDefaultValue = config.getDouble("item");
         this.scalingFormula = ScalingFormula.fromConfig(config.get("player"));
         this.decimalFormat = config.contains("format") ? new DecimalFormat(config.getString("format")) : null;
+    }
+
+    @NotNull
+    private String inferModifierName(String modifierId) {
+        return UtilityMethods.caseOnWords(modifierId.replace("-", " ").replace("_", " ").toLowerCase());
     }
 
     @NotNull
