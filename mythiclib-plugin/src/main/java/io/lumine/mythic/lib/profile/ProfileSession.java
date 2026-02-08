@@ -184,6 +184,8 @@ public class ProfileSession {
         }
 
         callSessionUpdateEvent(oldState, reason);
+
+        checkReadiness();
     }
 
     public void markAsReady(@NotNull NamespacedKey key) {
@@ -234,21 +236,18 @@ public class ProfileSession {
         Validate.notNull(reason, "Reason cannot be null");
 
         final ProfileSessionState oldState;
-        final boolean checkClosed;
         synchronized (this.fsmLock) {
             if (state.isClosing() || state.isDead()) return;
 
             // Abort opening
             if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
                 oldState = getAndSetState(ProfileSessionState.ABORT);
-                checkClosed = false;
             }
 
             // Close normally
             else if (state == ProfileSessionState.OPEN) {
                 oldState = getAndSetState(ProfileSessionState.CLOSING);
                 this.closeDataSession();
-                checkClosed = true;
             }
 
             // Wth
@@ -262,7 +261,7 @@ public class ProfileSession {
 
         callSessionUpdateEvent(oldState, reason);
 
-        if (checkClosed) checkClosed();
+        checkClosed();
     }
 
     public void addCloseCallback(@NotNull ProfileSessionCallback callback) {
