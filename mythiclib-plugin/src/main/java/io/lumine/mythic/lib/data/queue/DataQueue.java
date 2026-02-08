@@ -94,7 +94,7 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
             try {
                 wait(waitTime);
             } catch (InterruptedException e) {
-                this.plugin.getLogger().warning(getClass().getSimpleName() + " got interrupted!");
+                this.plugin.getLogger().warning(getClass().getSimpleName() + " got interrupted: " + e.getMessage());
             }
         }
     }

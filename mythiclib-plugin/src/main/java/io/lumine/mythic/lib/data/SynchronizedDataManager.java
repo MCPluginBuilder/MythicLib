@@ -5,11 +5,13 @@ import fr.phoenixdevt.profiles.ProfileProvider;
 import fr.phoenixdevt.profiles.placeholder.PlaceholderProcessor;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.api.event.session.SessionUpdateEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.data.queue.DataLoadQueue;
 import io.lumine.mythic.lib.data.queue.DataSaveQueue;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.ProfileSessionState;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -32,12 +34,14 @@ import java.util.logging.Level;
  * A general player data manager which implements
  * - player data caching on login
  * - support for both YAML and SQL
+ * - async data loading and saving
+ * - database contention management through queues
  * - better SQL data synchronization between servers
  * - profile-based data saving for MMOProfiles
+ * - support for classic and proxy-mode profile selection
  *
  * @param <H> Type of player data being cached on login
- * @param <O> This is used to manipulate player data when players
- *            are offline
+ * @param <O> This is used to manipulate player data when players are offline
  * @author jules
  */
 public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, O extends OfflineDataHolder> implements Closeable {
@@ -72,7 +76,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         this.loadQueue = new DataLoadQueue<>(this);
 
         Tasks.runAsync(owning, () -> {
-            UtilityMethods.debug(owning, "Data", "Applying database migrations...");
+            //UtilityMethods.debug(owning, "Data", "Applying database migrations...");
             this.database.setup();
 
             Bukkit.getScheduler().runTaskAsynchronously(owning, saveQueue);
@@ -132,7 +136,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     public void autosave() {
         for (H holder : getLoaded())
             if (holder.getMMOPlayerData().isPlaying()) {
-                holder.onSaved(SaveReason.AUTOSAVE); // TODO autosave on other threads.
+                holder.onSaved(SaveReason.AUTOSAVE);
                 saveData(holder, SaveReason.AUTOSAVE);
             }
     }
@@ -161,8 +165,13 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Auto-save
         if (owning.getConfig().getBoolean("auto-save.enabled")) new AutoSaveRunnable(this);
 
-        // Setup data on login
-        UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, joinEventPriority, event -> setup(event.getPlayer()), owning, false);
+        // Setup empty player data on login
+        // Load data on login for profile plugins
+        UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, joinEventPriority, this::onJoin, owning, false);
+
+        // Load data on session creation for non-profile plugins
+        if (!owning.isProfilePlugin())
+            UtilityMethods.registerEvent(SessionUpdateEvent.class, FICTIVE_LISTENER, joinEventPriority, this::onSessionUpdate, owning, false);
 
         // Save data on logout
         if (owning.isProfilePlugin() || !MythicLib.plugin.hasProfiles())
@@ -182,6 +191,31 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             // Register placeholders
             if (module instanceof PlaceholderProcessor)
                 profilePlugin.registerPlaceholders((PlaceholderProcessor) module);
+        }
+    }
+
+    protected void onJoin(PlayerJoinEvent event) {
+        final var playerData = setup(event.getPlayer());
+
+        // Profile plugins always require on-login sync
+        if (owning.isProfilePlugin()) {
+            Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
+            loadEmptyPlayerData(playerData);
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
+                MythicLib.plugin.onLoginProfileCallback.accept(playerData);
+            } else {
+                this.loadData(playerData);
+            }
+        }
+    }
+
+    protected void onSessionUpdate(SessionUpdateEvent event) {
+
+        // Session opening -> load data
+        if (event.getNewState() == ProfileSessionState.CREATED) {
+            final var playerData = get(event.getPlayerData().getUniqueId());
+            Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
+            loadData(playerData);
         }
     }
 
@@ -261,40 +295,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      */
     @NotNull
     public H setup(@NotNull Player player) {
-
-        // Get data or compute it if non existent (more resilient)
-        final var playerData = this.setupEmpty(player);
-
-        // Schedule data loading
-        if (requiresSynchronizationOnLogin(playerData)) loadData(playerData);
-
-        return playerData;
-    }
-
-    @NotNull
-    public H setupEmpty(@NotNull Player player) {
         return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.setup(player)));
-    }
-
-    private boolean requiresSynchronizationOnLogin(@NotNull H holder) {
-
-        // [Safeguard] should never happen
-        if (holder.isSessionReady()) return false;
-
-        // Profile plugins always require on-login sync
-        if (owning.isProfilePlugin()) {
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
-                MythicLib.plugin.onLoginProfileCallback.accept(holder);
-                return false;
-            }
-            return true;
-        }
-
-        // No profile plugin - sync like usual
-        if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) return true;
-
-        // Profile plugin => rely on session events
-        return false;
     }
 
     /**
@@ -385,6 +386,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     @Deprecated
     public void unregisterSafely(H playerData) {
         unregister(playerData.getPlayer(), SaveReason.LOG_OUT);
+    }
+
+    @Deprecated
+    public H setupEmpty(@NotNull Player player) {
+        return setup(player);
     }
 
     @Deprecated

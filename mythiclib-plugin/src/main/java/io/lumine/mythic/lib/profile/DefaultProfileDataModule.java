@@ -47,16 +47,15 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         return namespacedKey;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @EventHandler
     public void onProfileSelect(ProfileSelectEvent event) {
-        final var playerData = this.playerDataManager.get(event.getPlayer());
-        ((SynchronizedDataManager) this.playerDataManager).loadData(playerData);
+        // No validation needed
     }
 
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
-        playerDataManager.unregister(event.getPlayer(), adapt(event.getReason()));
+        // No validation needed
+        playerDataManager.unregister(event.getPlayer(), SaveReason.from(event.getReason()));
     }
 
     @EventHandler
@@ -71,28 +70,9 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         event.validate(this);
     }
 
-    /*
-    private boolean isLegacyProfileMode() {
-        return MythicLib.plugin.getProfileMode() == ProfileMode.LEGACY;
-    }
-    */
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLogout(PlayerQuitEvent event) {
         // garbage collect player data
         playerDataManager.garbageCollect(event.getPlayer());
-    }
-
-    @NotNull
-    private static SaveReason adapt(ProfileUnloadEvent.Reason reason) {
-        switch (reason) {
-            case QUIT_PROFILE:
-            case SWITCH_PROFILE:
-                return SaveReason.QUIT_PROFILE;
-            case LOG_OUT:
-                return SaveReason.LOG_OUT;
-            default:
-                throw new IllegalArgumentException("Cannot adapt reason " + reason);
-        }
     }
 }

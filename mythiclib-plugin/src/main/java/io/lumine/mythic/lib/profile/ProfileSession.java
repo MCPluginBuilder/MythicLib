@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.profile;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.api.event.session.SessionUpdateEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
@@ -13,6 +14,7 @@ import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,24 +44,6 @@ public class ProfileSession {
     private final UUID profileId;
 
     /**
-     * State of player session.
-     */
-    private ProfileSessionState state = ProfileSessionState.CREATED;
-
-    @NotNull
-    private final List<ProfileSessionCallback> callbacks = new ArrayList<>();
-
-    /**
-     * When logging in, MythicLib waits for all MMO plugins
-     * to load their data before toggling on readiness flag
-     * of this session object.
-     * <p>
-     * In case the opening of a session is aborted, the list
-     * of loaded modules is dumped
-     */
-    private List<NamespacedKey> waiting, loaded;
-
-    /**
      * @param parent    Session parent player data
      * @param profileId ID of profile chosen, or official player ID if none
      */
@@ -84,151 +68,227 @@ public class ProfileSession {
         return Objects.requireNonNull(profileId, "No profile");
     }
 
-    //region Profile state machine
+    //region FSM
+
+    //region Internal FSM State
+
+    private volatile ProfileSessionState state = ProfileSessionState.CREATED;
+
+    private final Object fsmLock = new Object();
+
+    /**
+     * When logging in, MythicLib waits for all MMO plugins
+     * to load their data before toggling on readiness flag
+     * of this session object.
+     * <p>
+     * In case the opening of a session is aborted, the list
+     * of loaded modules is dumped
+     */
+    private List<NamespacedKey> waiting, loaded;
+
+    private final List<ProfileSessionCallback> callbacks = new ArrayList<>();
+
+    //endregion
+
+    @NotNull
+    private ProfileSessionState getAndSetState(@NotNull ProfileSessionState newState) {
+        // This method does not take the lock
+        final var oldState = this.state;
+        this.state = Objects.requireNonNull(newState, "New state cannot be null");
+        return oldState;
+    }
+
+    @NotNull
+    public ProfileSessionState getState() {
+        return state;
+    }
 
     /**
      * @return If the player is currently playing. This will return true,
      *         as soon as the player logs out or switches profile.
      * @see MMOPlayerData#isPlaying()
      */
-    public synchronized boolean isReady() {
+    public boolean isReady() {
         return state == ProfileSessionState.OPEN;
     }
 
-    public synchronized boolean isDead() {
+    public boolean isDead() {
         return state.isDead();
     }
 
-    public synchronized boolean wasReady() {
+    public boolean wasReady() {
         return state.wasReady();
     }
 
-    public synchronized boolean isReady(@NotNull NamespacedKey key) {
-
-        // If session is globally ready, all plugins loaded their data
-        // If session is closing, means it was ready before.
-        if (state == ProfileSessionState.OPEN || state == ProfileSessionState.CLOSING) return true;
-
-        // If session is not opened yet, no way it's ready
-        if (state == ProfileSessionState.CREATED) return false;
-
-        return !this.waiting.contains(Objects.requireNonNull(key, "Key cannot be null"));
+    public void callSessionUpdateEvent(ProfileSessionState oldState) {
+        // This method does not take the lock
+        UtilityMethods.debug(MythicLib.plugin, "Session", profileId + ": " + oldState.name() + " -> " + this.state.name());
+        Bukkit.getPluginManager().callEvent(new SessionUpdateEvent(playerData, this, oldState, this.state));
     }
 
-    public synchronized void reset() {
-        Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
-        this.state = ProfileSessionState.CREATED;
-        UtilityMethods.debug(MythicLib.plugin, "Session", "Reset session of " + profileId);
+    public boolean isReady(@NotNull NamespacedKey key) {
+        synchronized (this.fsmLock) {
+
+            // If session is globally ready, all plugins loaded their data
+            // If session is closing, means it was ready before.
+            if (state == ProfileSessionState.OPEN || state == ProfileSessionState.CLOSING) return true;
+
+            // If session is not opened yet, no way it's ready
+            if (state == ProfileSessionState.CREATED) return false;
+
+            return this.loaded.contains(key);
+        }
     }
 
-    private void initialize() {
-        if (this.state != ProfileSessionState.CREATED) return;
+    public void reset() {
+        final ProfileSessionState oldState;
+        synchronized (this.fsmLock) {
+            Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
+            oldState = getAndSetState(ProfileSessionState.CREATED);
+        }
 
-        UtilityMethods.debug(MythicLib.plugin, "Session", "Init session of " + profileId);
-        this.state = ProfileSessionState.OPENING;
-        this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
-        this.loaded = new ArrayList<>();
-        this.callbacks.clear();
+        callSessionUpdateEvent(oldState);
     }
 
-    public synchronized void addOpenCallback(@NotNull ProfileSessionCallback callback) {
-        Validate.notNull(callback, "Callback cannot be null");
-        initialize();
-        Validate.isTrue(this.state == ProfileSessionState.OPENING, "Session is not opening");
+    private void initializeOpening() {
+        final ProfileSessionState oldState;
+        synchronized (this.fsmLock) {
+            if (this.state != ProfileSessionState.CREATED) return;
 
-        this.callbacks.add(callback);
+            oldState = getAndSetState(ProfileSessionState.OPENING);
+            this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
+            this.loaded = new ArrayList<>();
+            this.callbacks.clear();
+        }
+
+        callSessionUpdateEvent(oldState);
     }
 
-    public synchronized void markAsReady(@NotNull NamespacedKey key) {
+    public void markAsReady(@NotNull NamespacedKey key) {
         Validate.notNull(key, "Module key cannot be null");
-        initialize();
-        Validate.isTrue(state == ProfileSessionState.OPENING, "Profile session not opening (in state " + this.state.name() + ")");
+        initializeOpening();
 
-        final var found = this.waiting.remove(key);
-        Validate.isTrue(found, String.format("Module %s already synced", key));
-        this.loaded.add(key);
+        synchronized (this.fsmLock) {
+            Validate.isTrue(state == ProfileSessionState.OPENING, "Session is not opening (in state " + this.state.name() + ")");
+            final var hasBeenOpen = this.waiting.remove(key);
+            Validate.isTrue(hasBeenOpen, String.format("Module %s already synced", key));
+            this.loaded.add(key);
+        }
 
-        checkReadiness(); // Check if all plugins have loaded their data
+        // Check for full session open
+        checkReadiness();
+    }
+
+    public void addOpenCallback(@NotNull ProfileSessionCallback callback) {
+        Validate.notNull(callback, "Callback cannot be null");
+        initializeOpening();
+
+        synchronized (this.fsmLock) {
+            Validate.isTrue(this.state == ProfileSessionState.OPENING, "Session is not opening (in state " + this.state.name() + ")");
+            this.callbacks.add(callback);
+        }
     }
 
     private void checkReadiness() {
 
-        // Wait for all plugins to load their data
-        if (!this.waiting.isEmpty()) return;
+        final ProfileSessionState oldState;
+        synchronized (this.fsmLock) {
 
-        ////////////////////////////////
-        // Session opened
-        ////////////////////////////////
+            // Wait for all plugins to load their data
+            if (!this.waiting.isEmpty()) return;
 
-        UtilityMethods.debug(MythicLib.plugin, "Session", "Open session of " + profileId);
-        this.state = ProfileSessionState.OPEN;
-        //this.playerData.startPlaying();
-        this.callbacks.forEach(callback -> callback.callback(this));
-        this.openDataSession();
-    }
+            ////////////////////////////////
+            // Session opened
+            ////////////////////////////////
 
-    public synchronized void startClosing() {
-
-        if (state.isClosing() || state.isDead()) return;
-
-        // Abort opening
-        if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
-            UtilityMethods.debug(MythicLib.plugin, "Session", "Abort opening session of " + profileId);
-            this.state = ProfileSessionState.ABORT;
-            this.playerData.clearTemporaryHandlers();
-            this.waiting = this.loaded;
-            this.callbacks.clear();
+            oldState = getAndSetState(ProfileSessionState.OPEN);
+            this.openDataSession();
         }
 
-        // Close normally
-        else if (state == ProfileSessionState.OPEN) {
-            UtilityMethods.debug(MythicLib.plugin, "Session", "Start closing session of " + profileId);
-            this.state = ProfileSessionState.CLOSING;
-            this.playerData.clearTemporaryHandlers();
-            this.waiting = this.loaded;
-            this.callbacks.clear();
-            this.closeDataSession();
-
-            checkClosed();
-        }
-
-        // Wth
-        else throw new IllegalStateException("Unhandled session state " + this.state.name());
+        callbacks.forEach(callback -> callback.callback(this));
+        callSessionUpdateEvent(oldState);
     }
 
-    public synchronized void addCloseCallback(@NotNull ProfileSessionCallback callback) {
+    public void initializeClosing() {
+
+        final ProfileSessionState oldState;
+        final boolean checkClosed;
+        synchronized (this.fsmLock) {
+            if (state.isClosing() || state.isDead()) return;
+
+            // Abort opening
+            if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
+                oldState = getAndSetState(ProfileSessionState.ABORT);
+                this.callbacks.clear();
+                this.playerData.clearTemporaryHandlers();
+                this.waiting = this.loaded;
+                checkClosed = false;
+            }
+
+            // Close normally
+            else if (state == ProfileSessionState.OPEN) {
+                oldState = getAndSetState(ProfileSessionState.CLOSING);
+                this.callbacks.clear();
+                this.playerData.clearTemporaryHandlers();
+                this.waiting = this.loaded;
+                this.closeDataSession();
+                checkClosed = true;
+            }
+
+            // Wth
+            else throw new IllegalStateException("Unhandled session state " + this.state.name());
+        }
+
+        callSessionUpdateEvent(oldState);
+
+        if (checkClosed) checkClosed();
+    }
+
+    public void addCloseCallback(@NotNull ProfileSessionCallback callback) {
         Validate.notNull(callback, "Callback cannot be null");
-        startClosing();
-        Validate.isTrue(this.state.isClosing(), "Session is not closing");
+        initializeClosing();
 
-        this.callbacks.add(callback);
+        synchronized (this.fsmLock) {
+            Validate.isTrue(this.state.isClosing(), "Session is not closing");
+            this.callbacks.add(callback);
+        }
     }
 
-    public synchronized void markAsClosed(@NotNull NamespacedKey key) {
+    public void markAsClosed(@NotNull NamespacedKey key) {
         Validate.notNull(key, "Module key cannot be null");
-        startClosing();
-        Validate.isTrue(state.isClosing(), "Session is not closing (in state " + this.state.name() + ")");
+        initializeClosing();
 
-        final var found = this.waiting.remove(key);
-        Validate.isTrue(found, String.format("Module %s already marked as closed", key));
+        // Mark module as closed
+        final boolean hasBeenClosed;
+        synchronized (this.fsmLock) {
+            Validate.isTrue(state.isClosing(), "Session is not closing (in state " + this.state.name() + ")");
+            hasBeenClosed = this.waiting.remove(key);
+        }
+        Validate.isTrue(hasBeenClosed, String.format("Module %s already marked as closed", key));
 
-        checkClosed(); // Check if all plugins have saved their data
+        // Check for full session close
+        checkClosed();
     }
 
     private void checkClosed() {
 
-        // Wait for all plugins to store their data
-        if (!this.waiting.isEmpty()) return;
+        final ProfileSessionState oldState;
+        synchronized (this.fsmLock) {
 
-        ////////////////////////////////
-        // Session closed
-        ////////////////////////////////
+            // Wait for all plugins to store their data
+            if (!this.waiting.isEmpty()) return;
 
-        UtilityMethods.debug(MythicLib.plugin, "Session", "Close session of " + profileId);
-        this.setLastActivity();
-        this.state = state == ProfileSessionState.ABORT ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD;
-        this.playerData.saveCurrentProfileSession();
-        this.callbacks.forEach(callback -> callback.callback(this));
+            ////////////////////////////////
+            // Session closed
+            ////////////////////////////////
+
+            this.setLastActivity();
+            oldState = getAndSetState(state == ProfileSessionState.ABORT ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD);
+            this.playerData.saveCurrentProfileSession();
+        }
+
+        callbacks.forEach(callback -> callback.callback(this));
+        callSessionUpdateEvent(oldState);
     }
 
     //endregion

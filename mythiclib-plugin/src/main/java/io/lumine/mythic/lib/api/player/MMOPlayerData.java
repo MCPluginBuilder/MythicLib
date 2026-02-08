@@ -18,6 +18,7 @@ import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.profile.ProfileSession;
+import io.lumine.mythic.lib.profile.ProfileSessionState;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
@@ -164,19 +165,21 @@ public class MMOPlayerData {
     public void updatePlayer(@Nullable Player player) {
 
         // Player logging off
-        if (this.player != null && player == null) {
+        if (player == null) {
             this.player = null;
             this.lastLogActivity = System.currentTimeMillis();
+
+            clearSessionBuffer();
         }
 
         // Player logging in
-        else if (this.player == null && player != null) {
+        else {
             this.player = player;
             this.lastLogActivity = System.currentTimeMillis();
             this.lastPlayerName = player.getName();
+
             // [Safeguard] Should never have previous profile session
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE && !hasProfileSession())
-                chooseProfile(null); // Setup profile session
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null);
         }
     }
 
@@ -188,7 +191,12 @@ public class MMOPlayerData {
     private UUID officialId;
 
     @Nullable
-    private ProfileSession profileSession;
+    private volatile ProfileSession profileSession;
+    private volatile boolean newSessionBuffered;
+    @Nullable
+    private volatile UUID sessionUniqueIdBuffer;
+
+    private final Object sessionWriteLock = new Object();
 
     /**
      * Watch out for the `null` key for when no profile is chosen!
@@ -226,25 +234,55 @@ public class MMOPlayerData {
         return Objects.requireNonNull(profileSession, "No profile chosen").getProfileId();
     }
 
+    public boolean hasProfileSession() {
+        return profileSession != null;
+    }
+
+    public boolean hasProfile() {
+        final var session = this.profileSession;
+        // Atomic ref read needed
+        return session != null && session.hasProfile();
+    }
+
+    public boolean isPlaying() {
+        final var session = this.profileSession;
+        // Atomic ref read needed
+        return session != null && session.isReady();
+    }
+
+    private void clearSessionBuffer() {
+        synchronized (sessionWriteLock) {
+            newSessionBuffered = false;
+        }
+    }
+
+    private void initializeNewSession(@Nullable UUID uniqueId) {
+        // This method does NOT take any lock!
+        Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
+        final var newSession = new ProfileSession(this, uniqueId);
+        this.profileSession = newSession;
+        newSession.callSessionUpdateEvent(ProfileSessionState.DEAD);
+    }
+
     /**
      * Saves the current profile session temporarily. If the player leaves this
      * session for too long, it will eventually be discarded.
      */
     public void saveCurrentProfileSession() {
-        Validate.notNull(this.profileSession, "No profile session to save");
-        Validate.isTrue(this.profileSession.isDead(), "Current profile session is still alive");
+        synchronized (sessionWriteLock) {
+            Validate.notNull(this.profileSession, "No profile session to save");
+            Validate.isTrue(this.profileSession.isDead(), "Current profile session is still alive");
 
-        var mapKey = this.profileSession.hasProfile() ? this.profileSession.getProfileId() : null;
-        this.savedProfileSessions.put(mapKey, this.profileSession);
-        this.profileSession = null;
-    }
+            final var mapKey = this.profileSession.hasProfile() ? this.profileSession.getProfileId() : null;
+            this.savedProfileSessions.put(mapKey, this.profileSession);
+            this.profileSession = null;
 
-    public boolean hasProfile() {
-        return profileSession != null && profileSession.hasProfile();
-    }
-
-    public boolean hasProfileSession() {
-        return profileSession != null;
+            // Check for buffer after saving
+            if (newSessionBuffered) {
+                newSessionBuffered = false;
+                chooseProfile(sessionUniqueIdBuffer); // Re-enter lock
+            }
+        }
     }
 
     /**
@@ -256,18 +294,28 @@ public class MMOPlayerData {
      */
     public void chooseProfile(@Nullable UUID profileId) {
         Validate.isTrue(!lookup, "Cannot choose a profile in lookup mode");
-        Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
 
-        // Restore previous session
-        final ProfileSession restored = savedProfileSessions.remove(profileId);
-        if (restored != null) {
-            this.profileSession = restored;
-            this.profileSession.reset();
-            return;
+        synchronized (sessionWriteLock) {
+
+            // Buffer new session if previous one is not dead yet
+            // Happens on relogin if previous session has not been saved yet
+            if (this.profileSession != null) {
+                newSessionBuffered = true;
+                sessionUniqueIdBuffer = profileId;
+                return;
+            }
+
+            // Restore previous session
+            final var restored = savedProfileSessions.remove(profileId);
+            if (restored != null) {
+                this.profileSession = restored;
+                restored.reset();
+                return;
+            }
+
+            // Create new session
+            initializeNewSession(profileId);
         }
-
-        // Create new session
-        this.profileSession = new ProfileSession(this, profileId);
     }
 
     @NotNull
@@ -287,10 +335,6 @@ public class MMOPlayerData {
     public void clearTemporaryHandlers() {
         tempHandlers.forEach(handler -> handler.closeNow(true));
         tempHandlers.clear();
-    }
-
-    public boolean isPlaying() {
-        return profileSession != null && profileSession.isReady();
     }
 
     //endregion
