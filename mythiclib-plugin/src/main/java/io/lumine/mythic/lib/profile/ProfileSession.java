@@ -303,12 +303,13 @@ public class ProfileSession {
 
             this.setLastActivity();
             oldState = getAndSetState(state == ProfileSessionState.ABORT ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD);
-            this.playerData.saveCurrentProfileSession();
         }
 
+        this.playerData.saveCurrentProfileSession();
         callbacks.forEach(callback -> callback.callback(this));
         callSessionUpdateEvent(oldState, lastUpdateReason);
         this.lastUpdateReason = null;
+        this.playerData.applyNextSessionBuffer();
     }
 
     //endregion

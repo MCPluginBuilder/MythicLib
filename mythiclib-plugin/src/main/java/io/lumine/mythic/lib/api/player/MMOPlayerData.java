@@ -169,7 +169,7 @@ public class MMOPlayerData {
             this.player = null;
             this.lastLogActivity = System.currentTimeMillis();
 
-            clearSessionBuffer();
+            clearNextSessionBuffer();
         }
 
         // Player logging in
@@ -252,9 +252,19 @@ public class MMOPlayerData {
         return session != null && session.isReady();
     }
 
-    private void clearSessionBuffer() {
+    private void clearNextSessionBuffer() {
         synchronized (sessionWriteLock) {
             nextSessionBuffered = false;
+        }
+    }
+
+    public void applyNextSessionBuffer() {
+        synchronized (sessionWriteLock) {
+            // Check for buffer after saving
+            if (nextSessionBuffered) {
+                nextSessionBuffered = false;
+                chooseProfile(nextSessionProfileBuffer, nextSessionReasonBuffer); // Re-enter lock
+            }
         }
     }
 
@@ -279,12 +289,6 @@ public class MMOPlayerData {
             final var mapKey = this.profileSession.hasProfile() ? this.profileSession.getProfileId() : null;
             this.savedProfileSessions.put(mapKey, this.profileSession);
             this.profileSession = null;
-
-            // Check for buffer after saving
-            if (nextSessionBuffered) {
-                nextSessionBuffered = false;
-                chooseProfile(nextSessionProfileBuffer, nextSessionReasonBuffer); // Re-enter lock
-            }
         }
     }
 
