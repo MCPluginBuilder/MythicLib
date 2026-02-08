@@ -18,7 +18,7 @@ import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.profile.ProfileSession;
-import io.lumine.mythic.lib.profile.ProfileSessionState;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
@@ -179,7 +179,7 @@ public class MMOPlayerData {
             this.lastPlayerName = player.getName();
 
             // [Safeguard] Should never have previous profile session
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null);
+            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null, SessionUpdateReason.LOGIN);
         }
     }
 
@@ -192,9 +192,11 @@ public class MMOPlayerData {
 
     @Nullable
     private volatile ProfileSession profileSession;
-    private volatile boolean newSessionBuffered;
+
+    private volatile boolean nextSessionBuffered;
+    private volatile SessionUpdateReason nextSessionReasonBuffer;
     @Nullable
-    private volatile UUID sessionUniqueIdBuffer;
+    private volatile UUID nextSessionProfileBuffer;
 
     private final Object sessionWriteLock = new Object();
 
@@ -252,16 +254,17 @@ public class MMOPlayerData {
 
     private void clearSessionBuffer() {
         synchronized (sessionWriteLock) {
-            newSessionBuffered = false;
+            nextSessionBuffered = false;
         }
     }
 
-    private void initializeNewSession(@Nullable UUID uniqueId) {
+    private void initializeNewSession(@Nullable UUID uniqueId, @NotNull SessionUpdateReason reason) {
         // This method does NOT take any lock!
         Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
         final var newSession = new ProfileSession(this, uniqueId);
         this.profileSession = newSession;
-        newSession.callSessionUpdateEvent(ProfileSessionState.DEAD);
+
+        newSession.initializeNewSession(reason);
     }
 
     /**
@@ -278,9 +281,9 @@ public class MMOPlayerData {
             this.profileSession = null;
 
             // Check for buffer after saving
-            if (newSessionBuffered) {
-                newSessionBuffered = false;
-                chooseProfile(sessionUniqueIdBuffer); // Re-enter lock
+            if (nextSessionBuffered) {
+                nextSessionBuffered = false;
+                chooseProfile(nextSessionProfileBuffer, nextSessionReasonBuffer); // Re-enter lock
             }
         }
     }
@@ -292,7 +295,7 @@ public class MMOPlayerData {
      *
      * @param profileId ID of profile opened, or null if no profile
      */
-    public void chooseProfile(@Nullable UUID profileId) {
+    public void chooseProfile(@Nullable UUID profileId, @NotNull SessionUpdateReason reason) {
         Validate.isTrue(!lookup, "Cannot choose a profile in lookup mode");
 
         synchronized (sessionWriteLock) {
@@ -300,8 +303,9 @@ public class MMOPlayerData {
             // Buffer new session if previous one is not dead yet
             // Happens on relogin if previous session has not been saved yet
             if (this.profileSession != null) {
-                newSessionBuffered = true;
-                sessionUniqueIdBuffer = profileId;
+                nextSessionBuffered = true;
+                nextSessionReasonBuffer = reason;
+                nextSessionProfileBuffer = profileId;
                 return;
             }
 
@@ -309,12 +313,12 @@ public class MMOPlayerData {
             final var restored = savedProfileSessions.remove(profileId);
             if (restored != null) {
                 this.profileSession = restored;
-                restored.reset();
+                restored.reset(reason);
                 return;
             }
 
             // Create new session
-            initializeNewSession(profileId);
+            initializeNewSession(profileId, reason);
         }
     }
 

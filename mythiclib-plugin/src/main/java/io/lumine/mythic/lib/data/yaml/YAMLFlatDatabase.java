@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.data.yaml;
 
 import io.lumine.mythic.lib.data.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,7 +26,7 @@ public abstract class YAMLFlatDatabase<H extends SynchronizedDataHolder, O exten
     }
 
     @Override
-    public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
+    public void saveData(@NotNull H playerData, @NotNull SessionUpdateReason reason) {
         final var ymlFile = new YamlFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
         saveInSection(playerData, ymlFile.getContent());
         ymlFile.save();

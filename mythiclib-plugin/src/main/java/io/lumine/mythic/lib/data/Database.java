@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.Closeable;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +32,7 @@ public interface Database<H extends SynchronizedDataHolder, O extends OfflineDat
      * @implNote This method should be called async so there is no need
      *         to run async tasks inside of this method implementation.
      */
-    public void saveData(@NotNull H playerData, @NotNull SaveReason reason);
+    public void saveData(@NotNull H playerData, @NotNull SessionUpdateReason reason);
 
     /**
      * This method is always called ASYNC inside a newly created thread. It should

@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.data;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -107,7 +108,7 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                         final UUID playerId = playerIds.get(index);
                         final H offlinePlayerData = manager.newPlayerData(new MMOPlayerData(playerId));
                         sourceHandler.loadData(offlinePlayerData, true);
-                        targetHandler.saveData(offlinePlayerData, SaveReason.LOG_OUT);
+                        targetHandler.saveData(offlinePlayerData, SessionUpdateReason.LOG_OUT);
                     } catch (RuntimeException exception) {
                         errorCount++;
                         exception.printStackTrace();

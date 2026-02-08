@@ -86,6 +86,11 @@ public class ProfileSession {
      */
     private List<NamespacedKey> waiting, loaded;
 
+    /**
+     * Last update reason when switching to opening or closing states
+     */
+    private SessionUpdateReason lastUpdateReason;
+
     private final List<ProfileSessionCallback> callbacks = new ArrayList<>();
 
     //endregion
@@ -120,10 +125,12 @@ public class ProfileSession {
         return state.wasReady();
     }
 
-    public void callSessionUpdateEvent(ProfileSessionState oldState) {
+    public void callSessionUpdateEvent(@NotNull ProfileSessionState oldState, @NotNull SessionUpdateReason reason) {
+        Validate.notNull(reason, "Reason cannot be null");
+
         // This method does not take the lock
         UtilityMethods.debug(MythicLib.plugin, "Session", profileId + ": " + oldState.name() + " -> " + this.state.name());
-        Bukkit.getPluginManager().callEvent(new SessionUpdateEvent(playerData, this, oldState, this.state));
+        Bukkit.getPluginManager().callEvent(new SessionUpdateEvent(playerData, this, reason, oldState, this.state));
     }
 
     public boolean isReady(@NotNull NamespacedKey key) {
@@ -140,33 +147,47 @@ public class ProfileSession {
         }
     }
 
-    public void reset() {
+    public void reset(@NotNull SessionUpdateReason reason) {
+        Validate.notNull(reason, "Reason cannot be null");
+
         final ProfileSessionState oldState;
         synchronized (this.fsmLock) {
             Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
             oldState = getAndSetState(ProfileSessionState.CREATED);
         }
 
-        callSessionUpdateEvent(oldState);
+        callSessionUpdateEvent(oldState, reason);
+        initializeOpening(reason);
     }
 
-    private void initializeOpening() {
+    public void initializeNewSession(@NotNull SessionUpdateReason reason) {
+        synchronized (this.fsmLock) {
+            Validate.isTrue(state == ProfileSessionState.CREATED, "Can only initialize new session from state DEAD");
+        }
+
+        callSessionUpdateEvent(ProfileSessionState.DEAD, reason);
+        initializeOpening(reason);
+    }
+
+    private void initializeOpening(@NotNull SessionUpdateReason reason) {
+        Validate.notNull(reason, "Reason cannot be null");
+
         final ProfileSessionState oldState;
         synchronized (this.fsmLock) {
-            if (this.state != ProfileSessionState.CREATED) return;
+            Validate.isTrue(state == ProfileSessionState.CREATED, "Can only initialize opening from state CREATED");
 
+            this.lastUpdateReason = reason;
             oldState = getAndSetState(ProfileSessionState.OPENING);
             this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
             this.loaded = new ArrayList<>();
             this.callbacks.clear();
         }
 
-        callSessionUpdateEvent(oldState);
+        callSessionUpdateEvent(oldState, reason);
     }
 
     public void markAsReady(@NotNull NamespacedKey key) {
         Validate.notNull(key, "Module key cannot be null");
-        initializeOpening();
 
         synchronized (this.fsmLock) {
             Validate.isTrue(state == ProfileSessionState.OPENING, "Session is not opening (in state " + this.state.name() + ")");
@@ -181,7 +202,6 @@ public class ProfileSession {
 
     public void addOpenCallback(@NotNull ProfileSessionCallback callback) {
         Validate.notNull(callback, "Callback cannot be null");
-        initializeOpening();
 
         synchronized (this.fsmLock) {
             Validate.isTrue(this.state == ProfileSessionState.OPENING, "Session is not opening (in state " + this.state.name() + ")");
@@ -206,10 +226,12 @@ public class ProfileSession {
         }
 
         callbacks.forEach(callback -> callback.callback(this));
-        callSessionUpdateEvent(oldState);
+        callSessionUpdateEvent(oldState, lastUpdateReason);
+        this.lastUpdateReason = null;
     }
 
-    public void initializeClosing() {
+    public void initializeClosing(@NotNull SessionUpdateReason reason) {
+        Validate.notNull(reason, "Reason cannot be null");
 
         final ProfileSessionState oldState;
         final boolean checkClosed;
@@ -219,34 +241,32 @@ public class ProfileSession {
             // Abort opening
             if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
                 oldState = getAndSetState(ProfileSessionState.ABORT);
-                this.callbacks.clear();
-                this.playerData.clearTemporaryHandlers();
-                this.waiting = this.loaded;
                 checkClosed = false;
             }
 
             // Close normally
             else if (state == ProfileSessionState.OPEN) {
                 oldState = getAndSetState(ProfileSessionState.CLOSING);
-                this.callbacks.clear();
-                this.playerData.clearTemporaryHandlers();
-                this.waiting = this.loaded;
                 this.closeDataSession();
                 checkClosed = true;
             }
 
             // Wth
             else throw new IllegalStateException("Unhandled session state " + this.state.name());
+
+            this.lastUpdateReason = reason;
+            this.callbacks.clear();
+            this.playerData.clearTemporaryHandlers();
+            this.waiting = this.loaded;
         }
 
-        callSessionUpdateEvent(oldState);
+        callSessionUpdateEvent(oldState, reason);
 
         if (checkClosed) checkClosed();
     }
 
     public void addCloseCallback(@NotNull ProfileSessionCallback callback) {
         Validate.notNull(callback, "Callback cannot be null");
-        initializeClosing();
 
         synchronized (this.fsmLock) {
             Validate.isTrue(this.state.isClosing(), "Session is not closing");
@@ -256,7 +276,6 @@ public class ProfileSession {
 
     public void markAsClosed(@NotNull NamespacedKey key) {
         Validate.notNull(key, "Module key cannot be null");
-        initializeClosing();
 
         // Mark module as closed
         final boolean hasBeenClosed;
@@ -288,7 +307,8 @@ public class ProfileSession {
         }
 
         callbacks.forEach(callback -> callback.callback(this));
-        callSessionUpdateEvent(oldState);
+        callSessionUpdateEvent(oldState, lastUpdateReason);
+        this.lastUpdateReason = null;
     }
 
     //endregion

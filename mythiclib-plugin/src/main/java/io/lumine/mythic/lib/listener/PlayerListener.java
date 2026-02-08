@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.listener;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,7 +32,7 @@ public class PlayerListener implements Listener {
     public void onPlayerQuitLowest(PlayerQuitEvent event) {
         final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
         if (playerData != null) {
-            if (playerData.hasProfileSession()) playerData.getProfileSession().initializeClosing();
+            if (playerData.hasProfileSession()) playerData.getProfileSession().initializeClosing(SessionUpdateReason.LOG_OUT);
             Tasks.runSync(MythicLib.plugin, () -> playerData.updatePlayer(null));
         }
     }

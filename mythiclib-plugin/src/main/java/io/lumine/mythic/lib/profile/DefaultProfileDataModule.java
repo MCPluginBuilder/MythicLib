@@ -5,7 +5,6 @@ import fr.phoenixdevt.profiles.event.ProfileCreateEvent;
 import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
 import fr.phoenixdevt.profiles.event.ProfileSelectEvent;
 import fr.phoenixdevt.profiles.event.ProfileUnloadEvent;
-import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import org.bukkit.NamespacedKey;
@@ -55,7 +54,6 @@ public class DefaultProfileDataModule implements ProfileDataModule {
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
         // No validation needed
-        playerDataManager.unregister(event.getPlayer(), SaveReason.from(event.getReason()));
     }
 
     @EventHandler

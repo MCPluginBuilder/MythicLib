@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -105,7 +106,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * This notably fixes an issue where MMOCore cannot access the player's
      * entity health anymore after MMOProfiles has reset it due to profile change.
      */
-    public void onSaved(@NotNull SaveReason reason) {
+    public void onSaved(@NotNull SessionUpdateReason reason) {
         // Nothing by default
     }
 

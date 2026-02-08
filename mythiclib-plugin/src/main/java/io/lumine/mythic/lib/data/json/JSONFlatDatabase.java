@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.data.json;
 import com.google.gson.JsonObject;
 import io.lumine.mythic.lib.data.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Jsonable;
 import io.lumine.mythic.lib.util.config.JsonFile;
@@ -26,7 +27,7 @@ public abstract class JSONFlatDatabase<H extends SynchronizedDataHolder & Jsonab
     }
 
     @Override
-    public void saveData(@NotNull H playerData, @NotNull SaveReason reason) {
+    public void saveData(@NotNull H playerData, @NotNull SessionUpdateReason reason) {
         final var jsonFile = new JsonFile(owning, "userdata", playerData.getEffectiveId().toString(), false);
         jsonFile.setContent(playerData.toJson());
         jsonFile.save();

@@ -12,6 +12,7 @@ import io.lumine.mythic.lib.data.queue.DataLoadQueue;
 import io.lumine.mythic.lib.data.queue.DataSaveQueue;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.profile.ProfileSessionState;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Tasks;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -136,8 +137,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     public void autosave() {
         for (H holder : getLoaded())
             if (holder.getMMOPlayerData().isPlaying()) {
-                holder.onSaved(SaveReason.AUTOSAVE);
-                saveData(holder, SaveReason.AUTOSAVE);
+                holder.onSaved(SessionUpdateReason.AUTOSAVE);
+                saveData(holder, SessionUpdateReason.AUTOSAVE);
             }
     }
 
@@ -175,7 +176,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
         // Save data on logout
         if (owning.isProfilePlugin() || !MythicLib.plugin.hasProfiles())
-            UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SaveReason.LOG_OUT), owning, false);
+            UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SessionUpdateReason.LOG_OUT), owning, false);
 
         // ProfileAPI compatibility
         if (!owning.isProfilePlugin() && MythicLib.plugin.hasProfiles()) {
@@ -217,6 +218,15 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
             Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
             loadData(playerData);
         }
+
+        else if (event.getNewState().isClosing()) {
+            final var playerData = get(event.getPlayerData().getUniqueId());
+            if (playerData.isSessionReady()) {
+                playerData.onSaved(event.getReason());
+                saveData(playerData, event.getReason());
+            }
+
+        }
     }
 
     /**
@@ -234,8 +244,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Save data SYNCHRONOUSLY of online players (not called with /restart)
         for (H holder : getLoaded())
             if (holder.isSessionReady()) {
-                holder.onSaved(SaveReason.LOG_OUT);
-                database.saveData(holder, SaveReason.LOG_OUT);
+                holder.onSaved(SessionUpdateReason.LOG_OUT);
+                database.saveData(holder, SessionUpdateReason.LOG_OUT);
                 holder.markSessionClosed();
             }
 
@@ -265,7 +275,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *         <li>player is still online when the worked thread is done loading data</li>
      *         </ul>
      *         If the player left the server while data was being loaded, player data will be re-saved if necessary.
-     * @see #saveData(SynchronizedDataHolder, SaveReason)
+     * @see #saveData(SynchronizedDataHolder, SessionUpdateReason)
      */
     @NotNull
     public CompletableFuture<Void> loadData(@NotNull H playerData) {
@@ -278,7 +288,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @see #loadData(SynchronizedDataHolder)
      */
     @NotNull
-    public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SaveReason reason) {
+    public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SessionUpdateReason reason) {
         return this.saveQueue.enqueue(playerData, reason);
     }
 
@@ -291,7 +301,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *
      * @param player Player who just logged in
      * @return The empty player data, which will be loaded in a near future.
-     * @see #unregister(Player, SaveReason)
+     * @see #unregister(Player, SessionUpdateReason)
      */
     @NotNull
     public H setup(@NotNull Player player) {
@@ -309,11 +319,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * @see #setup(Player)
      */
     @NotNull
-    public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SaveReason reason) {
+    public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SessionUpdateReason reason) {
 
         final H playerData;
-        if (reason == SaveReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
-        else if (reason == SaveReason.QUIT_PROFILE)
+        if (reason == SessionUpdateReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
+        else if (reason == SessionUpdateReason.QUIT_PROFILE)
             playerData = activeData.put(player.getUniqueId(), newPlayerData(MMOPlayerData.get(player.getUniqueId())));
         else throw new IllegalArgumentException("Unhandled save reason " + reason);
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
@@ -371,13 +381,13 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     @Deprecated
     public CompletableFuture<Void> saveData(@NotNull H playerData) {
-        return saveData(playerData, SaveReason.LOG_OUT);
+        return saveData(playerData, SessionUpdateReason.LOG_OUT);
     }
 
     @Deprecated
     public CompletableFuture<Void> unregister(@NotNull Player player) {
         var future = new CompletableFuture<Void>();
-        return unregister(player, SaveReason.LOG_OUT).thenApply(t -> {
+        return unregister(player, SessionUpdateReason.LOG_OUT).thenApply(t -> {
             future.complete(null);
             return null;
         });
@@ -385,7 +395,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     @Deprecated
     public void unregisterSafely(H playerData) {
-        unregister(playerData.getPlayer(), SaveReason.LOG_OUT);
+        unregister(playerData.getPlayer(), SessionUpdateReason.LOG_OUT);
     }
 
     @Deprecated
