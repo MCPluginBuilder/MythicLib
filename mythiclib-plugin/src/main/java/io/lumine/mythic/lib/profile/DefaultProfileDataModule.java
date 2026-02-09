@@ -67,10 +67,4 @@ public class DefaultProfileDataModule implements ProfileDataModule {
         // TODO empty database
         event.validate(this);
     }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onLogout(PlayerQuitEvent event) {
-        // garbage collect player data
-        playerDataManager.garbageCollect(event.getPlayer());
-    }
 }

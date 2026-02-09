@@ -166,6 +166,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
         // Load data on session creation for non-profile plugins
         // Save data on session termination for non-profile plugins
+        // Garbage collect player data on session death for non-profile plugins
         if (!owning.isProfilePlugin()) {
             UtilityMethods.registerEvent(SessionUpdateEvent.class, FICTIVE_LISTENER, EventPriority.NORMAL, this::onSessionUpdate, owning, false);
         }
@@ -194,7 +195,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     //region Event listeners
 
     protected void onQuit(PlayerQuitEvent event) {
-        final var playerData = unregister(event.getPlayer(), SessionUpdateReason.LOG_OUT);
+        final var playerData = this.activeData.remove(event.getPlayer().getUniqueId());
+        Validate.notNull(playerData, "Player data is not loaded");
 
         // Profile plugins require on-logout sync
         if (owning.isProfilePlugin() && playerData.isSessionReady()) {
@@ -226,7 +228,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         if (event.getNewState() == ProfileSessionState.OPENING) {
             final var playerData = get(event.getPlayerData().getUniqueId());
             Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
-            loadData(playerData);
+            this.loadData(playerData);
         }
 
         // Session closing -> save data
@@ -234,8 +236,20 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         else if (event.getNewState().isClosing()) {
             final var playerData = get(event.getPlayerData().getUniqueId());
             if (playerData.isSessionReady()) {
-                this.saveData(playerData, SessionUpdateReason.LOG_OUT);
+                this.saveData(playerData, event.getReason());
             }
+        }
+
+        // Session death -> switch player data
+        else if (event.getNewState().isDead()) {
+            this.activeData.compute(event.getPlayerData().getUniqueId(), (ignore, current) -> {
+
+                // If player disconnected, do not keep.
+                if (current == null) return null;
+
+                // If player data is still valid, replace with new one
+                return newPlayerData(current.getMMOPlayerData());
+            });
         }
     }
 
@@ -308,33 +322,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *
      * @param player Player who just logged in
      * @return The empty player data, which will be loaded in a near future.
-     * @see #unregister(Player, SessionUpdateReason)
      */
     @NotNull
     public H setup(@NotNull Player player) {
         return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.setup(player)));
-    }
-
-    /**
-     * Safely unregisters the player data from the map.
-     * This saves the player data either through SQL or YAML,
-     * then closes the player data and clears it from the data map.
-     *
-     * @param player Player whose data needs to be unregistered
-     * @param reason Reason why the data is being saved
-     * @see #setup(Player)
-     */
-    @NotNull
-    public H unregister(@NotNull Player player, @NotNull SessionUpdateReason reason) {
-
-        final H playerData;
-        if (reason == SessionUpdateReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
-        else if (reason == SessionUpdateReason.QUIT_PROFILE)
-            playerData = activeData.put(player.getUniqueId(), newPlayerData(MMOPlayerData.get(player.getUniqueId())));
-        else throw new IllegalArgumentException("Unhandled save reason " + reason);
-        Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
-
-        return playerData;
     }
 
     /**
@@ -376,31 +367,22 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         this(owning);
     }
 
-    /**
-     * @deprecated TODO find better alternative. the #unregister only calls on profileunload
-     *         when using legacy profiles. if the player logs out without choosing a profile
-     *         this event will not call, and the data will remain in memory => LEAK
-     */
-    @Deprecated(forRemoval = true)
-    public void garbageCollect(@NotNull Player player) {
-        activeData.remove(player.getUniqueId());
+    @Deprecated
+    public H unregister(Player player, SaveReason reason) {
+        return this.unregister(player, reason.adapt());
     }
 
     @Deprecated
-    public CompletableFuture<Void> saveData(@NotNull H playerData) {
-        return saveData(playerData, SessionUpdateReason.LOG_OUT);
-    }
+    public H unregister(Player player, SessionUpdateReason reason) {
 
-    @Deprecated
-    public CompletableFuture<Void> unregister(@NotNull Player player) {
-        unregister(player, SessionUpdateReason.LOG_OUT);
-        // TODO non backwards compatible change
-        return CompletableFuture.completedFuture(null);
-    }
+        final H playerData;
+        if (reason == SessionUpdateReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
+        else if (reason == SessionUpdateReason.QUIT_PROFILE || reason == SessionUpdateReason.SWITCH_PROFILE)
+            playerData = activeData.put(player.getUniqueId(), newPlayerData(MMOPlayerData.get(player.getUniqueId())));
+        else throw new IllegalArgumentException("Unhandled save reason " + reason);
+        Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
-    @Deprecated
-    public void unregisterSafely(H playerData) {
-        unregister(playerData.getPlayer(), SessionUpdateReason.LOG_OUT);
+        return playerData;
     }
 
     @Deprecated

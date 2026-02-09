@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.api.player;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
@@ -308,7 +309,9 @@ public class MMOPlayerData {
     public void chooseProfile(@Nullable UUID profileId, @NotNull SessionUpdateReason reason) {
         Validate.isTrue(!lookup, "Cannot choose a profile in lookup mode");
 
+        final String debugMessage;
         synchronized (sessionWriteLock) {
+            final ProfileSession restoredSession;
 
             // Buffer new session if previous one is not dead yet
             // Happens on re-login if previous session has not been saved yet
@@ -316,20 +319,24 @@ public class MMOPlayerData {
                 nextSessionBuffered = true;
                 nextSessionReasonBuffer = reason;
                 nextSessionProfileBuffer = profileId;
-                return;
+                debugMessage = "Buffered session " + profileId + " for player " + getPlayerName() + ", current session dump = " + this.profileSession;
             }
 
             // Restore previous session
-            final var restored = savedProfileSessions.remove(profileId);
-            if (restored != null) {
-                this.profileSession = restored;
-                restored.reset(reason);
-                return;
+            else if ((restoredSession = savedProfileSessions.remove(profileId)) != null) {
+                this.profileSession = restoredSession;
+                restoredSession.reset(reason);
+                debugMessage = "Restored session " + profileId + " for player " + getPlayerName();
             }
 
             // Create new session
-            initializeNewSession(profileId, reason); // Re-enter lock
+            else {
+                initializeNewSession(profileId, reason); // Re-enter lock
+                debugMessage = "Initialized new session " + profileId + " for player " + getPlayerName();
+            }
         }
+
+        UtilityMethods.debug(MythicLib.plugin, "Session", debugMessage);
     }
 
     @NotNull

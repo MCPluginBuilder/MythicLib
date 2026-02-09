@@ -137,7 +137,7 @@ public class ProfileSession {
         Validate.notNull(reason, "Reason cannot be null");
 
         // This method does not take the lock
-        UtilityMethods.debug(MythicLib.plugin, "Session", profileId + ": " + oldState.name() + " -> " + this.state.name());
+        UtilityMethods.debug(MythicLib.plugin, "Session", this.playerData.getPlayerName() + " (" + profileId + "): " + oldState.name() + " -> " + this.state.name());
         Bukkit.getPluginManager().callEvent(new SessionUpdateEvent(playerData, this, reason, oldState, this.state));
     }
 
