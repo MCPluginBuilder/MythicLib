@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.profile.ProfileSession;
+import io.lumine.mythic.lib.profile.ProfileSessionState;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -143,7 +144,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
             // This method should check if the player is offline.
             // The data session `alive` flag is set to false if the player logs out
             // or if for any reason the profile session closes
-            final var invalidated = this.session == null ? !playerData.getMMOPlayerData().isOnline() : session.isDead();
+            final var invalidated = this.session == null ? !playerData.getMMOPlayerData().isOnline() : session.getState() != ProfileSessionState.OPENING;
 
             if (invalidated) {
                 this.future.complete(null); // Complete future
