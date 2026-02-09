@@ -91,9 +91,8 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         if (record.invalidate()) return;
 
         if (result.empty) this.manager.loadEmptyPlayerData(record.playerData);
-        if (!record.playerData.getMMOPlayerData().isLookup()) // TODO call not safe!!!
-            this.database.confirmReception(record.playerData);
-        final var lookup = record.playerData.getMMOPlayerData().isLookup();
+        final var isLookup = record.playerData.getMMOPlayerData().isLookup();
+        if (!isLookup) this.database.confirmReception(record.playerData);
 
         ///////////////////////////////
         // Data is loaded, back to server thread
@@ -104,7 +103,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
             // Player could go offline while transitioning to main thread
             if (record.invalidate()) return;
 
-            if (!lookup) {
+            if (!isLookup) {
                 record.playerData.markSessionReady(); // Mark as ready
                 Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
             }
