@@ -59,6 +59,26 @@ public class ProfileSession {
         this.permissionMap = new PermissionMap(parent);
     }
 
+    /**
+     * Recycle a session object when switching profile, allowing to
+     * keep the same data maps while freezing session states to avoid
+     * inconsistent states due to profile switches.
+     *
+     * @param parent   Session parent player data
+     * @param recycled Session to recycle, should be the previous session of the same player data
+     */
+    public ProfileSession(@NotNull MMOPlayerData parent, ProfileSession recycled) {
+        this.playerData = parent;
+        this.profileId = recycled.profileId;
+
+        this.statMap = recycled.statMap;
+        this.skillModifierMap = recycled.skillModifierMap;
+        this.permEffectMap = recycled.permEffectMap;
+        this.particleEffectMap = recycled.particleEffectMap;
+        this.passiveSkillMap = recycled.passiveSkillMap;
+        this.permissionMap = recycled.permissionMap;
+    }
+
     public boolean hasProfile() {
         return profileId != null;
     }
@@ -155,20 +175,7 @@ public class ProfileSession {
         }
     }
 
-    public void reset(@NotNull SessionUpdateReason reason) {
-        Validate.notNull(reason, "Reason cannot be null");
-
-        final ProfileSessionState oldState;
-        synchronized (this.fsmLock) {
-            Validate.isTrue(state.isDead(), "Can only reset session in state DEAD");
-            oldState = getAndSetState(ProfileSessionState.CREATED);
-        }
-
-        callSessionUpdateEvent(oldState, reason);
-        initializeOpening(reason);
-    }
-
-    public void initializeNewSession(@NotNull SessionUpdateReason reason) {
+    public void initializeSession(@NotNull SessionUpdateReason reason) {
         synchronized (this.fsmLock) {
             Validate.isTrue(state == ProfileSessionState.CREATED, "Can only initialize new session from state DEAD");
         }

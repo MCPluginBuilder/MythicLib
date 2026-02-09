@@ -274,16 +274,6 @@ public class MMOPlayerData {
         }
     }
 
-    private void initializeNewSession(@Nullable UUID uniqueId, @NotNull SessionUpdateReason reason) {
-        synchronized (sessionWriteLock) {
-            Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
-            final var newSession = new ProfileSession(this, uniqueId);
-            this.profileSession = newSession;
-
-            newSession.initializeNewSession(reason);
-        }
-    }
-
     /**
      * Saves the current profile session temporarily. If the player leaves this
      * session for too long, it will eventually be discarded.
@@ -324,14 +314,19 @@ public class MMOPlayerData {
 
             // Restore previous session
             else if ((restoredSession = savedProfileSessions.remove(profileId)) != null) {
-                this.profileSession = restoredSession;
-                restoredSession.reset(reason);
+                Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
+                final var recycledSession = new ProfileSession(this, restoredSession);
+                this.profileSession = recycledSession;
+                recycledSession.initializeSession(reason);
                 debugMessage = "Restored session " + profileId + " for player " + getPlayerName();
             }
 
             // Create new session
             else {
-                initializeNewSession(profileId, reason); // Re-enter lock
+                Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
+                final var newSession = new ProfileSession(this, profileId);
+                this.profileSession = newSession;
+                newSession.initializeSession(reason);
                 debugMessage = "Initialized new session " + profileId + " for player " + getPlayerName();
             }
         }
