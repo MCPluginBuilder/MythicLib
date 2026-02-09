@@ -64,15 +64,18 @@ public class AddCommand extends CommandTreeNode {
         final var uniqueId = unique ? UUID.nameUUIDFromBytes(key.getBytes()) : UUID.randomUUID();
 
         // Permanent modifier
+        final String durationText;
         if (duration <= 0) {
+            durationText = "";
             new StatModifier(uniqueId, key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
         }
 
         // Temporary modifier
         else {
+            durationText = "for &6" + duration + "&e ticks ";
             new TemporaryStatModifier(uniqueId, key, statName, value, type, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, duration);
         }
 
-        return explorer.success("Modifier of &6" + value + type.toStringSuffix() + " " + statName + "&e for &6" + duration + "&e ticks given to &6" + target.getName());
+        return explorer.success("Modifier of &6" + value + type.toStringSuffix() + "&e for stat &6" + statName + "&e " + durationText + "given to &6" + target.getName());
     }
 }
