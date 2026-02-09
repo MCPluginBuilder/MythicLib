@@ -165,21 +165,16 @@ public class MMOPlayerData {
     public void updatePlayer(@Nullable Player player) {
 
         // Player logging off
-        if (player == null) {
+        if (player == null && this.player != null) {
             this.player = null;
             this.lastLogActivity = System.currentTimeMillis();
-
-            clearNextSessionBuffer();
         }
 
         // Player logging in
-        else {
+        else if (player != null && this.player == null) {
             this.player = player;
             this.lastLogActivity = System.currentTimeMillis();
             this.lastPlayerName = player.getName();
-
-            // [Safeguard] Should never have previous profile session
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) chooseProfile(null, SessionUpdateReason.LOGIN);
         }
     }
 
@@ -252,7 +247,16 @@ public class MMOPlayerData {
         return session != null && session.isReady();
     }
 
-    private void clearNextSessionBuffer() {
+    public void shutdownSession() {
+        synchronized (sessionWriteLock) {
+            if (this.profileSession != null) {
+                this.profileSession.shutdown();
+                this.profileSession = null;
+            }
+        }
+    }
+
+    public void clearNextSessionBuffer() {
         synchronized (sessionWriteLock) {
             nextSessionBuffered = false;
         }
@@ -269,12 +273,13 @@ public class MMOPlayerData {
     }
 
     private void initializeNewSession(@Nullable UUID uniqueId, @NotNull SessionUpdateReason reason) {
-        // This method does NOT take any lock!
-        Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
-        final var newSession = new ProfileSession(this, uniqueId);
-        this.profileSession = newSession;
+        synchronized (sessionWriteLock) {
+            Validate.isTrue(this.profileSession == null, "Previous profile session is not dead");
+            final var newSession = new ProfileSession(this, uniqueId);
+            this.profileSession = newSession;
 
-        newSession.initializeNewSession(reason);
+            newSession.initializeNewSession(reason);
+        }
     }
 
     /**
@@ -305,7 +310,7 @@ public class MMOPlayerData {
         synchronized (sessionWriteLock) {
 
             // Buffer new session if previous one is not dead yet
-            // Happens on relogin if previous session has not been saved yet
+            // Happens on re-login if previous session has not been saved yet
             if (this.profileSession != null) {
                 nextSessionBuffered = true;
                 nextSessionReasonBuffer = reason;
@@ -322,7 +327,7 @@ public class MMOPlayerData {
             }
 
             // Create new session
-            initializeNewSession(profileId, reason);
+            initializeNewSession(profileId, reason); // Re-enter lock
         }
     }
 
@@ -617,6 +622,10 @@ public class MMOPlayerData {
     public static void forEachOnline(@NotNull Consumer<MMOPlayerData> action) {
         for (MMOPlayerData registered : PLAYER_DATA.values())
             if (registered.isOnline()) action.accept(registered);
+    }
+
+    public static void forEach(@NotNull Consumer<MMOPlayerData> action) {
+        for (var registered : PLAYER_DATA.values()) action.accept(registered);
     }
 
     @Deprecated

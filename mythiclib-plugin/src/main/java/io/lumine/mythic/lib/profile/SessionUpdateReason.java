@@ -1,5 +1,8 @@
 package io.lumine.mythic.lib.profile;
 
+import fr.phoenixdevt.profiles.event.ProfileUnloadEvent;
+import org.jetbrains.annotations.NotNull;
+
 public enum SessionUpdateReason {
 
     /**
@@ -43,4 +46,17 @@ public enum SessionUpdateReason {
      */
     UNSPECIFIED;
 
+    @NotNull
+    public static SessionUpdateReason from(ProfileUnloadEvent.Reason reason) {
+        switch (reason) {
+            case QUIT_PROFILE:
+                return QUIT_PROFILE;
+            case SWITCH_PROFILE:
+                return SWITCH_PROFILE;
+            case LOG_OUT:
+                return LOG_OUT;
+            default:
+                throw new IllegalArgumentException("Cannot adapt reason " + reason);
+        }
+    }
 }

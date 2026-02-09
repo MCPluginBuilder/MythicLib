@@ -232,6 +232,14 @@ public class ProfileSession {
         this.lastUpdateReason = null;
     }
 
+    public void shutdown() {
+        try {
+            initializeClosing(SessionUpdateReason.LOG_OUT);
+        } catch (Exception ignored) {
+            // Nothing
+        }
+    }
+
     public void initializeClosing(@NotNull SessionUpdateReason reason) {
         Validate.notNull(reason, "Reason cannot be null");
 

@@ -137,7 +137,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     public void autosave() {
         for (H holder : getLoaded())
             if (holder.getMMOPlayerData().isPlaying()) {
-                holder.onSaved(SessionUpdateReason.AUTOSAVE);
                 saveData(holder, SessionUpdateReason.AUTOSAVE);
             }
     }
@@ -154,29 +153,28 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * plugin load their data first.
      * MythicLib > MMOProfiles > MMOCore > MMOItems/MMOInventory
      * - enable auto-save if found in the configuration file
-     *
-     * @param joinEventPriority Event priority when logging in
-     * @param quitEventPriority Event priority when logging off
      */
-    public void initialize(@NotNull EventPriority joinEventPriority, @NotNull EventPriority quitEventPriority) {
+    public void initialize() {
 
         // Setup online player data
-        Bukkit.getOnlinePlayers().forEach(this::setup);
+        Bukkit.getOnlinePlayers().forEach(this::onEnable);
 
         // Auto-save
         if (owning.getConfig().getBoolean("auto-save.enabled")) new AutoSaveRunnable(this);
 
         // Setup empty player data on login
         // Load data on login for profile plugins
-        UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, joinEventPriority, this::onJoin, owning, false);
+        UtilityMethods.registerEvent(PlayerJoinEvent.class, FICTIVE_LISTENER, EventPriority.LOWEST, this::onJoin, owning, false);
 
         // Load data on session creation for non-profile plugins
-        if (!owning.isProfilePlugin())
-            UtilityMethods.registerEvent(SessionUpdateEvent.class, FICTIVE_LISTENER, joinEventPriority, this::onSessionUpdate, owning, false);
+        // Save data on session termination for non-profile plugins
+        if (!owning.isProfilePlugin()) {
+            UtilityMethods.registerEvent(SessionUpdateEvent.class, FICTIVE_LISTENER, EventPriority.NORMAL, this::onSessionUpdate, owning, false);
+        }
 
-        // Save data on logout
-        if (owning.isProfilePlugin() || !MythicLib.plugin.hasProfiles())
-            UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, quitEventPriority, event -> unregister(event.getPlayer(), SessionUpdateReason.LOG_OUT), owning, false);
+        // Garbage collect player data on quit for profile plugins
+        // Save data on logout for profile plugins
+        UtilityMethods.registerEvent(PlayerQuitEvent.class, FICTIVE_LISTENER, EventPriority.MONITOR, this::onQuit, owning, false);
 
         // ProfileAPI compatibility
         if (!owning.isProfilePlugin() && MythicLib.plugin.hasProfiles()) {
@@ -195,13 +193,27 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         }
     }
 
-    protected void onJoin(PlayerJoinEvent event) {
-        final var playerData = setup(event.getPlayer());
+    //region Event listeners
 
-        // Profile plugins always require on-login sync
+    protected void onQuit(PlayerQuitEvent event) {
+        final var playerData = unregister(event.getPlayer(), SessionUpdateReason.LOG_OUT);
+
+        // Profile plugins require on-logout sync
+        if (owning.isProfilePlugin() && playerData.isSessionReady()) {
+            this.saveData(playerData, SessionUpdateReason.LOG_OUT);
+        }
+    }
+
+    protected void onJoin(PlayerJoinEvent event) {
+        this.onEnable(event.getPlayer());
+    }
+
+    protected void onEnable(Player player) {
+        final var playerData = setup(player);
+
+        // Profile plugins require on-login sync
         if (owning.isProfilePlugin()) {
             Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
-            loadEmptyPlayerData(playerData);
             if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
                 MythicLib.plugin.onLoginProfileCallback.accept(playerData);
             } else {
@@ -213,21 +225,23 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     protected void onSessionUpdate(SessionUpdateEvent event) {
 
         // Session opening -> load data
-        if (event.getNewState() == ProfileSessionState.CREATED) {
+        if (event.getNewState() == ProfileSessionState.OPENING) {
             final var playerData = get(event.getPlayerData().getUniqueId());
             Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
             loadData(playerData);
         }
 
+        // Session closing -> save data
+        // Also unregister player data if needed
         else if (event.getNewState().isClosing()) {
             final var playerData = get(event.getPlayerData().getUniqueId());
             if (playerData.isSessionReady()) {
-                playerData.onSaved(event.getReason());
-                saveData(playerData, event.getReason());
+                this.saveData(playerData, SessionUpdateReason.LOG_OUT);
             }
-
         }
     }
+
+    //endregion
 
     /**
      * Saves all currently loaded data. It is either used on server
@@ -242,12 +256,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     public void close() {
 
         // Save data SYNCHRONOUSLY of online players (not called with /restart)
-        for (H holder : getLoaded())
-            if (holder.isSessionReady()) {
-                holder.onSaved(SessionUpdateReason.LOG_OUT);
-                database.saveData(holder, SessionUpdateReason.LOG_OUT);
-                holder.markSessionClosed();
-            }
+        for (var holder : getLoaded())
+            if (holder.isSessionReady()) database.saveData(holder, SessionUpdateReason.LOG_OUT);
 
         // Stop queues
         this.loadQueue.end();
@@ -275,7 +285,6 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *         <li>player is still online when the worked thread is done loading data</li>
      *         </ul>
      *         If the player left the server while data was being loaded, player data will be re-saved if necessary.
-     * @see #saveData(SynchronizedDataHolder, SessionUpdateReason)
      */
     @NotNull
     public CompletableFuture<Void> loadData(@NotNull H playerData) {
@@ -285,10 +294,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     /**
      * @param playerData Player data to be saved.
      * @return Completable future that completes when the data is saved.
-     * @see #loadData(SynchronizedDataHolder)
      */
     @NotNull
     public CompletableFuture<Void> saveData(@NotNull H playerData, @NotNull SessionUpdateReason reason) {
+        playerData.onSaved(reason);
         return this.saveQueue.enqueue(playerData, reason);
     }
 
@@ -315,11 +324,10 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      *
      * @param player Player whose data needs to be unregistered
      * @param reason Reason why the data is being saved
-     * @return Completable future of the data being saved
      * @see #setup(Player)
      */
     @NotNull
-    public CompletableFuture<Void> unregister(@NotNull Player player, @NotNull SessionUpdateReason reason) {
+    public H unregister(@NotNull Player player, @NotNull SessionUpdateReason reason) {
 
         final H playerData;
         if (reason == SessionUpdateReason.LOG_OUT) playerData = activeData.remove(player.getUniqueId());
@@ -328,11 +336,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         else throw new IllegalArgumentException("Unhandled save reason " + reason);
         Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
 
-        // Session not ready
-        if (!playerData.isSessionReady()) return CompletableFuture.completedFuture(null);
-
-        playerData.onSaved(reason);
-        return saveData(playerData, reason);
+        return playerData;
     }
 
     /**
@@ -358,6 +362,11 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     //region Deprecated
+
+    @Deprecated
+    public void initialize(@NotNull EventPriority joinEventPriority, @NotNull EventPriority quitEventPriority) {
+        initialize();
+    }
 
     @Deprecated
     public void fake(H data) {
@@ -386,11 +395,9 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
     @Deprecated
     public CompletableFuture<Void> unregister(@NotNull Player player) {
-        var future = new CompletableFuture<Void>();
-        return unregister(player, SessionUpdateReason.LOG_OUT).thenApply(t -> {
-            future.complete(null);
-            return null;
-        });
+        unregister(player, SessionUpdateReason.LOG_OUT);
+        // TODO non backwards compatible change
+        return CompletableFuture.completedFuture(null);
     }
 
     @Deprecated

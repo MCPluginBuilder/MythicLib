@@ -268,7 +268,7 @@ public class MythicLib extends MMOPlugin {
         Bukkit.getScheduler().runTaskTimer(this, MMOPlayerData::flushOfflinePlayerData, 20 * 60 * 60, 20 * 60 * 60);
 
         // Loop for applying permanent potion effects
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickOnline), 100, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickOnline), 5 * 20, 20);
     }
 
     public void reload() {
@@ -288,7 +288,11 @@ public class MythicLib extends MMOPlugin {
 
     @Override
     public void onDisable() {
-        //this.configuration.unload();
+
+        // Close sessions of online players
+        MMOPlayerData.forEach(MMOPlayerData::shutdownSession);
+
+        // Close open inventory
         UtilityMethods.closeOpenViewsOfType(PluginInventory.class);
 
         glowModule.disable();

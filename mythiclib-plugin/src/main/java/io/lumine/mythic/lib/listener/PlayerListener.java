@@ -19,20 +19,22 @@ public class PlayerListener implements Listener {
      * lowest priority possible synchronously when player join
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void loadData(PlayerJoinEvent event) {
+    public void setupPlayerDataOnLogin(PlayerJoinEvent event) {
 
         // Setup player data
-        final MMOPlayerData data = MMOPlayerData.setup(event.getPlayer());
+        final var playerData = MMOPlayerData.setup(event.getPlayer());
 
         // [BACKWARDS COMPATIBILITY] Flush old modifiers
-        UtilityMethods.flushOldModifiers(data.getPlayer());
+        UtilityMethods.flushOldModifiers(playerData.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerQuitLowest(PlayerQuitEvent event) {
-        final MMOPlayerData playerData = MMOPlayerData.getOrNull(event.getPlayer());
+    public void closeSessionOnLogOut(PlayerQuitEvent event) {
+        final var playerData = MMOPlayerData.getOrNull(event.getPlayer());
         if (playerData != null) {
-            if (playerData.hasProfileSession()) playerData.getProfileSession().initializeClosing(SessionUpdateReason.LOG_OUT);
+            playerData.clearNextSessionBuffer();
+            if (playerData.hasProfileSession())
+                playerData.getProfileSession().initializeClosing(SessionUpdateReason.LOG_OUT);
             Tasks.runSync(MythicLib.plugin, () -> playerData.updatePlayer(null));
         }
     }

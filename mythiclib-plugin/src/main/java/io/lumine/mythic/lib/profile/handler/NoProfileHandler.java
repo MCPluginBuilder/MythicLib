@@ -1,8 +1,13 @@
 package io.lumine.mythic.lib.profile.handler;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +21,12 @@ public class NoProfileHandler implements ProfileHandler {
                 .filter(MMOPlugin::hasData)
                 .map(MMOPlugin::getNamespacedKey)
                 .collect(Collectors.toList());
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onLogin(PlayerJoinEvent event) {
+        // Runs on priority LOW as MMO plugin player datas are initialized on priority LOWEST
+        MMOPlayerData.get(event.getPlayer()).chooseProfile(null, SessionUpdateReason.LOGIN);
     }
 
     @Override
