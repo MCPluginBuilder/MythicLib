@@ -267,8 +267,11 @@ public class MythicLib extends MMOPlugin {
         // Periodically flush temporary player data (1 hour)
         Bukkit.getScheduler().runTaskTimer(this, MMOPlayerData::flushOfflinePlayerData, 20 * 60 * 60, 20 * 60 * 60);
 
-        // Loop for applying permanent potion effects
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickOnline), 5 * 20, 20);
+        // Periodic tick for active players
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickPlaying), 5 * 20, 20);
+
+        // Other stuff
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEach(MMOPlayerData::tickOnline), 5 * 20, 20);
     }
 
     public void reload() {

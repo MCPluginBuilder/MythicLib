@@ -135,10 +135,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     public void autosave() {
-        for (H holder : getLoaded())
-            if (holder.getMMOPlayerData().isPlaying()) {
-                saveData(holder, SessionUpdateReason.AUTOSAVE);
-            }
+        for (var playerData : getLoaded())
+            if (playerData.getMMOPlayerData().isPlaying()) saveData(playerData, SessionUpdateReason.AUTOSAVE);
     }
 
     private static final Listener FICTIVE_LISTENER = new Listener() {

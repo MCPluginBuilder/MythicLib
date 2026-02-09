@@ -22,7 +22,7 @@ public enum ProfileSessionState {
      * Possible transitions:
      * - {@link #OPEN} if all MMO plugins successfully loaded their
      * data. For MythicLib the player has officially "started playing".
-     * - {@link #ABORT} if all MMO plugins successfully loaded their
+     * - {@link #ABORTING} if all MMO plugins successfully loaded their
      * data. For MythicLib the player has officially "started playing".
      */
     OPENING,
@@ -59,7 +59,7 @@ public enum ProfileSessionState {
      * - {@link #DEAD_EARLY} when all MMO plugins have successfully
      * written back their data to the database.
      */
-    ABORT,
+    ABORTING,
 
     /**
      * All MMO plugins have successfully written back their
@@ -80,7 +80,11 @@ public enum ProfileSessionState {
     }
 
     public boolean isClosing() {
-        return this == CLOSING || this == ABORT;
+        return this == CLOSING || this == ABORTING;
+    }
+
+    public boolean isWaiting() {
+        return this == CLOSING || this == ABORTING || this == OPENING;
     }
 
     public boolean isDead() {

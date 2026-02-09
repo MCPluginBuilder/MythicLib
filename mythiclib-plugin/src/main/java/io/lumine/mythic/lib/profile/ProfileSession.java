@@ -90,16 +90,24 @@ public class ProfileSession {
      * Last update reason when switching to opening or closing states
      */
     private SessionUpdateReason lastUpdateReason;
+    private long lastStateUpdateTimestamp;
 
     private final List<ProfileSessionCallback> callbacks = new ArrayList<>();
 
     //endregion
+
+    private static final long GHOST_THRESHOLD_MILLIS = 1000 * 10;
+
+    public boolean isGhost() {
+        return this.state.isWaiting() && (System.currentTimeMillis() > this.lastStateUpdateTimestamp + GHOST_THRESHOLD_MILLIS);
+    }
 
     @NotNull
     private ProfileSessionState getAndSetState(@NotNull ProfileSessionState newState) {
         // This method does not take the lock
         final var oldState = this.state;
         this.state = Objects.requireNonNull(newState, "New state cannot be null");
+        this.lastStateUpdateTimestamp = System.currentTimeMillis();
         return oldState;
     }
 
@@ -249,7 +257,7 @@ public class ProfileSession {
 
             // Abort opening
             if (state == ProfileSessionState.CREATED || state == ProfileSessionState.OPENING) {
-                oldState = getAndSetState(ProfileSessionState.ABORT);
+                oldState = getAndSetState(ProfileSessionState.ABORTING);
             }
 
             // Close normally
@@ -309,7 +317,7 @@ public class ProfileSession {
             ////////////////////////////////
 
             this.setLastActivity();
-            oldState = getAndSetState(state == ProfileSessionState.ABORT ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD);
+            oldState = getAndSetState(state == ProfileSessionState.ABORTING ? ProfileSessionState.DEAD_EARLY : ProfileSessionState.DEAD);
         }
 
         this.playerData.saveCurrentProfileSession();

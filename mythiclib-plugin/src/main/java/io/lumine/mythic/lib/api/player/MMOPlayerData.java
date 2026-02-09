@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public class MMOPlayerData {
 
@@ -465,12 +466,21 @@ public class MMOPlayerData {
     }
 
     /**
-     * Ticks every second in-game for every online player
+     * Ticks every second in-game for every player with an active session
      */
-    public void tickOnline() {
+    public void tickPlaying() {
 
         // Apply permanent potion effects
         getPermanentEffectMap().applyPermanentPotionEffects();
+    }
+
+    public void tickOnline() {
+
+        // Warn about ghost sessions
+        // [Safeguard]
+        if (hasProfileSession() && getProfileSession().isGhost()) {
+            MythicLib.plugin.getLogger().log(Level.SEVERE, "Ghost session detected for player " + getPlayerName() + " (" + getUniqueId() + "). Session dump: " + getProfileSession());
+        }
     }
 
     @Override
@@ -587,9 +597,13 @@ public class MMOPlayerData {
             if (registered.isPlaying()) action.accept(registered);
     }
 
+    public static void forEach(@NotNull Consumer<MMOPlayerData> action) {
+        for (var registered : PLAYER_DATA.values()) action.accept(registered);
+    }
+
     /**
-     * Unloads all timed-out temporary player data. This should be
-     * checked once an hour to make sure not to cause memory leaks.
+     * Unloads all timed-out temporary player data. This must be
+     * checked frequently to avoid player memory leaks.
      */
     public static void flushOfflinePlayerData() {
         PLAYER_DATA.values().removeIf(MMOPlayerData::isTimedOut);
@@ -622,10 +636,6 @@ public class MMOPlayerData {
     public static void forEachOnline(@NotNull Consumer<MMOPlayerData> action) {
         for (MMOPlayerData registered : PLAYER_DATA.values())
             if (registered.isOnline()) action.accept(registered);
-    }
-
-    public static void forEach(@NotNull Consumer<MMOPlayerData> action) {
-        for (var registered : PLAYER_DATA.values()) action.accept(registered);
     }
 
     @Deprecated
