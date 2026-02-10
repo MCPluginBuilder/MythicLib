@@ -271,7 +271,7 @@ public class MythicLib extends MMOPlugin {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEachPlaying(MMOPlayerData::tickPlaying), 5 * 20, 20);
 
         // Other stuff
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEach(MMOPlayerData::tickOnline), 5 * 20, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> MMOPlayerData.forEach(MMOPlayerData::tickOnline), 5 * 20, 5 * 20);
     }
 
     public void reload() {

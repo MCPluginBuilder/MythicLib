@@ -118,8 +118,15 @@ public class ProfileSession {
 
     private static final long GHOST_THRESHOLD_MILLIS = 1000 * 10;
 
+    private static final List<NamespacedKey> GHOST_CHECK_BLACKLIST = List.of(
+            new NamespacedKey("mmocore", "force_class_select")
+    );
+
     public boolean isGhost() {
-        return this.state.isWaiting() && (System.currentTimeMillis() > this.lastStateUpdateTimestamp + GHOST_THRESHOLD_MILLIS);
+        if (!this.state.isWaiting()) return false;
+        if (System.currentTimeMillis() < this.lastStateUpdateTimestamp + GHOST_THRESHOLD_MILLIS) return false;
+        for (var key : this.waiting) if (!GHOST_CHECK_BLACKLIST.contains(key)) return true;
+        return false;
     }
 
     @NotNull
