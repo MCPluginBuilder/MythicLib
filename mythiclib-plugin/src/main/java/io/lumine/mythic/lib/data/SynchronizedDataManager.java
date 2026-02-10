@@ -214,11 +214,8 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         // Profile plugins require on-login sync
         if (owning.isProfilePlugin()) {
             Validate.isTrue(!playerData.isSessionReady(), "Player data already loaded");
-            if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
-                MythicLib.plugin.onLoginProfileCallback.accept(playerData);
-            } else {
-                this.loadData(playerData);
-            }
+            // In proxy-mode, need to know official ID to load profile data.
+            if (MythicLib.plugin.getProfileMode() != ProfileMode.PROXY) this.loadData(playerData);
         }
     }
 

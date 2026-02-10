@@ -33,7 +33,6 @@ import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
 import io.lumine.mythic.lib.damage.indicator.DamageIndicators;
 import io.lumine.mythic.lib.damage.mitigation.MitigationModule;
 import io.lumine.mythic.lib.damage.onhit.OnHitModule;
-import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.glow.GlowModule;
 import io.lumine.mythic.lib.glow.provided.MythicGlowModule;
 import io.lumine.mythic.lib.gui.PluginInventory;
@@ -60,7 +59,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class MythicLib extends MMOPlugin {
@@ -408,11 +406,6 @@ public class MythicLib extends MMOPlugin {
         this.profileMode = ProfileMode.NONE;
         // No console log if no profile plugin installed
     }
-
-    // TODO fix shitty code
-    @Deprecated
-    @Nullable
-    public Consumer<SynchronizedDataHolder> onLoginProfileCallback;
 
     /**
      * Enables support for proxy-based MMOProfiles
