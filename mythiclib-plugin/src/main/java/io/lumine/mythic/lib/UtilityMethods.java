@@ -127,8 +127,31 @@ public class UtilityMethods {
                 : type.equals(PotionEffectType.BLINDNESS) ? 140 : 80;
     }
 
+    private static final Lazy<Set<EntityType>> ARTHROPOD_ENTITY_TYPES = Lazy.of(() -> {
+        final var set = new HashSet<EntityType>();
+        // Ref: https://minecraft.fandom.com/wiki/Bane_of_Arthropods
+        for (String undeadEntityTypeCandidate : Arrays.asList(
+                "SPIDER",
+                "CAVE_SPIDER",
+                "BEE",
+                "SILVERFISH",
+                "ENDERMITE"
+        ))
+            try {
+                set.add(EntityType.valueOf(undeadEntityTypeCandidate));
+            } catch (Exception ignored) {
+                // Pass
+            }
+        return set;
+    });
+
+    public static boolean isArthropod(@NotNull Entity entity) {
+        return ARTHROPOD_ENTITY_TYPES.get().contains(entity.getType());
+    }
+
     private static final Lazy<Set<EntityType>> UNDEAD_ENTITY_TYPES = Lazy.of(() -> {
-        Set<EntityType> set = new HashSet<>();
+        final var set = new HashSet<EntityType>();
+        // Ref: https://minecraft.fandom.com/wiki/Undead
         for (String undeadEntityTypeCandidate : Arrays.asList(
                 "ZOMBIFIED_PIGLIN",
                 "SKELETON",
@@ -136,6 +159,8 @@ public class UtilityMethods {
                 "WITHER_SKELETON",
                 "ZOMBIE",
                 "DROWNED",
+                "BOGGED",
+                "GIANT",
                 "HUSK",
                 "PIG_ZOMBIE",
                 "ZOMBIE_VILLAGER",
@@ -148,7 +173,6 @@ public class UtilityMethods {
                 set.add(EntityType.valueOf(undeadEntityTypeCandidate));
             } catch (Exception ignored) {
                 // Pass
-                MythicLib.plugin.getLogger().log(Level.INFO, "COuld not find entity type " + undeadEntityTypeCandidate);
             }
         return set;
     });
