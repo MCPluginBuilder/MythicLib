@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface ProfileHandler extends Listener {
 
+    public void onStartup();
+
     public List<NamespacedKey> collectModules();
 }

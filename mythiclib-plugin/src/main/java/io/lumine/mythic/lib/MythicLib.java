@@ -260,7 +260,9 @@ public class MythicLib extends MMOPlugin {
         statManager.reload(); // TODO why so late?
 
         // Load player data of online players
+        // Support for /reload
         Bukkit.getOnlinePlayers().forEach(MMOPlayerData::setup);
+        getProfileHandler().onStartup();
 
         // Periodically flush temporary player data (1 hour)
         Bukkit.getScheduler().runTaskTimer(this, MMOPlayerData::flushOfflinePlayerData, 20 * 60 * 60, 20 * 60 * 60);

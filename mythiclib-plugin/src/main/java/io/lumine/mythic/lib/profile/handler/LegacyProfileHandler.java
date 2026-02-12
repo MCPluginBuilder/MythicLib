@@ -20,6 +20,11 @@ public class LegacyProfileHandler implements ProfileHandler {
     }
 
     @Override
+    public void onStartup() {
+        // No need
+    }
+
+    @Override
     public List<NamespacedKey> collectModules() {
         // Collect modules at runtime to avoid on-startup timing issues
         return new ArrayList<>(this.profileProvider.get().getModules().stream().map(ProfileDataModule::getId).collect(Collectors.toList()));

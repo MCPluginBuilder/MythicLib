@@ -23,6 +23,11 @@ public class ProxyProfileHandler implements ProfileHandler {
     }
 
     @Override
+    public void onStartup() {
+        // Nothing needed
+    }
+
+    @Override
     public List<NamespacedKey> collectModules() {
         // Collect modules at runtime to avoid on-startup timing issues
         return this.profileProvider.get().getModules().stream().map(ProfileDataModule::getId).collect(Collectors.toList());

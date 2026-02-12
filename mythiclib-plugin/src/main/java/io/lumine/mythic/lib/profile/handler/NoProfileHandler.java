@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,6 +22,14 @@ public class NoProfileHandler implements ProfileHandler {
                 .filter(MMOPlugin::hasData)
                 .map(MMOPlugin::getNamespacedKey)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void onStartup() {
+        // TODO improve implementation
+        Bukkit.getScheduler().runTaskLater(MythicLib.plugin, () -> {
+            MMOPlayerData.getLoaded().forEach(data -> data.chooseProfile(null, SessionUpdateReason.LOGIN));
+        }, 20);
     }
 
     @EventHandler(priority = EventPriority.LOW)
