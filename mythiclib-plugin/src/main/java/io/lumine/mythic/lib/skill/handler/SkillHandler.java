@@ -108,7 +108,7 @@ public abstract class SkillHandler<T extends SkillResult> {
     private void initializeModifier(@NotNull String modifier, @Nullable ConfigurationSection config) {
         this.parameters.computeIfAbsent(modifier, m -> {
             if (config == null) return SkillParameter.empty(modifier);
-            return SkillParameter.fromConfig(config.getConfigurationSection("parameters." + modifier), m);
+            return SkillParameter.fromConfig(config.get("parameters." + modifier), m);
         });
     }
 
