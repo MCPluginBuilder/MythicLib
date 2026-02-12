@@ -121,7 +121,8 @@ public class Attributes {
             MOVEMENT_SPEED = fromName("MOVEMENT_SPEED", "GENERIC_MOVEMENT_SPEED"),
             FOLLOW_RANGE = fromName("FOLLOW_RANGE", "GENERIC_FOLLOW_RANGE"),
             ENTITY_INTERACTION_RANGE = fromName("ENTITY_INTERACTION_RANGE", "GENERIC_ARMOR"),
-            BLOCK_INTERACTION_RANGE = fromName("BLOCK_INTERACTION_RANGE", "GENERIC_ARMOR");
+            BLOCK_INTERACTION_RANGE = fromName("BLOCK_INTERACTION_RANGE", "GENERIC_ARMOR"),
+            ATTACK_KNOCKBACK = fromName("ATTACK_KNOCKBACK", "GENERIC_ARMOR");
 
     @NotNull
     public static Collection<Attribute> getAll() {
