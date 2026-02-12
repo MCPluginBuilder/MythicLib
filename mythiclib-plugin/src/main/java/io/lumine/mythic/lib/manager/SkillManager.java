@@ -267,7 +267,7 @@ public class SkillManager extends Module {
         try {
             return mapping.getDeclaredConstructor(ConfigurationSection.class).newInstance(config);
         } catch (Exception exception) {
-            throw new RuntimeException("Could not instantiate builtin skill handler '" + builtinId + "'", exception);
+            throw new RuntimeException("Could not instantiate builtin skill handler '" + builtinId + "': " + exception.getMessage(), exception);
         }
     }
 
