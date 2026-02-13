@@ -188,6 +188,9 @@ public class Argument<T> {
         return found;
     });
 
+    public static final Argument<@NotNull String> STRING = new Argument<>("string", (explorer, list) -> {
+    }, (explorer, input) -> input);
+
     public static final Argument<@NotNull Double> AMOUNT_DOUBLE = new Argument<>("amount", (explorer, list) -> {
         for (int j = 1; j <= 10; j++) list.add(String.valueOf(j));
     }, (explorer, input) -> {
