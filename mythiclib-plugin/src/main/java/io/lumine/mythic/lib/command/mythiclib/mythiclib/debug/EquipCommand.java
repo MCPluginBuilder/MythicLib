@@ -45,7 +45,6 @@ public class EquipCommand extends CommandTreeNode {
         ((LivingEntity) hitEntity).getEquipment().setItem(slot, item);
         player.getInventory().setItem(itemHand, previousEquipped);
 
-        sender.sendMessage("Equipped " + item.getType().name() + " to " + hitEntity.getName() + "'s slot " + slot.name());
-        return CommandResult.SUCCESS;
+        return explorer.success("Equipped " + item.getType().name() + " to " + hitEntity.getName() + "'s slot " + slot.name());
     }
 }

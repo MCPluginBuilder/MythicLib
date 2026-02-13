@@ -12,7 +12,6 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.Pair;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -35,14 +34,12 @@ public class StatModCommand extends CommandTreeNode {
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        sender.sendMessage("/ml statmod is deprecated, use '/ml stat' instead");
-        if (args.length < 4)
-            return CommandResult.THROW_USAGE;
+        explorer.verbose("/ml statmod is deprecated, use '/ml stat' instead");
+        if (args.length < 4) return CommandResult.THROW_USAGE;
 
         final @Nullable Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Player not found.");
-            return CommandResult.FAILURE;
+            return explorer.fail("Player not found");
         }
 
         final String statName = UtilityMethods.enumName(args[2]);

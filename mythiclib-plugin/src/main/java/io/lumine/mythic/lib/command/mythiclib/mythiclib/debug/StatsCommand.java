@@ -20,10 +20,7 @@ public class StatsCommand extends CommandTreeNode {
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("You can only use this command as a player");
-            return CommandResult.FAILURE;
-        }
+        if (!(sender instanceof Player)) return explorer.fail("This command is only for players.");
 
         final var player = (Player) sender;
         final var target = explorer.parse(argPlayer);

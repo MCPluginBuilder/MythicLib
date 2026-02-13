@@ -42,9 +42,8 @@ public class NBTCommand extends CommandTreeNode {
         if (isValid(player.getEquipment().getBoots()))
             inventory.add("boots", fromNBT(NBTItem.get(player.getEquipment().getBoots())));
 
-        if (inventory.size() == 0) sender.sendMessage(ChatColor.RED + "No NBT items found");
-        //else sender.spigot().sendMessage(upload(MythicLib.plugin.getJson().toString(inventory)));
-        //TODO make the above line work
+        if (inventory.size() == 0) explorer.fail("No NBT items found");
+        //TODO else { explorer.verbose(upload(MythicLib.plugin.getJson().toString(inventory))); }
 
         return explorer.fail("Command currently disabled");
     }

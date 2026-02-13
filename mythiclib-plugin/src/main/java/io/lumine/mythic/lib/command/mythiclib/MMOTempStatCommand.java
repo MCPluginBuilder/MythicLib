@@ -19,21 +19,20 @@ import java.util.UUID;
 
 @Deprecated
 public class MMOTempStatCommand extends CommandTreeRoot {
-
     public MMOTempStatCommand(ConfigurationSection config) {
         super(config);
     }
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        sender.sendMessage("/mmotempstat is deprecated. Use instead /ml tempstat ...");
+        explorer.verbose("/mmotempstat is deprecated. Use instead /ml tempstat ...");
 
         if (args.length < 4) {
             return explorer.fail("&cNot enough args. Usage: /mmotempstat <player> <stat name> <value> <tick duration>");
         }
 
         Player target = Bukkit.getPlayer(args[0]);
-        if (target == null) sender.sendMessage(ChatColor.RED + "Player not found.");
+        if (target == null) return explorer.fail("Player not found");
 
         MMOPlayerData playerData = MMOPlayerData.get(target);
 

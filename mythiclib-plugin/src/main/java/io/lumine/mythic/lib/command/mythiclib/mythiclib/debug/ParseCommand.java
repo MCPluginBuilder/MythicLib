@@ -17,7 +17,6 @@ public class ParseCommand extends CommandTreeNode {
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         final String expression = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         // TODO use stat formula instead
-        sender.sendMessage(String.valueOf(NumericExpression.eval(expression)));
-        return CommandResult.SUCCESS;
+        return explorer.success(String.valueOf(NumericExpression.eval(expression)));
     }
 }

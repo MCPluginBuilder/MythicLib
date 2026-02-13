@@ -24,7 +24,7 @@ public class LogsCommand extends CommandTreeNode {
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 
         try {
-            sender.sendMessage("Reading and uploading logs..");
+            explorer.verbose("Reading and uploading logs..");
             StringBuilder builder = new StringBuilder();
 
             // Append latest log

@@ -88,8 +88,8 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
                     Validate.notNull(executionResult, "Command execution result cannot be null");
                 } catch (Exception exception) {
                     if (!(exception instanceof PermissionException))
-                        sender.sendMessage(ChatColor.RED + exception.getMessage());
-                    if (exception instanceof MissingArgumentException) sendCommandUsage(sender, targetNode);
+                        explorer.fail(exception.getMessage());
+                    if (exception instanceof MissingArgumentException) sendCommandUsage(explorer, targetNode);
 
                     exception.printStackTrace();
                     return false;
@@ -97,7 +97,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
 
                 // Show all existing commands
                 if (executionResult == CommandResult.THROW_USAGE)
-                    sendCommandUsage(sender, targetNode);
+                    sendCommandUsage(explorer, targetNode);
 
                 // Command executed successfully
                 return executionResult == CommandResult.SUCCESS;
@@ -105,8 +105,8 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         };
     }
 
-    private void sendCommandUsage(@NotNull CommandSender sender, @NotNull CommandTreeNode targetNode) {
-        targetNode.calculateUsageList().forEach(str -> sender.sendMessage(ChatColor.YELLOW + "/" + str));
+    private void sendCommandUsage(@NotNull CommandTreeExplorer explorer, @NotNull CommandTreeNode targetNode) {
+        targetNode.calculateUsageList().forEach(str -> explorer.verbose(ChatColor.YELLOW + "/" + str));
     }
 
     //region Use as executor

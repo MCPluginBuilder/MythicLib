@@ -48,45 +48,41 @@ public class ConvertItemNBTCommandNode<H extends SynchronizedDataHolder, O exten
     @NotNull
     @Override
     public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        if (permission != null && !sender.hasPermission(permission)) {
-            sender.sendMessage(permissionMessage.get());
-            return CommandResult.FAILURE;
-        }
+        if (permission != null && !sender.hasPermission(permission)) return explorer.fail(permissionMessage.get());
 
         final var rawEnableArg = explorer.parse(argEnable);
         final var toNbtApi = rawEnableArg.equalsIgnoreCase("to");
         final String fromString = toNbtApi ? "Bukkit" : "NBTAPI", toString = toNbtApi ? "NBTAPI" : "Bukkit";
 
         if (toNbtApi && Bukkit.getPluginManager().getPlugin("NBTAPI") == null) {
-            sender.sendMessage("You are asking to convert item data to NBTAPI however the plugin is not installed. Please install NBTAPI and try again.");
-            return CommandResult.FAILURE;
+            return explorer.fail("You are asking to convert item data to NBTAPI however the plugin is not installed. Please install NBTAPI and try again.");
         }
 
-        sender.sendMessage("Converting data to NBTAPI...");
+        explorer.verbose("Converting data to NBTAPI...");
 
         // Export data from/to the same data source (ingenious!!)
         Lazy<Database<H, O>> dataHandlerLazy = Lazy.of(dataManager.getDatabase());
         try {
             SafeBukkitObjectOutputStream.USE_NBT_API = toNbtApi;
-            sender.sendMessage("Using NBTAPI: " + toNbtApi);
+            explorer.verbose("Using NBTAPI: " + toNbtApi);
             DataExport<H, O> work = new DataExport<>(dataManager, sender);
             work.setCallback(() -> {
                 SafeBukkitObjectOutputStream.USE_NBT_API = false;
-                sender.sendMessage(String.format("Successfully converted item data from %s to %s. Please now restart your server.", fromString, toString));
+                explorer.verbose(String.format("Successfully converted item data from %s to %s. Please now restart your server.", fromString, toString));
             });
 
             boolean startResult = work.start(dataHandlerLazy, dataHandlerLazy);
 
             if (startResult) {
-                sender.sendMessage(String.format("Item data conversion from %s to %s started, please wait... ", fromString, toString));
+                explorer.verbose(String.format("Item data conversion from %s to %s started, please wait... ", fromString, toString));
                 return CommandResult.SUCCESS;
             }
 
             return CommandResult.FAILURE;
 
         } catch (Throwable throwable) {
-            sender.sendMessage("An error occurred: " + throwable.getMessage());
-            sender.sendMessage("Please check console for more information.");
+            explorer.verbose("An error occurred: " + throwable.getMessage());
+            explorer.verbose("Please check console for more information.");
             throwable.printStackTrace();
             return CommandResult.FAILURE;
         }
