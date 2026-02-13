@@ -90,14 +90,12 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
                     if (!(exception instanceof PermissionException))
                         explorer.fail(exception.getMessage());
                     if (exception instanceof MissingArgumentException) sendCommandUsage(explorer, targetNode);
-
-                    exception.printStackTrace();
+                    //exception.printStackTrace();
                     return false;
                 }
 
                 // Show all existing commands
-                if (executionResult == CommandResult.THROW_USAGE)
-                    sendCommandUsage(explorer, targetNode);
+                if (executionResult == CommandResult.THROW_USAGE) sendCommandUsage(explorer, targetNode);
 
                 // Command executed successfully
                 return executionResult == CommandResult.SUCCESS;

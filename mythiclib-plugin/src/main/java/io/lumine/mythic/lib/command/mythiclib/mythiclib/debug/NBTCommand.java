@@ -8,7 +8,6 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
