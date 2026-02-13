@@ -5,7 +5,7 @@ package io.lumine.mythic.lib.command;
  * seen by players, admin commands are not translatable, and these
  * options provide a way to edit the verbosity of admin command feedback.
  */
-public enum VerboseOption {
+public enum VerboseMode {
 
     /**
      * Send all command feedback. Default value.

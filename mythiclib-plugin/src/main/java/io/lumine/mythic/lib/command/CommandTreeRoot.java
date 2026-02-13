@@ -25,58 +25,39 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
     private final List<String> aliases;
     @Nullable
     private final String permission;
-    private final VerboseOption verbose;
-
-    private boolean onlyForPlayers;
-
-    /**
-     * Use this to create executors only
-     *
-     * @param name Command name
-     */
-    public CommandTreeRoot(@NotNull String name) {
-        this(name, null);
-    }
-
-    /**
-     * Use this to create executors only
-     *
-     * @param name       Command name
-     * @param permission Command permission (can be null)
-     */
-    public CommandTreeRoot(@NotNull String name, @Nullable String permission) {
-        super(null, Objects.requireNonNull(name, "Command name cannot be null"));
-
-        this.name = name;
-        this.description = "";
-        this.usageMessage = "/" + name;
-        this.aliases = List.of();
-        this.permission = permission;
-        this.verbose = VerboseOption.ALL;
-    }
+    private final VerboseMode verbose;
 
     public CommandTreeRoot(@NotNull ConfigurationSection config) {
-        super(null, Objects.requireNonNull(config.getString("main"), "Command name cannot be null"));
+        this(null, config);
+    }
+
+    public CommandTreeRoot(@Nullable BuiltinCommand command, @NotNull ConfigurationSection config) {
+        super(null, command != null ? command.getLabel() : Objects.requireNonNull(config.getString("main"), "Command name cannot be null"));
 
         this.name = getId();
         this.description = config.getString("description", "");
         this.usageMessage = config.getString("usage", "/" + this.name);
         this.aliases = config.getStringList("aliases");
         this.permission = config.getString("permission");
-        this.verbose = config.contains("verbose") ? VerboseOption.valueOf(UtilityMethods.enumName(config.getString("verbose"))) : VerboseOption.ALL;
-    }
-
-    public @Nullable String getPermission() {
-        return permission;
-    }
-
-    protected void setOnlyForPlayers() {
-        this.onlyForPlayers = true;
+        this.verbose = config.contains("verbose") ? UtilityMethods.prettyValueOf(VerboseMode::valueOf, config.getString("verbose"), "No verbose mode with ID '%s'") : VerboseMode.NONE;
     }
 
     @NotNull
-    public VerboseOption getVerbose() {
+    public VerboseMode getVerbose() {
         return verbose;
+    }
+
+    @Nullable
+    public String getPermission() {
+        return permission;
+    }
+
+    /**
+     * @deprecated Not implemented
+     */
+    @Deprecated
+    protected void setOnlyForPlayers() {
+        // TODO
     }
 
     @NotNull
@@ -140,6 +121,27 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         return bukkitCommandVm.get().tabComplete(sender, label, args);
+    }
+
+    //endregion
+
+    //region Deprecated
+
+    @Deprecated
+    public CommandTreeRoot(@NotNull String name) {
+        this(name, (String) null);
+    }
+
+    @Deprecated
+    public CommandTreeRoot(@NotNull String name, @Nullable String permission) {
+        super(null, Objects.requireNonNull(name, "Command name cannot be null"));
+
+        this.name = name;
+        this.description = "";
+        this.usageMessage = "/" + name;
+        this.aliases = List.of();
+        this.permission = permission;
+        this.verbose = VerboseMode.ALL;
     }
 
     //endregion

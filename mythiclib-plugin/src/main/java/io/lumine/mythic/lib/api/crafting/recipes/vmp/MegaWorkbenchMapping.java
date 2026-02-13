@@ -1,20 +1,13 @@
 package io.lumine.mythic.lib.api.crafting.recipes.vmp;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.crafting.ingredients.MythicRecipeInventory;
 import io.lumine.mythic.lib.api.crafting.recipes.MythicRecipeStation;
 import io.lumine.mythic.lib.api.util.ItemFactory;
-import io.lumine.mythic.lib.api.util.ui.FFPMythicLib;
-import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackCategory;
-import io.lumine.mythic.lib.api.util.ui.FriendlyFeedbackProvider;
 import io.lumine.mythic.lib.api.util.ui.SilentNumbers;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.VersionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 /**
  * The 6x6 grid of a mega crafting table, and its result slot.
@@ -83,7 +75,7 @@ import java.util.UUID;
  *
  * @author Gunging
  */
-public class MegaWorkbenchMapping  extends VanillaInventoryMapping implements CustomInventoryCheck, CommandExecutor, Listener {
+public class MegaWorkbenchMapping  extends VanillaInventoryMapping implements CustomInventoryCheck, Listener {
 
     @Override
     public int getMainWidth(int slot) throws IllegalArgumentException {
@@ -345,82 +337,6 @@ public class MegaWorkbenchMapping  extends VanillaInventoryMapping implements Cu
     public String getCustomStationKey() { return "mwb"; }
 
     public static MegaWorkbenchMapping MWB = new MegaWorkbenchMapping();
-
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-
-        // All right, lets identify our args
-        Player target = null;
-        boolean failure = false;
-        FriendlyFeedbackProvider ffp = new FriendlyFeedbackProvider(FFPMythicLib.get());
-        ffp.activatePrefix(true, "Mega Workbench");
-
-        // No args specified, well oops
-        if (args.length == 0) {
-
-            // Command Sender applicable?
-            if (sender instanceof Player) {
-
-                // That shall be the target
-                target = (Player) sender;
-
-                // Failure
-            } else {
-
-                // RIP
-                failure = true;
-
-                // Add fail message
-                ffp.log(FriendlyFeedbackCategory.ERROR, "$fYou must specify a player when calling from the console. $bBy the way, you can download the free texture pack assets to make the glass borders look smooth at https://sites.google.com/view/gootilities/core-plugin-goop/containers/container-templates/edge-formations?authuser=0");
-            }
-
-            // Find that player
-        } else {
-
-            // Identify name
-            String name = args[0];
-
-            // Can you get a UUID from it?
-            UUID possibleUUID = SilentNumbers.UUIDParse(name);
-            if (possibleUUID != null) { target = Bukkit.getPlayer(possibleUUID); }
-
-            // Still null?
-            if (target == null) {
-
-                // First attempt as get player exact o/
-                target = Bukkit.getPlayerExact(name);
-
-                // Still null?
-                if (target == null) {
-
-                    // RIP
-                    failure = true;
-
-                    // Add fail message
-                    ffp.log(FriendlyFeedbackCategory.ERROR, "Player $i{0}$b not found.", name);
-                }
-            }
-        }
-
-        // All right, ready?
-        if (!failure) {
-
-            // Open that station to them
-            Inventory swb = getSuperWorkbench(target);
-
-            // Open it
-            target.openInventory(swb);
-
-            // Log errors
-        } else {
-
-            // Log messages
-            if (sender instanceof Player) { ffp.sendAllTo((Player) sender); } else { ffp.sendAllTo(sender); }
-        }
-
-        // :gruno:
-        return false;
-    }
 
     /**
      * The edge item used to limit the Super Workbench Area

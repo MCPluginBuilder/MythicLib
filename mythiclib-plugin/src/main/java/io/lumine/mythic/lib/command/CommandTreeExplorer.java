@@ -64,31 +64,31 @@ public class CommandTreeExplorer {
 
     /**
      * Applies verbose rules relative to the current command as defined
-     * in {@link VerboseOption}
+     * in {@link VerboseMode}
      *
      * @param message Command feedback
      */
     @NotNull
     public CommandTreeNode.CommandResult fail(@Nullable String message) {
-        if (message != null) sendVerbose(ChatColor.RED + message);
+        if (message != null) verbose(ChatColor.RED + message);
         return CommandTreeNode.CommandResult.FAILURE;
     }
 
     /**
      * Applies verbose rules relative to the current command as defined
-     * in {@link VerboseOption}
+     * in {@link VerboseMode}
      *
      * @param message Command feedback
      */
     @NotNull
     public CommandTreeNode.CommandResult success(@Nullable String message) {
-        if (message != null) sendVerbose(ChatColor.YELLOW + message);
+        if (message != null) verbose(ChatColor.YELLOW + message);
         return CommandTreeNode.CommandResult.SUCCESS;
     }
 
-    private void sendVerbose(@NotNull String message) {
+    public void verbose(@NotNull String message) {
         message = ChatColor.translateAlternateColorCodes('&', message);
-        switch (root.getVerbose()) {
+        switch (this.root.getVerbose()) {
             case ALL:
                 sender.sendMessage(message);
                 return;
@@ -105,7 +105,7 @@ public class CommandTreeExplorer {
                 // Pass
                 return;
             default:
-                throw new IllegalStateException("Unrecognized verbose option " + root.getVerbose());
+                throw new IllegalStateException("Unrecognized verbose mode " + root.getVerbose());
         }
     }
 

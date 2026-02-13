@@ -146,6 +146,64 @@ public abstract class CommandTreeNode {
         return (str.length() == 0) ? str.toString() : str.substring(0, str.length() - 1);
     }
 
+/*
+    //region Verbose
+
+    private VerboseMode verbose;
+
+    @NotNull
+    public VerboseMode getVerbose() {
+        return Objects.requireNonNullElse(verbose, VerboseMode.ALL);
+    }
+
+    private void propagateVerbodeMode(@NotNull VerboseMode mode, boolean replace) {
+        if (replace || this.verbose == null) this.verbose = mode;
+        for (var child : getChildren()) child.propagateVerbodeMode(mode, replace);
+    }
+
+    @Nullable
+    private VerboseMode fromConfig(@NotNull Object object) {
+
+        // Boolean -> true = ALL, false = NONE
+        if (object instanceof Boolean) {
+            return (Boolean) object ? VerboseMode.ALL : VerboseMode.NONE;
+        }
+
+        // String -> parse verbose mode
+        else if (object instanceof String) {
+            return UtilityMethods.prettyValueOf(VerboseMode::valueOf, (String) object, "No verbose mode '%s'");
+        }
+
+        // Wth
+        else throw new IllegalArgumentException("Expecting a boolean or string for verbose mode.");
+    }
+
+    public void parseVerboseModeTree(@NotNull Object object) {
+
+        // Config -> map to children
+        if (object instanceof ConfigurationSection) {
+            final var config = (ConfigurationSection) object;
+            for (var key : config.getKeys(false)) {
+                if (key.equals("default")) {
+                    propagateVerbodeMode(fromConfig(config.get(key)), false);
+                    continue;
+                }
+                final var child = getChild(key);
+                Validate.notNull(child, "Could not find child '" + key + "' in verbose mode config, key is '" + getPath() + "'");
+                child.parseVerboseModeTree(config.get(key));
+            }
+        }
+
+        // Boolean, string... parse it
+        else {
+            final var parsed = fromConfig(object);
+            propagateVerbodeMode(parsed == null ? VerboseMode.ALL : parsed, true);
+        }
+    }
+
+    //endregion
+*/
+
     public enum CommandResult {
 
         /**

@@ -2,14 +2,11 @@ package io.lumine.mythic.lib;
 
 import com.google.gson.Gson;
 import io.lumine.mythic.lib.api.crafting.recipes.MythicCraftingManager;
-import io.lumine.mythic.lib.api.crafting.recipes.vmp.MegaWorkbenchMapping;
-import io.lumine.mythic.lib.api.crafting.recipes.vmp.SuperWorkbenchMapping;
 import io.lumine.mythic.lib.api.crafting.uifilters.MythicItemUIFilter;
 import io.lumine.mythic.lib.api.event.armorequip.ArmorEquipEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.command.mythiclib.HealthScaleCommand;
-import io.lumine.mythic.lib.command.mythiclib.MMOTempStatCommand;
-import io.lumine.mythic.lib.command.mythiclib.MythicLibCommand;
+import io.lumine.mythic.lib.command.BuiltinCommand;
+import io.lumine.mythic.lib.command.mythiclib.MythicLibCommands;
 import io.lumine.mythic.lib.comp.FabledModule;
 import io.lumine.mythic.lib.comp.McMMOModule;
 import io.lumine.mythic.lib.comp.adventure.AdventureParser;
@@ -241,20 +238,7 @@ public class MythicLib extends MMOPlugin {
             glowModule.enable();
         }
 
-        // Main command
-        final var mythicLibCommand = new MythicLibCommand();
-        getCommand("mythiclib").setExecutor(mythicLibCommand);
-        getCommand("mythiclib").setTabCompleter(mythicLibCommand);
-
-        // Other commands
-        getCommand("mmotempstat").setExecutor(new MMOTempStatCommand());
-        getCommand("healthscale").setExecutor(new HealthScaleCommand());
-
-        // Super workbench
-        getCommand("superworkbench").setExecutor(SuperWorkbenchMapping.SWB);
-        Bukkit.getPluginManager().registerEvents(SuperWorkbenchMapping.SWB, this);
-        getCommand("megaworkbench").setExecutor(MegaWorkbenchMapping.MWB);
-        Bukkit.getPluginManager().registerEvents(MegaWorkbenchMapping.MWB, this);
+        BuiltinCommand.initializeAll(this, MythicLibCommands.class);
 
         damageManager.reload();
         skillManager.reload(); // Before elements are loaded
