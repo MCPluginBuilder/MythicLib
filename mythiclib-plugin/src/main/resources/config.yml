@@ -175,6 +175,7 @@ enable_flag_checks:
 # every tick. By default it's set to 10 particles/tick. These particles
 # can be quite annoying and can even crash the client if there are too many.
 damage-particles-cap:
+  # Set it to 0 to fully disable damage particles
   max-per-tick: 10
   enabled: false
 

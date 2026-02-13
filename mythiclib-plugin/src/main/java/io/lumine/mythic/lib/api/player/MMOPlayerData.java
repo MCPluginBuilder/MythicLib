@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
@@ -47,6 +48,8 @@ public class MMOPlayerData {
      * scenarios, dropping an item triggers left-click abilities, which sucks.
      */
     public long lastDrop;
+
+    public final AtomicInteger damageParticleCount = new AtomicInteger(0);
 
     // Information shared across all sessions
     private final ActionBarHandler actionBar = new ActionBarHandler(this);

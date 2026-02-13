@@ -29,7 +29,7 @@ import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIHook;
 import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIParser;
 import io.lumine.mythic.lib.comp.placeholder.PlaceholderParser;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
-import io.lumine.mythic.lib.comp.protocollib.DamageParticleCap;
+import io.lumine.mythic.lib.comp.protocollib.DamageParticleCapImpl;
 import io.lumine.mythic.lib.damage.indicator.DamageIndicators;
 import io.lumine.mythic.lib.damage.mitigation.MitigationModule;
 import io.lumine.mythic.lib.damage.onhit.OnHitModule;
@@ -182,10 +182,17 @@ public class MythicLib extends MMOPlugin {
             getLogger().log(Level.INFO, "Hooked onto Spartan");
         }
 
-        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
-            if (getConfig().getBoolean("damage-particles-cap.enabled"))
-                new DamageParticleCap(getConfig().getInt("damage-particles-cap.max-per-tick"));
-            getLogger().log(Level.INFO, "Hooked onto ProtocolLib");
+        if (getConfig().getBoolean("damage-particles-cap.enabled")) {
+            final var tickLimit = getConfig().getInt("damage-particles-cap.max-per-tick");
+            if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
+                new DamageParticleCapImpl(tickLimit);
+                getLogger().log(Level.INFO, "Hooked onto ProtocolLib");
+            } else if (Bukkit.getPluginManager().getPlugin("packetevents") != null) {
+                new io.lumine.mythic.lib.comp.packetevents.DamageParticleCapImpl(tickLimit);
+                getLogger().log(Level.INFO, "Hooked onto PacketEvents");
+            } else {
+                getLogger().log(Level.INFO, "damage-particles-cap is enabled but ProtocolLib/PacketEvents was not found");
+            }
         }
 
         if (Bukkit.getPluginManager().getPlugin("mcMMO") != null) {
