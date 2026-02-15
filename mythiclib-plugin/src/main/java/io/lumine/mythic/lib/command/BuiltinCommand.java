@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
 public class BuiltinCommand {
     private final boolean hardcoded;
@@ -64,13 +66,13 @@ public class BuiltinCommand {
     }
 
     private BuiltinCommand(boolean hardcoded,
-                          @NotNull String label,
-                          @Nullable String permission,
-                          @NotNull String description,
-                          @NotNull Function<ConfigurationSection, CommandTreeRoot> builder,
-                          @Nullable Supplier<Boolean> enabled,
-                          @Nullable VerboseMode verbose,
-                          @NotNull List<String> aliases) {
+                           @NotNull String label,
+                           @Nullable String permission,
+                           @NotNull String description,
+                           @NotNull Function<ConfigurationSection, CommandTreeRoot> builder,
+                           @Nullable Supplier<Boolean> enabled,
+                           @Nullable VerboseMode verbose,
+                           @NotNull List<String> aliases) {
         this.hardcoded = hardcoded;
         this.label = label;
         this.configPath = label.toLowerCase().replace(" ", "-");
@@ -166,7 +168,12 @@ public class BuiltinCommand {
             if (cmd.isHardcoded()) {
                 final var pluginCommand = plugin.getCommand(cmd.getLabel());
                 Validate.notNull(pluginCommand, "Could not find hardcoded command " + cmd.getLabel() + " in plugin.yml");
-                final var built = cmd.build(config.getContent().getConfigurationSection(cmd.getConfigPath()));
+                var section = config.getContent().getConfigurationSection(cmd.getConfigPath());
+                if (section == null) {
+                    plugin.getLogger().log(Level.WARNING, "Could not find config section for hardcoded command /" + cmd.getLabel() + " in commands.yml, make sure to include one!");
+                    section = new YamlConfiguration();
+                }
+                final var built = cmd.build(section);
                 pluginCommand.setExecutor(built);
                 pluginCommand.setTabCompleter(built);
             }
