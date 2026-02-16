@@ -2,11 +2,11 @@ package io.lumine.mythic.lib.data.sql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.data.DataLoadResult;
 import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.OfflineDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
+import io.lumine.mythic.lib.data.queue.DataLoadResult;
+import io.lumine.mythic.lib.data.queue.DataNotReadyException;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.configuration.ConfigurationSection;
@@ -104,35 +104,24 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     public @NotNull DataLoadResult loadData(@NotNull H playerData, boolean force) {
         final var effectiveId = playerData.getEffectiveId();
 
-        UtilityMethods.debug(this.plugin, "SQL", "Trying to load data of " + effectiveId);
-
         try (var connection = getConnection();
              var prepared = prepareStatement(connection, "SELECT * FROM `" + this.userdataTableName + "` WHERE `" + this.uuidFieldName + "` = ?;", effectiveId.toString());
              var resultSet = prepared.executeQuery()) {
 
             // Empty result set
             if (!resultSet.next()) {
-                return new DataLoadResult(DataLoadResult.Type.SUCCESS, true, true);
+                return new DataLoadResult(true, true);
             }
 
             // Load from result set
             else {
                 final var isSaved = resultSet.getInt("is_saved") == 1;
-
-                return force || isSaved
-                        ? loadDataFromResultSet(playerData, resultSet, isSaved)
-                        : new DataLoadResult(DataLoadResult.Type.NOT_SYNC, false, isSaved);
+                if (!isSaved && !force) throw new DataNotReadyException();
+                return loadDataFromResultSet(playerData, resultSet, isSaved);
             }
 
         } catch (SQLException exception) {
-            this.plugin.getLogger().log(Level.WARNING, "Got SQL exception " + playerData.getEffectiveId() + ": " + exception.getMessage());
-            exception.printStackTrace(); // TODO remove
-            return new DataLoadResult(DataLoadResult.Type.FAILURE);
-        } catch (Throwable throwable) {
-            // Real plugin exceptions.
-            this.plugin.getLogger().log(Level.WARNING, "Could not load data of " + playerData.getEffectiveId() + ": " + throwable.getMessage());
-            throwable.printStackTrace();
-            return new DataLoadResult(DataLoadResult.Type.FAILURE);
+            throw new RuntimeException("SQL exception: " + exception.getMessage(), exception);
         }
     }
 

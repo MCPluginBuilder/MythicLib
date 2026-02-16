@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.data.queue;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
@@ -36,6 +37,8 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
      */
     protected final Queue<QueueRecord> recordQueue = new ConcurrentLinkedQueue<>();
 
+    protected final int maxTries;
+
     private boolean stopIfEmpty = false, running = false;
     @Nullable
     private UUID lastProcessedId = null;
@@ -46,6 +49,9 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
         this.plugin = manager.getOwningPlugin();
         this.database = manager.getDatabase();
         this.manager = manager;
+
+        // Cache config option
+        maxTries = MythicLib.plugin.getMMOConfig().maxSyncTries;
     }
 
     public boolean isRunning() {
@@ -136,20 +142,29 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
         }
     }
 
-    public class QueueRecord {
+    public abstract class QueueRecord {
+        public final int tryCount;
         public final H playerData;
         public final UUID effectiveId;
         public final CompletableFuture<Void> future;
         public final long availableAt;
 
-        QueueRecord(H playerData, UUID effectiveId, CompletableFuture<Void> future, long availableAt) {
+        QueueRecord(H playerData, UUID effectiveId, CompletableFuture<Void> future, long availableAt, int tryCount) {
             this.playerData = playerData;
             this.effectiveId = effectiveId;
             this.future = future;
             this.availableAt = availableAt;
+            this.tryCount = tryCount;
         }
 
-        boolean available() {
+        public boolean hitThreshold() {
+            return this.tryCount >= maxTries;
+        }
+
+        @NotNull
+        public abstract QueueRecord nextTry();
+
+        public boolean available() {
             return System.currentTimeMillis() > availableAt;
         }
     }

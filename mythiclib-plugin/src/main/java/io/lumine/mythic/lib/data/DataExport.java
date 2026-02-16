@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.data;
 
+import com.destroystokyo.paper.event.entity.TurtleGoHomeEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import org.bukkit.command.CommandSender;
@@ -109,7 +110,7 @@ public class DataExport<H extends SynchronizedDataHolder, O extends OfflineDataH
                         final H offlinePlayerData = manager.newPlayerData(new MMOPlayerData(playerId));
                         sourceHandler.loadData(offlinePlayerData, true);
                         targetHandler.saveData(offlinePlayerData, SessionUpdateReason.LOG_OUT);
-                    } catch (RuntimeException exception) {
+                    } catch (Throwable exception) {
                         errorCount++;
                         exception.printStackTrace();
                     }

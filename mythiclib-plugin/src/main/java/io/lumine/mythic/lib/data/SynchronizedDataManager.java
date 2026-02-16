@@ -377,7 +377,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
         else if (reason == SessionUpdateReason.QUIT_PROFILE || reason == SessionUpdateReason.SWITCH_PROFILE)
             playerData = activeData.put(player.getUniqueId(), newPlayerData(MMOPlayerData.get(player.getUniqueId())));
         else throw new IllegalArgumentException("Unhandled save reason " + reason);
-        Validate.notNull(playerData, "Could not find player data of player '" + player.getUniqueId() + "'");
+        Validate.notNull(playerData, "Could not find player data of player " + player.getUniqueId());
 
         return playerData;
     }

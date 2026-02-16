@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.data.queue;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
@@ -16,19 +15,14 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H> {
-    private final int maxTries;
-
-
     public DataLoadQueue(@NotNull SynchronizedDataManager<H, ?> manager) {
         super(manager);
-
-        maxTries = MythicLib.plugin.getMMOConfig().maxSyncTries;
     }
 
     @NotNull
     public CompletableFuture<Void> enqueue(@NotNull H playerData) {
         final var record = new Record(playerData);
-        this.enqueue(record);
+        super.enqueue(record);
         return record.future;
     }
 
@@ -46,56 +40,53 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         UtilityMethods.debug(this.plugin, "Data", "Fetching data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + ")");
 
         // Try to load player data
-        final var force = record.tryCount >= this.maxTries;
-        final var result = this.database.loadData(record.playerData, force);
+        final var forceful = record.hitThreshold();
+        DataLoadResult result = null;
+        try {
+            result = this.database.loadData(record.playerData, record.hitThreshold());
+        }
 
-        switch (result.type) {
+        // Data found but not sync
+        catch (DataNotReadyException exception) {
+            UtilityMethods.debug(this.plugin, "Data", "Not sync data found for " + record.effectiveId + ", next try in " + WAIT_TIME + "ms");
+            this.enqueue(record.nextTry());
+            return;
+        }
 
-            // Data found but not sync
-            case NOT_SYNC:
-                UtilityMethods.debug(this.plugin, "Data", "Not sync data found for '" + record.effectiveId + "', next try in " + WAIT_TIME + "ms");
-                this.enqueue(record.nextTry(1));
+        // Any other error
+        catch (Throwable throwable) {
+
+            // Give up.
+            if (forceful) {
+                UtilityMethods.debug(this.plugin, "Data", "Error while loading " + record.effectiveId + ", giving up");
+                throwable.printStackTrace();
+                result = new DataLoadResult(true, false);
+            }
+
+            // Try again
+            else {
+                UtilityMethods.debug(this.plugin, "Data", "Error while loading " + record.effectiveId + ", next try in " + WAIT_TIME + "ms");
+                UtilityMethods.debug(this.plugin, "Data", "Error: " + throwable.getMessage());
+                this.enqueue(record.nextTry());
                 return;
-
-            // Failure
-            case FAILURE:
-                if (force) {
-                    UtilityMethods.debug(this.plugin, "Data", "Error when loading '" + record.effectiveId + "', loading anyways");
-                    break;
-                }
-
-                UtilityMethods.debug(this.plugin, "Data", "Error when loading '" + record.effectiveId + "', next try in " + WAIT_TIME + "ms");
-                this.enqueue(record.nextTry(1));
-                return;
-
-            // Tempo, keep on working
-            case TEMPO:
-                UtilityMethods.debug(this.plugin, "Data", "Got tempo for '" + record.effectiveId + "', next try in " + WAIT_TIME + "ms");
-                this.enqueue(record.nextTry(0));
-                return;
-
-            case SUCCESS:
-                UtilityMethods.debug(this.plugin, "Data", "Data fetch success sync=" + result.sync + " empty=" + result.empty + " for '" + record.effectiveId + "'");
-                break;
-
-            // Wtf?
-            default:
-                throw new IllegalStateException("Unhandled data fetch result");
+            }
         }
 
         //////////////////////////////////
-        // Data load success
+        // Data was loaded successfully
         //////////////////////////////////
+
+        UtilityMethods.debug(this.plugin, "Data", "Data loaded (sync=" + result.isSync() + " empty=" + result.isEmpty() + ") for " + record.effectiveId);
 
         // Invalidate check
         if (record.invalidate()) return;
 
-        if (result.empty) this.manager.loadEmptyPlayerData(record.playerData);
+        if (result.isEmpty()) this.manager.loadEmptyPlayerData(record.playerData);
         final var isLookup = record.playerData.getMMOPlayerData().isLookup();
         if (!isLookup) this.database.confirmReception(record.playerData);
 
         ///////////////////////////////
-        // Data is loaded, back to server thread
+        // Back to main thread
         ///////////////////////////////
 
         Tasks.runSync(plugin, () -> {
@@ -112,27 +103,27 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
     }
 
     protected class Record extends QueueRecord {
-        final int tryCount;
         final @Nullable ProfileSession session;
 
         public Record(@NotNull H playerData) {
-            this(playerData, playerData.getEffectiveId(), new CompletableFuture<>(), 0, extractPlayerSession(playerData), 0);
+            this(playerData, playerData.getEffectiveId(), new CompletableFuture<>(), 0, 0, extractPlayerSession(playerData));
         }
 
         public Record(@NotNull H playerData,
                       @NotNull UUID effectiveId,
                       @NotNull CompletableFuture<Void> future,
                       long availableAt,
-                      @Nullable ProfileSession session,
-                      int tryCount) {
-            super(playerData, effectiveId, future, availableAt);
+                      int tryCount,
+                      @Nullable ProfileSession session) {
+            super(playerData, effectiveId, future, availableAt, tryCount);
 
             this.session = session;
-            this.tryCount = tryCount;
         }
 
-        Record nextTry(int extraTry) {
-            return new Record(this.playerData, this.effectiveId, this.future, System.currentTimeMillis() + WAIT_TIME, this.session, this.tryCount + extraTry);
+        @NotNull
+        @Override
+        public Record nextTry() {
+            return new Record(this.playerData, this.effectiveId, this.future, System.currentTimeMillis() + WAIT_TIME, this.tryCount + 1, this.session);
         }
 
         boolean invalidate() {
@@ -147,7 +138,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
             if (invalidated) {
                 this.future.complete(null); // Complete future
-                UtilityMethods.debug(DataLoadQueue.this.plugin, "SQL", "Stopped data retrieval as '" + effectiveId + "' went offline");
+                UtilityMethods.debug(DataLoadQueue.this.plugin, "SQL", "Stopped data retrieval as " + effectiveId + " went offline");
             }
 
             return invalidated;
