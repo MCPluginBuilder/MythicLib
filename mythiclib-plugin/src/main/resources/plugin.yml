@@ -5,7 +5,7 @@ api-version: 1.14
 version: ${project.version}
 description: ${project.description}
 website: www.phoenixdevt.fr
-softdepend: [ WorldGuard,Residence,Factions,MythicMobs,PlaceholderAPI,Fabled ]
+softdepend: [ WorldGuard,Residence,MythicMobs,PlaceholderAPI,Fabled ]
 loadbefore: [ MMOProfiles ]
 commands:
   mythiclib:
