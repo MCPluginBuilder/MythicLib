@@ -15,7 +15,8 @@ public abstract class PlayerDataMap {
         try {
             onSessionOpen();
         } catch (Throwable exception) {
-            // Catch exceptions to avoid session closing issues
+            // Catch exceptions to avoid session opening issues
+            // TODO More robust fix
             MythicLib.plugin.getLogger().log(Level.WARNING, "Exception while opening data session of " + getClass().getSimpleName(), exception);
         }
     }
@@ -28,6 +29,8 @@ public abstract class PlayerDataMap {
             onSessionClose();
         } catch (Throwable exception) {
             // Catch exceptions to avoid session closing issues
+            // Somewhat fixes https://gitlab.com/phoenix-dvpmt/mythiclib/-/issues/357
+            // TODO More robust fix
             MythicLib.plugin.getLogger().log(Level.WARNING, "Exception while closing data session of " + getClass().getSimpleName(), exception);
         }
     }
