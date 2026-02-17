@@ -67,13 +67,14 @@ public class BukkitHologramFactory implements HologramFactory /*, Listener*/ {
             // Add new lines
             Location clone = loc.clone();
             for (String line : lines) {
-                final TextDisplay as = clone.getWorld().spawn(clone, TextDisplay.class);
-                as.getPersistentDataContainer().set(PDC_KEY, PersistentDataType.BOOLEAN, true);
-                as.setBillboard(Display.Billboard.CENTER);
+                final var as = clone.getWorld().spawn(clone, TextDisplay.class, textDisplay -> {
+                    textDisplay.getPersistentDataContainer().set(PDC_KEY, PersistentDataType.BOOLEAN, true);
+                    textDisplay.setBillboard(Display.Billboard.CENTER);
+                    textDisplay.setText(line);
+                });
                 // as.setInterpolationDuration(INTERPOLATION_DURATION);
 
                 this.spawnedEntities.add(as);
-                as.setText(line);
 
                 clone.subtract(0, LINE_OFFSET, 0);
             }
@@ -129,25 +130,6 @@ public class BukkitHologramFactory implements HologramFactory /*, Listener*/ {
                 td.setTeleportDuration((int) settings.tickPeriod);
 
             super.flyOut(settings, dir);
-            /*
-            Validate.isTrue(spawned, "Hologram is not spawned");
-
-            new BukkitRunnable() {
-
-                @Override
-                public void run() {
-
-                    // Transformation applied to text displays
-                    Transformation transf = new Transformation(toJoml(newLoc.toVector().subtract(initLoc.toVector()).multiply(OVERSHOOT)), NULL_ROTATION, VECTOR_ONE, NULL_ROTATION);
-
-                    // Update delay and transform
-                    for (TextDisplay textDisplay : getSpawnedEntities()) {
-                        textDisplay.setInterpolationDelay(0);
-                        textDisplay.setTransformation(transf);
-                    }
-                }
-            }.runTaskTimer(MythicLib.plugin, 0, settings.tickPeriod);
-            */
         }
 
         /*

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Supplier;
 
 public enum HologramFactoryList {
+    CORETOOLS("CoreTools", CoreToolsHologramFactory::new),
     TEXT_DISPLAYS("TextDisplays", BukkitHologramFactory::new),
     CMI("CMI", CMIHologramFactory::new),
     DECENT_HOLOGRAMS("DecentHolograms", DecentHologramFactory::new),

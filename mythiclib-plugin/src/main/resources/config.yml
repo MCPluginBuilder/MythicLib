@@ -158,6 +158,7 @@ vanilla-damage-modifiers:
 
 # Available Options:
 # - TEXT_DISPLAYS (1.19.4+)
+# - CORETOOLS
 # - HOLOGRAPHIC_DISPLAYS
 # - DECENT_HOLOGRAMS
 # - CMI
