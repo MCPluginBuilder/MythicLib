@@ -1,5 +1,9 @@
 package io.lumine.mythic.lib.player;
 
+import io.lumine.mythic.lib.MythicLib;
+
+import java.util.logging.Level;
+
 public abstract class PlayerDataMap {
 
     protected boolean sessionOpen = false;
@@ -8,14 +12,24 @@ public abstract class PlayerDataMap {
         if (sessionOpen) throw new IllegalStateException("Session already open");
 
         sessionOpen = true;
-        onSessionOpen();
+        try {
+            onSessionOpen();
+        } catch (Throwable exception) {
+            // Catch exceptions to avoid session closing issues
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Exception while opening data session of " + getClass().getSimpleName(), exception);
+        }
     }
 
     public void closeSession() {
         if (!sessionOpen) throw new IllegalStateException("Session not open");
 
         sessionOpen = false;
-        onSessionClose();
+        try {
+            onSessionClose();
+        } catch (Throwable exception) {
+            // Catch exceptions to avoid session closing issues
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Exception while closing data session of " + getClass().getSimpleName(), exception);
+        }
     }
 
     protected void onSessionOpen() {
