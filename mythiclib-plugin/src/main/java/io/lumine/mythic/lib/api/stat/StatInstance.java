@@ -61,6 +61,10 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         return handler.get().map(StatHandler::getPlayerDefaultBase).orElse(0d);
     }
 
+    public double getFinal() {
+        return getFinal(EquipmentSlot.MAIN_HAND);
+    }
+
     /**
      * TOTAL stat value refers to the value after all MMO modifiers have been applied.
      * It differs from the FINAL stat value which can be further modified by the
@@ -71,8 +75,13 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      *
      * @return The final stat value
      */
-    public double getFinal() {
-        return handler.get().map(handler -> handler.getFinalValue(this)).orElse(getTotal());
+    public double getFinal(@NotNull EquipmentSlot hand) {
+        return handler.get().map(handler -> {
+            final var finalValue = handler.getFinalValue(this);
+            if (hand == EquipmentSlot.MAIN_HAND) return finalValue;
+            // Correct for offhand since player attributes are main-hand calculated.
+            return finalValue - getTotal(getBase(), EquipmentSlot.MAIN_HAND) + getTotal(getBase(), EquipmentSlot.OFF_HAND);
+        }).orElse(getTotal(hand));
     }
 
     /**

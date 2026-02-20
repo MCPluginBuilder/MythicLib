@@ -48,9 +48,7 @@ public class PlayerMetadata implements PlayerStatProvider {
         Validate.isTrue(Objects.requireNonNull(actionHand).isHand(), "Equipment slot must be a hand");
 
         // Isolate stat modifiers
-        // TODO Should this take into account FINAL and not TOTAL stat values?
-        for (var ins : statMap.getInstances())
-            this.playerStats.put(ins.getStat(), ins.getTotal(actionHand));
+        for (var ins : statMap.getInstances()) this.playerStats.put(ins.getStat(), ins.getFinal(actionHand));
     }
 
     @NotNull
