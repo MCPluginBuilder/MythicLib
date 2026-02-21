@@ -63,7 +63,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     }
 
     public void setupDatabase(@NotNull Supplier<Database<H, O>> sql, @NotNull Supplier<Database<H, O>> fallback) {
-        final var isSql = this.owning.getConfig().getBoolean("mysql.enabled") || this.owning.getConfig().getBoolean("sqlite.enabled");
+        final var isSql = this.owning.getConfig().getBoolean("mysql.enabled");
         if (isSql) setupDatabase(sql.get());
         else setupDatabase(fallback.get());
     }
