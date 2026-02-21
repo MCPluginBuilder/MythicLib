@@ -318,11 +318,16 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
      * function is always empty.
      *
      * @param player Player who just logged in
-     * @return The empty player data, which will be loaded in a near future.
+     * @return The empty player data, which will be loaded in the near future.
      */
     @NotNull
     public H setup(@NotNull Player player) {
-        return activeData.computeIfAbsent(player.getUniqueId(), uuid -> newPlayerData(MMOPlayerData.setup(player)));
+        return activeData.computeIfAbsent(player.getUniqueId(), ignore -> newPlayerData(MMOPlayerData.setup(player)));
+    }
+
+    @NotNull
+    public H setup(@NotNull UUID uniqueId) {
+        return activeData.computeIfAbsent(uniqueId, ignore -> newPlayerData(MMOPlayerData.setup(uniqueId)));
     }
 
     /**

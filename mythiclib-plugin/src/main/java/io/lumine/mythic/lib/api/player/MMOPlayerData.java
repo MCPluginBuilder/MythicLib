@@ -57,23 +57,13 @@ public class MMOPlayerData {
     private final VariableList variableList = new VariableList(VariableScope.PLAYER);
 
     /**
-     * @param player Player logging in. Original UUID is taken from that player
+     * @param lookup   Is this player data beign used for database lookup?
+     *                 This determines if is_saved should be switched back to 0 when data has been loaded
+     *                 and whether MythicLib should try to use the profile UUID for data lookup.
+     * @param uniqueId Player's unique ID, or UUID to lookup
      */
-    private MMOPlayerData(@NotNull Player player) {
-        this.lookup = false;
-        this.entityId = Objects.requireNonNull(player, "Player cannot be null").getUniqueId();
-        this.officialId = player.getUniqueId();
-    }
-
-    /**
-     * MMOPlayerData object which can be used to lookup data in any plugin.
-     * This object will have no effect whatsoever on databases.
-     *
-     * @param uniqueId Unique ID to lookup
-     * @see #isLookup()
-     */
-    public MMOPlayerData(@NotNull UUID uniqueId) {
-        this.lookup = true;
+    public MMOPlayerData(boolean lookup, @NotNull UUID uniqueId) {
+        this.lookup = lookup;
         this.entityId = Objects.requireNonNull(uniqueId, "UUID cannot be null");
         this.officialId = uniqueId;
     }
@@ -522,9 +512,14 @@ public class MMOPlayerData {
      */
     @NotNull
     public static MMOPlayerData setup(@NotNull Player player) {
-        final var playerData = PLAYER_DATA.computeIfAbsent(player.getUniqueId(), uuid -> new MMOPlayerData(player));
+        final var playerData = setup(player.getUniqueId());
         playerData.updatePlayer(player);
         return playerData;
+    }
+
+    @NotNull
+    public static MMOPlayerData setup(@NotNull UUID uniqueId) {
+        return PLAYER_DATA.computeIfAbsent(uniqueId, uuid -> new MMOPlayerData(false, uniqueId));
     }
 
     @NotNull
@@ -731,6 +726,20 @@ public class MMOPlayerData {
     @Deprecated
     public boolean isOnCooldown(CooldownType cd) {
         return getCooldownMap().isOnCooldown(cd.name());
+    }
+
+    @Deprecated
+    public MMOPlayerData(@NotNull Player player) {
+        this.lookup = false;
+        this.entityId = Objects.requireNonNull(player, "Player cannot be null").getUniqueId();
+        this.officialId = player.getUniqueId();
+    }
+
+    @Deprecated
+    public MMOPlayerData(@NotNull UUID uniqueId) {
+        this.lookup = true;
+        this.entityId = Objects.requireNonNull(uniqueId, "UUID cannot be null");
+        this.officialId = uniqueId;
     }
 
     //endregion
