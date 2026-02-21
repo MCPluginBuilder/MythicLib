@@ -58,6 +58,8 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         // Data is saved.
         ///////////////////////////////
 
+        UtilityMethods.debug(this.plugin, "Data", "Saved data of " + record.effectiveId);
+
         // Data saved. Back to server thread.
         Tasks.runSync(plugin, () -> {
             if (record.reason != SessionUpdateReason.AUTOSAVE) record.playerData.markSessionClosed();
