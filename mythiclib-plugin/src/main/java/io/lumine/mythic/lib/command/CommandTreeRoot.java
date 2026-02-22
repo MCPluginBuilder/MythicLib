@@ -39,7 +39,7 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
         this.usageMessage = config.getString("usage", "/" + this.name);
         this.aliases = config.getStringList("aliases");
         this.permission = config.getString("permission");
-        this.verbose = config.contains("verbose") ? UtilityMethods.prettyValueOf(VerboseMode::valueOf, config.getString("verbose"), "No verbose mode with ID '%s'") : VerboseMode.NONE;
+        this.verbose = config.contains("verbose") ? UtilityMethods.prettyValueOf(VerboseMode::valueOf, config.getString("verbose"), "No verbose mode with ID '%s'") : VerboseMode.ALL;
     }
 
     @NotNull
