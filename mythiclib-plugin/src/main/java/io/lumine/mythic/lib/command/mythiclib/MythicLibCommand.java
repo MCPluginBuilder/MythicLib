@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.command.mythiclib.mythiclib.DamageCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.ReloadCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.StatModCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.TempStatCommand;
+import io.lumine.mythic.lib.command.mythiclib.mythiclib.cooldown.CooldownCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.debug.CastCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.debug.DebugCommand;
 import io.lumine.mythic.lib.command.mythiclib.mythiclib.stat.StatCommand;
@@ -21,6 +22,7 @@ public class MythicLibCommand extends CommandTreeRoot {
         addChild(new DamageCommand(this));
         addChild(new DebugCommand(this));
         addChild(new StatCommand(this));
+        addChild(new CooldownCommand(this));
 
         addChild(new CastCommand(this)); // legacy
         addChild(new TempStatCommand(this)); // legacy

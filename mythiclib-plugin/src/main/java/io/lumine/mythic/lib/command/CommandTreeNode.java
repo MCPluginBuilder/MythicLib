@@ -86,7 +86,8 @@ public abstract class CommandTreeNode {
     }
 
     public void addChild(CommandTreeNode child) {
-        children.put(child.getId(), child);
+        final var previous = children.put(child.getId(), child);
+        Validate.isTrue(previous == null, "Duplicate command tree node '" + child.getId() + "' in path '" + getPath() + "'");
     }
 
     @NotNull

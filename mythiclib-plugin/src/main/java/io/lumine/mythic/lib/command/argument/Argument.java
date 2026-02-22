@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.command.argument;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -238,6 +239,21 @@ public class Argument<T> {
         throw new ArgumentParseException(input + " is not a valid boolean.");
     });
 
+    /**
+     * @deprecated Not tested
+     */
+    @Deprecated
+    public static <T extends Enum<T>> Argument<@NotNull T> choices(@NotNull String key, @NotNull Class<T> enumClass) {
+        final var asList = Arrays.asList(enumClass.getEnumConstants());
+        return new Argument<>(key, (explorer, list) -> asList.forEach(a -> list.add(a.toString())), (explorer, input) -> {
+            try {
+                return Enum.valueOf(enumClass, UtilityMethods.enumName(input));
+            } catch (IllegalArgumentException exception) {
+                throw new ArgumentParseException(input + " is not a valid choice.", exception);
+            }
+        });
+    }
+
     public static Argument<@NotNull String> choices(@NotNull String key, @NotNull String... candidates) {
         final var asList = Arrays.asList(candidates);
         return new Argument<>(key, (explorer, list) -> list.addAll(asList), (explorer, input) -> {
@@ -266,6 +282,20 @@ public class Argument<T> {
         list.add("plugin_name");
         list.add("passive_skill_name");
     }, (explorer, input) -> input, explorer -> DEFAULT_MODIFIER_KEY);
+
+    public static final Argument<String> COOLDOWN_CURRENT = new Argument<>("cooldown_key", (tree, list) -> {
+
+        // Retrieve active cooldown keys if sender is player
+        if (tree.getSender() instanceof Player) {
+            final var playerData = MMOPlayerData.get((Player) tree.getSender());
+            final var keys = playerData.getCooldownMap().getCooldownKeys();
+            if (keys.isEmpty()) list.add("my_cooldown_key"); // Placeholder value
+            else list.addAll(keys);
+        }
+
+        // Placeholder value
+        else list.add("my_cooldown_key");
+    }, (explorer, input) -> UtilityMethods.enumName(input));
 
     //endregion
 

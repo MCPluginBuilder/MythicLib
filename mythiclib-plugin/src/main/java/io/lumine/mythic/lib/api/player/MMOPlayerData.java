@@ -118,7 +118,8 @@ public class MMOPlayerData {
 
     @NotNull
     public String getPlayerName() {
-        return Objects.requireNonNull(lastPlayerName, "Player object never provided");
+        if (lastPlayerName == null) return this.entityId.toString();
+        return lastPlayerName;
     }
 
     public boolean isTimedOut() {

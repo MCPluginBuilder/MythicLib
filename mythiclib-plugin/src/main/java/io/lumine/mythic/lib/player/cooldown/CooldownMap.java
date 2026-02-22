@@ -30,7 +30,7 @@ public class CooldownMap extends PlayerDataMap {
      * of the current and input cooldown values.
      *
      * @param path     The skill or action path, must be completely unique
-     * @param cooldown Initial skill or action cooldown
+     * @param cooldown Initial skill or action cooldown, in seconds
      * @return The newly registered cooldown info
      */
     @NotNull
