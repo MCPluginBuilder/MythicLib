@@ -38,11 +38,12 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         }
 
         // Any other error
-        catch (Throwable exception) {
+        catch (Throwable throwable) {
 
             // Give up.
             if (forceful) {
                 UtilityMethods.debug(this.plugin, "Data", "Error while saving " + record.effectiveId + ", giving up");
+                throwable.printStackTrace();
                 // TODO YML failsafe to avoid edge case data losses?
             }
 
