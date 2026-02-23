@@ -1,47 +1,63 @@
 package io.lumine.mythic.lib.module;
 
+import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
+/**
+ * Thread-safe implementation of a toggleable listener.
+ * Methods can only be called from the main server thread,
+ * otherwise they will fail.
+ * <p>
+ * Listener class can extend Closeable to have its close()
+ * method called when the listener is disabled.
+ */
 public class ListenerToggle {
+    private final Supplier<Listener> listener;
+    private final Plugin owner;
 
-    /**
-     * Using a lazy to avoid instantiating the listener to
-     * avoid compatibility problems. Instanciator might call
-     * methods or classes missing from the class loader.
-     */
-    private final Lazy<Listener> listener;
-
-    private final Module module;
-
-    private boolean currentState;
+    // Internal state
+    private Listener currentListener;
 
     public ListenerToggle(@NotNull Module module, Supplier<Listener> listener) {
-        this.listener = Lazy.of(listener);
-        this.module = module;
+        this(module.getPlugin(), listener);
     }
 
-    public synchronized void toggle(boolean newState) {
+    public ListenerToggle(@NotNull Plugin owner, Supplier<Listener> listener) {
+        this.listener = Lazy.of(listener);
+        this.owner = owner;
+    }
+
+    public void toggle(boolean newState) {
+        Validate.isTrue(Bukkit.isPrimaryThread(), "ListenerToggle can only be toggled from the main thread");
 
         // Enable
-        if (newState && !currentState) {
-            currentState = true;
-            Bukkit.getPluginManager().registerEvents(this.listener.get(), this.module.getPlugin());
+        if (newState && currentListener == null) {
+            currentListener = this.listener.get();
+            Bukkit.getPluginManager().registerEvents(currentListener, owner);
         }
 
         // Disable
-        else if (!newState && currentState) {
-            currentState = false;
-            HandlerList.unregisterAll(this.listener.get());
+        else if (!newState && currentListener != null) {
+            if (currentListener instanceof Closeable) try {
+                ((Closeable) currentListener).close();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            } finally {
+                HandlerList.unregisterAll(currentListener);
+                currentListener = null;
+            }
         }
     }
 
-    public synchronized void disable() {
+    public void disable() {
         toggle(false);
     }
 }

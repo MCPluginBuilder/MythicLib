@@ -6,6 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
+/**
+ * Non thread-safe implementation of a Lazy
+ *
+ * @param <T> Class being constructed at most once
+ */
 public class Lazy<T> implements Supplier<T> {
     private final boolean persistent;
     @Nullable
@@ -33,6 +38,19 @@ public class Lazy<T> implements Supplier<T> {
         evaluated = false;
     }
 
+    @Override
+    public T get() {
+        if (evaluated) return value;
+
+        Validate.notNull(expression, "Non persistent lazy value");
+        value = expression.get(); // If exception happens, stops there
+        evaluated = true;
+        if (!persistent) expression = null;
+        return value;
+    }
+
+    //region Static methods
+
     @NotNull
     public static <T> Lazy<T> persistent(Supplier<T> expression) {
         return new Lazy<>(expression, true);
@@ -48,14 +66,5 @@ public class Lazy<T> implements Supplier<T> {
         return new Lazy<>(value);
     }
 
-    @Override
-    public T get() {
-        if (evaluated) return value;
-
-        Validate.notNull(expression, "Non persistent lazy value");
-        value = expression.get(); // If exception happens, stops there
-        evaluated = true;
-        if (!persistent) expression = null;
-        return value;
-    }
+    //endregion
 }
