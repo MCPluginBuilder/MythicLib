@@ -140,14 +140,20 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
      * Must be called on main server thread
      */
     public void markSessionReady() {
-        Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
         Validate.isTrue(!playerData.isLookup(), "Cannot validate lookup player data");
+        Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called on main server thread");
 
         synchronized (sessionLock) {
             Validate.isTrue(!this.ready, "Player data already ready");
 
             this.ready = true;
-            onSessionReady();
+            try {
+                // If one individual MMO plugin fails, it should not force others to fail
+                onSessionReady();
+            } catch (Throwable throwable) {
+                MythicLib.plugin.getLogger().severe("An internal error occurred while marking player data for plugin " + mmoPlugin.getName() + " of " + getPlayer().getName() + " as ready:");
+                throwable.printStackTrace();
+            }
             if (!mmoPlugin.isProfilePlugin()) playerData.getProfileSession().markAsReady(mmoPlugin.getNamespacedKey());
         }
     }
@@ -165,7 +171,13 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
             Validate.isTrue(this.ready, "Player data not ready");
 
             this.ready = false;
-            onSessionClosed();
+            try {
+                // If one individual MMO plugin fails, it should not force others to fail
+                onSessionClosed();
+            } catch (Throwable throwable) {
+                MythicLib.plugin.getLogger().severe("An internal error occurred while marking player data for plugin " + mmoPlugin.getName() + " of " + getPlayer().getName() + " as closed:");
+                throwable.printStackTrace();
+            }
             if (!mmoPlugin.isProfilePlugin()) playerData.getProfileSession().markAsClosed(mmoPlugin.getNamespacedKey());
         }
     }
