@@ -11,11 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 @Deprecated
 public class HealthScaleCommand extends CommandTreeRoot {
-
     public HealthScaleCommand(ConfigurationSection config) {
         super(config);
-
-        MythicLib.plugin.getLogger().info("HealthScaleCommand is deprecated. Use instead /ml debug healthscale");
     }
 
     @Override
