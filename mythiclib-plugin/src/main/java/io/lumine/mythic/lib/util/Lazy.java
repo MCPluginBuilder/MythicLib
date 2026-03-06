@@ -49,6 +49,10 @@ public class Lazy<T> implements Supplier<T> {
         return value;
     }
 
+    public boolean isEvaluated() {
+        return evaluated;
+    }
+
     //region Static methods
 
     @NotNull
