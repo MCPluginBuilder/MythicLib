@@ -499,25 +499,6 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
     }
 
     @Override
-    public void setUUID(Player player, UUID uniqueId) {
-        if (player.getUniqueId().equals(uniqueId)) return;
-
-        // Update UUID inside of game profile
-        final ServerPlayer handle = _CraftPlayer_getHandle(player);
-        final GameProfile gameProfile = handle.getGameProfile();
-        try {
-            final Field _id = gameProfile.getClass().getDeclaredField("id");
-            _id.setAccessible(true);
-            _id.set(gameProfile, uniqueId);
-            _id.setAccessible(false);
-        } catch (Exception exception) {
-            throw new RuntimeException("Could not update player UUID", exception);
-        }
-
-        handle.setUUID(uniqueId);
-    }
-
-    @Override
     public AttributeModifier newAttributeModifier(NamespacedKey key, double amount, AttributeModifier.Operation operation) {
         return new AttributeModifier(key, amount, operation, EquipmentSlotGroup.ANY);
     }

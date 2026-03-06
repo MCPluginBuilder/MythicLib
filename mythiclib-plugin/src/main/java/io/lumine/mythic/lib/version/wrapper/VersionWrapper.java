@@ -57,6 +57,15 @@ public interface VersionWrapper {
     GameProfile newProfile(UUID uniqueId, String textureValue);
 
     /**
+     * Unique ID is injectively generated from the texture value.
+     *
+     * @see #newProfile(UUID, String)
+     */
+    default GameProfile newProfile(String textureValue) {
+        return newProfile(UtilityMethods.uniqueIdFromString(textureValue), textureValue);
+    }
+
+    /**
      * Used by MMOItems to check if a block can be autosmelt. Also
      * used to apply Fortune levels for loot multiplication.
      *
@@ -187,8 +196,6 @@ public interface VersionWrapper {
     String getSkullValue(Block block);
 
     void setSkullValue(Block block, String textureValue);
-
-    void setUUID(Player player, UUID uniqueId);
 
     default AttributeModifier newAttributeModifier(@NotNull NamespacedKey key, double amount, @NotNull AttributeModifier.Operation operation) {
         final String str = key.toString();

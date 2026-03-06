@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.version.wrapper;
 
-import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -46,7 +45,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -421,25 +419,6 @@ public class VersionWrapper_1_21_R7 implements VersionWrapper, ModernGameProfile
             return ageable.getAge() == ageable.getMaximumAge();
         }
         return false;
-    }
-
-    @Override
-    public void setUUID(Player player, UUID uniqueId) {
-        if (player.getUniqueId().equals(uniqueId)) return;
-
-        // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
-        try {
-            final Field _id = gameProfile.getClass().getDeclaredField("id");
-            _id.setAccessible(true);
-            _id.set(gameProfile, uniqueId);
-            _id.setAccessible(false);
-        } catch (Exception exception) {
-            throw new RuntimeException("Could not update player UUID", exception);
-        }
-
-        handle.setUUID(uniqueId);
     }
 
     @Override

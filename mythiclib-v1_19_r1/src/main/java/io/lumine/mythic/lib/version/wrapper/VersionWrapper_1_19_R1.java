@@ -433,25 +433,6 @@ public class VersionWrapper_1_19_R1 implements VersionWrapper {
         return false;
     }
 
-    @Override
-    public void setUUID(Player player, UUID uniqueId) {
-        if (player.getUniqueId().equals(uniqueId)) return;
-
-        // Update UUID inside of game profile
-        final var handle = ((CraftPlayer) player).getHandle();
-        final var gameProfile = handle.getGameProfile();
-        try {
-            final Field _id = gameProfile.getClass().getDeclaredField("id");
-            _id.setAccessible(true);
-            _id.set(gameProfile, uniqueId);
-            _id.setAccessible(false);
-        } catch (Exception exception) {
-            throw new RuntimeException("Could not update player UUID", exception);
-        }
-
-        handle.setUUID(uniqueId);
-    }
-
     private static class InventoryViewImpl implements VInventoryView {
         private final InventoryView view;
 
