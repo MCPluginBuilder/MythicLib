@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.version.wrapper;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -54,7 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 
-public class VersionWrapper_1_20_R3 implements VersionWrapper {
+public class VersionWrapper_1_20_R3 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_20_R3() {
@@ -71,30 +70,6 @@ public class VersionWrapper_1_20_R3 implements VersionWrapper {
     @Override
     public String getSoundName(Sound sound) {
         return sound.name();
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
     }
 
     @Override
@@ -426,7 +401,7 @@ public class VersionWrapper_1_20_R3 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UtilityMethods.uniqueIdFromString(value);
+        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
         GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
@@ -462,8 +437,8 @@ public class VersionWrapper_1_20_R3 implements VersionWrapper {
         if (player.getUniqueId().equals(uniqueId)) return;
 
         // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var gameProfile = handle.getGameProfile();
         try {
             final Field _id = gameProfile.getClass().getDeclaredField("id");
             _id.setAccessible(true);
@@ -474,11 +449,6 @@ public class VersionWrapper_1_20_R3 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     private static class InventoryViewImpl implements VInventoryView {

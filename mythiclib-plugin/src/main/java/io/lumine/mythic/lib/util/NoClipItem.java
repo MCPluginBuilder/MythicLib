@@ -67,6 +67,8 @@ public class NoClipItem extends TemporaryHandler {
             close();
     }
 
+    private static final Random RANDOM = new Random();
+
     /*
      * Method used to strip item data from the ItemStack.
      *
@@ -103,7 +105,7 @@ public class NoClipItem extends TemporaryHandler {
 
         // Copy Skull textures
         if (oldItemMeta instanceof SkullMeta) {
-            Object gameProfile = VersionWrapper.get().getProfile((SkullMeta) oldItemMeta);
+            var gameProfile = VersionWrapper.get().getProfile((SkullMeta) oldItemMeta);
             VersionWrapper.get().setProfile((SkullMeta) newItemMeta, gameProfile);
         }
 
@@ -120,8 +122,7 @@ public class NoClipItem extends TemporaryHandler {
         newItemNBT.addTag(new ItemTag("MMOITEMS_TIER", oldItemNBT.getString("MMOITEMS_TIER").trim().isEmpty() ? null : oldItemNBT.getString("MMOITEMS_TIER")));
 
         // Make them not stack together, we NEVER want them to stack. Was only used on Throw up.
-        final Random random = new Random();
-        newItemNBT.addTag(new ItemTag("MMOITEMS_NO_STACK", random.nextInt(Integer.MAX_VALUE)));
+        newItemNBT.addTag(new ItemTag("MMOITEMS_NO_STACK", RANDOM.nextInt(Integer.MAX_VALUE)));
 
         // Safety tag
         newItemNBT.addTag(new ItemTag("MMOITEMS_NO_CLIP_ITEM", true));

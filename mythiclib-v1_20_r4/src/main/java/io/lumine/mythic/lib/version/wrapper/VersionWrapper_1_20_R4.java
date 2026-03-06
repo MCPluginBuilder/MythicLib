@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.version.wrapper;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -31,6 +30,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -47,10 +47,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 
@@ -61,7 +58,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 
-public class VersionWrapper_1_20_R4 implements VersionWrapper {
+public class VersionWrapper_1_20_R4 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_20_R4() {
@@ -78,30 +75,6 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
     @Override
     public String getSoundName(Sound sound) {
         return sound.name();
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
     }
 
     @Override
@@ -438,7 +411,7 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UtilityMethods.uniqueIdFromString(value);
+        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
         GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
@@ -474,8 +447,8 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
         if (player.getUniqueId().equals(uniqueId)) return;
 
         // Update UUID inside of game profile
-        final ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        final GameProfile gameProfile = handle.getGameProfile();
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var gameProfile = handle.getGameProfile();
         try {
             final Field _id = gameProfile.getClass().getDeclaredField("id");
             _id.setAccessible(true);
@@ -489,66 +462,17 @@ public class VersionWrapper_1_20_R4 implements VersionWrapper {
     }
 
     @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
-    }
-
-    private static class InventoryViewImpl implements VInventoryView {
-        private final InventoryView view;
-
-        InventoryViewImpl(InventoryView view) {
-            this.view = view;
-        }
-
-        @Override
-        public String getTitle() {
-            return view.getTitle();
-        }
-
-        @Override
-        public InventoryType getType() {
-            return view.getType();
-        }
-
-        @Override
-        public Inventory getTopInventory() {
-            return view.getTopInventory();
-        }
-
-
-        @Override
-        public Inventory getBottomInventory() {
-            return view.getBottomInventory();
-        }
-
-        @Override
-        public void setCursor(ItemStack actualCursor) {
-            view.setCursor(actualCursor);
-        }
-
-        @Override
-        public HumanEntity getPlayer() {
-            return view.getPlayer();
-        }
-
-        @Override
-        public void close() {
-            view.close();
-        }
-    }
-
-    @Override
     public VInventoryView getView(InventoryEvent event) {
-        return new InventoryViewImpl(event.getView());
+        return new ModernInventoryViewImpl(event.getView());
     }
 
     @Override
     public VInventoryView getOpenInventory(Player player) {
-        return new InventoryViewImpl(player.getOpenInventory());
+        return new ModernInventoryViewImpl(player.getOpenInventory());
     }
 
     @Override
     public InventoryClickEvent newInventoryClickEvent(VInventoryView view, InventoryType.SlotType type, int slot, ClickType click, InventoryAction action) {
-        return new InventoryClickEvent(((InventoryViewImpl) view).view, type, slot, click, action);
+        return new InventoryClickEvent(((ModernInventoryViewImpl) view).view, type, slot, click, action);
     }
 }

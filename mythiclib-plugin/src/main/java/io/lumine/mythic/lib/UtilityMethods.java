@@ -16,6 +16,7 @@ import io.lumine.mythic.lib.util.config.YamlUtils;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.*;
+import io.lumine.mythic.lib.version.api.GameProfile;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -265,8 +266,7 @@ public class UtilityMethods {
     }
 
     public static void setTextureValue(@NotNull SkullMeta meta, @NotNull String textureValue, @NotNull UUID uniqueId) {
-        final Object profile = VersionWrapper.get().newProfile(uniqueId, textureValue);
-        VersionWrapper.get().setProfile(meta, profile);
+        VersionWrapper.get().setProfile(meta, GameProfile.of(uniqueId, textureValue));
     }
 
     public static boolean isFake(@NotNull Event event) {

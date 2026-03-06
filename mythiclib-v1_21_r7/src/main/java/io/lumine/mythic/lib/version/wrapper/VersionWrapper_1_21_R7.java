@@ -67,30 +67,6 @@ public class VersionWrapper_1_21_R7 implements VersionWrapper {
     }
 
     @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
-    }
-
-    @Override
     public boolean isGeneratorOutput(Material material) {
         return generatorOutputs.contains(material);
     }
@@ -471,11 +447,6 @@ public class VersionWrapper_1_21_R7 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     @Override

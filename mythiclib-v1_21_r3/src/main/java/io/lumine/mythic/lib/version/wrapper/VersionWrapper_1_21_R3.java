@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.version.wrapper;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -60,7 +59,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_1_21_R3 implements VersionWrapper {
+public class VersionWrapper_1_21_R3 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_21_R3() {
@@ -69,30 +68,6 @@ public class VersionWrapper_1_21_R3 implements VersionWrapper {
         generatorOutputs.add(Material.BASALT);
     }
 
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
-    }
-    
     @Override
     public boolean isGeneratorOutput(Material material) {
         return generatorOutputs.contains(material);
@@ -429,7 +404,7 @@ public class VersionWrapper_1_21_R3 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UtilityMethods.uniqueIdFromString(value);
+        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
         GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
@@ -480,11 +455,6 @@ public class VersionWrapper_1_21_R3 implements VersionWrapper {
     }
 
     @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
-    }
-
-    @Override
     public AttributeModifier newAttributeModifier(NamespacedKey key, double amount, AttributeModifier.Operation operation) {
         return new AttributeModifier(key, amount, operation, EquipmentSlotGroup.ANY);
     }
@@ -494,62 +464,18 @@ public class VersionWrapper_1_21_R3 implements VersionWrapper {
         return modifier.getKey().equals(key);
     }
 
-    private static class InventoryViewImpl implements VInventoryView {
-        private final InventoryView view;
-
-        InventoryViewImpl(InventoryView view) {
-            this.view = view;
-        }
-
-        @Override
-        public String getTitle() {
-            return view.getTitle();
-        }
-
-        @Override
-        public InventoryType getType() {
-            return view.getType();
-        }
-
-        @Override
-        public Inventory getTopInventory() {
-            return view.getTopInventory();
-        }
-
-
-        @Override
-        public Inventory getBottomInventory() {
-            return view.getBottomInventory();
-        }
-
-        @Override
-        public void setCursor(ItemStack actualCursor) {
-            view.setCursor(actualCursor);
-        }
-
-        @Override
-        public HumanEntity getPlayer() {
-            return view.getPlayer();
-        }
-
-        @Override
-        public void close() {
-            view.close();
-        }
-    }
-
     @Override
     public VInventoryView getView(InventoryEvent event) {
-        return new InventoryViewImpl(event.getView());
+        return new ModernInventoryViewImpl(event.getView());
     }
 
     @Override
     public VInventoryView getOpenInventory(Player player) {
-        return new InventoryViewImpl(player.getOpenInventory());
+        return new ModernInventoryViewImpl(player.getOpenInventory());
     }
 
     @Override
     public InventoryClickEvent newInventoryClickEvent(VInventoryView view, InventoryType.SlotType type, int slot, ClickType click, InventoryAction action) {
-        return new InventoryClickEvent(((InventoryViewImpl) view).view, type, slot, click, action);
+        return new InventoryClickEvent(((ModernInventoryViewImpl) view).view, type, slot, click, action);
     }
 }

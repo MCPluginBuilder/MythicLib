@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -27,8 +28,10 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
@@ -53,12 +56,12 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_Reflection implements VersionWrapper {
+public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     // Reflection stuff
     private final ServerVersion version;
-    private final Method _CraftWorld_getHandle, _CraftPlayer_getHandle, _CraftPlayer_getProfile, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
+    private final Method _CraftWorld_getHandle, _CraftPlayer_getHandle, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
     private final Function<Material, net.minecraft.world.level.block.Block> _CraftBlockType_bukkitToMinecraft;
 
     public VersionWrapper_Reflection(ServerVersion version) throws NoSuchMethodException, ClassNotFoundException {
@@ -78,7 +81,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
         // Methods
         _CraftWorld_getHandle = _CraftWorld.getDeclaredMethod("getHandle");
         _CraftPlayer_getHandle = _CraftPlayer.getDeclaredMethod("getHandle");
-        _CraftPlayer_getProfile = _CraftPlayer.getDeclaredMethod("getProfile");
         _CraftItemStack_asNMSCopy = _CraftItemStack.getDeclaredMethod("asNMSCopy", ItemStack.class);
         _CraftItemStack_asBukkitCopy = _CraftItemStack.getDeclaredMethod("asBukkitCopy", net.minecraft.world.item.ItemStack.class);
         _CraftSound_minecraftToBukkit = _CraftSound.getDeclaredMethod("minecraftToBukkit", net.minecraft.sounds.SoundEvent.class);
@@ -102,30 +104,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
 
         // Spigot || Paper <1.20.5
         return Class.forName("org.bukkit.craftbukkit." + version.getCraftBukkitVersion() + "." + obcClassPath);
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
     }
 
     @Override
@@ -543,15 +521,6 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     }
 
     @Override
-    public GameProfile getGameProfile(Player player) {
-        try {
-            return (GameProfile) _CraftPlayer_getProfile.invoke(player);
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
-        }
-    }
-
-    @Override
     public AttributeModifier newAttributeModifier(NamespacedKey key, double amount, AttributeModifier.Operation operation) {
         return new AttributeModifier(key, amount, operation, EquipmentSlotGroup.ANY);
     }
@@ -561,61 +530,18 @@ public class VersionWrapper_Reflection implements VersionWrapper {
         return modifier.getKey().equals(key);
     }
 
-    private static class InventoryViewImpl implements VInventoryView {
-        private final InventoryView view;
-
-        InventoryViewImpl(InventoryView view) {
-            this.view = view;
-        }
-
-        @Override
-        public String getTitle() {
-            return view.getTitle();
-        }
-
-        @Override
-        public InventoryType getType() {
-            return view.getType();
-        }
-
-        @Override
-        public Inventory getTopInventory() {
-            return view.getTopInventory();
-        }
-
-        @Override
-        public Inventory getBottomInventory() {
-            return view.getBottomInventory();
-        }
-
-        @Override
-        public void setCursor(ItemStack actualCursor) {
-            view.setCursor(actualCursor);
-        }
-
-        @Override
-        public HumanEntity getPlayer() {
-            return view.getPlayer();
-        }
-
-        @Override
-        public void close() {
-            view.close();
-        }
-    }
-
     @Override
     public VInventoryView getView(InventoryEvent event) {
-        return new InventoryViewImpl(event.getView());
+        return new ModernInventoryViewImpl(event.getView());
     }
 
     @Override
     public VInventoryView getOpenInventory(Player player) {
-        return new InventoryViewImpl(player.getOpenInventory());
+        return new ModernInventoryViewImpl(player.getOpenInventory());
     }
 
     @Override
     public InventoryClickEvent newInventoryClickEvent(VInventoryView view, InventoryType.SlotType type, int slot, ClickType click, InventoryAction action) {
-        return new InventoryClickEvent(((InventoryViewImpl) view).view, type, slot, click, action);
+        return new InventoryClickEvent(((ModernInventoryViewImpl) view).view, type, slot, click, action);
     }
 }

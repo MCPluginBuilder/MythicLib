@@ -2,7 +2,6 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -57,37 +56,13 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_1_21_R6 implements VersionWrapper {
+public class VersionWrapper_1_21_R6 implements VersionWrapper, ModernGameProfileWrapper {
     private final Set<Material> generatorOutputs = new HashSet<>();
 
     public VersionWrapper_1_21_R6() {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
-    }
-
-    @Override
-    public PlayerProfile getProfile(SkullMeta meta) {
-        return meta.getOwnerProfile();
-    }
-
-    @Override
-    public void setProfile(SkullMeta meta, Object object) {
-        meta.setOwnerProfile(object == null ? null : (PlayerProfile) object);
-    }
-
-    @Override
-    public PlayerProfile newProfile(UUID uniqueId, String textureValue) {
-        final var profile = Bukkit.createPlayerProfile(uniqueId, WrapperUtils.PLAYER_PROFILE_NAME);
-        final var stringUrl = WrapperUtils.extractTextureUrl(new String(Base64.getDecoder().decode(textureValue)));
-        final URL url;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
-        }
-        profile.getTextures().setSkin(url);
-        return profile;
     }
 
     @Override
@@ -426,7 +401,7 @@ public class VersionWrapper_1_21_R6 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
-        final var uniqueId = UtilityMethods.uniqueIdFromString(textureValue);
+        final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
         state.setOwnerProfile(newProfile(uniqueId, textureValue));
     }
 
@@ -471,11 +446,6 @@ public class VersionWrapper_1_21_R6 implements VersionWrapper {
         }
 
         handle.setUUID(uniqueId);
-    }
-
-    @Override
-    public GameProfile getGameProfile(Player player) {
-        return ((CraftPlayer) player).getProfile();
     }
 
     @Override

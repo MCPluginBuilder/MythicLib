@@ -1,6 +1,5 @@
 package io.lumine.mythic.lib.version.wrapper;
 
-import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -8,6 +7,7 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.api.GameProfile;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -30,6 +30,8 @@ import java.util.UUID;
 
 public interface VersionWrapper {
 
+    static final String PLAYER_PROFILE_NAME = "SkullTexture";
+
     public static VersionWrapper get() {
         return MythicLib.plugin.getVersion().getWrapper();
     }
@@ -37,13 +39,13 @@ public interface VersionWrapper {
     /**
      * @return Either a GameProfile object or PlayerProfile depending on version.
      */
-    Object getProfile(SkullMeta meta);
+    GameProfile getProfile(SkullMeta meta);
 
     /**
      * This takes in either a GameProfile object or PlayerProfile object and applies it
      * to the target skull meta depending on server version.
      */
-    void setProfile(SkullMeta meta, Object object);
+    void setProfile(SkullMeta meta, GameProfile profile);
 
     /**
      * Spigot 1.20 introduced an API method to manipulate skull textures
@@ -53,7 +55,7 @@ public interface VersionWrapper {
      * The new PlayerProfile API requires to both support PlayerProfile
      * and GameProfile objects as reflection is no longer supported by >1.20.2
      */
-    Object newProfile(UUID uniqueId, String textureValue);
+    GameProfile newProfile(UUID uniqueId, String textureValue);
 
     /**
      * Used by MMOItems to check if a block can be autosmelt. Also
@@ -188,9 +190,6 @@ public interface VersionWrapper {
     void setSkullValue(Block block, String textureValue);
 
     void setUUID(Player player, UUID uniqueId);
-
-    // Not version safe anymore.
-    GameProfile getGameProfile(Player player);
 
     default AttributeModifier newAttributeModifier(@NotNull NamespacedKey key, double amount, @NotNull AttributeModifier.Operation operation) {
         final String str = key.toString();
