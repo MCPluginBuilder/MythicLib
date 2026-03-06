@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
@@ -188,11 +189,12 @@ public interface VersionWrapper {
 
     void setUUID(Player player, UUID uniqueId);
 
+    // Not version safe anymore.
     GameProfile getGameProfile(Player player);
 
     default AttributeModifier newAttributeModifier(@NotNull NamespacedKey key, double amount, @NotNull AttributeModifier.Operation operation) {
         final String str = key.toString();
-        return new AttributeModifier(UUID.nameUUIDFromBytes(str.getBytes(StandardCharsets.UTF_8)), str, amount, operation);
+        return new AttributeModifier(UtilityMethods.uniqueIdFromString(str), str, amount, operation);
     }
 
     /**

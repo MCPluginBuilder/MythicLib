@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -494,7 +495,7 @@ public class VersionWrapper_Reflection implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
-        final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
+        final var uniqueId = UtilityMethods.uniqueIdFromString(textureValue);
         state.setOwnerProfile(newProfile(uniqueId, textureValue));
     }
 

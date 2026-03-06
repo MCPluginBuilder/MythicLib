@@ -71,6 +71,11 @@ public class UtilityMethods {
         }
     }
 
+    @NotNull
+    public static UUID uniqueIdFromString(@NotNull String input) {
+        return UUID.nameUUIDFromBytes(input.getBytes());
+    }
+
     /**
      * Paper does not have this option. This allows some
      * plugins to be built against Spigot and not Paper

@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.command.mythiclib.mythiclib.stat;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
@@ -61,7 +62,7 @@ public class AddCommand extends CommandTreeNode {
         final boolean unique = explorer.parse(argUnique);
 
         final var playerData = MMOPlayerData.get(target);
-        final var uniqueId = unique ? UUID.nameUUIDFromBytes(key.getBytes()) : UUID.randomUUID();
+        final var uniqueId = unique ? UtilityMethods.uniqueIdFromString(key) : UUID.randomUUID();
 
         // Permanent modifier
         final String durationText;

@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.script.mechanic.buff.stat;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
@@ -42,7 +43,7 @@ public class AddStatModifierMechanic extends TargetMechanic {
 
         MMOPlayerData playerData = MMOPlayerData.get((OfflinePlayer) target);
         long lifetime = Math.max(0, (long) this.lifetime.evaluate(meta));
-        final var uniqueId = unique ? UUID.nameUUIDFromBytes(this.key.getBytes()) : UUID.randomUUID();
+        final var uniqueId = unique ? UtilityMethods.uniqueIdFromString(this.key) : UUID.randomUUID();
 
         if (lifetime > 0)
             new TemporaryStatModifier(uniqueId, key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, lifetime);
