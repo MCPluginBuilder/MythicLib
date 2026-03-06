@@ -6,14 +6,17 @@ import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
 
+/**
+ * Wrapper for GameProfile handling in 1.20+
+ */
 public interface ModernGameProfileWrapper extends VersionWrapper {
+
     @Override
     public default GameProfile getProfile(SkullMeta meta) {
         var found = meta.getOwnerProfile();
@@ -28,13 +31,13 @@ public interface ModernGameProfileWrapper extends VersionWrapper {
 
     @Override
     public default ModernGameProfile newProfile(UUID uniqueId, String textureValue) {
-        final PlayerProfile profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
-        final String stringUrl = extractUrl(new String(Base64.getDecoder().decode(textureValue)));
+        final var profile = Bukkit.getServer().createPlayerProfile(uniqueId, PLAYER_PROFILE_NAME);
+        final var stringUrl = extractUrl(new String(Base64.getDecoder().decode(textureValue)));
         final URL url;
         try {
             url = new URL(stringUrl);
         } catch (MalformedURLException exception) {
-            throw new RuntimeException("Could not create new player profile: " + exception.getMessage());
+            throw new RuntimeException("Could not create new player profile", exception);
         }
         profile.getTextures().setSkin(url);
         return new ModernGameProfile(profile);

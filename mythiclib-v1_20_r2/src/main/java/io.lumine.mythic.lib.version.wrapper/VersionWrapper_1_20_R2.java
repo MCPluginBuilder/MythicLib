@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
@@ -26,7 +27,6 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -41,13 +41,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -400,9 +397,8 @@ public class VersionWrapper_1_20_R2 implements VersionWrapper, ModernGameProfile
 
     @Override
     public void setSkullValue(Block block, String value) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
-        GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
+        final var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        final var profile = new GameProfile(UtilityMethods.uniqueIdFromString(value), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();

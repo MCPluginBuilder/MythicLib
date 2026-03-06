@@ -9,7 +9,6 @@ import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.WrapperUtils;
 import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -49,7 +48,6 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -400,9 +398,8 @@ public class VersionWrapper_1_21_R5 implements VersionWrapper, ModernGameProfile
 
     @Override
     public void setSkullValue(Block block, String value) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var uuid = UtilityMethods.uniqueIdFromString(value);
-        GameProfile profile = new GameProfile(uuid, WrapperUtils.PLAYER_PROFILE_NAME);
+        final var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        final var profile = new GameProfile(UtilityMethods.uniqueIdFromString(value), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(new ResolvableProfile(profile));
         skull.setChanged();

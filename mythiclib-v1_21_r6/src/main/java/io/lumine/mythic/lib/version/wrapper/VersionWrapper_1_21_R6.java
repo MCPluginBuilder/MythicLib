@@ -2,12 +2,13 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.WrapperUtils;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -27,7 +28,6 @@ import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -45,13 +45,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -401,8 +396,7 @@ public class VersionWrapper_1_21_R6 implements VersionWrapper, ModernGameProfile
     @Override
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
-        final var uniqueId = UUID.nameUUIDFromBytes(textureValue.getBytes(StandardCharsets.UTF_8));
-        state.setOwnerProfile(newProfile(uniqueId, textureValue));
+        state.setOwnerProfile(newProfile(UtilityMethods.uniqueIdFromString(textureValue), textureValue).bukkit);
     }
 
     @Override

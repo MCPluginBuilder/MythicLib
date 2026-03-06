@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -466,7 +467,7 @@ public class VersionWrapper_1_16_R2 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         var skullTile = (TileEntitySkull) ((CraftWorld) block.getWorld()).getHandle().getTileEntity(new BlockPosition(block.getX(), block.getY(), block.getZ()));
-        var profile = new com.mojang.authlib.GameProfile(UUID.randomUUID(), null);
+        var profile = new com.mojang.authlib.GameProfile(UtilityMethods.uniqueIdFromString(value), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skullTile.setGameProfile(profile);
         skullTile.update();

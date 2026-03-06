@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -10,7 +9,8 @@ import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.VInventoryView;
-import io.lumine.mythic.lib.version.WrapperUtils;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
+import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -28,29 +28,27 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.Validate;
-import org.bukkit.*;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.v1_21_R6.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -473,8 +471,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
     @Override
     public void setSkullValue(Block block, String textureValue) {
         final var state = (Skull) block.getState();
-        final var uniqueId = UtilityMethods.uniqueIdFromString(textureValue);
-        state.setOwnerProfile(newProfile(uniqueId, textureValue));
+        state.setOwnerProfile(newProfile(UtilityMethods.uniqueIdFromString(textureValue), textureValue).bukkit);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
@@ -10,6 +11,7 @@ import io.lumine.mythic.lib.api.util.NBTTypeHelper;
 import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.version.OreDrops;
 import io.lumine.mythic.lib.version.VInventoryView;
+import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -43,8 +45,6 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -398,8 +398,7 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper, ModernGameProfile
     @Override
     public void setSkullValue(Block block, String value) {
         final var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        final var uuid = UtilityMethods.uniqueIdFromString(value);
-        final var profile = new com.mojang.authlib.GameProfile(uuid, PLAYER_PROFILE_NAME);
+        final var profile = new GameProfile(UtilityMethods.uniqueIdFromString(value), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();

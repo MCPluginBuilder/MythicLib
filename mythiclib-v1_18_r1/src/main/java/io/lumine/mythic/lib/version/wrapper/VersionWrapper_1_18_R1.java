@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.version.wrapper;
 
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -42,7 +43,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
@@ -397,7 +401,7 @@ public class VersionWrapper_1_18_R1 implements VersionWrapper {
     @Override
     public void setSkullValue(Block block, String value) {
         var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        var profile = new com.mojang.authlib.GameProfile(UUID.randomUUID(), null);
+        var profile = new com.mojang.authlib.GameProfile(UtilityMethods.uniqueIdFromString(value), PLAYER_PROFILE_NAME);
         profile.getProperties().put("textures", new Property("textures", value));
         skull.setOwner(profile);
         skull.setChanged();
