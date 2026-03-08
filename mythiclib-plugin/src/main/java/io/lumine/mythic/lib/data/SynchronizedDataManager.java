@@ -266,7 +266,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
 
         // Save data SYNCHRONOUSLY of online players (not called with /restart)
         for (var holder : getLoaded())
-            if (holder.isSessionReady()) database.saveData(holder, SessionUpdateReason.LOG_OUT);
+            if (holder.isSessionReady()) this.saveData(holder, SessionUpdateReason.LOG_OUT);
 
         // Stop queues
         this.loadQueue.end();

@@ -5,14 +5,16 @@ import io.lumine.mythic.lib.data.Database;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 public abstract class DataQueue<H extends SynchronizedDataHolder> implements Runnable {
@@ -35,11 +37,13 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
     /**
      * Thread safe blocking queue which stores records to be processed
      */
-    protected final Queue<QueueRecord> recordQueue = new ConcurrentLinkedQueue<>();
+    protected final LinkedBlockingQueue<QueueRecord> recordQueue = new LinkedBlockingQueue<>();
 
     protected final int maxTries;
 
-    private boolean stopIfEmpty = false, running = false;
+    private final AtomicReference<Thread> workerThread = new AtomicReference<>(null);
+    protected volatile boolean shutdownRequested;
+
     @Nullable
     private UUID lastProcessedId = null;
 
@@ -55,33 +59,33 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
     }
 
     public boolean isRunning() {
-        return running;
+        return workerThread.get() != null;
     }
 
     @Override
     public void run() {
 
+        // Atomically set worker thread
+        Validate.isTrue(workerThread.compareAndSet(null, Thread.currentThread()), "DataQueue is already running in another thread");
+
         try {
-            running = true;
-            whileTrue:
-            while (true) {
+            while (!shutdownRequested || !recordQueue.isEmpty()) {
 
                 // Wait until queue not empty
-                while (recordQueue.isEmpty()) {
-
-                    // Stop thread only if queue is empty
-                    if (stopIfEmpty) break whileTrue;
-
-                    waitFor(0);
+                QueueRecord record;
+                try {
+                    record = recordQueue.take();
+                } catch (InterruptedException ignored) {
+                    continue;
                 }
 
-                // Pop record
-                final var record = Objects.requireNonNull(recordQueue.poll());
-
-                // Prevent flooding the database with requests for the same unavailable records
+                // Prevent spinning
                 if (record.effectiveId.equals(lastProcessedId) && !record.available()) {
                     enqueue(record);
-                    waitFor(WAIT_TIME / 2);
+                    try {
+                        Thread.sleep(WAIT_TIME);
+                    } catch (InterruptedException ignored) {
+                    }
                     continue;
                 }
 
@@ -91,17 +95,8 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         } finally {
-            running = false;
-        }
-    }
-
-    private void waitFor(long waitTime) {
-        synchronized (this) {
-            try {
-                wait(waitTime);
-            } catch (InterruptedException e) {
-                this.plugin.getLogger().warning(getClass().getSimpleName() + " got interrupted: " + e.getMessage());
-            }
+            // Access termination thread after setting worker thread to null
+            workerThread.set(null);
         }
     }
 
@@ -114,31 +109,30 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
      * Ran from server thread
      */
     protected void enqueue(QueueRecord record) {
-        synchronized (this) {
-            this.recordQueue.add(record);
-            notify();
-        }
+        Validate.isTrue(this.recordQueue.offer(record), "Internal error: linked queue is full?");
     }
 
     public void end() {
-        synchronized (this) {
-            stopIfEmpty = true;
-            notifyAll();
-        }
+        final var worker = Objects.requireNonNull(workerThread.get(), "DataQueue is not running");
+        Validate.isTrue(!shutdownRequested, "Shutdown already scheduled");
+
+        shutdownRequested = true;
+        worker.interrupt();
     }
 
     private static final long MESSAGE_INTERVAL = 3000;
 
     public void sleepUntilCompletion() {
+        Validate.isTrue(Bukkit.isPrimaryThread(), "Must be called from the main thread");
+
         long lastMessage = System.currentTimeMillis();
-        while (running) try {
+        while (isRunning()) try {
             if (System.currentTimeMillis() > lastMessage + MESSAGE_INTERVAL) {
                 lastMessage = System.currentTimeMillis();
                 this.plugin.getLogger().log(Level.INFO, "Waiting " + getClass().getSimpleName() + " to process " + this.recordQueue.size() + " records");
             }
             Thread.sleep(100);
-        } catch (InterruptedException e) {
-            this.plugin.getLogger().warning(getClass().getSimpleName() + " got interrupted!");
+        } catch (InterruptedException ignored) {
         }
     }
 

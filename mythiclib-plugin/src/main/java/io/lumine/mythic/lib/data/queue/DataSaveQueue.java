@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.Tasks;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -56,16 +57,21 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         }
 
         ///////////////////////////////
-        // Data is saved.
+        // Data is saved. Back to main thread.
         ///////////////////////////////
 
         UtilityMethods.debug(this.plugin, "Data", "Saved data of " + record.effectiveId);
 
-        // Data saved. Back to server thread.
-        Tasks.runSync(plugin, () -> {
-            if (record.reason != SessionUpdateReason.AUTOSAVE) record.playerData.markSessionClosed();
+        // Try scheduling task
+        try {
+            Tasks.runSync(plugin, () -> {
+                if (record.reason != SessionUpdateReason.AUTOSAVE) record.playerData.markSessionClosed();
+                record.future.complete(null);
+            });
+        } catch (IllegalPluginAccessException exception) {
+            // Plugin is disabled, complete future immediately to avoid memory leak
             record.future.complete(null);
-        });
+        }
     }
 
     public class Record extends QueueRecord {

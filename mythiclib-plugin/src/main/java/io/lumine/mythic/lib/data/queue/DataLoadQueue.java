@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.profile.ProfileSessionState;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
         // Try to load player data
         final var forceful = record.hitThreshold();
-        DataLoadResult result = null;
+        DataLoadResult result;
         try {
             result = this.database.loadData(record.playerData, record.hitThreshold());
         }
@@ -89,17 +90,23 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         // Back to main thread
         ///////////////////////////////
 
-        Tasks.runSync(plugin, () -> {
+        // Try scheduling task
+        try {
+            Tasks.runSync(plugin, () -> {
 
-            // Player could go offline while transitioning to main thread
-            if (record.invalidate()) return;
+                // Player could go offline while transitioning to main thread
+                if (record.invalidate()) return;
 
-            if (!isLookup) {
-                record.playerData.markSessionReady(); // Mark as ready
-                Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
-            }
-            record.future.complete(null); // Complete future
-        });
+                if (!isLookup) {
+                    record.playerData.markSessionReady(); // Mark as ready
+                    Bukkit.getPluginManager().callEvent(new SynchronizedDataLoadEvent(manager, record.playerData));
+                }
+                record.future.complete(null); // Complete future
+            });
+        } catch (IllegalPluginAccessException exception) {
+            // Plugin is disabled, complete future anyway
+            record.future.complete(null);
+        }
     }
 
     protected class Record extends QueueRecord {
@@ -137,8 +144,8 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
             final var invalidated = this.session == null ? !playerData.getMMOPlayerData().isOnline() : session.getState() != ProfileSessionState.OPENING;
 
             if (invalidated) {
+                UtilityMethods.debug(DataLoadQueue.this.plugin, "Data", "Stopped data retrieval as " + effectiveId + " went offline");
                 this.future.complete(null); // Complete future
-                UtilityMethods.debug(DataLoadQueue.this.plugin, "SQL", "Stopped data retrieval as " + effectiveId + " went offline");
             }
 
             return invalidated;
