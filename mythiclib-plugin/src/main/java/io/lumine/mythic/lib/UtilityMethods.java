@@ -477,15 +477,19 @@ public class UtilityMethods {
     }
 
     /**
-     * @param player         Player to heal
+     * @param entity         Entity to heal
      * @param heal           Heal amount
      * @param allowNegatives If passing a negative health value will damage the entity x)
      *                       <br>
      *                       If <code>false</code>, negative values are just ignored
      */
-    public static void heal(@NotNull LivingEntity player, double heal, boolean allowNegatives) {
-        if (heal > 0 || allowNegatives)
-            player.setHealth(Math.min(player.getAttribute(Attributes.MAX_HEALTH).getValue(), player.getHealth() + heal));
+    public static void heal(@NotNull LivingEntity entity, double heal, boolean allowNegatives) {
+        if (heal == 0) return;
+        if (entity.isDead() || entity.getHealth() <= 0) return;
+        if (heal < 0 && !allowNegatives) return;
+
+        final double maxHealth = entity.getAttribute(Attributes.MAX_HEALTH).getValue();
+        entity.setHealth(Math.min(maxHealth, entity.getHealth() + heal));
     }
 
     /**
