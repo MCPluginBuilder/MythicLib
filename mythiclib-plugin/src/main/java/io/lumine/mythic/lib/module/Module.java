@@ -79,17 +79,24 @@ public abstract class Module {
         // Startup, run at most once
         if (!startup) startup();
 
-        if (!shouldEnable()) {
-            if (enabled) disable();
-            return;
+        // Module should be disabled
+        if (shouldEnable()) {
+
+            // Enable module
+            if (enabled) onReset();
+            else enable();
+
+            // Reload config
+            onReload();
         }
 
-        // Enable module
-        if (enabled) onReset();
-        else enable();
-
-        // Reload config
-        onReload();
+        // Module should be disabled
+        else {
+            if (enabled) {
+                onReset();
+                disable();
+            }
+        }
     }
 
     private void startup() {
