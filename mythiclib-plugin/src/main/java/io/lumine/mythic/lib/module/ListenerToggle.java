@@ -46,13 +46,15 @@ public class ListenerToggle {
 
         // Disable
         else if (!newState && currentListener != null) {
-            if (currentListener instanceof Closeable) try {
-                ((Closeable) currentListener).close();
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                HandlerList.unregisterAll(currentListener);
-                currentListener = null;
+
+            var unregistered = this.currentListener;
+            this.currentListener = null;
+            HandlerList.unregisterAll(unregistered);
+
+            if (unregistered instanceof Closeable) try {
+                ((Closeable) unregistered).close();
+            } catch (Exception exception) {
+                throw new RuntimeException("Could not close listener", exception);
             }
         }
     }
