@@ -38,7 +38,7 @@ public class DataLoadQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         // Fetch data
         ///////////////////////////////
 
-        UtilityMethods.debug(this.plugin, "Data", "Fetching data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + ")");
+        UtilityMethods.debug(this.plugin, "Data", "Fetching data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + "). Queued: " + this.recordQueue.size());
 
         // Try to load player data
         final var forceful = record.hitThreshold();

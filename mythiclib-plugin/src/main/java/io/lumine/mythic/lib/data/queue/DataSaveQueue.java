@@ -31,7 +31,7 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         // Save data
         ///////////////////////////////
 
-        UtilityMethods.debug(this.plugin, "Data", "Saving data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + ")");
+        UtilityMethods.debug(this.plugin, "Data", "Saving data of " + record.effectiveId + " (" + record.tryCount + "/" + this.maxTries + "). Queued: " + this.recordQueue.size());
 
         final var forceful = record.hitThreshold();
         try {
