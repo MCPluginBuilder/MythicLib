@@ -476,6 +476,11 @@ public class UtilityMethods {
         heal(player, heal, false);
     }
 
+    @NotNull
+    public static <T> Consumer<T> dummyConsume() {
+        return ignore -> {};
+    }
+
     /**
      * @param entity         Entity to heal
      * @param heal           Heal amount

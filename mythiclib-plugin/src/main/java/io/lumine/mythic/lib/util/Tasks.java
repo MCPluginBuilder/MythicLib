@@ -30,7 +30,7 @@ public class Tasks {
      */
     @NotNull
     public static CompletableFuture<Void> runAsync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        final CompletableFuture<Void> future = new CompletableFuture<>();
+        final var future = new CompletableFuture<Void>();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, task -> {
 
             // Execute task
@@ -47,7 +47,8 @@ public class Tasks {
     }
 
     public static void runSync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        Bukkit.getScheduler().runTask(plugin, runnable);
+        if (Bukkit.isPrimaryThread()) runnable.run();
+        else Bukkit.getScheduler().runTask(plugin, runnable);
     }
 
     /**

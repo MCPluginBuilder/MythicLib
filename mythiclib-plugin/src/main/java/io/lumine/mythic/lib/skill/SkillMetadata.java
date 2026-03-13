@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.skill;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
@@ -418,7 +417,7 @@ public class SkillMetadata {
         return var;
     }
 
-    public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = Pattern.compile("<([^#&|!=<>]+)>" );
+    public static final Pattern INTERNAL_PLACEHOLDER_PATTERN = Pattern.compile("<([^#&|!=<>]+)>");
 
     @NotNull
     public String parseString(String input) {
@@ -509,9 +508,9 @@ public class SkillMetadata {
                                    @Nullable AttackMetadata attack, @Nullable PlayerMetadata caster, @Nullable Event sourceEvent) {
         return new SkillMetadata(
                 null,
-                Objects.requireNonNullElse(caster, playerData.getStatMap().cache(Objects.requireNonNullElse(actionHand, EquipmentSlot.MAIN_HAND))),
+                Objects.requireNonNullElseGet(caster, () -> playerData.getStatMap().cache(Objects.requireNonNullElse(actionHand, EquipmentSlot.MAIN_HAND))),
                 new VariableList(VariableScope.SKILL),
-                Objects.requireNonNullElse(source, playerData.getPlayer().getLocation()),
+                Objects.requireNonNullElseGet(source, () -> playerData.getPlayer().getLocation()),
                 targetLocation,
                 target,
                 null,

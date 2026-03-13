@@ -1,9 +1,11 @@
 package io.lumine.mythic.lib.gui.editable;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.Navigator;
 import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.util.Tasks;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -195,6 +197,24 @@ public abstract class GeneratedInventory extends PluginInventory {
         return str;
     }
 
+    //region Live updates
+
+    public void liveUpdate(InventoryItem<?> item, int n, ItemStack placed, Consumer<ItemStack> update) {
+        Tasks.runSync(MythicLib.plugin, () -> {
+            if (lastOpened == null) return;
+            update.accept(placed);
+            lastOpened.setItem(item.getSlots().get(n), placed);
+        });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void liveUpdate(InventoryItem<?> item, int n) {
+        this.liveUpdate(item, n, ((InventoryItem) item).getDisplayedItem(this, n), UtilityMethods.dummyConsume());
+    }
+
+    //endregion
+
+    @Deprecated
     public void asyncUpdate(InventoryItem<?> item, int n, ItemStack placed, Consumer<ItemStack> update) {
         Bukkit.getScheduler().runTaskAsynchronously(MythicLib.plugin, () -> {
             if (lastOpened == null) return;
@@ -203,6 +223,7 @@ public abstract class GeneratedInventory extends PluginInventory {
         });
     }
 
+    @Deprecated
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void asyncUpdate(InventoryItem<?> item, int n) {
         Bukkit.getScheduler().runTaskAsynchronously(MythicLib.plugin, () -> {
@@ -212,6 +233,7 @@ public abstract class GeneratedInventory extends PluginInventory {
         });
     }
 
+    @Deprecated
     public <T> void asyncUpdate(CompletableFuture<T> future, InventoryItem<?> item, int n, ItemStack placed, BiConsumer<T, ItemStack> update) {
         future.thenAccept(t -> {
             if (lastOpened == null) return;

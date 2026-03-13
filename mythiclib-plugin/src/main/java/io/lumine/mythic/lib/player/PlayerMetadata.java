@@ -39,6 +39,14 @@ public class PlayerMetadata implements PlayerStatProvider {
         this.actionHand = parent.actionHand;
     }
 
+    @Deprecated
+    public PlayerMetadata(MMOPlayerData lookupPlayerData) {
+        this.player = null;
+        this.playerData = lookupPlayerData;
+        this.playerStats = new HashMap<>();
+        this.actionHand = EquipmentSlot.MAIN_HAND;
+    }
+
     public PlayerMetadata(StatMap statMap, @NotNull EquipmentSlot actionHand) {
         this.player = statMap.getData().getPlayer();
         this.playerData = statMap.getData();
