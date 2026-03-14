@@ -63,7 +63,7 @@ public class Tasks {
      */
     @NotNull
     public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
-        return t -> Bukkit.getScheduler().runTask(plugin, () -> syncTask.accept(t));
+        return t -> runSync(plugin, () -> syncTask.accept(t));
     }
 
     /**
@@ -76,6 +76,6 @@ public class Tasks {
      */
     @NotNull
     public static Runnable sync(@NotNull Plugin plugin, @NotNull Runnable syncTask) {
-        return () -> Bukkit.getScheduler().runTask(plugin, syncTask);
+        return () -> runSync(plugin, syncTask);
     }
 }
