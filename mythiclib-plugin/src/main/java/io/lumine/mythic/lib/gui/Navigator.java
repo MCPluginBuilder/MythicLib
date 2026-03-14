@@ -142,9 +142,8 @@ public class Navigator implements Listener {
             closed = false;
         }
 
-        // Only then we open the inventory on sync
-        if (Bukkit.isPrimaryThread()) openToPlayer(newBukkitInventory);
-        else Tasks.runSync(MythicLib.plugin, () -> openToPlayer(newBukkitInventory));
+        // Only then we open the inventory sync
+        Tasks.runSync(MythicLib.plugin, () -> openToPlayer(newBukkitInventory));
 
         startBackgroundTask(upmost); // Start background task
 

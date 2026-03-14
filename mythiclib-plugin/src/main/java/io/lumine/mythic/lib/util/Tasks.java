@@ -9,13 +9,6 @@ import java.util.function.Consumer;
 
 public class Tasks {
 
-    private static void printStackTraceSync(@NotNull Plugin plugin, @NotNull Throwable throwable) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            plugin.getLogger().info("Error caught on non-main thread:");
-            throwable.printStackTrace();
-        });
-    }
-
     /**
      * Prefer using this method over {@link CompletableFuture#runAsync(Runnable)}
      * as using Bukkit scheduler to manage other threads is always preferable
@@ -37,7 +30,10 @@ public class Tasks {
             try {
                 runnable.run();
             } catch (Throwable throwable) {
-                printStackTraceSync(plugin, throwable);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.getLogger().info("Error caught on async thread:");
+                    throwable.printStackTrace();
+                });
             }
 
             // Complete future
@@ -46,6 +42,12 @@ public class Tasks {
         return future;
     }
 
+    /**
+     * Runs the provided runnable on the main server thread. If the calling
+     * thread is the server thread, it is executed instantly. Therefore, this
+     * method does not guarantee that the provided runnable will run on the
+     * next server tick.
+     */
     public static void runSync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
         if (Bukkit.isPrimaryThread()) runnable.run();
         else Bukkit.getScheduler().runTask(plugin, runnable);
@@ -59,6 +61,7 @@ public class Tasks {
      * @param syncTask Task to be performed sync
      * @return Runnable wrapping another runnable in a sync block.
      */
+    @NotNull
     public static <T> Consumer<T> sync(@NotNull Plugin plugin, @NotNull Consumer<T> syncTask) {
         return t -> Bukkit.getScheduler().runTask(plugin, () -> syncTask.accept(t));
     }
@@ -71,6 +74,7 @@ public class Tasks {
      * @param syncTask Task to be performed sync
      * @return Runnable wrapping another runnable in a sync block.
      */
+    @NotNull
     public static Runnable sync(@NotNull Plugin plugin, @NotNull Runnable syncTask) {
         return () -> Bukkit.getScheduler().runTask(plugin, syncTask);
     }

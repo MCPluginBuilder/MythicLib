@@ -63,13 +63,17 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
     }
 
     /**
+     * Throws an error if a profile plugin is used but the
+     * player has not chosen a profile yet.
+     *
      * @return The UUID used to save player data inside a database.
      */
     @NotNull
     public UUID getEffectiveId() {
 
         // No profiles => All IDs match
-        if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE) return getUniqueId();
+        // Lookup data => unique ID provided
+        if (MythicLib.plugin.getProfileMode() == ProfileMode.NONE || playerData.isLookup()) return getUniqueId();
 
         // Profile plugin
         if (mmoPlugin.isProfilePlugin()) {
@@ -80,9 +84,8 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
             throw new RuntimeException("Unhandled profile mode");
         }
 
-        // Otherwise, take profile ID if it exists
-        // TODO validate a profile has been chosen??? #getUniqueID() should not be used
-        return playerData.hasProfile() ? getProfileId() : getUniqueId();
+        // Will throw an error if the profile has not been chosen yet
+        return playerData.getProfileId();
     }
 
     //region Session
