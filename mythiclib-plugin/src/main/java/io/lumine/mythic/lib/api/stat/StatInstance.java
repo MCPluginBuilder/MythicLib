@@ -306,7 +306,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Updating and Buffering
 
-    public final AtomicBoolean updateRequired = new AtomicBoolean(false);
+    private final AtomicBoolean updateRequired = new AtomicBoolean(false);
 
     /**
      * Forces an update on this stat instance. An important convention
