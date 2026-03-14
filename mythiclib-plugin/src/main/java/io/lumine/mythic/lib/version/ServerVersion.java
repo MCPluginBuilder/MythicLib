@@ -41,7 +41,7 @@ public class ServerVersion {
         try {
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + craftBukkitVersion.substring(1)).getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException exception) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Non-natively supported Spigot version detected, trying reflection-based compatibility mode");
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Non-natively supported Spigot version detected (" + craftBukkitVersion + "), trying reflection-based compatibility mode");
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_Reflection").getDeclaredConstructor(ServerVersion.class).newInstance(this);
         }
         this.versionWrapper = found;
