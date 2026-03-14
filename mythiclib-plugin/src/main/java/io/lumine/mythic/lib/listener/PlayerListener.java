@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
-import io.lumine.mythic.lib.util.Tasks;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,7 +35,10 @@ public class PlayerListener implements Listener {
             playerData.clearNextSessionBuffer();
             if (playerData.hasProfileSession())
                 playerData.getProfileSession().initializeClosing(SessionUpdateReason.LOG_OUT);
-            Tasks.runSync(MythicLib.plugin, () -> playerData.updatePlayer(null));
+            // Only clear the Player instance a few ticks later
+            // Since MMOPlayerData is persistent inside the server RAM for 24h,
+            // we release all Bukkit instances such as the Player instance
+            Bukkit.getScheduler().runTaskLater(MythicLib.plugin, () -> playerData.updatePlayer(null), 20L);
         }
     }
 }
