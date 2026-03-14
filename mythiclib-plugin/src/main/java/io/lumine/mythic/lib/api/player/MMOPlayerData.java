@@ -182,14 +182,13 @@ public class MMOPlayerData {
     private UUID officialId;
 
     @Nullable
-    private volatile ProfileSession profileSession;
-
-    private volatile boolean nextSessionBuffered;
-    private volatile SessionUpdateReason nextSessionReasonBuffer;
+    private ProfileSession profileSession;
+    private boolean nextSessionBuffered;
+    private SessionUpdateReason nextSessionReasonBuffer;
     @Nullable
-    private volatile UUID nextSessionProfileBuffer;
+    private UUID nextSessionProfileBuffer;
 
-    private final Object sessionWriteLock = new Object();
+    private final Object sessionLock = new Object();
 
     /**
      * Watch out for the `null` key for when no profile is chosen!
@@ -224,27 +223,27 @@ public class MMOPlayerData {
      */
     @NotNull
     public UUID getProfileId() {
-        return Objects.requireNonNull(profileSession, "No profile chosen").getProfileId();
-    }
-
-    public boolean hasProfileSession() {
-        return profileSession != null;
+        return getProfileSession().getProfileId();
     }
 
     public boolean hasProfile() {
-        final var session = this.profileSession;
-        // Atomic ref read needed
+        ProfileSession session;
+        synchronized (sessionLock) {
+            session = profileSession;
+        }
         return session != null && session.hasProfile();
     }
 
     public boolean isPlaying() {
-        final var session = this.profileSession;
-        // Atomic ref read needed
+        ProfileSession session;
+        synchronized (sessionLock) {
+            session = profileSession;
+        }
         return session != null && session.isReady();
     }
 
     public void shutdownSession() {
-        synchronized (sessionWriteLock) {
+        synchronized (sessionLock) {
             if (this.profileSession != null) {
                 this.profileSession.shutdown();
                 this.profileSession = null;
@@ -253,13 +252,13 @@ public class MMOPlayerData {
     }
 
     public void clearNextSessionBuffer() {
-        synchronized (sessionWriteLock) {
+        synchronized (sessionLock) {
             nextSessionBuffered = false;
         }
     }
 
     public void applyNextSessionBuffer() {
-        synchronized (sessionWriteLock) {
+        synchronized (sessionLock) {
             // Check for buffer after saving
             if (nextSessionBuffered) {
                 nextSessionBuffered = false;
@@ -273,7 +272,7 @@ public class MMOPlayerData {
      * session for too long, it will eventually be discarded.
      */
     public void saveCurrentProfileSession() {
-        synchronized (sessionWriteLock) {
+        synchronized (sessionLock) {
             Validate.notNull(this.profileSession, "No profile session to save");
             Validate.isTrue(this.profileSession.isDead(), "Current profile session is still alive");
 
@@ -294,7 +293,7 @@ public class MMOPlayerData {
         Validate.isTrue(!lookup, "Cannot choose a profile in lookup mode");
 
         final String debugMessage;
-        synchronized (sessionWriteLock) {
+        synchronized (sessionLock) {
             final ProfileSession restoredSession;
 
             // Buffer new session if previous one is not dead yet
@@ -328,9 +327,26 @@ public class MMOPlayerData {
         UtilityMethods.debug(MythicLib.plugin, "Session", debugMessage);
     }
 
+    public boolean hasProfileSession() {
+        ProfileSession session;
+        synchronized (sessionLock) {
+            session = profileSession;
+        }
+        return session != null;
+    }
+
+    /**
+     * Atomically reads the player's profile session
+     *
+     * @return The player's profile session
+     */
     @NotNull
     public ProfileSession getProfileSession() {
-        return Objects.requireNonNull(profileSession, "No profile chosen");
+        ProfileSession session;
+        synchronized (sessionLock) {
+            session = profileSession;
+        }
+        return Objects.requireNonNull(session, "No profile chosen");
     }
 
     public void addTemporaryHandler(@NotNull TemporaryHandler handler) {
@@ -355,7 +371,11 @@ public class MMOPlayerData {
 
     @NotNull
     protected ProfileSession safePlayerSession() {
-        return Objects.requireNonNullElse(profileSession, fallbackProfileSession);
+        ProfileSession session;
+        synchronized (sessionLock) {
+            session = profileSession;
+        }
+        return Objects.requireNonNullElse(session, fallbackProfileSession);
     }
 
     /**
