@@ -239,6 +239,3 @@ gradle-app.setting
 .flattened-pom.xml
 
 !**/src/**
-
-local_install.bat
-proxy_install.bat
