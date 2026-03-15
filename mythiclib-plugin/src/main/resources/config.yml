@@ -223,12 +223,12 @@ fix_reset_attribute_modifiers:
     - ATTACK_DAMAGE
     - MOVEMENT_SPEED
 
-# Whether or not a player performing an offensive/support action
-# can interact with another player. This accounts for skills,
+# Whether a player performing an offensive/support action can
+# interact with another player. This applies to skills/abilities,
 # MI staff attacks and a few other things.
 #
-# More info available on the wiki
-# https://gitlab.com/phoenix-dvpmt/mmocore/-/wikis/Combat
+# More info available on the MMOCore wiki
+# https://docs.phoenixdevt.fr/mmocore/features/combat.html#pvp-pve-interaction-rules
 interaction_rules:
 
   # When enabled, apply PvP interaction rules for skills, melee and projectile hits.

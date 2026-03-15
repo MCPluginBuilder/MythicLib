@@ -95,8 +95,8 @@ sae2:
 # Then, this system can be extended to create fully custom item types with custom effects
 # on right/left clicks, on melee attacks and on right-click entity interactions.
 #
-# Check this wiki page for more info about skill creation: https://gitlab.com/phoenix-dvpmt/mythiclib/-/wikis/Skills
-# Check this wiki page for more info about item types:     https://gitlab.com/phoenix-dvpmt/mmoitems/-/wikis/Item%20Types
+# Check this wiki page for more info about skill creation: https://docs.phoenixdevt.fr/mythiclib/skills/custom/mythic.html
+# Check this wiki page for more info about item types:     https://docs.phoenixdevt.fr/mmoitems/features/types.html
 #
 ##############################################################################################################################
 

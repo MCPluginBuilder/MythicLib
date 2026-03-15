@@ -9,10 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author jules
- * @see {@url https://gitlab.com/phoenix-dvpmt/mythiclib/-/wikis/Combat/}
- */
 public class InteractionRules {
 
     /**
