@@ -64,12 +64,13 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
 
         // Try scheduling task
         try {
+            if (shutdownRequested) throw new IllegalPluginAccessException("Plugin shutting down");
             Tasks.runSync(plugin, () -> {
                 if (record.reason != SessionUpdateReason.AUTOSAVE) record.playerData.markSessionClosed();
                 record.future.complete(null);
             });
         } catch (IllegalPluginAccessException exception) {
-            // Plugin is disabled, complete future immediately to avoid memory leak
+            // Plugin is disabled, complete future anyways
             record.future.complete(null);
         }
     }

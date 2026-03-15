@@ -264,7 +264,7 @@ public abstract class SynchronizedDataManager<H extends SynchronizedDataHolder, 
     @Override
     public void close() {
 
-        // Save data SYNCHRONOUSLY of online players (not called with /restart)
+        // Save data of online players
         for (var holder : getLoaded())
             if (holder.isSessionReady()) this.saveData(holder, SessionUpdateReason.LOG_OUT);
 
