@@ -277,7 +277,7 @@ public class MythicLib extends MMOPlugin {
         regenIndicators.reload();
 
         // Flush outdated data
-        for (var online : MMOPlayerData.getLoaded()) online.getStatMap().flushCache();
+        for (var online : MMOPlayerData.getLoaded()) online.getStatMap().invalidateReferences();
     }
 
     @Override

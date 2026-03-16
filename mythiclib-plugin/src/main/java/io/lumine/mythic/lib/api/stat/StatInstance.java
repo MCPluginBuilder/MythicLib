@@ -81,7 +81,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
             if (hand == EquipmentSlot.MAIN_HAND) return finalValue;
             // Correct for offhand since player attributes are main-hand calculated.
             return finalValue - getTotal(getBase(), EquipmentSlot.MAIN_HAND) + getTotal(getBase(), EquipmentSlot.OFF_HAND);
-        }).orElse(getTotal(hand));
+        }).orElseGet(() -> getTotal(hand));
     }
 
     /**
@@ -194,6 +194,13 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      *         onto the sum of the base, default stat values and flat modifiers.
      */
     public double getTotal(double base, @NotNull EquipmentSlot actionHand) {
+
+        /////////////////////////
+        // Check cache
+        /////////////////////////
+        var cachedValue = actionHand == EquipmentSlot.MAIN_HAND ? this.mainHandValueCache : offHandValueCache;
+        if (cachedValue != null) return cachedValue;
+
         final var statHandler = this.handler.get();
         final @Nullable var transform = statHandler.map(StatHandler::getModifierEditor).orElse(null);
 
@@ -300,13 +307,15 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         return this.modifiers.isEmpty();
     }
 
-    public void flushCache() {
+    public void invalidateReferences() {
         handler.flush();
     }
 
-    //region Updating and Buffering
+    //region Updates, Buffering and Caches
 
     private final AtomicBoolean updateRequired = new AtomicBoolean(false);
+
+    private @Nullable Double mainHandValueCache, offHandValueCache;
 
     /**
      * Forces an update on this stat instance. An important convention
@@ -316,12 +325,17 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Max Health, Movement Speed.
      */
     public void update() {
+
+        // Invalid caches
+        this.mainHandValueCache = null;
+        this.offHandValueCache = null;
+
         if (map.isBufferingUpdates()) updateRequired.set(true);
         else handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     public void releaseUpdates() {
-        if (updateRequired.getAndSet(false) && !map.isBufferingUpdates())
+        if (updateRequired.getAndSet(false))
             handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 

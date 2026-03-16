@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.listener;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.event.AttackEvent;
+import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.element.Element;
@@ -60,7 +61,7 @@ public class ElementalDamage implements Listener {
             event.getDamage().multiplicativeModifier(1 + Math.max(-1, attacker.getStat(element.getId() + "_DAMAGE_PERCENT") / 100), element);
 
             // Apply elemental weakness
-            final StatProvider opponent = StatProvider.get(event.getEntity(), null, false);
+            final StatProvider opponent = StatProvider.get(event.getEntity(), EquipmentSlot.MAIN_HAND, false);
             event.getDamage().multiplicativeModifier(1 + Math.max(-1, opponent.getStat(element.getId() + "_WEAKNESS") / 100), element);
 
             // Apply elemental defense

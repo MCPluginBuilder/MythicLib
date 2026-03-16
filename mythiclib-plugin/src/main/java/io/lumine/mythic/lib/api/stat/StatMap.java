@@ -76,18 +76,18 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
             final @Nullable var instance = handler.updateOnLogin() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
             if (instance == null) continue;
 
-            instance.flushCache(); // Sometimes handlers are cached before mmodatas are loaded
+            instance.invalidateReferences(); // Sometimes handlers are cached before player data are loaded
             instance.update(); // Update all stats, whatever
         }
     }
 
     @Override
     protected void onSessionClose() {
-        flushCache();
+        invalidateReferences();
     }
 
-    public void flushCache() {
-        stats.values().forEach(StatInstance::flushCache);
+    public void invalidateReferences() {
+        stats.values().forEach(StatInstance::invalidateReferences);
     }
 
     //region Stat update buffers
