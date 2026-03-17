@@ -26,6 +26,20 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
      */
     private final Map<CheatType, Integer> antiCheat;
 
+    /**
+     * [Optimization] Timings show that with ~100 players connected, servers
+     * struggle with on-timer skills, which happen to have no entity targets,
+     * which makes MythicLib to cast a ray trace to provide a default target
+     * entity to the MythicMobs SkillMetadata object.
+     * <p>
+     * Note that this ray trace was implemented to stay consistent with the
+     * behavior of the /mm cast command to avoid confusion for new plugin users.
+     * <p>
+     * Since these raytraces are not used in most on-timer skills, they are not
+     * necessary. When toggled on, this option skips the raytrace altogether.
+     */
+    private final boolean skipRayTrace;
+
     public MythicMobsSkillHandler(@NotNull ConfigurationSection config, @NotNull String skillName) {
         super(config);
 
@@ -48,6 +62,8 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
         final var mmSkillOpt = skillManager.getSkill(skillName);
         Validate.isTrue(mmSkillOpt.isPresent(), "Could not find MythicMobs skill with name '" + skillName + "'");
         skill = mmSkillOpt.get();
+
+        skipRayTrace = config.getBoolean("skip_raytrace");
 
         // Disable anticheat feature?
         if (config.isConfigurationSection("disable-anti-cheat") && MythicLib.plugin.hasAntiCheat()) {
@@ -86,7 +102,7 @@ public class MythicMobsSkillHandler extends SkillHandler<MythicMobsSkillResult> 
 
     @Override
     public @NotNull MythicMobsSkillResult getResult(SkillMetadata meta) {
-        return new MythicMobsSkillResult(meta, this);
+        return new MythicMobsSkillResult(meta, this, this.skipRayTrace);
     }
 
     @Override
