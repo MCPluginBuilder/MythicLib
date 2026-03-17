@@ -145,7 +145,7 @@ public class MythicLib extends MMOPlugin {
 
         if (getConfig().getBoolean("fix_reset_attribute_modifiers.enabled")) try {
             new FixAttributeModifiers(getConfig().getConfigurationSection("fix_reset_attribute_modifiers"));
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             getLogger().log(Level.WARNING, "Could not enable fix_reset_attribute_modifiers: " + exception.getMessage());
         }
 
@@ -155,7 +155,7 @@ public class MythicLib extends MMOPlugin {
             hologramFactory = found.provide();
             Bukkit.getServicesManager().register(HologramFactory.class, hologramFactory, this, ServicePriority.Normal); // Backwards compatibility
             getLogger().log(Level.INFO, "Hooked onto " + found.getName() + " (holograms)");
-        } catch (Throwable throwable) {
+        } catch (Exception | LinkageError throwable) {
             hologramFactory = HologramFactoryList.LEGACY_ARMOR_STANDS.provide();
             getLogger().log(Level.WARNING, "Could not hook onto hologram provider " + getConfig().getString("hologram-provider") + ", using default: " + throwable.getMessage());
         }
@@ -165,7 +165,7 @@ public class MythicLib extends MMOPlugin {
             Bukkit.getPluginManager().registerEvents(new MythicMobsHook(), this);
             MythicItemUIFilter.register();
             getLogger().log(Level.INFO, "Hooked onto MythicMobs");
-        } catch (Throwable throwable) {
+        } catch (Exception | LinkageError throwable) {
             getLogger().log(Level.INFO, "Could not hook onto MythicMobs: " + throwable.getMessage());
         }
 

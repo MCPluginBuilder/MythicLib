@@ -139,7 +139,7 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         try (var connection = getConnection();
              var prepared = prepareStatement(connection, "INSERT INTO `" + this.userdataTableName + "` (`" + this.uuidFieldName + "`, `is_saved`) VALUES(?, 0) ON DUPLICATE KEY UPDATE `is_saved` = 0;", effectiveId.toString())) {
             prepared.executeUpdate();
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             this.plugin.getLogger().log(Level.WARNING, "Could not confirm data sync of " + effectiveId);
             exception.printStackTrace();
         }
@@ -291,7 +291,7 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     public void execute(Consumer<Connection> execute) {
         try (Connection connection = getConnection()) {
             execute.accept(connection);
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             this.plugin.getLogger().log(Level.WARNING, "SQL Error: " + throwable.getMessage());
             throwable.printStackTrace();
         }
@@ -303,7 +303,7 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
         return Tasks.runAsync(plugin, () -> {
             try (Connection connection = getConnection()) {
                 execute.accept(connection);
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 this.plugin.getLogger().log(Level.WARNING, "SQL Error (async): " + throwable.getMessage());
                 throwable.printStackTrace();
             }

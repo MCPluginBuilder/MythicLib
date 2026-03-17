@@ -35,7 +35,7 @@ public class DispatchCommandMechanic extends TargetMechanic {
         if (target != null && asOperator && !target.isOp()) try {
             target.setOp(true);
             target.performCommand(rawCommand);
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             MythicLib.plugin.getLogger().log(Level.WARNING, "Could not run command '" + rawCommand + "' as entity '" + target.getUniqueId() + "': " + exception.getMessage());
         } finally {
             target.setOp(false);

@@ -56,7 +56,7 @@ public class FileUtils {
             try {
                 final String name = file.getName().substring(0, file.getName().length() - 4);
                 action.accept(name, config);
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, file.getName(), throwable.getMessage()));
             }
         };
@@ -76,7 +76,7 @@ public class FileUtils {
             for (String key : config.getKeys(false))
                 try {
                     action.accept(key, config.getConfigurationSection(key));
-                } catch (Throwable throwable) {
+                } catch (Exception throwable) {
                     plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, key, file.getName(), throwable.getMessage()));
                 }
         };
@@ -94,7 +94,7 @@ public class FileUtils {
         final Consumer<File> fileAction = file -> {
             try {
                 action.accept(file);
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 plugin.getLogger().log(Level.WARNING, String.format(errorMessageFormat, file.getName(), throwable.getMessage()));
             }
         };
@@ -143,7 +143,7 @@ public class FileUtils {
         final var file = new File(plugin.getDataFolder(), path);
         if (!file.exists()) try {
             Files.copy(plugin.getResource("default/" + path), file.getAbsoluteFile().toPath());
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             throw new RuntimeException("Could not load default file '" + path + "'", throwable);
         }
     }

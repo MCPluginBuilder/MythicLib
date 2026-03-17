@@ -1,11 +1,11 @@
 package io.lumine.mythic.lib.script.util.expression;
 
 public class EvaluationException extends RuntimeException {
-    public EvaluationException(Throwable cause) {
+    public EvaluationException(Exception cause) {
         super(cause);
     }
 
-    public EvaluationException(String message, Throwable cause) {
+    public EvaluationException(String message, Exception cause) {
         super(message, cause);
     }
 

@@ -134,7 +134,7 @@ public class Argument<T> {
             Arguments.notNull(entity, "Could not find entity with UUID " + input);
             Arguments.isTrue(entity instanceof LivingEntity, "Entity is not living");
             return (LivingEntity) entity;
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
         }
 
         final var player = Bukkit.getPlayer(input);
@@ -152,7 +152,7 @@ public class Argument<T> {
                     final var player = Bukkit.getPlayer(asUniqueId);
                     Arguments.notNull(player, "Could not find player with UUID " + input);
                     return player;
-                } catch (Throwable ignored) {
+                } catch (Exception ignored) {
                 }
 
                 final var player = Bukkit.getPlayer(input);

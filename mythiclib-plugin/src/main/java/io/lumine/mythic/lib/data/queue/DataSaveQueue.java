@@ -39,7 +39,7 @@ public class DataSaveQueue<H extends SynchronizedDataHolder> extends DataQueue<H
         }
 
         // Any other error
-        catch (Throwable throwable) {
+        catch (Exception | LinkageError throwable) {
 
             // Give up.
             if (forceful) {

@@ -18,6 +18,6 @@ public class MythicLibVariablePlaceholder implements ExpressionPlaceholder {
         final var result = skillMetadata.getVariable(fullVariableName);
         if (result instanceof IntegerVariable) return (double) ((IntegerVariable) result).getStored();
         if (result instanceof DoubleVariable) return ((DoubleVariable) result).getStored();
-        throw new EvaluationException("Variable " + fullVariableName + " did not evaluate to a numerical value");
+        throw new EvaluationException("Variable " + fullVariableName + " did not evaluate to a numerical value, got " + result.getClass().getSimpleName());
     }
 }

@@ -95,7 +95,7 @@ public abstract class PluginPlaceholderExpansion<T> extends PlaceholderExpansion
             // Try to parse placeholder
             final var meta = new PlaceholderMetadata<>(playerData, raw, endIndex);
             return found.parse(meta);
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             // Fallback value
             return found.getFallback();
         }

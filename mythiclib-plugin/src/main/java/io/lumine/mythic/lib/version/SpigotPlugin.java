@@ -38,7 +38,7 @@ public class SpigotPlugin {
                 final var connection = (HttpsURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + id).openConnection();
                 connection.setRequestMethod("GET");
                 version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 plugin.getLogger().log(Level.INFO, "Could not check latest plugin version: " + throwable.getMessage());
                 return;
             }

@@ -67,9 +67,8 @@ public class ServerVersion {
             VParticle.values();
             VPotionEffectType.values();
             Validate.notNull(Sounds.ENTITY_ENDERMAN_HURT, "Error with sounds");
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            throw new RuntimeException("Compatibility error: " + throwable.getMessage());
+        } catch (Exception throwable) {
+            throw new RuntimeException("Compatibility error", throwable);
         }
     }
 
@@ -89,7 +88,7 @@ public class ServerVersion {
             final Class<?> bukkitServerClass = Bukkit.getServer().getClass();
             final String rev = bukkitServerClass.getPackage().getName().replace(".", ",").split(",")[3]; // "1_20_R4"
             return Integer.parseInt(rev.split("_")[2].replaceAll("[^0-9]", ""));
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             // Ignored
         }
 
@@ -99,7 +98,7 @@ public class ServerVersion {
                 final String candidate = craftBukkitVersion(revNumber);
                 Class.forName("org.bukkit.craftbukkit." + candidate + "." + CLASS_NAME_USED);
                 return revNumber;
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 // Ignored
             }
 

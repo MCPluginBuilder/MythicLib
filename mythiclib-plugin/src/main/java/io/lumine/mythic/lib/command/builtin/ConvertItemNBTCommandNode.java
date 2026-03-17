@@ -80,7 +80,7 @@ public class ConvertItemNBTCommandNode<H extends SynchronizedDataHolder, O exten
 
             return CommandResult.FAILURE;
 
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             explorer.verbose("An error occurred: " + throwable.getMessage());
             explorer.verbose("Please check console for more information.");
             throwable.printStackTrace();

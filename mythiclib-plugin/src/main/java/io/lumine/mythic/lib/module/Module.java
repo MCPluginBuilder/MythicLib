@@ -51,8 +51,8 @@ public abstract class Module {
                 } else
                     throw new IllegalStateException("Unsupported module listener field type " + field.getType().getName());
                 field.setAccessible(false);
-            } catch (Throwable throwable) {
-                throw new RuntimeException(throwable);
+            } catch (Exception exception) {
+                throw new RuntimeException("Could not resolve module listeners", exception);
             }
     }
 

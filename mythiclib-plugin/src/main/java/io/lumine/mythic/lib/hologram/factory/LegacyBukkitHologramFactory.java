@@ -191,7 +191,7 @@ public class LegacyBukkitHologramFactory implements HologramFactory {
 
             try {
                 setCanTick = ArmorStand.class.getDeclaredMethod("setCanTick", Boolean.TYPE);
-            } catch (Throwable ignored) {
+            } catch (Exception ignored) {
             }
 
             SET_CAN_TICK = setCanTick;

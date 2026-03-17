@@ -122,7 +122,7 @@ public abstract class TemporaryListener implements Listener {
                 Validate.isTrue(isEventClass(paramType), "Param of event handler is not an event class");
                 final HandlerList handlerList = (HandlerList) paramType.getMethod("getHandlerList").invoke(null);
                 lists.add(handlerList);
-            } catch (Throwable any) {
+            } catch (Exception any) {
                 throw new RuntimeException("Could not infer events of temporary listener", any);
             }
         return lists.toArray(new HandlerList[0]);

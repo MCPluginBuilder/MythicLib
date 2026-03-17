@@ -33,7 +33,7 @@ public class ConfigVersioner {
             try {
                 plugin.getLogger().log(Level.INFO, "Applying config update n" + (i + 1) + "...");
                 entries.get(i).run();
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 plugin.getLogger().log(Level.WARNING, "Failed to apply config update n" + (i + 1) + ":");
                 throwable.printStackTrace();
             }

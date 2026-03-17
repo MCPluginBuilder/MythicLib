@@ -177,7 +177,7 @@ public abstract class SynchronizedDataHolder implements OfflineDataHolder {
             try {
                 // If one individual MMO plugin fails, it should not force others to fail
                 onSessionClosed();
-            } catch (Throwable throwable) {
+            } catch (Exception | LinkageError throwable) {
                 MythicLib.plugin.getLogger().severe("An internal error occurred while marking player data for plugin " + mmoPlugin.getName() + " of " + getPlayer().getName() + " as closed:");
                 throwable.printStackTrace();
             }

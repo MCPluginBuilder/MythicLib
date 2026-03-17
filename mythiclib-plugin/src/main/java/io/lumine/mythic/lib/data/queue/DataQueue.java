@@ -92,7 +92,7 @@ public abstract class DataQueue<H extends SynchronizedDataHolder> implements Run
                 lastProcessedId = record.effectiveId;
                 processRecord(record);
             }
-        } catch (Throwable throwable) {
+        } catch (Exception | LinkageError throwable) {
             throwable.printStackTrace();
         } finally {
             // Access termination thread after setting worker thread to null

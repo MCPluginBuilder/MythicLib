@@ -67,7 +67,7 @@ public class UtilityMethods {
     public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
         try {
             return evaluate.apply(enumName(rawInput));
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             throw new RuntimeException(String.format(errorMessage, rawInput));
         }
     }
@@ -96,7 +96,7 @@ public class UtilityMethods {
             final var commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
             commandMapField.setAccessible(false);
             return commandMap;
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
             // Only works on Paper
         }
 
@@ -380,7 +380,7 @@ public class UtilityMethods {
         for (String candidate : candidates)
             try {
                 return Objects.requireNonNull(resolver.apply(candidate), "Null supplied value");
-            } catch (Throwable throwable) {
+            } catch (Exception throwable) {
                 // Ignore & try next candidate
             }
 
@@ -519,7 +519,7 @@ public class UtilityMethods {
         Validate.notNull(inventory, "Inventory cannot be null");
         try {
             return inventory.getHolder(false);
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             return inventory.getHolder();
         }
     }
@@ -789,8 +789,8 @@ public class UtilityMethods {
         return () -> {
             try {
                 runnable.run();
-            } catch (Throwable throwable) {
-                Bukkit.getScheduler().runTask(plugin, () -> throwable.printStackTrace());
+            } catch (Exception throwable) {
+                Tasks.runSync(plugin, throwable::printStackTrace);
             }
         };
     }
@@ -856,7 +856,7 @@ public class UtilityMethods {
     public static <T> T safeValueOf(Function<String, T> evaluate, String rawInput, String errorMessage, Object... params) {
         try {
             return evaluate.apply(enumName(rawInput));
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             throw new RuntimeException(String.format(errorMessage, params));
         }
     }
