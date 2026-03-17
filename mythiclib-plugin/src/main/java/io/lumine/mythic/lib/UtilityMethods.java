@@ -519,7 +519,7 @@ public class UtilityMethods {
         Validate.notNull(inventory, "Inventory cannot be null");
         try {
             return inventory.getHolder(false);
-        } catch (Exception throwable) {
+        } catch (NoSuchMethodError throwable) {
             return inventory.getHolder();
         }
     }
