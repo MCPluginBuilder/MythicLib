@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.data.queue.DataLoadResult;
 import io.lumine.mythic.lib.data.queue.DataNotReadyException;
 import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.Tasks;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -130,7 +131,23 @@ public abstract class SQLDatabase<H extends SynchronizedDataHolder, O extends Of
     @NotNull
     protected abstract DataLoadResult loadDataFromResultSet(@NotNull H playerData, @NotNull ResultSet result, boolean isSaved) throws SQLException;
 
-    // TODO unify saving of player data
+    @Override
+    public void saveData(@NotNull H playerData, @NotNull SessionUpdateReason saveReason) {
+        var builder = new UpdateRequestBuilder<>(this);
+        var effectiveId = playerData.getEffectiveId();
+
+        // Append mandatory fields
+        builder.appendString("uuid", effectiveId);
+        builder.appendInt("is_saved", saveReason == SessionUpdateReason.AUTOSAVE ? 0 : 1);
+
+        // Populate request
+        setupSaveRequest(playerData, builder);
+
+        // Execute
+        builder.execute();
+    }
+
+    protected abstract void setupSaveRequest(@NotNull H playerData, @NotNull UpdateRequestBuilder<H> builder);
 
     @Override
     public void confirmReception(@NotNull H playerData) {
