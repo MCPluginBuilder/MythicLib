@@ -8,10 +8,11 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * Contains all the information about damage being dealt
- * during a specific attack.
+ * Contains all the information about damage
+ * being dealt during a specific attack.
  *
  * @author Jules
+ * @see AttackMetadata
  */
 public class DamageMetadata implements Cloneable {
     private final List<DamagePacket> packets = new ArrayList<>();
@@ -31,23 +32,16 @@ public class DamageMetadata implements Cloneable {
     // TODO change with custom damage types
     private final List<String> critTags = new ArrayList<>();
 
-    private DamageMetadata(@NotNull DamagePacket initialPacket) {
-        this.initialPacket = Objects.requireNonNull(initialPacket, "Initial packet cannot be null");
-    }
-
     public DamageMetadata(double damage, @NotNull List<DamageType> types) {
         this(damage, null, types);
     }
 
-    /**
-     * Used to register an attack.
-     *
-     * @param damage  The attack damage
-     * @param element If this is an elemental attack
-     * @param types   The attack damage types
-     */
     public DamageMetadata(double damage, @Nullable Element element, @NotNull List<DamageType> types) {
-        initialPacket = new DamagePacket(damage, element, types);
+        this(new DamagePacket(damage, element, types));
+    }
+
+    public DamageMetadata(@NotNull DamagePacket initialPacket) {
+        this.initialPacket = Objects.requireNonNull(initialPacket, "Initial packet cannot be null");
         packets.add(initialPacket);
     }
 
