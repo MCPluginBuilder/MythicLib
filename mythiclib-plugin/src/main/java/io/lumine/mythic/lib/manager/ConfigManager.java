@@ -130,7 +130,7 @@ public class ConfigManager extends Module {
         try {
             skillAttackTypes = DamageType.listFromConfig(config.getStringList("damage_types.default.skills"));
         } catch (Exception exception) {
-            bowAttackTypes = List.of(DamageType.SKILL, DamageType.MAGIC);
+            skillAttackTypes = List.of(DamageType.SKILL, DamageType.MAGIC);
         }
 
         ///////////////////
