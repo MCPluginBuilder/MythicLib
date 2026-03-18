@@ -236,10 +236,12 @@ public class ProfileSession {
             ////////////////////////////////
 
             oldState = getAndSetState(ProfileSessionState.OPEN);
-            this.openDataSession();
         }
 
         callSessionUpdateEvent(oldState, lastUpdateReason);
+        // Only open data session (== update stats and attributes)
+        // after broadcasting the Bukkit event (== plugin callbacks)
+        this.openDataSession();
         this.lastUpdateReason = null;
     }
 

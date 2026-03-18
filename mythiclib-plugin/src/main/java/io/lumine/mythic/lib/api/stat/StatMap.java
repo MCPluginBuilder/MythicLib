@@ -116,7 +116,7 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
             runnable.run();
         } finally {
             var current = updatesBuffered.decrementAndGet();
-            if (current == 0) stats.values().forEach(StatInstance::releaseUpdates);
+            if (current == 0 && sessionOpen) stats.values().forEach(StatInstance::releaseUpdates);
         }
     }
 
