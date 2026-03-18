@@ -365,6 +365,22 @@ public class MMOPlayerData {
 
     //endregion
 
+    /**
+     * Used by MMOItems on login to forcefully clear all
+     * modifiers due to items. This acts as a safeguard in
+     * case they were not cleared on player logout.
+     */
+    public void clearModifiers(@NotNull String key) {
+        getStatMap().getInstances().forEach(ins -> ins.removeIf(key::equals));
+        getSkillModifierMap().removeModifiers(key);
+        getPermanentEffectMap().removeModifiers(key);
+        getParticleEffectMap().removeModifiers(key);
+        getPassiveSkillMap().removeModifiers(key);
+        // cooldownMap: nothing needed
+        getPermissionMap().removeModifiers(key);
+        // variableList: nothing needed
+    }
+
     //region Session data getters
 
     private final ProfileSession fallbackProfileSession = new ProfileSession(this, UUID.randomUUID());

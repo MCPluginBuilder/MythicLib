@@ -401,24 +401,24 @@ public class ProfileSession {
 
     private void openDataSession() {
         statMap.openSession();
-        cooldownMap.openSession();
         skillModifierMap.openSession();
         permEffectMap.openSession();
         particleEffectMap.openSession();
         passiveSkillMap.openSession();
         permissionMap.openSession();
-        //private final VariableList variableList = new VariableList(VariableScope.PLAYER);
+        cooldownMap.openSession();
+        // variableList: nothing needed
     }
 
     private void closeDataSession() {
         statMap.closeSession();
-        cooldownMap.closeSession();
         skillModifierMap.closeSession();
         permEffectMap.closeSession();
         particleEffectMap.closeSession();
         passiveSkillMap.closeSession();
         permissionMap.closeSession();
-        //private final VariableList variableList = new VariableList(VariableScope.PLAYER);
+        cooldownMap.closeSession();
+        // variableList: nothing needed
     }
 
     //endregion
