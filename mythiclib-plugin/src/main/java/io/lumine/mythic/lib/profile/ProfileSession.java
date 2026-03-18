@@ -202,7 +202,6 @@ public class ProfileSession {
             oldState = getAndSetState(ProfileSessionState.OPENING);
             this.waiting = MythicLib.plugin.getProfileHandler().collectModules();
             this.loaded = new ArrayList<>();
-            this.callbacks.clear();
         }
 
         callSessionUpdateEvent(oldState, reason);
@@ -224,15 +223,6 @@ public class ProfileSession {
         checkReadiness();
     }
 
-    public void addOpenCallback(@NotNull ProfileSessionCallback callback) {
-        Validate.notNull(callback, "Callback cannot be null");
-
-        synchronized (this.fsmLock) {
-            Validate.isTrue(this.state == ProfileSessionState.OPENING, "Session is not opening (in state " + this.state.name() + ")");
-            this.callbacks.add(callback);
-        }
-    }
-
     private void checkReadiness() {
 
         final ProfileSessionState oldState;
@@ -249,7 +239,6 @@ public class ProfileSession {
             this.openDataSession();
         }
 
-        callbacks.forEach(callback -> callback.callback(this));
         callSessionUpdateEvent(oldState, lastUpdateReason);
         this.lastUpdateReason = null;
     }
