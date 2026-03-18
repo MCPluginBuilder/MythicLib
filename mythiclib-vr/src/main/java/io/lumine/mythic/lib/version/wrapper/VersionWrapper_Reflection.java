@@ -38,7 +38,6 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
-import org.bukkit.craftbukkit.v1_21_R6.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
@@ -463,7 +462,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
     @Override
     public String getSkullValue(Block block) {
-        SkullBlockEntity skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        var skull = (SkullBlockEntity) _CraftWorld_getHandle(block.getWorld()).getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         if (skull.getOwnerProfile() == null) return "";
         return skull.getOwnerProfile().partialProfile().properties().get("textures").iterator().next().value();
     }
