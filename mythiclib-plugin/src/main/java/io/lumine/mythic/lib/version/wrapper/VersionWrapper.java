@@ -15,6 +15,8 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.EquipmentSlot;
@@ -24,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -201,6 +204,17 @@ public interface VersionWrapper {
         final String str = key.toString();
         return new AttributeModifier(UtilityMethods.uniqueIdFromString(str), str, amount, operation);
     }
+
+    /**
+     * Re-implementation of {@link LivingEntity#damage(double, Entity)} that returns a boolean
+     * to indicate if the damage was successfully dealt.
+     *
+     * @param target Entity to damage
+     * @param amount Amount of damage dealt
+     * @param source Source of damage.
+     * @return True if the damage was dealt successful, false otherwise
+     */
+    boolean damage(@NotNull LivingEntity target, double amount, @Nullable Entity source);
 
     /**
      * In 1.21.2+ Biome was changed from an Enum to an interface.

@@ -14,10 +14,10 @@ import io.lumine.mythic.lib.module.ModuleListener;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
+import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -95,9 +95,10 @@ public class DamageManager extends Module {
      * Forces a player to damage an entity with knockback
      *
      * @param metadata The class containing all info about the current attack
+     * @return If the attack was successful
      */
-    public void registerAttack(@NotNull AttackMetadata metadata) {
-        registerAttack(metadata, true, false);
+    public boolean registerAttack(@NotNull AttackMetadata metadata) {
+        return registerAttack(metadata, true, false);
     }
 
     /**
@@ -105,9 +106,10 @@ public class DamageManager extends Module {
      *
      * @param metadata  The class containing all info about the current attack
      * @param knockback If the attack should deal knockback
+     * @return If the attack was successful
      */
-    public void registerAttack(@NotNull AttackMetadata metadata, boolean knockback) {
-        registerAttack(metadata, knockback, false);
+    public boolean registerAttack(@NotNull AttackMetadata metadata, boolean knockback) {
+        return registerAttack(metadata, knockback, false);
     }
 
     /**
@@ -117,55 +119,44 @@ public class DamageManager extends Module {
      * @param attack         The class containing all info about the current attack
      * @param knockback      If the attack should deal knockback
      * @param ignoreImmunity The attack will not produce immunity frames.
+     * @return If the attack was successful
      */
-    public void registerAttack(@NotNull AttackMetadata attack, boolean knockback, boolean ignoreImmunity) {
+    public boolean registerAttack(@NotNull AttackMetadata attack, boolean knockback, boolean ignoreImmunity) {
         Validate.notNull(attack.getTarget(), "Target cannot be null"); // BW compatibility check
-        markAsMetadata(attack);
 
-        try {
-            applyDamage(attack.getDamage().getDamage(), attack.getTarget(), attack.getAttacker() != null ? attack.getAttacker().getEntity() : null, knockback, ignoreImmunity);
-        } catch (Exception exception) {
-            MythicLib.plugin.getLogger().log(Level.SEVERE, "Caught an exception (1) while damaging entity '" + attack.getTarget().getUniqueId() + "':");
-            exception.printStackTrace();
-        } finally {
-            unmarkAsMetadata(attack.getTarget());
-        }
+        markAsMetadata(attack);
+        var result = applyDamage(attack.getDamage().getDamage(), attack.getTarget(), attack.getAttacker() != null ? attack.getAttacker().getEntity() : null, knockback, ignoreImmunity);
+        unmarkAsMetadata(attack.getTarget());
+        return result;
     }
 
-    private void applyDamage(double damage, @NotNull LivingEntity target, @Nullable LivingEntity damager, boolean knockback, boolean ignoreImmunity) {
+    private boolean applyDamage(double damage, @NotNull LivingEntity target, @Nullable LivingEntity damager, boolean knockback, boolean ignoreImmunity) {
+        Validate.isTrue(damage > 0, "Damage must be strictly positive");
 
-        // Should knockback be applied
-        if (!knockback) {
-            final AttributeInstance instance = target.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
-            try {
-                instance.addModifier(noKnockbackModifier);
-                applyDamage(damage, target, damager, true, ignoreImmunity);
-            } catch (Exception anyError) {
-                MythicLib.plugin.getLogger().log(Level.SEVERE, "Caught an exception (2) while damaging entity '" + target.getUniqueId() + "':");
-                anyError.printStackTrace();
-            } finally {
-                instance.removeModifier(noKnockbackModifier);
-            }
+        final var kbInstance = !knockback ? target.getAttribute(Attributes.KNOCKBACK_RESISTANCE) : null;
+        final var noDamageTicks = ignoreImmunity ? target.getNoDamageTicks() : 0;
 
-            // Should damage immunity be taken into account
-        } else if (ignoreImmunity) {
-            final int noDamageTicks = target.getNoDamageTicks();
-            try {
-                target.setNoDamageTicks(0);
-                applyDamage(damage, target, damager, true, false);
-            } catch (Exception anyError) {
-                MythicLib.plugin.getLogger().log(Level.SEVERE, "Caught an exception (3) while damaging entity '" + target.getUniqueId() + "':");
-                anyError.printStackTrace();
-            } finally {
-                target.setNoDamageTicks(noDamageTicks);
-            }
+        // Disable knockback/iframes
+        if (kbInstance != null) kbInstance.addModifier(noKnockbackModifier);
+        if (ignoreImmunity) target.setNoDamageTicks(0);
 
-            // Just damage entity
-        } else {
-            Validate.isTrue(damage > 0, "Damage must be strictly positive");
-            if (damager == null) target.damage(damage);
-            else target.damage(damage, damager);
+        // Apply damage
+        // Try/finally to make sure entity attributes are reset in case of fail.
+        boolean damageResult = false;
+        try {
+            damageResult = VersionWrapper.get().damage(target, damage, damager);
+        } catch (Exception anyError) {
+            MythicLib.plugin.getLogger().log(Level.SEVERE, "Exception caught while damaging entity '" + target.getUniqueId() + "':");
+            anyError.printStackTrace();
         }
+
+        // Restore knockback/iframes
+        finally {
+            if (kbInstance != null) kbInstance.removeModifier(noKnockbackModifier);
+            if (ignoreImmunity) target.setNoDamageTicks(noDamageTicks);
+        }
+
+        return damageResult;
     }
 
     /**
@@ -375,7 +366,7 @@ public class DamageManager extends Module {
         return item == null || item.getType() == Material.AIR;
     }
 
-    //region Deprecated methods
+    //region Deprecated
 
     @Deprecated
     public DamageType[] getVanillaDamageTypes(EntityDamageEvent event) {
@@ -418,5 +409,6 @@ public class DamageManager extends Module {
     public void unmarkAsMetadata(@NotNull AttackMetadata attackMetadata) {
         unmarkAsMetadata(attackMetadata.getTarget());
     }
+
     //endregion
 }

@@ -22,11 +22,15 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.reflect.FieldUtils;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_15_R1.event.CraftEventFactory;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -44,6 +48,20 @@ public class VersionWrapper_1_15_R1 implements VersionWrapper {
     public VersionWrapper_1_15_R1() {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
+    }
+
+    @Override
+    public boolean damage(LivingEntity target, double amount, Entity source) {
+        DamageSource reason;
+        if (source instanceof HumanEntity) {
+            reason = DamageSource.playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = DamageSource.mobAttack(((CraftLivingEntity) source).getHandle());
+        } else {
+            reason = DamageSource.GENERIC;
+        }
+
+        return ((CraftLivingEntity) target).getHandle().damageEntity(reason, (float) amount);
     }
 
     @Override

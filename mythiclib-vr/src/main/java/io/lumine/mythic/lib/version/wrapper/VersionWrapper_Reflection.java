@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
-import com.mojang.authlib.GameProfile;
+import com.google.common.base.Preconditions;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.item.ItemTag;
@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
@@ -39,6 +40,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.EquipmentSlotGroup;
@@ -46,7 +50,6 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
@@ -58,7 +61,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
     // Reflection stuff
     private final ServerVersion version;
-    private final Method _CraftWorld_getHandle, _CraftPlayer_getHandle, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
+    private final Method _CraftWorld_getHandle, _CraftEntity_getHandle, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
     private final Function<Material, net.minecraft.world.level.block.Block> _CraftBlockType_bukkitToMinecraft;
 
     public VersionWrapper_Reflection(ServerVersion version) throws NoSuchMethodException, ClassNotFoundException {
@@ -70,14 +73,14 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
         // Classes
         var _CraftWorld = obcClass("CraftWorld");
-        var _CraftPlayer = obcClass("entity.CraftPlayer");
+        var _CraftEntity = obcClass("entity.CraftEntity");
         var _CraftItemStack = obcClass("inventory.CraftItemStack");
         var _CraftSound = obcClass("CraftSound");
         var _CraftBlockType = obcClass("block.CraftBlockType");
 
         // Methods
         _CraftWorld_getHandle = _CraftWorld.getDeclaredMethod("getHandle");
-        _CraftPlayer_getHandle = _CraftPlayer.getDeclaredMethod("getHandle");
+        _CraftEntity_getHandle = _CraftEntity.getDeclaredMethod("getHandle");
         _CraftItemStack_asNMSCopy = _CraftItemStack.getDeclaredMethod("asNMSCopy", ItemStack.class);
         _CraftItemStack_asBukkitCopy = _CraftItemStack.getDeclaredMethod("asBukkitCopy", net.minecraft.world.item.ItemStack.class);
         _CraftSound_minecraftToBukkit = _CraftSound.getDeclaredMethod("minecraftToBukkit", net.minecraft.sounds.SoundEvent.class);
@@ -101,6 +104,29 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
         // Spigot || Paper <1.20.5
         return Class.forName("org.bukkit.craftbukkit." + version.getCraftBukkitVersion() + "." + obcClassPath);
+    }
+
+    @Override
+    public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
+        try {
+            var target = (net.minecraft.world.entity.LivingEntity) _CraftEntity_getHandle.invoke(targetBukkit);
+            var level = target.level();
+            if (!(level instanceof ServerLevel)) return false;
+
+            Preconditions.checkState(!target.generation, "Cannot damage entity during world generation");
+            DamageSource reason;
+            if (source instanceof HumanEntity) {
+                reason = target.damageSources().playerAttack((net.minecraft.world.entity.player.Player) _CraftEntity_getHandle.invoke(source));
+            } else if (source instanceof LivingEntity) {
+                reason = target.damageSources().mobAttack((net.minecraft.world.entity.LivingEntity) _CraftEntity_getHandle.invoke(source));
+            } else {
+                reason = target.damageSources().generic();
+            }
+
+            return target.hurtServer((ServerLevel) level, reason, (float) amount);
+        } catch (Exception exception) {
+            throw new RuntimeException("Reflection error", exception);
+        }
     }
 
     @Override
@@ -426,7 +452,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
     private ServerPlayer _CraftPlayer_getHandle(Player player) {
         try {
-            return (ServerPlayer) _CraftPlayer_getHandle.invoke(player);
+            return (ServerPlayer) _CraftEntity_getHandle.invoke(player);
         } catch (Exception exception) {
             throw new RuntimeException("Reflection error", exception);
         }

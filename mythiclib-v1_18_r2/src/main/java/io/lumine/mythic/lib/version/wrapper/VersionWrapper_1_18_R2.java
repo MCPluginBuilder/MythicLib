@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
@@ -37,10 +38,14 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.v1_18_R2.CraftSound;
 import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -60,6 +65,20 @@ public class VersionWrapper_1_18_R2 implements VersionWrapper {
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public boolean damage(LivingEntity target, double amount, Entity source) {
+        DamageSource reason;
+        if (source instanceof HumanEntity) {
+            reason = DamageSource.playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = DamageSource.mobAttack(((CraftLivingEntity) source).getHandle());
+        } else {
+            reason = DamageSource.GENERIC;
+        }
+
+        return ((CraftLivingEntity) target).getHandle().hurt(reason, (float) amount);
     }
 
     @Override

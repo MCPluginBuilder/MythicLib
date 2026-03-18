@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
+import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
@@ -25,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
@@ -35,10 +37,14 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.v1_20_R1.CraftSound;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -46,8 +52,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class VersionWrapper_1_20_R1 implements VersionWrapper, ModernGameProfileWrapper {
@@ -57,6 +65,22 @@ public class VersionWrapper_1_20_R1 implements VersionWrapper, ModernGameProfile
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
+        var target = ((CraftLivingEntity) targetBukkit).getHandle();
+        Preconditions.checkState(!target.generation, "Cannot damage entity during world generation");
+        DamageSource reason;
+        if (source instanceof HumanEntity) {
+            reason = target.damageSources().playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = target.damageSources().mobAttack(((CraftLivingEntity) source).getHandle());
+        } else {
+            reason = target.damageSources().generic();
+        }
+
+        return target.hurt(reason, (float) amount);
     }
 
     @Override

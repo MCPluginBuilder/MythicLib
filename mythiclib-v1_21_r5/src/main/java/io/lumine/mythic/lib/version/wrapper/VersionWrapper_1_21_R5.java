@@ -1,5 +1,6 @@
 package io.lumine.mythic.lib.version.wrapper;
 
+import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.lumine.mythic.lib.MythicLib;
@@ -25,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -39,10 +41,14 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.craftbukkit.v1_21_R5.CraftSound;
 import org.bukkit.craftbukkit.v1_21_R5.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R5.block.CraftBlockType;
+import org.bukkit.craftbukkit.v1_21_R5.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_21_R5.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_21_R5.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_21_R5.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
@@ -59,6 +65,25 @@ public class VersionWrapper_1_21_R5 implements VersionWrapper, ModernGameProfile
         generatorOutputs.add(Material.COBBLESTONE);
         generatorOutputs.add(Material.OBSIDIAN);
         generatorOutputs.add(Material.BASALT);
+    }
+
+    @Override
+    public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
+        var target = ((CraftLivingEntity) targetBukkit).getHandle();
+        var level = target.level();
+        if (!(level instanceof ServerLevel)) return false;
+
+        Preconditions.checkState(!target.generation, "Cannot damage entity during world generation");
+        DamageSource reason;
+        if (source instanceof HumanEntity) {
+            reason = target.damageSources().playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = target.damageSources().mobAttack(((CraftLivingEntity) source).getHandle());
+        } else {
+            reason = target.damageSources().generic();
+        }
+
+        return target.hurtServer((ServerLevel) level, reason, (float) amount);
     }
 
     @Override
