@@ -64,6 +64,11 @@ public class UtilityMethods {
         return list.get(list.size() - 1);
     }
 
+    @NotNull
+    public static Runnable emptyRunnable() {
+        return () -> { /* nop */ };
+    }
+
     public static <T> T prettyValueOf(Function<String, T> evaluate, String rawInput, String errorMessage) {
         try {
             return evaluate.apply(enumName(rawInput));
