@@ -97,6 +97,11 @@
             <id>codemc-releases</id>
             <url>https://repo.codemc.io/repository/maven-releases/</url>
         </repository>
+        <!-- AnvilGUI (https://github.com/WesJD/AnvilGUI) -->
+        <repository>
+            <id>mvn-wesjd-net</id>
+            <url>https://mvn.wesjd.net/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -137,6 +142,12 @@
             <groupId>com.github.Redempt</groupId>
             <artifactId>Crunch</artifactId>
             <version>2.0.3</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.wesjd</groupId>
+            <artifactId>anvilgui</artifactId>
+            <version>1.10.11-SNAPSHOT</version>
             <optional>true</optional>
         </dependency>
 

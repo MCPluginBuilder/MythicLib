@@ -27,7 +27,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -64,6 +64,10 @@
                                 <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>io.lumine.mythic.lib.metrics</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.wesjd.anvilgui</pattern>
+                                    <shadedPattern>io.lumine.mythic.lib.anvilgui</shadedPattern>
                                 </relocation>
                             </relocations>
                             <minimizeJar>false</minimizeJar>
