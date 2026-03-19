@@ -162,36 +162,6 @@ public interface VersionWrapper {
      */
     void sendJson(Player player, String message);
 
-    @Deprecated
-    int getNextContainerId(Player player);
-
-    @Deprecated
-    void handleInventoryCloseEvent(Player player);
-
-    @Deprecated
-    void sendPacketOpenWindow(Player player, int containerId);
-
-    @Deprecated
-    void sendPacketCloseWindow(Player player, int containerId);
-
-    @Deprecated
-    void setActiveContainerDefault(Player player);
-
-    @Deprecated
-    void setActiveContainer(Player player, Object container);
-
-    @Deprecated
-    void setActiveContainerId(Object container, int containerId);
-
-    @Deprecated
-    void addActiveContainerSlotListener(Object container, Player player);
-
-    @Deprecated
-    Inventory toBukkitInventory(Object container);
-
-    @Deprecated
-    Object newContainerAnvil(Player player);
-
     void playArmAnimation(Player player);
 
     Sound getBlockPlaceSound(Block block);

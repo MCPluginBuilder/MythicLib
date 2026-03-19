@@ -53,7 +53,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -157,56 +156,6 @@ public class VersionWrapper_1_21_R5 implements VersionWrapper, ModernGameProfile
     @Override
     public void sendActionBarRaw(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, ComponentSerializer.parse(message));
-    }
-
-    @Override
-    public int getNextContainerId(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void handleInventoryCloseEvent(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketOpenWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketCloseWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerDefault(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainer(Player player, Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerId(Object container, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void addActiveContainerSlotListener(Object container, Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Inventory toBukkitInventory(Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Object newContainerAnvil(Player player) {
-        throw new RuntimeException("Not implemented");
     }
 
     @Override

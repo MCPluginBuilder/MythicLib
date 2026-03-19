@@ -47,7 +47,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Method;
@@ -207,56 +206,6 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
     @Override
     public void sendActionBarRaw(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, ComponentSerializer.parse(message));
-    }
-
-    @Override
-    public int getNextContainerId(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void handleInventoryCloseEvent(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketOpenWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketCloseWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerDefault(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainer(Player player, Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerId(Object container, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void addActiveContainerSlotListener(Object container, Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Inventory toBukkitInventory(Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Object newContainerAnvil(Player player) {
-        throw new RuntimeException("Not implemented");
     }
 
     @Override

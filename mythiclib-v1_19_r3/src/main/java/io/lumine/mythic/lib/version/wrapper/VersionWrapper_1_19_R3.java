@@ -167,56 +167,6 @@ public class VersionWrapper_1_19_R3 implements VersionWrapper {
     }
 
     @Override
-    public int getNextContainerId(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void handleInventoryCloseEvent(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketOpenWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void sendPacketCloseWindow(Player player, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerDefault(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainer(Player player, Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void setActiveContainerId(Object container, int containerId) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public void addActiveContainerSlotListener(Object container, Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Inventory toBukkitInventory(Object container) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public Object newContainerAnvil(Player player) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
     public NBTItem getNBTItem(ItemStack item) {
         return new CraftNBTItem(item);
     }
