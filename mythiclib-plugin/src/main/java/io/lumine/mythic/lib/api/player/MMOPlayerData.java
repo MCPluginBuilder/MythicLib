@@ -22,6 +22,7 @@ import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.TemporaryHandler;
@@ -487,13 +488,23 @@ public class MMOPlayerData {
      */
     public void triggerSkills(@NotNull TriggerMetadata triggerMetadata, @NotNull Iterable<PassiveSkill> skills, boolean flagCheck) {
         if (getPlayer().getGameMode() == GameMode.SPECTATOR) return;
-        if (flagCheck && MythicLib.plugin.getMMOConfig().flagCheckSkills && !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES))
-            return;
+        if (flagCheck && MythicLib.plugin.getMMOConfig().flagCheckSkills && !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES)) return;
 
         for (var skill : skills) {
             final var handler = skill.getTriggeredSkill().getHandler();
             if (handler.isTriggerable() && skill.getTrigger().equals(triggerMetadata.getTriggerType()))
                 skill.getTriggeredSkill().cast(triggerMetadata.toSkillMetadata(skill.getTriggeredSkill()));
+        }
+    }
+
+    public void triggerSkills(@NotNull TriggerType trigger, @NotNull SkillMetadata skillMetadata) {
+        if (getPlayer().getGameMode() == GameMode.SPECTATOR) return;
+        if (MythicLib.plugin.getMMOConfig().flagCheckSkills && !MythicLib.plugin.getFlags().isFlagAllowed(getPlayer(), CustomFlag.MMO_ABILITIES)) return;
+
+        for (var skill : getPassiveSkillMap().getModifiers()) {
+            final var handler = skill.getTriggeredSkill().getHandler();
+            if (handler.isTriggerable() && skill.getTrigger().equals(trigger))
+                skill.getTriggeredSkill().cast(skillMetadata);
         }
     }
 

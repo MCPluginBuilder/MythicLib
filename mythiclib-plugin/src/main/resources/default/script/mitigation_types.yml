@@ -4,7 +4,6 @@
 ######################################
 
 mitigation_on_block:
-  public: true
   mechanics:
 
     # First, compute block coefficient and reduce damage
@@ -51,7 +50,6 @@ mitigation_block_particle_effect_3:
 ######################################
 
 mitigation_on_dodge:
-  public: true
   mechanics:
 
     - 'cancel_event{}' # Negate all damage
@@ -80,7 +78,6 @@ mitigation_dodge_knockback:
 ######################################
 
 mitigation_on_parry:
-  public: true
   mechanics:
 
     - 'cancel_event{}' # Negate all damage

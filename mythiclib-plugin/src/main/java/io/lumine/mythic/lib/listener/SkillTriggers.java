@@ -1,11 +1,9 @@
 package io.lumine.mythic.lib.listener;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.event.PlayerKillEntityEvent;
-import io.lumine.mythic.lib.api.event.armorequip.ArmorEquipEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.AttackMetadata;
@@ -167,10 +165,11 @@ public class SkillTriggers implements Listener {
         caster.triggerSkills(new TriggerMetadata(caster, sneaking ? TriggerType.SHIFT_SWAP_ITEMS : TriggerType.SWAP_ITEMS));
     }
 
+    /*
     /**
      * Uses {@link MMOPlayerData#online(Player)} to support combat log plugins
      * un-equipping items after the player has logged out.
-     */
+     *
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void equipArmor(ArmorEquipEvent event) {
         final MMOPlayerData caster = MMOPlayerData.online(event.getPlayer());
@@ -178,6 +177,7 @@ public class SkillTriggers implements Listener {
         final boolean unequip = UtilityMethods.isAir(event.getNewArmorPiece());
         caster.triggerSkills(new TriggerMetadata(caster, unequip ? TriggerType.UNEQUIP_ARMOR : TriggerType.EQUIP_ARMOR));
     }
+    */
 
     @EventHandler
     public void differentiateClicksAndDrops(PlayerDropItemEvent event) {

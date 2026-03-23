@@ -16,6 +16,7 @@ weapon_crit_script:
     - 'multiply_damage{scalar="<crit_coef>";dtype=WEAPON}'
     - 'multiply_damage{scalar="<crit_coef>";dtype=UNARMED}'
     - 'mark_crit{dtype="WEAPON,UNARMED"}'
+    - 'call_trigger{trigger=WEAPON_CRIT}'
 
     # play sound and particle effect
     #Uncomment for an action bar message

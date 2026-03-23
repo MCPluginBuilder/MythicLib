@@ -30,6 +30,7 @@ import java.util.Objects;
  *
  * @author jules
  */
+// TODO split SkillMetadata into ScriptMetadata and make initialization very cheap. Remove this class.
 public class TriggerMetadata {
     private final MMOPlayerData playerData;
     private final TriggerType triggerType;
@@ -68,19 +69,17 @@ public class TriggerMetadata {
                            @Nullable Location targetLocation,
                            @Nullable AttackMetadata attack,
                            @Nullable PlayerMetadata caster) {
+        this(playerData, triggerType, actionHand, Lazy.of(() -> SkillMetadata.of(playerData, actionHand, source, target, targetLocation, attack, caster, null)));
+    }
+
+    public TriggerMetadata(@NotNull MMOPlayerData playerData,
+                           @NotNull TriggerType triggerType,
+                           @Nullable EquipmentSlot actionHand,
+                           @NotNull Lazy<SkillMetadata> generator) {
         this.playerData = Objects.requireNonNull(playerData);
         this.triggerType = Objects.requireNonNull(triggerType);
         this.actionHand = Objects.requireNonNullElse(actionHand, EquipmentSlot.MAIN_HAND);
-        this.skillMetaGenerator = Lazy.of(() -> SkillMetadata.of(
-                playerData,
-                actionHand,
-                source,
-                target,
-                targetLocation,
-                attack,
-                caster,
-                null
-        ));
+        this.skillMetaGenerator = generator;
     }
 
     @NotNull

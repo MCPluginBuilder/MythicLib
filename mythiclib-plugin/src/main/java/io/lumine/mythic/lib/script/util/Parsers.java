@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.script.condition.generic.CompareCondition;
 import io.lumine.mythic.lib.script.mechanic.shaped.RayTraceMechanic;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
@@ -17,7 +18,10 @@ public class Parsers {
             input -> UtilityMethods.prettyValueOf(PotionEffectType::getByName, input, "No potion effect with ID %s");
 
     public static final Function<String, DamageType> DAMAGE_TYPE =
-            input -> UtilityMethods.prettyValueOf(DamageType::valueOf, input, "No damage type with ID %s");
+            input -> UtilityMethods.prettyValueOf(DamageType::valueOf, input, "No damage type with ID '%s'");
+
+    public static final Function<String, TriggerType> SKILL_TRIGGER =
+            input -> UtilityMethods.prettyValueOf(TriggerType::valueOf, input, "No trigger with ID '%s'");
 
     public static final Function<String, List<DamageType>> DAMAGE_TYPES = DamageType::listFromConfig;
 

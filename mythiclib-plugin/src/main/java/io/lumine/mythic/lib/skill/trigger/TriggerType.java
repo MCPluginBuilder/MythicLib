@@ -3,8 +3,8 @@ package io.lumine.mythic.lib.skill.trigger;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.handler.def.passive.Backstab;
-import io.lumine.mythic.lib.util.annotation.NotUsed;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -189,7 +189,7 @@ public class TriggerType {
      */
     TIMER = new TriggerType("TIMER"),
 
-    // Trigger "Causes". These are not natural triggers but are still used by plugins
+    // Trigger "Causes". Not natural triggers but still used by plugins
 
     /**
      * Used when a player actively casts a skill (e.g MMOCore
@@ -197,16 +197,9 @@ public class TriggerType {
      * which you can use to create an active skill. Any other
      * trigger type is used for passive skills.
      */
-    CAST = new TriggerType("CAST", false, false),
+    CAST = new TriggerType("CAST", false, false, false),
 
-    COMMAND = new TriggerType("COMMAND");
-
-    /**
-     * @see #API
-     * @deprecated
-     */
-    @Deprecated
-    public static final TriggerType PLUGIN = new TriggerType("PLUGIN");
+    COMMAND = new TriggerType("COMMAND"),
 
     /**
      * Should be used by plugins when passive skills get triggered by
@@ -215,18 +208,24 @@ public class TriggerType {
      *
      * @see SkillHandler#isTriggerable()
      */
-    public static final TriggerType API = new TriggerType("API");
+    API = new TriggerType("API"),
 
     /**
      * Called when a player equips armor
      */
-    @NotUsed
-    public static final TriggerType EQUIP_ARMOR = new TriggerType("EQUIP_ARMOR", false),
+    EQUIP_ARMOR = new TriggerType("EQUIP_ARMOR", false),
 
     /**
      * Called when a player unequips armor
      */
     UNEQUIP_ARMOR = new TriggerType("UNEQUIP_ARMOR", false);
+
+    /**
+     * @see #API
+     * @deprecated
+     */
+    @Deprecated
+    public static final TriggerType PLUGIN = new TriggerType("PLUGIN");
 
     // CONSUME, POTION_SPLASH, PICKUP, UNCROUCH, INTERACT
 
@@ -275,24 +274,18 @@ public class TriggerType {
     private final String id;
     private final boolean silent, passive, actionHandSpecific;
 
+    /**
+     * Custom triggers (i.e that are defined inside server configs)
+     * unregister on plugin reloads.
+     */
+    private final boolean fromConfig;
+
     public TriggerType(String id) {
-        this(id, true, true);
+        this(id, true, true, false);
     }
 
     public TriggerType(String id, boolean silent) {
-        this(id, silent, true);
-    }
-
-    /**
-     * This constructor is made private to make sure there is only
-     * one trigger type that generates active skills.
-     *
-     * @param id      The trigger type ID
-     * @param silent  Does this trigger type generate silent skills
-     * @param passive Does this trigger type generate passive skills
-     */
-    private TriggerType(String id, boolean silent, boolean passive) {
-        this(id, silent, passive, false);
+        this(id, silent, true, false);
     }
 
     /**
@@ -305,9 +298,18 @@ public class TriggerType {
      */
     private TriggerType(String id, boolean silent, boolean passive, boolean actionHandSpecific) {
         this.id = id;
+        this.fromConfig = false;
         this.silent = silent;
         this.passive = passive;
         this.actionHandSpecific = actionHandSpecific;
+    }
+
+    public TriggerType(@NotNull ConfigurationSection config) {
+        this.id = config.getName();
+        this.fromConfig = true;
+        this.silent = config.getBoolean("silent");
+        this.passive = true; // Don't confuse users.
+        this.actionHandSpecific = false; // Don't confuse users.
     }
 
     /**
@@ -326,6 +328,10 @@ public class TriggerType {
      */
     public boolean isSilent() {
         return silent;
+    }
+
+    public boolean isFromConfig() {
+        return fromConfig;
     }
 
     /**
@@ -381,6 +387,11 @@ public class TriggerType {
         BY_ID.put(trigger.name(), trigger);
     }
 
+    public static void removeCustom() {
+        BY_ID.values().removeIf(TriggerType::isFromConfig);
+    }
+
+    @NotNull
     public static Collection<TriggerType> values() {
         return BY_ID.values();
     }

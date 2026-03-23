@@ -38,13 +38,15 @@ import io.lumine.mythic.lib.script.mechanic.visual.*;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.script.targeter.entity.*;
-import io.lumine.mythic.lib.script.targeter.location.LookingAtTargeter;
 import io.lumine.mythic.lib.script.targeter.location.*;
+import io.lumine.mythic.lib.script.targeter.location.LookingAtTargeter;
 import io.lumine.mythic.lib.skill.handler.*;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadException;
 import io.lumine.mythic.lib.util.SkillUpdateMigration;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
@@ -108,148 +110,7 @@ public class SkillManager extends Module {
     public SkillManager(MMOPlugin plugin) {
         super(plugin);
 
-        //////////////////////////////////
-        // Mechanics
-        //////////////////////////////////
-
-        // Buffs
-        registerMechanic("add_stat", AddStatModifierMechanic::new);
-        registerMechanic("remove_stat", RemoveStatModifierMechanic::new);
-        registerMechanic("feed", FeedMechanic::new);
-        registerMechanic("heal", HealMechanic::new);
-        registerMechanic("reduce_cooldown", ReduceCooldownMechanic::new, "reduce_cd", "decrease_cooldown", "decrease_cd");
-        registerMechanic("saturate", SaturateMechanic::new);
-
-        // Misc
-        registerMechanic("apply_cooldown", ApplyCooldownMechanic::new, "apply_cd");
-        registerMechanic("cancel_event", CancelEventMechanic::new, "cancelevent");
-        registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
-        registerMechanic("delay", DelayMechanic::new);
-        registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
-        registerMechanic("entity_effect", EntityEffectMechanic::new);
-        registerMechanic("lightning", LightningStrikeMechanic::new);
-        registerMechanic("script", ScriptMechanic::new, "skill", "cast");
-
-        // Inventory
-        registerMechanic("close_inventory", config -> new CloseInventoryMechanic(), "close_inv");
-        registerMechanic("go_back", config -> new GoBackMechanic(), "goback");
-
-        // Move
-        registerMechanic("teleport", TeleportMechanic::new, "tp", "set_position", "set_pos", "setpos", "setposition", "set_location", "setlocation", "set_loc", "setloc", "move", "moveto", "move_to");
-        registerMechanic("set_velocity", VelocityMechanic::new, "setvel", "set_vel", "setvelocity");
-
-        // Offense
-        registerMechanic("additive_damage_buff", AdditiveDamageBuffMechanic::new);
-        registerMechanic("damage", DamageMechanic::new, "deal_damage", "dmg", "deal_dmg", "dealdamage", "dealdmg", "attack", "atk");
-        registerMechanic("mark_crit", MarkCritMechanic::new, "mark_as_crit");
-        registerMechanic("multiply_damage", MultiplyDamageMechanic::new);
-        registerMechanic("potion", PotionMechanic::new, "peffect", "potion_effect", "p_effect", "apply_potion", "apply_potion_effect", "apply_peffect");
-        registerMechanic("remove_potion", RemovePotionMechanic::new);
-        registerMechanic("set_no_damage_ticks", SetNoDamageTicksMechanic::new, "no_damage_ticks", "set_no_damage", "setnodamage", "nodamageticks");
-        registerMechanic("set_on_fire", SetOnFireMechanic::new);
-
-        // Player
-        registerMechanic("give_item", GiveItemMechanic::new);
-        registerMechanic("kick_player", KickMechanic::new, "kick", "kickplayer");
-        registerMechanic("sudo", SudoMechanic::new);
-
-        // Projectile
-        registerMechanic("shoot_arrow", ShootArrowMechanic::new, "fire_arrow", "bowshoot", "bow_shoot", "shoot_bow");
-        registerMechanic("shulker_bullet", ShulkerBulletMechanic::new);
-
-        // Shaped
-        registerMechanic("draw_helix", HelixMechanic::new, "helix");
-        registerMechanic("draw_line", LineMechanic::new, "line");
-        registerMechanic("draw_parabola", ParabolaMechanic::new, "parabola", "spawn_parabola");
-        registerMechanic("projectile", ProjectileMechanic::new);
-        registerMechanic("raytrace_blocks", RayTraceBlocksMechanic::new);
-        registerMechanic("raytrace_entities", RayTraceEntitiesMechanic::new);
-        registerMechanic("ray_trace", RayTraceMechanic::new, "cast_ray", "raytrace", "ray_cast", "raycast");
-        registerMechanic("slash", SlashMechanic::new);
-        registerMechanic("draw_sphere", SphereMechanic::new, "sphere");
-
-        // Variables
-        registerMechanic("add_vector", AddVectorMechanic::new, "add_vec");
-        registerMechanic("cross_product", CrossProductMechanic::new);
-        registerMechanic("dot_product", DotProductMechanic::new);
-        registerMechanic("hadamard_product", HadamardProductMechanic::new);
-        registerMechanic("multiply_vector", MultiplyVectorMechanic::new);
-        registerMechanic("normalize_vector", NormalizeVectorMechanic::new, "normalize");
-        registerMechanic("orient_vector", OrientVectorMechanic::new, "orient_vec");
-        registerMechanic("save_vector", CopyVectorMechanic::new, "save_vec", "copy_vec", "copy_vector");
-        registerMechanic("set_x", SetXMechanic::new);
-        registerMechanic("set_y", SetYMechanic::new);
-        registerMechanic("set_z", SetZMechanic::new);
-        registerMechanic("subtract_vector", SubtractVectorMechanic::new, "sub_vec", "sub_vector", "subvec");
-
-        registerMechanic("increment", IncrementMechanic::new, "incr");
-        registerMechanic("set_boolean", SetBooleanMechanic::new, "set_bool");
-        registerMechanic("set_double", SetDoubleMechanic::new, "set_float");
-        registerMechanic("set_integer", SetIntegerMechanic::new, "set_int");
-        registerMechanic("set_string", SetStringMechanic::new, "set_str");
-        registerMechanic("set_vector", SetVectorMechanic::new, "set_vec");
-
-        // Visual
-        registerMechanic("action_bar", ActionBarMechanic::new, "actionbar", "ab");
-        registerMechanic("spawn_particle", ParticleMechanic::new, "particle", "par", "spawnparticle");
-        registerMechanic("sound", SoundMechanic::new, "play_world_sound", "play_sound", "world_sound");
-        registerMechanic("player_sound", PlayerSoundMechanic::new, "play_player_sound", "playersound");
-        registerMechanic("send_message", TellMechanic::new, "message", "msg", "send", "tell", "send_msg");
-
-        //////////////////////////////////
-        // Targeters
-        //////////////////////////////////
-
-        registerEntityTargeter("caster", config -> new CasterTargeter());
-        registerEntityTargeter("cone", ConeTargeter::new);
-        registerEntityTargeter("nearby_entities", NearbyEntitiesTargeter::new);
-        registerEntityTargeter("nearest_entity", NearestEntityTargeter::new);
-        registerEntityTargeter("target", config -> new TargetTargeter());
-        registerEntityTargeter("variable", VariableEntityTargeter::new);
-        registerEntityTargeter("looking_at", io.lumine.mythic.lib.script.targeter.entity.LookingAtTargeter::new);
-
-        registerLocationTargeter("caster", CasterLocationTargeter::new);
-        registerLocationTargeter("circle", CircleLocationTargeter::new);
-        registerLocationTargeter("custom", CustomLocationTargeter::new);
-        registerLocationTargeter("looking_at", LookingAtTargeter::new);
-        registerLocationTargeter("source_location", config -> new SourceLocationTargeter());
-        registerLocationTargeter("target", TargetEntityLocationTargeter::new);
-        registerLocationTargeter("target_location", config -> new TargetLocationTargeter());
-        registerLocationTargeter("variable", VariableLocationTargeter::new);
-
-        //////////////////////////////////
-        // Conditions
-        //////////////////////////////////
-
-        registerCondition("boolean", BooleanCondition::new, "bool", "generic");
-        registerCondition("compare", CompareCondition::new);
-        registerCondition("has_variable", HasVariableCondition::new, "has_var", "variable_exists", "var_exists");
-        registerCondition("in_between", InBetweenCondition::new);
-        registerCondition("string_equals", StringEqualsCondition::new, "string_equal", "str_eq");
-        registerCondition("string_contains", StringContainsCondition::new, "string_contain", "str_contain", "str_in", "string_in");
-
-        registerCondition("biome", BiomeCondition::new);
-        registerCondition("cuboid", CuboidCondition::new);
-        registerCondition("distance", DistanceCondition::new);
-        registerCondition("world", WorldCondition::new);
-
-        registerCondition("can_target", CanTargetCondition::new, "can_tgt", "cantarget", "ctgt");
-        registerCondition("cooldown", CooldownCondition::new);
-        registerCondition("food", FoodCondition::new);
-        registerCondition("ammo", HasAmmoCondition::new);
-        registerCondition("has_damage_type", HasDamageTypeCondition::new);
-        registerCondition("is_living", IsLivingCondition::new);
-        registerCondition("on_fire", OnFireCondition::new);
-        registerCondition("permission", PermissionCondition::new);
-        registerCondition("random_chance", RandomChanceCondition::new, "roll_chance", "chance_roll", "randomchance", "chance", "rollchance");
-        registerCondition("time", TimeCondition::new);
-
-        //////////////////////////////////
-        // Skill handler types
-        //////////////////////////////////
-
-        registerSkillHandlerSource(new SkillHandlerSource("default", this::loadBuiltinSkillHandler));
-        registerSkillHandlerSource(new SkillHandlerSource("mythiclib", MythicLibSkillHandler::new, List.of("mythiclib-skill-id")));
+        loadBuiltinObjects();
     }
 
     public void registerSkillHandlerSource(@NotNull SkillHandlerSource skillHandlerSource) {
@@ -496,6 +357,155 @@ public class SkillManager extends Module {
         locationTargets.put(name, locationTarget);
     }
 
+    //region Built-In Objects
+
+    private void loadBuiltinObjects() {
+
+        //////////////////////////////////
+        // Mechanics
+        //////////////////////////////////
+
+        // Buffs
+        registerMechanic("add_stat", AddStatModifierMechanic::new);
+        registerMechanic("remove_stat", RemoveStatModifierMechanic::new);
+        registerMechanic("feed", FeedMechanic::new);
+        registerMechanic("heal", HealMechanic::new);
+        registerMechanic("reduce_cooldown", ReduceCooldownMechanic::new, "reduce_cd", "decrease_cooldown", "decrease_cd");
+        registerMechanic("saturate", SaturateMechanic::new);
+
+        // Misc
+        registerMechanic("apply_cooldown", ApplyCooldownMechanic::new, "apply_cd");
+        registerMechanic("call_trigger", CallTriggerMechanic::new);
+        registerMechanic("cancel_event", CancelEventMechanic::new, "cancelevent");
+        registerMechanic("consume_ammo", ConsumeAmmoMechanic::new, "take_ammo");
+        registerMechanic("delay", DelayMechanic::new);
+        registerMechanic("dispatch_command", DispatchCommandMechanic::new, "c", "dispatch_cmd", "cmd", "command", "execute_command", "execute_cmd", "run_command", "run_cmd");
+        registerMechanic("entity_effect", EntityEffectMechanic::new);
+        registerMechanic("lightning", LightningStrikeMechanic::new);
+        registerMechanic("script", ScriptMechanic::new, "skill", "cast");
+
+        // Inventory
+        registerMechanic("close_inventory", config -> new CloseInventoryMechanic(), "close_inv");
+        registerMechanic("go_back", config -> new GoBackMechanic(), "goback");
+
+        // Move
+        registerMechanic("teleport", TeleportMechanic::new, "tp", "set_position", "set_pos", "setpos", "setposition", "set_location", "setlocation", "set_loc", "setloc", "move", "moveto", "move_to");
+        registerMechanic("set_velocity", VelocityMechanic::new, "setvel", "set_vel", "setvelocity");
+
+        // Offense
+        registerMechanic("additive_damage_buff", AdditiveDamageBuffMechanic::new);
+        registerMechanic("damage", DamageMechanic::new, "deal_damage", "dmg", "deal_dmg", "dealdamage", "dealdmg", "attack", "atk");
+        registerMechanic("mark_crit", MarkCritMechanic::new, "mark_as_crit");
+        registerMechanic("multiply_damage", MultiplyDamageMechanic::new);
+        registerMechanic("potion", PotionMechanic::new, "peffect", "potion_effect", "p_effect", "apply_potion", "apply_potion_effect", "apply_peffect");
+        registerMechanic("remove_potion", RemovePotionMechanic::new);
+        registerMechanic("set_no_damage_ticks", SetNoDamageTicksMechanic::new, "no_damage_ticks", "set_no_damage", "setnodamage", "nodamageticks");
+        registerMechanic("set_on_fire", SetOnFireMechanic::new);
+
+        // Player
+        registerMechanic("give_item", GiveItemMechanic::new);
+        registerMechanic("kick_player", KickMechanic::new, "kick", "kickplayer");
+        registerMechanic("sudo", SudoMechanic::new);
+
+        // Projectile
+        registerMechanic("shoot_arrow", ShootArrowMechanic::new, "fire_arrow", "bowshoot", "bow_shoot", "shoot_bow");
+        registerMechanic("shulker_bullet", ShulkerBulletMechanic::new);
+
+        // Shaped
+        registerMechanic("draw_helix", HelixMechanic::new, "helix");
+        registerMechanic("draw_line", LineMechanic::new, "line");
+        registerMechanic("draw_parabola", ParabolaMechanic::new, "parabola", "spawn_parabola");
+        registerMechanic("projectile", ProjectileMechanic::new);
+        registerMechanic("raytrace_blocks", RayTraceBlocksMechanic::new);
+        registerMechanic("raytrace_entities", RayTraceEntitiesMechanic::new);
+        registerMechanic("ray_trace", RayTraceMechanic::new, "cast_ray", "raytrace", "ray_cast", "raycast");
+        registerMechanic("slash", SlashMechanic::new);
+        registerMechanic("draw_sphere", SphereMechanic::new, "sphere");
+
+        // Variables
+        registerMechanic("add_vector", AddVectorMechanic::new, "add_vec");
+        registerMechanic("cross_product", CrossProductMechanic::new);
+        registerMechanic("dot_product", DotProductMechanic::new);
+        registerMechanic("hadamard_product", HadamardProductMechanic::new);
+        registerMechanic("multiply_vector", MultiplyVectorMechanic::new);
+        registerMechanic("normalize_vector", NormalizeVectorMechanic::new, "normalize");
+        registerMechanic("orient_vector", OrientVectorMechanic::new, "orient_vec");
+        registerMechanic("save_vector", CopyVectorMechanic::new, "save_vec", "copy_vec", "copy_vector");
+        registerMechanic("set_x", SetXMechanic::new);
+        registerMechanic("set_y", SetYMechanic::new);
+        registerMechanic("set_z", SetZMechanic::new);
+        registerMechanic("subtract_vector", SubtractVectorMechanic::new, "sub_vec", "sub_vector", "subvec");
+
+        registerMechanic("increment", IncrementMechanic::new, "incr");
+        registerMechanic("set_boolean", SetBooleanMechanic::new, "set_bool");
+        registerMechanic("set_double", SetDoubleMechanic::new, "set_float");
+        registerMechanic("set_integer", SetIntegerMechanic::new, "set_int");
+        registerMechanic("set_string", SetStringMechanic::new, "set_str");
+        registerMechanic("set_vector", SetVectorMechanic::new, "set_vec");
+
+        // Visual
+        registerMechanic("action_bar", ActionBarMechanic::new, "actionbar", "ab");
+        registerMechanic("spawn_particle", ParticleMechanic::new, "particle", "par", "spawnparticle");
+        registerMechanic("sound", SoundMechanic::new, "play_world_sound", "play_sound", "world_sound");
+        registerMechanic("player_sound", PlayerSoundMechanic::new, "play_player_sound", "playersound");
+        registerMechanic("send_message", TellMechanic::new, "message", "msg", "send", "tell", "send_msg");
+
+        //////////////////////////////////
+        // Targeters
+        //////////////////////////////////
+
+        registerEntityTargeter("caster", config -> new CasterTargeter());
+        registerEntityTargeter("cone", ConeTargeter::new);
+        registerEntityTargeter("nearby_entities", NearbyEntitiesTargeter::new);
+        registerEntityTargeter("nearest_entity", NearestEntityTargeter::new);
+        registerEntityTargeter("target", config -> new TargetTargeter());
+        registerEntityTargeter("variable", VariableEntityTargeter::new);
+        registerEntityTargeter("looking_at", io.lumine.mythic.lib.script.targeter.entity.LookingAtTargeter::new);
+
+        registerLocationTargeter("caster", CasterLocationTargeter::new);
+        registerLocationTargeter("circle", CircleLocationTargeter::new);
+        registerLocationTargeter("custom", CustomLocationTargeter::new);
+        registerLocationTargeter("looking_at", LookingAtTargeter::new);
+        registerLocationTargeter("source_location", config -> new SourceLocationTargeter());
+        registerLocationTargeter("target", TargetEntityLocationTargeter::new);
+        registerLocationTargeter("target_location", config -> new TargetLocationTargeter());
+        registerLocationTargeter("variable", VariableLocationTargeter::new);
+
+        //////////////////////////////////
+        // Conditions
+        //////////////////////////////////
+
+        registerCondition("boolean", BooleanCondition::new, "bool", "generic");
+        registerCondition("compare", CompareCondition::new);
+        registerCondition("has_variable", HasVariableCondition::new, "has_var", "variable_exists", "var_exists");
+        registerCondition("in_between", InBetweenCondition::new);
+        registerCondition("string_equals", StringEqualsCondition::new, "string_equal", "str_eq");
+        registerCondition("string_contains", StringContainsCondition::new, "string_contain", "str_contain", "str_in", "string_in");
+
+        registerCondition("biome", BiomeCondition::new);
+        registerCondition("cuboid", CuboidCondition::new);
+        registerCondition("distance", DistanceCondition::new);
+        registerCondition("world", WorldCondition::new);
+
+        registerCondition("can_target", CanTargetCondition::new, "can_tgt", "cantarget", "ctgt");
+        registerCondition("cooldown", CooldownCondition::new);
+        registerCondition("food", FoodCondition::new);
+        registerCondition("ammo", HasAmmoCondition::new);
+        registerCondition("has_damage_type", HasDamageTypeCondition::new);
+        registerCondition("is_living", IsLivingCondition::new);
+        registerCondition("on_fire", OnFireCondition::new);
+        registerCondition("permission", PermissionCondition::new);
+        registerCondition("random_chance", RandomChanceCondition::new, "roll_chance", "chance_roll", "randomchance", "chance", "rollchance");
+        registerCondition("time", TimeCondition::new);
+
+        //////////////////////////////////
+        // Skill handler types
+        //////////////////////////////////
+
+        registerSkillHandlerSource(new SkillHandlerSource("default", this::loadBuiltinSkillHandler));
+        registerSkillHandlerSource(new SkillHandlerSource("mythiclib", MythicLibSkillHandler::new, List.of("mythiclib-skill-id")));
+    }
+
     @SuppressWarnings("unchecked")
     private void loadBuiltinSkillHandlerTypes() {
 
@@ -532,6 +542,8 @@ public class SkillManager extends Module {
         builtInSkillHandlerTypes.put(key, clazz);
     }
 
+    //endregion
+
     @Override
     protected void onReset() {
         for (var handler : handlers.values())
@@ -539,6 +551,7 @@ public class SkillManager extends Module {
 
         handlers.clear();
         scripts.clear();
+        TriggerType.removeCustom();
 
         registration = true;
     }
@@ -583,6 +596,18 @@ public class SkillManager extends Module {
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/mitigation_types.yml");
             FileUtils.copyDefaultFile(MythicLib.plugin, "script/on_hit_effects.yml");
         }
+
+        FileUtils.copyDefaultFile(MythicLib.plugin, "triggers.yml");
+
+        // Load custom triggers
+        var customTriggers = new YamlFile(MythicLib.plugin, "triggers").getContent();
+        for (var key : customTriggers.getKeys(false))
+            try {
+                var subconfig = Objects.requireNonNull(customTriggers.getConfigurationSection(key), "Config cannot be null");
+                TriggerType.register(new TriggerType(subconfig));
+            } catch (Exception exception) {
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load trigger '" + key + "': " + exception.getMessage());
+            }
 
         // Initialize custom scripts
         FileUtils.loadObjectsFromFolder(MythicLib.plugin, "script", (key, config) -> {

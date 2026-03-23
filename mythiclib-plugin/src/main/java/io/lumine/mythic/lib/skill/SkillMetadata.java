@@ -55,10 +55,7 @@ public class SkillMetadata {
      * Location at which the skill was cast
      */
     @NotNull
-    private final Location source;
-
-    @Nullable
-    private final Event sourceEvent;
+    private final Location origin;
 
     /**
      * Some skills like projectiles or ray casts cache
@@ -75,6 +72,9 @@ public class SkillMetadata {
     private final Location targetLocation;
 
     @Nullable
+    private final Event sourceEvent;
+
+    @Nullable
     private final AttackMetadata attackSource;
 
     @Nullable
@@ -84,7 +84,7 @@ public class SkillMetadata {
      * @param cast           Initial skill being cast, if any
      * @param caster         Cached statistics of the skill caster
      * @param vars           Skill variable list if it already exists
-     * @param source         The location at which the skill/mechanic was cast
+     * @param origin         The location at which the skill/mechanic was cast
      * @param targetLocation The skill/mechanic target location
      * @param targetEntity   The skill/mechanic target entity
      * @param orientation    Skill orientation if some rotation is required later on
@@ -93,7 +93,7 @@ public class SkillMetadata {
     public SkillMetadata(@Nullable Skill cast,
                          @NotNull PlayerMetadata caster,
                          @NotNull VariableList vars,
-                         @NotNull Location source,
+                         @NotNull Location origin,
                          @Nullable Location targetLocation,
                          @Nullable Entity targetEntity,
                          @Nullable SkillOrientation orientation,
@@ -102,7 +102,7 @@ public class SkillMetadata {
         this.cast = cast;
         this.caster = caster;
         this.vars = vars;
-        this.source = source;
+        this.origin = origin;
         this.targetLocation = targetLocation;
         this.targetEntity = targetEntity;
         this.orientation = orientation;
@@ -127,7 +127,7 @@ public class SkillMetadata {
 
     @NotNull
     public Location getSourceLocation() {
-        return source.clone();
+        return origin.clone();
     }
 
     public boolean hasAttackSource() {
@@ -211,7 +211,7 @@ public class SkillMetadata {
      */
     @NotNull
     public Location getSkillLocation(boolean sourceLocation) {
-        return sourceLocation ? source.clone() : targetLocation != null ? targetLocation.clone() : targetEntity != null ? EntityLocationType.BODY.getLocation(targetEntity) : source.clone();
+        return sourceLocation ? origin.clone() : targetLocation != null ? targetLocation.clone() : targetEntity != null ? EntityLocationType.BODY.getLocation(targetEntity) : origin.clone();
     }
 
     /**
@@ -237,19 +237,39 @@ public class SkillMetadata {
      */
     @NotNull
     public SkillOrientation getSkillOrientation() {
-        return orientation != null ? orientation : new SkillOrientation(Objects.requireNonNull(targetLocation, "Skill has no orientation").clone(), targetLocation.clone().subtract(source).toVector());
+        return orientation != null ? orientation : new SkillOrientation(Objects.requireNonNull(targetLocation, "Skill has no orientation").clone(), targetLocation.clone().subtract(origin).toVector());
     }
 
-    //region Cloning
+    //region Cloning and Editing
 
     @NotNull
     public SkillMetadata clone(@NotNull Location targetLocation) {
-        return clone(cast, source, targetLocation, targetEntity, orientation);
+        return clone(cast, origin, targetLocation, targetEntity, orientation);
     }
 
     @NotNull
     public SkillMetadata clone(@NotNull Skill cast) {
-        return clone(cast, source, targetLocation, targetEntity, orientation);
+        return clone(cast, origin, targetLocation, targetEntity, orientation);
+    }
+
+    @NotNull
+    public SkillMetadata withCaster(@NotNull PlayerMetadata caster) {
+        return new SkillMetadata(this.cast, Objects.requireNonNull(caster, "Caster cannot be null"), this.vars, this.origin, this.targetLocation, this.targetEntity, this.orientation, this.attackSource, this.sourceEvent);
+    }
+
+    @NotNull
+    public SkillMetadata withOrigin(@NotNull Location origin) {
+        return new SkillMetadata(this.cast, this.caster, this.vars, Objects.requireNonNull(origin, "Origin cannot be null"), this.targetLocation, this.targetEntity, this.orientation, this.attackSource, this.sourceEvent);
+    }
+
+    @NotNull
+    public SkillMetadata withTargetEntity(@Nullable Entity targetEntity) {
+        return new SkillMetadata(this.cast, this.caster, this.vars, this.origin, this.targetLocation, targetEntity, this.orientation, this.attackSource, this.sourceEvent);
+    }
+
+    @NotNull
+    public SkillMetadata withTargetLocation(@Nullable Location targetLocation) {
+        return new SkillMetadata(this.cast, this.caster, this.vars, this.origin, targetLocation, this.targetEntity, this.orientation, this.attackSource, this.sourceEvent);
     }
 
     @NotNull
@@ -355,7 +375,7 @@ public class SkillMetadata {
 
             // Skill source location
             case "source":
-                var = new PositionVariable("temp", source.clone());
+                var = new PositionVariable("temp", origin.clone());
                 break;
 
             // Skill target location
@@ -553,6 +573,20 @@ public class SkillMetadata {
         return getAttackSource();
     }
 
+    @Override
+    public String toString() {
+        return "SkillMetadata{" +
+                "attackSource=" + attackSource +
+                ", sourceEvent=" + sourceEvent +
+                ", targetLocation=" + targetLocation +
+                ", targetEntity=" + targetEntity +
+                ", origin=" + origin +
+                ", caster=" + caster +
+                ", cast=" + cast +
+                ", vars=" + vars +
+                '}';
+    }
+
     /**
      * @see #getVariable(String)
      * @deprecated References no longer exist, in order to reduce confusion, MythicLib
@@ -582,13 +616,13 @@ public class SkillMetadata {
     }
 
     @Deprecated
-    public SkillMetadata(Skill cast, @NotNull AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity) {
-        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta, null);
+    public SkillMetadata(Skill cast, @NotNull AttackMetadata attackMeta, @NotNull Location origin, @Nullable Location targetLocation, @Nullable Entity targetEntity) {
+        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), origin, targetLocation, targetEntity, null, attackMeta, null);
     }
 
     @Deprecated
-    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @Nullable AttackMetadata attackMeta, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
-        this(cast, caster, vars, source, targetLocation, targetEntity, orientation, attackMeta, null);
+    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @Nullable AttackMetadata attackMeta, @NotNull Location origin, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
+        this(cast, caster, vars, origin, targetLocation, targetEntity, orientation, attackMeta, null);
     }
 
     @Deprecated
@@ -597,13 +631,13 @@ public class SkillMetadata {
     }
 
     @Deprecated
-    public SkillMetadata(Skill cast, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @NotNull AttackMetadata attackMeta) {
-        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), source, targetLocation, targetEntity, null, attackMeta, null);
+    public SkillMetadata(Skill cast, @NotNull Location origin, @Nullable Location targetLocation, @Nullable Entity targetEntity, @NotNull AttackMetadata attackMeta) {
+        this(cast, (PlayerMetadata) attackMeta.getAttacker(), new VariableList(VariableScope.SKILL), origin, targetLocation, targetEntity, null, attackMeta, null);
     }
 
     @Deprecated
-    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @NotNull Location source, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
-        this(cast, caster, vars, source, targetLocation, targetEntity, orientation, null, null);
+    public SkillMetadata(Skill cast, @NotNull PlayerMetadata caster, @NotNull VariableList vars, @NotNull Location origin, @Nullable Location targetLocation, @Nullable Entity targetEntity, @Nullable SkillOrientation orientation) {
+        this(cast, caster, vars, origin, targetLocation, targetEntity, orientation, null, null);
     }
 
     //endregion
