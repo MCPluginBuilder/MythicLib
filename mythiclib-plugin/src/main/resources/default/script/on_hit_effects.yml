@@ -3,13 +3,11 @@
 ######################################
 
 weapon_crit_script_check:
-  public: true
   conditions:
     # either weapon/unarmed damage can crit
     - 'has_damage_type{types="weapon,unarmed"}'
 
 weapon_crit_script:
-  public: true
   mechanics:
     # increase weapon/unarmed damage by crit power
     - 'set_double{var=crit_coef;val="<stat.critical_strike_power> / 100"}'
@@ -29,13 +27,11 @@ weapon_crit_script:
 ######################################
 
 skill_crit_script_check:
-  public: true
   conditions:
     # only skill damage can crit
     - 'has_damage_type{types="skill"}'
 
 skill_crit_script:
-  public: true
   mechanics:
     - 'multiply_damage{scalar="<stat.skill_critical_strike_power> / 100";dtype=SKILL}'
     - 'mark_crit{dtype=SKILL}'
@@ -50,13 +46,11 @@ skill_crit_script:
 ######################################
 
 lifesteal_and_spellsteal_script:
-  public: true
   mechanics:
     - 'set_double{var=heal;val="<stat.lifesteal> / 100 * <attack.damage_weapon> + <stat.spell_vampirism> / 100 * <attack.damage_skill>"}'
     - 'script{s=lifesteal_and_spellsteal_script_heal}'
 
 lifesteal_and_spellsteal_script_heal:
-  public: true
   conditions:
     - 'bool{expr=" <heal> > 0 "}' # only if heal is positive
   mechanics:
