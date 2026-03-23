@@ -17,8 +17,6 @@ public class RemoveStatModifierMechanic extends TargetMechanic {
     public RemoveStatModifierMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("stat", "key");
-
         stat = config.getString("stat");
         key = config.getString("key");
     }

@@ -1,10 +1,10 @@
 package io.lumine.mythic.lib.script.condition.misc;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.Parsers;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 /**
@@ -16,7 +16,7 @@ public class CanTargetCondition extends Condition {
     public CanTargetCondition(ConfigObject config) {
         super(config);
 
-        interactionType = config.contains("interaction_type") ? InteractionType.valueOf(UtilityMethods.enumName(config.getString("interaction_type"))) : InteractionType.OFFENSE_SKILL;
+        interactionType = config.parse(InteractionType.OFFENSE_SKILL, Parsers.INTERACTION_TYPE, "interaction_type", "it", "type");
     }
 
     @Override

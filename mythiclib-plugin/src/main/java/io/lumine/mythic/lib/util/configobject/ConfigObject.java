@@ -23,10 +23,8 @@ import java.util.function.Function;
  * less crammed, more familiar with Fabled) or line configs (for
  * users more familiar with MM)
  * <p>
- * This is also used to restrain the methods from the ConfigurationSection
- * class which include editing methods. Also provides util methods
- * like {@link #validateKeys(String...)} which aren't present in
- * bukkit config sections
+ * This is also used to wrap mutable objects and only make public
+ * read-only methods.
  * <p>
  * There are always two methods to get a primitive with some key,
  * one method with a default value and another method which throws
@@ -154,7 +152,8 @@ public interface ConfigObject {
      * <p>
      * This is primarily used for targeters and condition shortcuts.
      */
-    @NotNull ConfigObject adaptObject(String key);
+    @NotNull
+    ConfigObject adaptObject(String key);
 
     boolean contains(String key);
 
@@ -169,8 +168,8 @@ public interface ConfigObject {
     //region Deprecated
 
     /**
-     * @deprecated
      * @see #numericExpr(NumericExpression, String...)
+     * @deprecated
      */
     @Deprecated
     default DoubleFormula getDoubleFormula(String key, DoubleFormula defaultValue) {

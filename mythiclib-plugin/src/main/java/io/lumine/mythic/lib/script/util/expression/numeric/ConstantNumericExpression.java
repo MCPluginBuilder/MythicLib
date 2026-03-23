@@ -11,8 +11,10 @@ import org.jetbrains.annotations.NotNull;
 public class ConstantNumericExpression extends NumericExpression {
     private final double constantValue;
 
-    public static NumericExpression ZERO = NumericExpression.of(0);
-    public static NumericExpression ONE = NumericExpression.of(1);
+    @Deprecated
+    public static NumericExpression ZERO = NumericExpression.ZERO;
+    @Deprecated
+    public static NumericExpression ONE = NumericExpression.ONE;
 
     public ConstantNumericExpression(double constantValue) {
         this.constantValue = constantValue;

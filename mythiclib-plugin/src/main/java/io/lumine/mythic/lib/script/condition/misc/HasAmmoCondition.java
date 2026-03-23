@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.script.condition.misc;
 
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.GameMode;
@@ -19,9 +20,7 @@ public class HasAmmoCondition extends Condition {
     public HasAmmoCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("item");
-
-        item = Material.valueOf(config.getString("item"));
+        item = config.parse(Parsers.MATERIAL, "item");
         creativeInfinite = config.getBoolean("creative_infinite", false);
         itemIgnoreTag = config.contains("item_ignore_tag") ? config.getString("item_ignore_tag") : null;
         consumeIfMet = config.getBoolean("consume_if_met", false);

@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.mechanic.visual;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.LocationMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -28,9 +28,7 @@ public class ParticleMechanic extends LocationMechanic {
     public ParticleMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("particle");
-
-        particle = Particle.valueOf(UtilityMethods.enumName(config.getString("particle")));
+        particle = config.parse(Parsers.PARTICLE, "particle");
         amount = config.getInt("amount", 1);
         speed = config.getDouble("speed", 0);
         xoffset = config.getDouble("x", 0);
@@ -39,7 +37,7 @@ public class ParticleMechanic extends LocationMechanic {
 
         // Special options
         dustOptions = config.contains("color") ? new Particle.DustOptions(loadColor(config.getObject("color")), (float) config.getDouble("size", 1)) : DEFAULT_DUST_OPTIONS;
-        blockData = config.contains("block") ? Material.valueOf(UtilityMethods.enumName(config.getString("block"))).createBlockData() : DEFAULT_BLOCK_DATA;
+        blockData = config.contains("block") ? config.parse(Parsers.MATERIAL, "block").createBlockData() : DEFAULT_BLOCK_DATA;
     }
 
     @Override

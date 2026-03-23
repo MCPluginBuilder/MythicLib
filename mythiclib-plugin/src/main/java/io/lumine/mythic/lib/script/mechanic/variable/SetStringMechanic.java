@@ -13,8 +13,6 @@ public class SetStringMechanic extends VariableMechanic {
     public SetStringMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("value");
-
         value = config.getString("value");
     }
 

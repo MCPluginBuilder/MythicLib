@@ -1,11 +1,11 @@
 package io.lumine.mythic.lib.script.targeter.entity;
 
+import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.location.DefaultLocationTargeter;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import org.bukkit.entity.Entity;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,6 +17,6 @@ public class DefaultEntityTargeter implements EntityTargeter {
 
     @Override
     public List<Entity> findTargets(SkillMetadata meta) {
-        return Arrays.asList(meta.getSkillEntity(false));
+        return Collections.singletonList(meta.getSkillEntity(false));
     }
 }

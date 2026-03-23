@@ -1,8 +1,11 @@
 package io.lumine.mythic.lib.script.condition.misc;
 
-import io.lumine.mythic.lib.util.configobject.ConfigObject;
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.Parsers;
+import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
+
+import java.util.function.Function;
 
 /**
  * Checks if the current world time is DAY/NIGHT/DUSK..
@@ -10,12 +13,12 @@ import io.lumine.mythic.lib.script.condition.Condition;
 public class TimeCondition extends Condition {
     private final TimePeriod period;
 
+    public static final Function<String, TimePeriod> PARSER_TIME_PERIOD = Parsers.ofEnum(TimePeriod.class, TimePeriod::valueOf);
+
     public TimeCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("period");
-
-        period = TimePeriod.valueOf(config.getString("period").toUpperCase());
+        period = config.parse(PARSER_TIME_PERIOD, "period");
     }
 
     @Override

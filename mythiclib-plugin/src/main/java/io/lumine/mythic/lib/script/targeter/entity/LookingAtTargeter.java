@@ -10,8 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.RayTraceResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,6 +37,6 @@ public class LookingAtTargeter implements EntityTargeter {
         Location source = meta.getCaster().getPlayer().getEyeLocation();
         RayTraceResult result = source.getWorld().rayTrace(source, source.getDirection(), range, FluidCollisionMode.NEVER, ignorePassable, size, entity -> !entity.equals(meta.getCaster().getPlayer()));
 
-        return result == null || result.getHitEntity() == null ? new ArrayList<>() : Arrays.asList(result.getHitEntity());
+        return result == null || result.getHitEntity() == null ? Collections.emptyList() : Collections.singletonList(result.getHitEntity());
     }
 }

@@ -86,7 +86,7 @@ public abstract class SkillHandler<T extends SkillResult> {
         // For custom skills, defaults to CAST unless user specifies otherwise
         defaultTriggerType = !triggerable ? TriggerType.API
                 : config == null ? TriggerType.CAST
-                : UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("trigger", "CAST"), "No trigger with name %s");
+                : UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("trigger", "CAST"), "No trigger with name '%s'");
 
         // Categories
         categories = config != null ? config.getStringList("categories") : new ArrayList<>();

@@ -5,7 +5,7 @@ import io.lumine.mythic.lib.script.targeter.LocationTargeter;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import org.bukkit.Location;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,6 +26,6 @@ public class ConstantLocationTargeter extends LocationTargeter {
 
     @Override
     public List<Location> findTargets(SkillMetadata meta) {
-        return Arrays.asList(new Location(meta.getSourceLocation().getWorld(), x, y, z));
+        return Collections.singletonList(new Location(meta.getSourceLocation().getWorld(), x, y, z));
     }
 }

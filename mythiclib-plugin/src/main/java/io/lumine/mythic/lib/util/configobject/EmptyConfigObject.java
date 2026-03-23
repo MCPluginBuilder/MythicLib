@@ -122,13 +122,13 @@ public class EmptyConfigObject implements ConfigObject {
     @NotNull
     @Override
     public ConfigObject adaptObject(String key) {
-        throw new NullPointerException("Could not find entity targeter with key '" + key + "'");
+        throw new MissingArgumentException(key);
     }
 
     @NotNull
     @Override
     public ConfigObject getObject(String key) {
-        throw new NullPointerException("Could not find object with key '" + key + "'");
+        throw new MissingArgumentException(key);
     }
 
     @Override

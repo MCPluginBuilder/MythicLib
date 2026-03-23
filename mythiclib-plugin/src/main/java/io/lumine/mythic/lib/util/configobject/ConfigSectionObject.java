@@ -169,6 +169,7 @@ public class ConfigSectionObject implements ConfigObject {
     @Override
     public ConfigSectionObject adaptObject(String key) {
         final Object found = config.get(key);
+        if (found == null) throw new MissingArgumentException(key);
 
         final ConfigurationSection loadFrom;
         if (found instanceof ConfigurationSection) loadFrom = (ConfigurationSection) found;

@@ -2,8 +2,8 @@ package io.lumine.mythic.lib.script.targeter.entity;
 
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -13,17 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConeTargeter implements EntityTargeter {
-    private final DoubleFormula radius, angle;
+    private final NumericExpression radius, angle;
     private final LocationTargeter sourceLocation, direction;
 
     public ConeTargeter(ConfigObject config) {
-        config.validateKeys("radius", "angle");
-
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : null;
         direction = config.contains("direction") ? config.getLocationTargeter("direction") : null;
 
-        angle = new DoubleFormula(config.getString("angle"));
-        radius = new DoubleFormula(config.getString("radius"));
+        angle = config.numericExpr("angle");
+        radius = config.numericExpr("radius");
     }
 
     @Override
@@ -35,7 +33,7 @@ public class ConeTargeter implements EntityTargeter {
         double rad = radius.evaluate(meta);
         double angle = Math.toRadians(this.angle.evaluate(meta));
 
-        List<Entity> list = new ArrayList<>();
+        var list = new ArrayList<Entity>();
         for (Entity nearby : loc.getWorld().getNearbyEntities(loc, rad, rad, rad))
             if (nearby.getLocation().subtract(loc).toVector().angle(dir) < angle && !nearby.equals(meta.getCaster().getPlayer()))
                 list.add(nearby);

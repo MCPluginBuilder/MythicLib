@@ -185,6 +185,7 @@ public class JsonWrapper implements ConfigObject {
     @Override
     public ConfigObject adaptObject(String key) {
         final JsonElement found = object.get(key);
+        if (found == null) throw new MissingArgumentException(key);
 
         final JsonObject loadFrom;
         if (found instanceof JsonObject) loadFrom = found.getAsJsonObject();

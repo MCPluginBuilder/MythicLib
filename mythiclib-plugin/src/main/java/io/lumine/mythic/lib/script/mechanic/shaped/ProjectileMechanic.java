@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.FluidCollisionMode;
@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class ProjectileMechanic extends DirectionMechanic {
-    private final DoubleFormula speed, size, lifeSpan, step;
+    private final NumericExpression speed, size, lifeSpan, step;
     private final Script onHitBlock, onHitEntity, onTick;
     private final boolean ignorePassable, stopOnBlock;
 
     /**
      * This determines if this skill is considered a support
      * or offense skill. Depending on the skill type, it changes
-     * whether or not that skill can hit certain players.
+     * whether that skill can hit certain players.
      */
     private final boolean offense;
 
@@ -36,7 +36,11 @@ public class ProjectileMechanic extends DirectionMechanic {
      */
     private final int hitLimit;
 
-    private static final double DEFAULT_LIFE_SPAN = 60, DEFAULT_SIZE = .2, DEFAULT_STEP = .2;
+    private static final NumericExpression
+            DEFAULT_SPEED = NumericExpression.of(10),
+            DEFAULT_LIFE_SPAN = NumericExpression.of(60),
+            DEFAULT_SIZE = NumericExpression.of(.2),
+            DEFAULT_STEP = NumericExpression.of(.2);
 
     public ProjectileMechanic(ConfigObject config) {
         super(config);
@@ -49,10 +53,10 @@ public class ProjectileMechanic extends DirectionMechanic {
         hitLimit = config.getInt("hits", 1);
         stopOnBlock = config.getBoolean("stop_on_block", true);
 
-        speed = config.contains("speed") ? new DoubleFormula(config.getString("speed")) : new DoubleFormula(10);
-        size = config.contains("size") ? new DoubleFormula(config.getString("size")) : new DoubleFormula(DEFAULT_SIZE);
-        step = config.contains("step") ? new DoubleFormula(config.getString("step")) : new DoubleFormula(DEFAULT_STEP);
-        lifeSpan = config.contains("life_span") ? new DoubleFormula(config.getString("life_span")) : new DoubleFormula(DEFAULT_LIFE_SPAN);
+        speed = config.numericExpr(DEFAULT_SPEED, "speed");
+        size = config.numericExpr(DEFAULT_SIZE, "size");
+        step = config.numericExpr(DEFAULT_STEP, "step");
+        lifeSpan = config.numericExpr(DEFAULT_LIFE_SPAN, "life_span");
     }
 
     @Override

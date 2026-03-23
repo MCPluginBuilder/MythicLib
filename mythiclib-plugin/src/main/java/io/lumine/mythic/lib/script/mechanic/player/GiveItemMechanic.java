@@ -1,8 +1,7 @@
 package io.lumine.mythic.lib.script.mechanic.player;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
-import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -19,8 +18,8 @@ public class GiveItemMechanic extends TargetMechanic {
     public GiveItemMechanic(ConfigObject config) {
         super(config);
 
-        material = UtilityMethods.prettyValueOf(Material::valueOf, config.string("material", "mat", "m"), "No material with ID %s");
-        amount = config.numericExpr(ConstantNumericExpression.ONE, "amount", "amt", "a", "count", "cnt", "c", "number", "num", "nb", "n");
+        material = config.parse(Parsers.MATERIAL, "material", "mat", "m");
+        amount = config.numericExpr(NumericExpression.ONE, "amount", "amt", "a", "count", "cnt", "c", "number", "num", "nb", "n");
     }
 
     @Override

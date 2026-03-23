@@ -1,13 +1,12 @@
 package io.lumine.mythic.lib.script.condition.misc;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.damage.DamageMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.script.condition.Condition;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,15 +16,12 @@ import java.util.List;
  * This checks if the attack has at least one of the damage types provided.
  */
 public class HasDamageTypeCondition extends Condition {
-    private final List<DamageType> types = new ArrayList<>();
+    private final List<DamageType> types;
 
     public HasDamageTypeCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("types");
-
-        for (String str : config.getString("types").split("\\,"))
-            types.add(DamageType.valueOf(UtilityMethods.enumName(str)));
+        types = config.parse(Parsers.DAMAGE_TYPES, "types");
     }
 
     @Override

@@ -14,7 +14,6 @@ public class WorldCondition extends LocationCondition {
     public WorldCondition(ConfigObject config) {
         super(config, true);
 
-        config.validateKeys("name");
         worldName = config.getString("name");
     }
 

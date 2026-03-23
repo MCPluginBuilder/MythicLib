@@ -10,7 +10,6 @@ public class WorldCondition extends MMOCondition implements io.lumine.mythic.lib
     public WorldCondition(MMOLineConfig config) {
         super(config);
 
-        config.validateKeys("name");
         this.world = config.getString("name");
     }
 

@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,8 +20,6 @@ public class CustomLocationTargeter extends LocationTargeter {
     public CustomLocationTargeter(ConfigObject config) {
         super(config);
 
-        config.validateKeys("x", "y", "z");
-
         this.x = config.numericExpr("x");
         this.y = config.numericExpr("y");
         this.z = config.numericExpr("z");
@@ -32,8 +30,8 @@ public class CustomLocationTargeter extends LocationTargeter {
 
     @Override
     public List<Location> findTargets(SkillMetadata meta) {
-        final Location loc = relative ? meta.getSkillLocation(source) : new Location(meta.getSourceLocation().getWorld(), 0, 0, 0);
+        final var loc = relative ? meta.getSkillLocation(source) : new Location(meta.getSourceLocation().getWorld(), 0, 0, 0);
         loc.add(x.evaluate(meta), y.evaluate(meta), z.evaluate(meta));
-        return Arrays.asList(loc);
+        return Collections.singletonList(loc);
     }
 }

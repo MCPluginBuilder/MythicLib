@@ -9,7 +9,6 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
-import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -31,7 +30,7 @@ public class AddStatModifierMechanic extends TargetMechanic {
 
         stat = config.string("stat");
         key = config.stringFb("default", "key", "k");
-        lifetime = config.numericExpr(ConstantNumericExpression.ZERO, "time", "duration", "dur", "d", "ticks", "t");
+        lifetime = config.numericExpr(NumericExpression.ZERO, "time", "duration", "dur", "d", "ticks", "t");
         relative = config.getBoolean("relative", false);
         amount = config.numericExpr("amount", "a", "value", "v");
         unique = config.bool("unique", "u");

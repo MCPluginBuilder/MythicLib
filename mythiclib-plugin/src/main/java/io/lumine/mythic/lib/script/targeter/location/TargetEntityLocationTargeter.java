@@ -1,12 +1,13 @@
 package io.lumine.mythic.lib.script.targeter.location;
 
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,11 +20,11 @@ public class TargetEntityLocationTargeter extends LocationTargeter {
     public TargetEntityLocationTargeter(ConfigObject config) {
         super(false);
 
-        this.entityLocationType = config.contains("position") ? EntityLocationType.valueOf(config.getString("position").toUpperCase()) : EntityLocationType.BODY;
+        this.entityLocationType = config.parse(EntityLocationType.BODY, Parsers.ENTITY_LOCATION_TYPE, "position");
     }
 
     @Override
     public List<Location> findTargets(SkillMetadata meta) {
-        return Arrays.asList(entityLocationType.getLocation(meta.getTargetEntity()));
+        return Collections.singletonList(entityLocationType.getLocation(meta.getTargetEntity()));
     }
 }

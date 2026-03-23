@@ -26,8 +26,6 @@ public class LineMechanic extends Mechanic {
     private final int pointsPerTick;
 
     public LineMechanic(ConfigObject config) {
-        config.validateKeys("source", "target");
-
         source = config.getLocationTargeter("source");
         target = config.getLocationTargeter("target");
 

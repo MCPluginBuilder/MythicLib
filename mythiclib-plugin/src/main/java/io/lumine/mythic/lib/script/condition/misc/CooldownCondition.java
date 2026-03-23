@@ -13,8 +13,6 @@ public class CooldownCondition extends Condition {
     public CooldownCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("path");
-
         cooldownPath = config.getString("path");
     }
 

@@ -29,8 +29,6 @@ public class ParabolaMechanic extends Mechanic {
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : new SourceLocationTargeter();
         targetLocation = config.contains("target") ? config.getLocationTargeter("target") : new TargetLocationTargeter();
 
-        config.validateKeys("tick");
-
         onStart = config.contains("start") ? config.getScript("start") : null;
         onTick = config.getScript("tick");
         onEnd = config.contains("end") ? config.getScript("end") : null;
@@ -143,8 +141,7 @@ public class ParabolaMechanic extends Mechanic {
      * Implementation of the unique primitive of <code>f(x) = sqrt(1 + x²)</code>
      * with null integration constant
      * <p>
-     * Source:
-     * https://math.stackexchange.com/questions/2660140/integral-int-sqrt1x2dx
+     * Source: <a href="https://math.stackexchange.com/questions/2660140/integral-int-sqrt1x2dx">StackExchange topic</a>
      *
      * @return Value of that primitive at given x
      */

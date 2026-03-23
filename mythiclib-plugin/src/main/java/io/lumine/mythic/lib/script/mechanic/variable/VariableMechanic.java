@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.script.mechanic.variable;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -18,7 +18,7 @@ public abstract class VariableMechanic extends Mechanic {
 
     public VariableMechanic(ConfigObject config) {
         varName = config.string("variable", "var", "v");
-        scope = config.contains("scope") ? UtilityMethods.prettyValueOf(VariableScope::valueOf, config.getString("scope"), "No variable scope with ID %s") : VariableScope.SKILL;
+        scope = config.parse(VariableScope.SKILL, Parsers.VARIABLE_SCOPE, "scope");
     }
 
     public String getVariableName() {

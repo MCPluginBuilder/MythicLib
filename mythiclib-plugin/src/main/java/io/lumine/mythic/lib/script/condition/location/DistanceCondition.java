@@ -16,8 +16,6 @@ public class DistanceCondition extends LocationCondition {
     public DistanceCondition(ConfigObject config) {
         super(config, true);
 
-        config.validateKeys("location", "max");
-
         center = config.getLocationTargeter("location");
         distanceMax = config.getDouble("max");
     }

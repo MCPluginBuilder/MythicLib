@@ -14,8 +14,6 @@ public class SetBooleanMechanic extends VariableMechanic {
     public SetBooleanMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("value");
-
         expression = config.getString("value");
     }
 

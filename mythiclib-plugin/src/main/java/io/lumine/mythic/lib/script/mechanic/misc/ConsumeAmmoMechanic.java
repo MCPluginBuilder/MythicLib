@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.script.mechanic.misc;
 
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.GameMode;
@@ -18,9 +19,7 @@ public class ConsumeAmmoMechanic extends Mechanic {
     private final String itemIgnoreTag;
 
     public ConsumeAmmoMechanic(ConfigObject config) {
-        config.validateKeys("item");
-
-        item = Material.valueOf(config.getString("item"));
+        item = config.parse(Parsers.MATERIAL, "item", "material");
         creativeInfinite = config.getBoolean("creative_infinite", false);
         itemIgnoreTag = config.contains("item_ignore_tag") ? config.getString("item_ignore_tag") : null;
     }

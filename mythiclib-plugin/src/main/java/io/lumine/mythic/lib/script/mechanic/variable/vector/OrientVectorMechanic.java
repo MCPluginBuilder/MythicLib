@@ -19,22 +19,21 @@ public class OrientVectorMechanic extends VariableMechanic {
     public OrientVectorMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("axis");
-
         axisVarName = config.getString("axis");
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void cast(@NotNull SkillMetadata meta) {
 
-        Variable targetVar = meta.getVariable(getVariableName());
+        var targetVar = meta.getVariable(getVariableName());
         Validate.isTrue(targetVar instanceof PositionVariable, "Variable '" + getVariableName() + "' is not a vector");
         Vector target = ((PositionVariable) targetVar).getStored().toVector();
 
-        Variable axisVar = meta.getVariable(axisVarName);
+        var axisVar = meta.getVariable(axisVarName);
         Validate.isTrue(axisVar instanceof PositionVariable, "Variable '" + axisVarName + "' is not a vector");
         Vector axis = ((PositionVariable) axisVar).getStored().toVector();
 
-        targetVar.setStored(new Position(meta.getSourceLocation().getWorld(), UtilityMethods.rotate(target, axis)));
+        ((Variable) targetVar).setStored(new Position(meta.getSourceLocation().getWorld(), UtilityMethods.rotate(target, axis)));
     }
 }

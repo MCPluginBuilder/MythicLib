@@ -3,7 +3,6 @@ package io.lumine.mythic.lib.script.mechanic.visual;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
-import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -21,7 +20,7 @@ public class ActionBarMechanic extends TargetMechanic {
 
         message = config.string("message", "msg", "m", "format", "f");
         duration = config.numericExpr(NumericExpression.of(30), "duration", "dur", "d", "ticks", "time", "t");
-        priority = config.numericExpr(ConstantNumericExpression.ZERO, "priority", "prior", "p", "level", "lvl", "l");
+        priority = config.numericExpr(NumericExpression.ZERO, "priority", "prior", "p", "level", "lvl", "l");
     }
 
     @Override

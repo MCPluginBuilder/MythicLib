@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.script.mechanic.MechanicMetadata;
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
-import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.script.variable.def.IntegerVariable;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -17,7 +16,7 @@ import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @MechanicMetadata
@@ -48,7 +47,7 @@ public class ScriptMechanic extends Mechanic {
 
         // Multiple skill casts
         counterVarName = config.getString("counter", "counter");
-        iterations = config.numericExpr(ConstantNumericExpression.ONE, "iterations", "ite", "iter", "times");
+        iterations = config.numericExpr(NumericExpression.ONE, "iterations", "ite", "iter", "times");
 
         // Targeters
         sourceLocation = config.contains("source") ? config.getLocationTargeter("source") : null;
@@ -95,8 +94,8 @@ public class ScriptMechanic extends Mechanic {
         final Location sourceLocation = this.sourceLocation == null ? old.getSourceLocation() : this.sourceLocation.findTargets(old).get(0);
 
         // Find new target entities & locations
-        final List<Entity> newTargetEntities = targetEntity == null ? Arrays.asList(old.getTargetEntityOrNull()) : this.targetEntity.findTargets(old);
-        final List<Location> newTargetLocations = targetLocation == null ? Arrays.asList(old.getTargetLocationOrNull()) : this.targetLocation.findTargets(old);
+        final List<Entity> newTargetEntities = targetEntity == null ? Collections.singletonList(old.getTargetEntityOrNull()) : this.targetEntity.findTargets(old);
+        final List<Location> newTargetLocations = targetLocation == null ? Collections.singletonList(old.getTargetLocationOrNull()) : this.targetLocation.findTargets(old);
 
         // Cast with every mathematically possible skill metadata
         for (Location targetLocation : newTargetLocations)

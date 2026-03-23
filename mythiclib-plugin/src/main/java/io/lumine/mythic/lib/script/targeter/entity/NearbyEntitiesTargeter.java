@@ -1,8 +1,8 @@
 package io.lumine.mythic.lib.script.targeter.entity;
 
 import io.lumine.mythic.lib.script.targeter.EntityTargeter;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -11,15 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NearbyEntitiesTargeter implements EntityTargeter {
-    private final DoubleFormula radius, height;
+    private final NumericExpression radius, height;
     private final boolean source, ignoreCaster;
 
     public NearbyEntitiesTargeter(ConfigObject config) {
-        config.validateKeys("radius");
-
         source = config.getBoolean("source", false);
-        radius = new DoubleFormula(config.getString("radius"));
-        height = config.contains("height") ? new DoubleFormula(config.getString("height")) : null;
+        radius = config.numericExpr("radius");
+        height = config.numericExpr((NumericExpression) null, "height");
         ignoreCaster = config.getBoolean("ignore_caster", true);
     }
 

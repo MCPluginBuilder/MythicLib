@@ -16,6 +16,9 @@ public abstract class NumericExpression {
 
     //region Static methods
 
+    public static NumericExpression ZERO = NumericExpression.of(0);
+    public static NumericExpression ONE = NumericExpression.of(1);
+
     protected static final EvaluationEnvironment ENV = new EvaluationEnvironment();
 
     private static final Function RANDOM_DOUBLE = new Function("random", 0, args -> Math.random());

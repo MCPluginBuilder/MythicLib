@@ -1,14 +1,13 @@
 package io.lumine.mythic.lib.script.targeter.location;
 
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.script.targeter.LocationTargeter;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.util.RayTraceResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,6 +29,6 @@ public class LookingAtTargeter extends LocationTargeter {
     public List<Location> findTargets(SkillMetadata meta) {
         Location source = meta.getCaster().getPlayer().getEyeLocation();
         RayTraceResult result = meta.getSourceLocation().getWorld().rayTraceBlocks(source, source.getDirection(), rayCastLength, FluidCollisionMode.NEVER, ignorePassable);
-        return result == null ? new ArrayList<>() : Arrays.asList(result.getHitPosition().toLocation(source.getWorld()));
+        return result == null ? Collections.emptyList() : Collections.singletonList(result.getHitPosition().toLocation(source.getWorld()));
     }
 }

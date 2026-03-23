@@ -13,7 +13,6 @@ public class PermissionCondition extends Condition {
     public PermissionCondition(ConfigObject config) {
         super(config);
 
-        config.validateKeys("name");
         permNode = config.getString("name");
     }
 

@@ -73,7 +73,7 @@ public class UtilityMethods {
         try {
             return evaluate.apply(enumName(rawInput));
         } catch (Exception throwable) {
-            throw new RuntimeException(String.format(errorMessage, rawInput));
+            throw new IllegalArgumentException(String.format(errorMessage, rawInput));
         }
     }
 

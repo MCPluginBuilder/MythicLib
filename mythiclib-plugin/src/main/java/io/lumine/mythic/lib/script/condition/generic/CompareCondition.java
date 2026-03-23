@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
  * Compares two double numbers using the specified comparator
@@ -19,6 +20,9 @@ public class CompareCondition extends Condition {
     private final Comparator comparator;
     private final NumericExpression first, second;
 
+    @Deprecated
+    public static final Function<String, Comparator> PARSER_COMPARATOR = Parsers.ofEnum(Comparator.class, Comparator::valueOf);
+
     private static final double SMALLEST_DIFFERENCE = .0000001;
 
     @Deprecated
@@ -27,7 +31,7 @@ public class CompareCondition extends Condition {
 
         first = config.numericExpr("first");
         second = config.numericExpr("second");
-        comparator = config.parse(Parsers.COMPARATOR, "comparator");
+        comparator = config.parse(PARSER_COMPARATOR, "comparator");
     }
 
     @Override
@@ -35,6 +39,7 @@ public class CompareCondition extends Condition {
         return comparator.test(first.evaluate(meta), second.evaluate(meta));
     }
 
+    @Deprecated
     public enum Comparator {
         EQUALS("=", (d1, d2) -> Math.abs(d1 - d2) < SMALLEST_DIFFERENCE),
 

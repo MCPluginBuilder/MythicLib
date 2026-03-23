@@ -26,7 +26,10 @@ public class RayTraceMechanic extends DirectionMechanic {
     private final boolean ignorePassable, offense, neutral;
     private final RayTraceType rayTraceType;
 
-    public static final double DEFAULT_RANGE = 50, DEFAULT_SIZE = .2, DEFAULT_STEP = .4;
+    public static final NumericExpression
+            DEFAULT_RANGE = NumericExpression.of(50),
+            DEFAULT_SIZE = NumericExpression.of(.2),
+            DEFAULT_STEP = NumericExpression.of(.4);
 
     public RayTraceMechanic(ConfigObject config) {
         super(config);
@@ -40,9 +43,9 @@ public class RayTraceMechanic extends DirectionMechanic {
         offense = config.bool(true, "offense");
         rayTraceType = config.parse(RayTraceType.DEFAULT, Parsers.RAY_TRACE_TYPE, "mode", "m");
 
-        range = config.numericExpr(NumericExpression.of(DEFAULT_RANGE), "range", "rng", "length", "len", "distance", "dist");
-        size = config.numericExpr(NumericExpression.of(DEFAULT_SIZE), "size", "width", "wide");
-        step = config.numericExpr(NumericExpression.of(DEFAULT_STEP), "step_size", "step", "st", "ss");
+        range = config.numericExpr(DEFAULT_RANGE, "range", "rng", "length", "len", "distance", "dist");
+        size = config.numericExpr(DEFAULT_SIZE, "size", "width", "wide");
+        step = config.numericExpr(DEFAULT_STEP, "step_size", "step", "st", "ss");
     }
 
     @Override

@@ -11,7 +11,6 @@ import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.script.mechanic.type.DirectionMechanic;
 import io.lumine.mythic.lib.script.util.Parsers;
-import io.lumine.mythic.lib.script.util.expression.numeric.ConstantNumericExpression;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -42,7 +41,7 @@ public class ShootArrowMechanic extends DirectionMechanic {
         onHit = config.getScriptOrNull("hit");
         onLand = config.getScriptOrNull("land");
         onTick = config.getScriptOrNull("tick");
-        velocity = config.numericExpr(ConstantNumericExpression.ONE, "velocity", "vel", "speed", "sp");
+        velocity = config.numericExpr(NumericExpression.ONE, "velocity", "vel", "speed", "sp");
         damageTypes = config.parse(List.of(DamageType.SKILL, DamageType.MAGIC), Parsers.DAMAGE_TYPES, "damage_types", "damage_type", "dtype", "dt");
     }
 
