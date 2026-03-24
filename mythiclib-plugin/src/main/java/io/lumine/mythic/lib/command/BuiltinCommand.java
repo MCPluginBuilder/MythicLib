@@ -118,9 +118,14 @@ public class BuiltinCommand {
         return verbose;
     }
 
-    @NotNull
+    @Nullable
     public CommandTreeRoot build(@NotNull ConfigurationSection config) {
-        return builder.apply(config);
+        try {
+            return builder.apply(config);
+        } catch (CommandDisabledException exception) {
+            // Command is disabled
+            return null;
+        }
     }
 
     public boolean isEnabled() {
@@ -173,9 +178,11 @@ public class BuiltinCommand {
                     plugin.getLogger().log(Level.WARNING, "Could not find config section for hardcoded command /" + cmd.getLabel() + " in commands.yml, make sure to include one!");
                     section = new YamlConfiguration();
                 }
-                final var built = cmd.build(section);
-                pluginCommand.setExecutor(built);
-                pluginCommand.setTabCompleter(built);
+                final var commandRoot = cmd.build(section);
+                if (commandRoot == null) continue;
+
+                pluginCommand.setExecutor(commandRoot);
+                pluginCommand.setTabCompleter(commandRoot);
             }
 
             // Toggleable command
@@ -183,7 +190,11 @@ public class BuiltinCommand {
                 Validate.isTrue(plugin.getCommand(cmd.getLabel()) == null, "Found hardcoded command " + cmd.getLabel() + " but it is not defined in plugin.yml");
                 final var configObject = config.getContent().getConfigurationSection(cmd.getConfigPath());
                 if (configObject == null) continue;
-                commandMap.register(namespace, cmd.build(configObject).toBukkit());
+
+                var commandRoot = cmd.build(configObject);
+                if (commandRoot == null) continue;
+
+                commandMap.register(namespace, commandRoot.toBukkit());
             }
         }
     }

@@ -15,4 +15,10 @@ public class Arguments {
             throw new CommandException(message);
         }
     }
+
+    public static void isInstanceOf(Class<?> clazz, Object instance, String message) {
+        if (instance == null || !clazz.isAssignableFrom(instance.getClass())) {
+            throw new CommandException(message);
+        }
+    }
 }

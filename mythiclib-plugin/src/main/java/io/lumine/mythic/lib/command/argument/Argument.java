@@ -243,7 +243,7 @@ public class Argument<T> {
      * @deprecated Not tested
      */
     @Deprecated
-    public static <T extends Enum<T>> Argument<@NotNull T> choices(@NotNull String key, @NotNull Class<T> enumClass) {
+    public static <T extends Enum<T>> Argument<T> choices(@NotNull String key, @NotNull Class<T> enumClass) {
         final var asList = Arrays.asList(enumClass.getEnumConstants());
         return new Argument<>(key, (explorer, list) -> asList.forEach(a -> list.add(a.toString())), (explorer, input) -> {
             try {
@@ -254,7 +254,7 @@ public class Argument<T> {
         });
     }
 
-    public static Argument<@NotNull String> choices(@NotNull String key, @NotNull String... candidates) {
+    public static Argument<String> choices(@NotNull String key, @NotNull String... candidates) {
         final var asList = Arrays.asList(candidates);
         return new Argument<>(key, (explorer, list) -> list.addAll(asList), (explorer, input) -> {
             if (asList.contains(input)) return input;
