@@ -247,5 +247,12 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.lumine</groupId>
+            <artifactId>mythiclib-v26_1_r0</artifactId>
+            <version>1.7.1-SNAPSHOT</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

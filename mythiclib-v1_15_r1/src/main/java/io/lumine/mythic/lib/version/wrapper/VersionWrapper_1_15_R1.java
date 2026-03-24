@@ -38,15 +38,12 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class VersionWrapper_1_15_R1 implements VersionWrapper {
-    private final Set<Material> generatorOutputs = new HashSet<>();
-
-    public VersionWrapper_1_15_R1() {
-        generatorOutputs.add(Material.COBBLESTONE);
-        generatorOutputs.add(Material.OBSIDIAN);
-    }
 
     @Override
     public boolean damage(LivingEntity target, double amount, Entity source) {
@@ -74,7 +71,7 @@ public class VersionWrapper_1_15_R1 implements VersionWrapper {
 
     @Override
     public boolean isGeneratorOutput(Material material) {
-        return generatorOutputs.contains(material);
+        return material == Material.COBBLESTONE || material == Material.OBSIDIAN;
     }
 
     @Override

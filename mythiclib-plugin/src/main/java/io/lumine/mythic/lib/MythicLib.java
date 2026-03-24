@@ -45,7 +45,6 @@ import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
 import io.lumine.mythic.lib.util.loadingorder.DependencyNode;
-import io.lumine.mythic.lib.util.network.MythicPacketSniffer;
 import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.SpigotPlugin;
 import org.bstats.bukkit.Metrics;
@@ -115,8 +114,8 @@ public class MythicLib extends MMOPlugin {
         new SpigotPlugin(90306, this).checkForUpdate();
         saveDefaultConfig();
 
-        // Fixes left clicks
-        new MythicPacketSniffer(this, version);
+        // TODO add an option to disable this fix?
+        Bukkit.getPluginManager().registerEvents(new LeftClickEventFix(), this);
 
         // Detect MMO plugins
         for (var plugin : Bukkit.getPluginManager().getPlugins())

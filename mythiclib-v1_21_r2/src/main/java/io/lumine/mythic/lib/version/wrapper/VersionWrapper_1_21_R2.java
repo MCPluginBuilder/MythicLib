@@ -23,12 +23,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
@@ -46,7 +41,6 @@ import org.bukkit.craftbukkit.v1_21_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R2.block.CraftBlockType;
 import org.bukkit.craftbukkit.v1_21_R2.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.v1_21_R2.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -58,18 +52,14 @@ import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class VersionWrapper_1_21_R2 implements VersionWrapper, ModernGameProfileWrapper {
-    private final Set<Material> generatorOutputs = new HashSet<>();
-
-    public VersionWrapper_1_21_R2() {
-        generatorOutputs.add(Material.COBBLESTONE);
-        generatorOutputs.add(Material.OBSIDIAN);
-        generatorOutputs.add(Material.BASALT);
-    }
 
     @Override
     public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
@@ -92,7 +82,14 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper, ModernGameProfile
 
     @Override
     public boolean isGeneratorOutput(Material material) {
-        return generatorOutputs.contains(material);
+        switch (material) {
+            case COBBLESTONE:
+            case OBSIDIAN:
+            case BASALT:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static final OreDrops
@@ -350,11 +347,7 @@ public class VersionWrapper_1_21_R2 implements VersionWrapper, ModernGameProfile
 
     @Override
     public void playArmAnimation(Player player) {
-        ServerPlayer p = ((CraftPlayer) player).getHandle();
-        ServerGamePacketListenerImpl connection = p.connection;
-        ClientboundAnimatePacket armSwing = new ClientboundAnimatePacket(p, 0);
-        connection.send(armSwing);
-        connection.handleAnimate(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+        player.swingMainHand();
     }
 
     @Override

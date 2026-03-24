@@ -20,12 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,7 +34,6 @@ import org.bukkit.craftbukkit.v1_19_R3.CraftSound;
 import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -350,11 +344,7 @@ public class VersionWrapper_1_19_R3 implements VersionWrapper {
 
     @Override
     public void playArmAnimation(Player player) {
-        ServerPlayer p = ((CraftPlayer) player).getHandle();
-        ServerGamePacketListenerImpl connection = p.connection;
-        ClientboundAnimatePacket armSwing = new ClientboundAnimatePacket(p, 0);
-        connection.send(armSwing);
-        connection.handleAnimate(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+        player.swingMainHand();
     }
 
     @Override

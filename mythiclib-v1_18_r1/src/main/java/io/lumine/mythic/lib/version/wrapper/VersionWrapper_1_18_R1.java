@@ -17,13 +17,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,16 +48,12 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class VersionWrapper_1_18_R1 implements VersionWrapper {
-    private final Set<Material> generatorOutputs = new HashSet<>();
-
-    public VersionWrapper_1_18_R1() {
-        generatorOutputs.add(Material.COBBLESTONE);
-        generatorOutputs.add(Material.OBSIDIAN);
-        generatorOutputs.add(Material.BASALT);
-    }
 
     @Override
     public boolean damage(LivingEntity target, double amount, Entity source) {
@@ -90,7 +81,14 @@ public class VersionWrapper_1_18_R1 implements VersionWrapper {
 
     @Override
     public boolean isGeneratorOutput(Material material) {
-        return generatorOutputs.contains(material);
+        switch (material) {
+            case COBBLESTONE:
+            case OBSIDIAN:
+            case BASALT:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static final OreDrops
@@ -329,11 +327,7 @@ public class VersionWrapper_1_18_R1 implements VersionWrapper {
 
     @Override
     public void playArmAnimation(Player player) {
-        ServerPlayer p = ((CraftPlayer) player).getHandle();
-        ServerGamePacketListenerImpl connection = p.connection;
-        ClientboundAnimatePacket armSwing = new ClientboundAnimatePacket(p, 0);
-        connection.send(armSwing);
-        connection.handleAnimate(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+        player.swingMainHand();
     }
 
     @Override

@@ -7,25 +7,19 @@ import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTCompound;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.OreDrops;
-import io.lumine.mythic.lib.version.ServerVersion;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.impl.ModernGameProfileWrapper;
 import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.advancements.criterion.BlockPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
@@ -34,106 +28,66 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.EquipmentSlotGroup;
-import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProfileWrapper {
-    private final Set<Material> generatorOutputs = new HashSet<>();
-
-    // Reflection stuff
-    private final ServerVersion version;
-    private final Method _CraftWorld_getHandle, _CraftEntity_getHandle, _CraftItemStack_asNMSCopy, _CraftItemStack_asBukkitCopy, _CraftSound_minecraftToBukkit;
-    private final Function<Material, net.minecraft.world.level.block.Block> _CraftBlockType_bukkitToMinecraft;
-
-    public VersionWrapper_Reflection(ServerVersion version) throws NoSuchMethodException, ClassNotFoundException {
-        generatorOutputs.add(Material.COBBLESTONE);
-        generatorOutputs.add(Material.OBSIDIAN);
-        generatorOutputs.add(Material.BASALT);
-
-        this.version = version;
-
-        // Classes
-        var _CraftWorld = obcClass("CraftWorld");
-        var _CraftEntity = obcClass("entity.CraftEntity");
-        var _CraftItemStack = obcClass("inventory.CraftItemStack");
-        var _CraftSound = obcClass("CraftSound");
-        var _CraftBlockType = obcClass("block.CraftBlockType");
-
-        // Methods
-        _CraftWorld_getHandle = _CraftWorld.getDeclaredMethod("getHandle");
-        _CraftEntity_getHandle = _CraftEntity.getDeclaredMethod("getHandle");
-        _CraftItemStack_asNMSCopy = _CraftItemStack.getDeclaredMethod("asNMSCopy", ItemStack.class);
-        _CraftItemStack_asBukkitCopy = _CraftItemStack.getDeclaredMethod("asBukkitCopy", net.minecraft.world.item.ItemStack.class);
-        _CraftSound_minecraftToBukkit = _CraftSound.getDeclaredMethod("minecraftToBukkit", net.minecraft.sounds.SoundEvent.class);
-
-        // Lambdas
-        final var _CraftBlockType_bukkitToMinecraft = _CraftBlockType.getDeclaredMethod("bukkitToMinecraft", Material.class);
-        this._CraftBlockType_bukkitToMinecraft = material -> {
-            try {
-                return (net.minecraft.world.level.block.Block) _CraftBlockType_bukkitToMinecraft.invoke(null, material);
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        };
-    }
-
-    private Class<?> obcClass(String obcClassPath) throws ClassNotFoundException {
-
-        // Paper 1.20.5+
-        if (version.isAbove(1, 20, 5) && version.isPaper())
-            return Class.forName("org.bukkit.craftbukkit." + obcClassPath);
-
-        // Spigot || Paper <1.20.5
-        return Class.forName("org.bukkit.craftbukkit." + version.getCraftBukkitVersion() + "." + obcClassPath);
-    }
+public class VersionWrapper_26_1_R0 implements VersionWrapper, ModernGameProfileWrapper {
 
     @Override
     public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
-        try {
-            var target = (net.minecraft.world.entity.LivingEntity) _CraftEntity_getHandle.invoke(targetBukkit);
-            var level = target.level();
-            if (!(level instanceof ServerLevel)) return false;
+        var target = ((CraftLivingEntity) targetBukkit).getHandle();
+        var level = target.level();
+        if (!(level instanceof ServerLevel)) return false;
 
-            Preconditions.checkState(!target.generation, "Cannot damage entity during world generation");
-            DamageSource reason;
-            if (source instanceof HumanEntity) {
-                reason = target.damageSources().playerAttack((net.minecraft.world.entity.player.Player) _CraftEntity_getHandle.invoke(source));
-            } else if (source instanceof LivingEntity) {
-                reason = target.damageSources().mobAttack((net.minecraft.world.entity.LivingEntity) _CraftEntity_getHandle.invoke(source));
-            } else {
-                reason = target.damageSources().generic();
-            }
-
-            return target.hurtServer((ServerLevel) level, reason, (float) amount);
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
+        Preconditions.checkState(!target.generation, "Cannot damage entity during world generation");
+        DamageSource reason;
+        if (source instanceof HumanEntity) {
+            reason = target.damageSources().playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = target.damageSources().mobAttack(((CraftLivingEntity) source).getHandle());
+        } else {
+            reason = target.damageSources().generic();
         }
+
+        return target.hurtServer((ServerLevel) level, reason, (float) amount);
     }
 
     @Override
     public boolean isGeneratorOutput(Material material) {
-        return generatorOutputs.contains(material);
+        switch (material) {
+            case COBBLESTONE:
+            case OBSIDIAN:
+            case BASALT:
+                return true;
+            default:
+                return false;
+        }
     }
 
-    private static final OreDrops IRON_ORE = new OreDrops(Material.IRON_INGOT),
+    private static final OreDrops
+            IRON_ORE = new OreDrops(Material.IRON_INGOT),
             GOLD_ORE = new OreDrops(Material.GOLD_INGOT),
             COPPER_ORE = new OreDrops(Material.COPPER_INGOT, 2, 5),
             ANCIENT_DEBRIS = new OreDrops(Material.NETHERITE_SCRAP);
@@ -162,22 +116,14 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         return player.getAttackCooldown();
     }
 
-    private net.minecraft.world.item.ItemStack _CraftItemStack_asNMSCopy(ItemStack item) {
-        try {
-            return (net.minecraft.world.item.ItemStack) _CraftItemStack_asNMSCopy.invoke(null, item);
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
-        }
-    }
-
     @Override
     public int getFoodRestored(ItemStack item) {
-        return _CraftItemStack_asNMSCopy(item).get(DataComponents.FOOD).nutrition();
+        return CraftItemStack.asNMSCopy(item).get(DataComponents.FOOD).nutrition();
     }
 
     @Override
     public float getSaturationRestored(ItemStack item) {
-        return _CraftItemStack_asNMSCopy(item).get(DataComponents.FOOD).saturation();
+        return CraftItemStack.asNMSCopy(item).get(DataComponents.FOOD).saturation();
     }
 
     /**
@@ -213,16 +159,16 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         return new CraftNBTItem(item);
     }
 
-    public class CraftNBTItem extends NBTItem {
+    public static class CraftNBTItem extends NBTItem {
         private final net.minecraft.world.item.ItemStack nms;
         private final CompoundTag compound;
 
         public CraftNBTItem(ItemStack item) {
             super(item);
 
-            nms = _CraftItemStack_asNMSCopy(item);
+            nms = CraftItemStack.asNMSCopy(item);
             final CustomData customDataTag = nms.get(DataComponents.CUSTOM_DATA);
-            compound = customDataTag == null ? new CompoundTag() : customDataTag.copyTag();
+            compound = customDataTag == null ? new CompoundTag() : customDataTag.copyTag(); // F*ck
         }
 
         @Override
@@ -303,8 +249,8 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
 
         @Override
         public void setCanMine(Collection<Material> blocks) {
-            List<net.minecraft.world.level.block.Block> nmsBlocks = blocks.stream().map(_CraftBlockType_bukkitToMinecraft).collect(Collectors.toList());
-            List<BlockPredicate> list = new ArrayList<>();
+            var nmsBlocks = blocks.stream().map(CraftBlockType::bukkitToMinecraft).collect(Collectors.toList());
+            var list = new ArrayList<BlockPredicate>();
             // First argument is not needed
             list.add(BlockPredicate.Builder.block().of(null, nmsBlocks).build());
             nms.set(DataComponents.CAN_BREAK, new AdventureModePredicate(list));
@@ -325,11 +271,7 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         @Override
         public ItemStack toItem() {
             nms.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
-            try {
-                return (ItemStack) _CraftItemStack_asBukkitCopy.invoke(null, nms);
-            } catch (Exception exception) {
-                throw new RuntimeException("Reflection error", exception);
-            }
+            return CraftItemStack.asBukkitCopy(nms);
         }
 
         @Override
@@ -399,45 +341,21 @@ public class VersionWrapper_Reflection implements VersionWrapper, ModernGameProf
         }
     }
 
-    private ServerPlayer _CraftPlayer_getHandle(Player player) {
-        try {
-            return (ServerPlayer) _CraftEntity_getHandle.invoke(player);
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
-        }
-    }
-
     @Override
     public void playArmAnimation(Player player) {
-        ServerPlayer p = _CraftPlayer_getHandle(player);
-        ServerGamePacketListenerImpl connection = p.connection;
-        ClientboundAnimatePacket armSwing = new ClientboundAnimatePacket(p, 0);
-        connection.send(armSwing);
-        connection.handleAnimate(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
-    }
-
-    private ServerLevel _CraftWorld_getHandle(World world) {
-        try {
-            return (ServerLevel) _CraftWorld_getHandle.invoke(world);
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
-        }
+        player.swingMainHand();
     }
 
     @Override
     public Sound getBlockPlaceSound(Block block) {
-        ServerLevel nmsWorld = _CraftWorld_getHandle(block.getWorld());
-        BlockState state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
-        try {
-            return (Sound) _CraftSound_minecraftToBukkit.invoke(null, state.getSoundType().getPlaceSound());
-        } catch (Exception exception) {
-            throw new RuntimeException("Reflection error", exception);
-        }
+        var nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+        var state = nmsWorld.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        return CraftSound.minecraftToBukkit(state.getSoundType().getPlaceSound());
     }
 
     @Override
     public String getSkullValue(Block block) {
-        var skull = (SkullBlockEntity) _CraftWorld_getHandle(block.getWorld()).getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
+        var skull = (SkullBlockEntity) ((CraftWorld) block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
         if (skull.getOwnerProfile() == null) return "";
         return skull.getOwnerProfile().partialProfile().properties().get("textures").iterator().next().value();
     }

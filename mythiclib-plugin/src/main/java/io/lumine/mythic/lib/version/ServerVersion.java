@@ -19,6 +19,7 @@ public class ServerVersion {
     private final boolean paper;
 
     private static final int MAXIMUM_INDEX = 3;
+    private static final String MOST_RECENT_WRAPPER = "VersionWrapper_26_1_R1";
 
     @Deprecated
     public ServerVersion(Class<?> ignored) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -42,7 +43,7 @@ public class ServerVersion {
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + craftBukkitVersion.substring(1)).getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException exception) {
             MythicLib.plugin.getLogger().log(Level.WARNING, "Non-natively supported Spigot version detected (" + craftBukkitVersion + "), trying reflection-based compatibility mode");
-            found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_Reflection").getDeclaredConstructor(ServerVersion.class).newInstance(this);
+            found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper." + MOST_RECENT_WRAPPER).getDeclaredConstructor().newInstance();
         }
         this.versionWrapper = found;
 

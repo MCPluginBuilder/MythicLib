@@ -38,16 +38,12 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class VersionWrapper_1_16_R2 implements VersionWrapper {
-    private final Set<Material> generatorOutputs = new HashSet<>();
-
-    public VersionWrapper_1_16_R2() {
-        generatorOutputs.add(Material.COBBLESTONE);
-        generatorOutputs.add(Material.OBSIDIAN);
-        generatorOutputs.add(Material.BASALT);
-    }
 
     @Override
     public boolean damage(LivingEntity target, double amount, Entity source) {
@@ -75,7 +71,14 @@ public class VersionWrapper_1_16_R2 implements VersionWrapper {
 
     @Override
     public boolean isGeneratorOutput(Material material) {
-        return generatorOutputs.contains(material);
+        switch (material) {
+            case COBBLESTONE:
+            case OBSIDIAN:
+            case BASALT:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -364,11 +367,7 @@ public class VersionWrapper_1_16_R2 implements VersionWrapper {
 
     @Override
     public void playArmAnimation(Player player) {
-        EntityPlayer p = ((CraftPlayer) player).getHandle();
-        PlayerConnection connection = p.playerConnection;
-        PacketPlayOutAnimation armSwing = new PacketPlayOutAnimation(p, 0);
-        connection.sendPacket(armSwing);
-        connection.a(new PacketPlayInArmAnimation(EnumHand.MAIN_HAND));
+        player.swingMainHand();
     }
 
     @Override
