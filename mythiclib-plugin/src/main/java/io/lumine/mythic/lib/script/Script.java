@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.script;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.script.condition.Condition;
 import io.lumine.mythic.lib.script.mechanic.Mechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -124,10 +125,20 @@ public class Script {
     }
 
     /**
-     * Cast this script
+     * Call this script
+     *
+     * @param playerData Player calling the script.
+     * @return If conditions are met i.e script was successfully called
+     */
+    public boolean cast(@NotNull MMOPlayerData playerData) {
+        return this.cast(SkillMetadata.of(playerData));
+    }
+
+    /**
+     * Call this script
      *
      * @param meta Script execution environment
-     * @return If conditions are met, i.e script was successfully called
+     * @return If conditions are met i.e script was successfully called
      */
     public boolean cast(@NotNull SkillMetadata meta) {
 
