@@ -28,8 +28,7 @@ public class ActionBarMessage extends PlayerMessage {
     }
 
     @Override
-    protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @Nullable Object... placeholders) {
-        var parsed = parsePlaceholders(player.getPlayer(), rawFormat, colorPrefix, placeholders);
-        player.getActionBar().show(actionBarPriority, duration, parsed);
+    protected void onSend(@NotNull MMOPlayerData player, @Nullable ChatColor colorPrefix, @NotNull Object... placeholders) {
+        player.getActionBar().show(actionBarPriority, duration, () -> parsePlaceholders(player.getPlayer(), rawFormat, colorPrefix, placeholders));
     }
 }

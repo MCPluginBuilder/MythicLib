@@ -2,7 +2,11 @@ package io.lumine.mythic.lib.message.actionbar;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Used to centralize management of action bar messages in MythicLib
@@ -33,16 +37,24 @@ public class ActionBarHandler {
         return !isBusy() || priority >= lastPriority;
     }
 
-    public void hide(int priority, long duration) {
-        show(priority + 1, duration, null);
+    public boolean hide(int priority, long duration) {
+        return show(priority + 1, duration, (Supplier<String>) null);
     }
 
-    public void show(@Nullable String message) {
-        this.show(ActionBarPriority.NORMAL, DEFAULT_TIME_OUT, message);
+    public boolean show(@Nullable String message) {
+        return this.show(ActionBarPriority.NORMAL, DEFAULT_TIME_OUT, message);
     }
 
-    public void show(int priority, @Nullable String message) {
-        this.show(priority, DEFAULT_TIME_OUT, message);
+    public boolean show(int priority, @Nullable String message) {
+        return this.show(priority, DEFAULT_TIME_OUT, message);
+    }
+
+    public boolean show(int priority, long duration, @Nullable String message) {
+        return show(priority, duration, message == null ? null : () -> message);
+    }
+
+    public boolean show(int priority, @Nullable Supplier<@NotNull String> message) {
+        return this.show(priority, DEFAULT_TIME_OUT, message);
     }
 
     /**
@@ -51,10 +63,10 @@ public class ActionBarHandler {
      * @param message  Formatted message. If null, action bar is hidden
      *                 for the provided duration instead of sending a message
      */
-    public void show(int priority, long duration, @Nullable String message) {
+    public boolean show(int priority, long duration, @Nullable Supplier<@NotNull String> message) {
 
         // Don't show message if busy and low priority.
-        if (!canShow(priority)) return;
+        if (!canShow(priority)) return false;
 
         // Update internal fields
         this.lastPriority = priority;
@@ -63,8 +75,11 @@ public class ActionBarHandler {
         // Send message
         if (message != null) {
             var player = this.playerData.getPlayer();
-            MythicLib.plugin.getVersion().getWrapper().sendActionBar(player, message);
+            var stringMessage = Objects.requireNonNull(message.get(), "Null message");
+            MythicLib.plugin.getVersion().getWrapper().sendActionBar(player, stringMessage);
         }
+
+        return true;
     }
 
     public void reset(int priority) {
