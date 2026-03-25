@@ -46,6 +46,9 @@ import java.util.Objects;
  * @see <a href="https://www.spigotmc.org/threads/1-19-playerinteractevent-not-called-when-entity-is-in-sight-client-bug.574671/">...</a>
  * @see <a href="https://github.com/PluginBugs/Issues-ItemsAdder/issues/1993">...</a>
  * @see <a href="https://www.spigotmc.org/threads/detect-when-a-player-left-clicks-an-entity.603228/">...</a>
+ * @see <a href="https://hub.spigotmc.org/jira/si/jira.issueviews:issue-html/SPIGOT-5632/SPIGOT-5632.html">...</a>
+ * @see <a href="https://hub.spigotmc.org/jira/browse/SPIGOT-5435">...</a>
+ * @see <a href="https://github.com/PaperMC/Paper/issues/3289">...</a>
  */
 public class PlayerClickEventListener implements Listener {
 
