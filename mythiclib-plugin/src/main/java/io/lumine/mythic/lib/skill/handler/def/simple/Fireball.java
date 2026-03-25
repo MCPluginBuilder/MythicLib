@@ -69,7 +69,7 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
                 if (target != null) {
                     loc.getWorld().spawnParticle(Particle.LAVA, loc, 8);
                     loc.getWorld().spawnParticle(Particle.FLAME, loc, 32, 0, 0, 0, .1);
-                    loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1);
+                    loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, .7f);
                     target.setFireTicks((int) (target.getFireTicks() + skillMeta.getParameter("ignite") * 20));
                     double damage = skillMeta.getParameter("damage");
                     skillMeta.getCaster().attack(target, damage, damageTypes);
@@ -86,9 +86,8 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
 
                             double range = 2.5 * (1 + Math.random());
                             Vector dir = randomDirection();
-                            loc.getWorld().playSound(loc, Sounds.ENTITY_BLAZE_HURT, 2, 1.5f);
 
-                            RayTrace result = new RayTrace(loc, dir, range, entity -> UtilityMethods.canTarget(caster, entity));
+                            RayTrace result = new RayTrace(loc, dir, range, entity -> !target.equals(entity) && UtilityMethods.canTarget(caster, entity));
                             if (result.hasHit())
                                 skillMeta.getCaster().attack(result.getHit(), damage, damageTypes);
                             result.draw(.13, tick -> tick.getWorld().spawnParticle(Particle.FLAME, tick, 0));
@@ -102,8 +101,8 @@ public class Fireball extends SkillHandler<SimpleSkillResult> {
     }
 
     private Vector randomDirection() {
-        double x = Math.random() - .5, y = (Math.random() - .2) / 2, z = Math.random() - .5;
-        Vector dir = new Vector(x, y, z);
-        return dir.lengthSquared() == 0 ? new Vector(1, 0, 0) : dir.normalize();
+        var randomAngle = Math.random() * 2 * Math.PI;
+        var dir = new Vector(Math.cos(randomAngle), (Math.random() - .5) / 3, Math.sin(randomAngle));
+        return dir.normalize();
     }
 }
