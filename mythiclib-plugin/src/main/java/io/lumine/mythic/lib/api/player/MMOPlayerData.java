@@ -43,19 +43,6 @@ import java.util.logging.Level;
 
 public class MMOPlayerData {
 
-    /**
-     * This fixes a very specific issue with recent versions of Spigot (1.19+).
-     * Bukkit interact events are called when a player drops an item. In specific
-     * scenarios, dropping an item triggers left-click abilities, which sucks.
-     */
-    public long lastDrop;
-
-    /**
-     * This is used to avoid calling left clicks on arm swings
-     * that are due to right clicks.
-     */
-    public long nextLeftClick;
-
     public final AtomicInteger damageParticleCount = new AtomicInteger(0);
 
     // Information shared across all sessions
@@ -368,6 +355,24 @@ public class MMOPlayerData {
     public void clearTemporaryHandlers() {
         tempHandlers.forEach(handler -> handler.closeNow(true));
         tempHandlers.clear();
+    }
+
+    //endregion
+
+    //region Left Clicks
+
+    /**
+     * This is used to avoid calling left clicks on arm swings that were
+     * already registered by the PlayerInteractEvent.
+     */
+    private long nextLeftClick;
+
+    public void blockLeftClicks(long timeOut) {
+        this.nextLeftClick = System.currentTimeMillis() + timeOut;
+    }
+
+    public boolean canLeftClick() {
+        return System.currentTimeMillis() > nextLeftClick;
     }
 
     //endregion

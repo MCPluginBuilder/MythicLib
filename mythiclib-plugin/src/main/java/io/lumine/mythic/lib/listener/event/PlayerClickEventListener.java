@@ -7,9 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Objects;
@@ -51,25 +51,64 @@ public class PlayerClickEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onRightClick(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            var playerData = MMOPlayerData.getOrNull(event.getPlayer());
-            if (playerData != null) playerData.nextLeftClick = System.currentTimeMillis() + 25;
-            Bukkit.getPluginManager().callEvent(new PlayerClickEvent(event.getPlayer(), Objects.requireNonNullElse(EquipmentSlot.fromBukkit(event.getHand()), EquipmentSlot.MAIN_HAND), false));
+        // Bukkit.broadcastMessage("PlayerInteract " + event.getClass().getSimpleName() + " " + event.getHand() + " " + event.getAction());
+
+        switch (event.getAction()) {
+            case RIGHT_CLICK_AIR:
+            case RIGHT_CLICK_BLOCK: {
+                var playerData = MMOPlayerData.getOrNull(event.getPlayer());
+
+                // Prevent left clicks being registered twice, and prevent
+                // right clicks causing arm swings being registered as left clicks.
+                if (playerData != null) playerData.blockLeftClicks(25);
+
+                Bukkit.getPluginManager().callEvent(new PlayerClickEvent(event.getPlayer(), Objects.requireNonNullElse(EquipmentSlot.fromBukkit(event.getHand()), EquipmentSlot.MAIN_HAND), false, event.getClickedBlock(), event.getItem(), event));
+                break;
+            }
         }
+    }
+
+    /**
+     * Recent Spigot builds call an interact event on item drops,
+     * when pressing Q or from inside an inventory UI. This only happens
+     * when the player is looking at a block.
+     * <p>
+     * Simple implementation of a N-ms timeout after drop events
+     * where all interact events are ignored.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onLeftClick(PlayerDropItemEvent event) {
+        //  System.out.println("PlayerDropItem " + event.getClass().getSimpleName());
+
+        var playerData = MMOPlayerData.getOrNull(event.getPlayer());
+
+        // Prevent drops being registered as left clicks
+        if (playerData != null) playerData.blockLeftClicks(25);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onLeftClick(PlayerAnimationEvent event) {
+        //  Bukkit.broadcastMessage("PlayerAnimation " + event.getClass().getSimpleName() + " " + event.getAnimationType());
+
         if (event.getAnimationType() == PlayerAnimationType.ARM_SWING) {
             var playerData = MMOPlayerData.getOrNull(event.getPlayer());
-            if (playerData != null && playerData.nextLeftClick > System.currentTimeMillis()) return;
-            Bukkit.getPluginManager().callEvent(new PlayerClickEvent(event.getPlayer(), EquipmentSlot.MAIN_HAND, true));
+
+            // Prevent left clicks being registered twice, and prevent
+            // right clicks causing arm swings being registered as left clicks.
+            if (playerData != null && !playerData.canLeftClick()) return;
+
+            Bukkit.getPluginManager().callEvent(new PlayerClickEvent(event.getPlayer(), EquipmentSlot.MAIN_HAND, true, null, event.getPlayer().getInventory().getItemInMainHand(), event));
 
             // Theoretically, players can spam to get 1 right click per 1-2 ticks
             // though spamming left clicks is much easier (hold down left click on
             // a block). To mitigate this, MythicLib avoids calling more than 1 left
             // click every 2 ticks.
-            if (playerData != null) playerData.nextLeftClick = System.currentTimeMillis() + 75;
+            if (playerData != null) playerData.blockLeftClicks(75);
         }
     }
+
+    // @EventHandler(priority = EventPriority.LOWEST)
+    // public void debugClicks(PlayerClickEvent event) {
+    //     Bukkit.broadcastMessage("PlayerClick " + event.getClass().getSimpleName());
+    // }
 }

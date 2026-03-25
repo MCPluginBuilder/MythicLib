@@ -182,11 +182,6 @@ public class SkillTriggers implements Listener {
     }
     */
 
-    @EventHandler
-    public void differentiateClicksAndDrops(PlayerDropItemEvent event) {
-        MMOPlayerData.get(event.getPlayer()).lastDrop = System.currentTimeMillis();
-    }
-
     /**
      * @implNote {@link Cancellable#isCancelled()} does not work with PlayerInteractEvent
      *         because there are now two possible ways to cancel the event, either
@@ -199,7 +194,7 @@ public class SkillTriggers implements Listener {
      * @implNote Event priority set to {@link EventPriority#LOW} because MI consumes consumables on
      *         priority NORMAL and item abilities require the held item not to be null in hand
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onClick(PlayerClickEvent event) {
         var actionHand = event.getHand();
         var player = event.getPlayer();
@@ -207,15 +202,12 @@ public class SkillTriggers implements Listener {
         // Ignore off-hand click triggers
         if (MythicLib.plugin.getMMOConfig().ignoreOffhandClickTriggers && event.getHand() == EquipmentSlot.OFF_HAND) return;
 
-        // Is it a drop?
-        final MMOPlayerData caster = MMOPlayerData.get(player);
-        if (event.isLeftClick() && caster.lastDrop + 50 > System.currentTimeMillis()) return;
-
-        final boolean sneaking = player.isSneaking() && !MythicLib.plugin.getMMOConfig().ignoreShiftTriggers;
-        final TriggerType triggerType = sneaking
+        var caster = MMOPlayerData.get(player);
+        var sneaking = player.isSneaking() && !MythicLib.plugin.getMMOConfig().ignoreShiftTriggers;
+        var triggerType = sneaking
                 ? (event.isLeftClick() ? TriggerType.SHIFT_LEFT_CLICK : TriggerType.SHIFT_RIGHT_CLICK)
                 : (event.isLeftClick() ? TriggerType.LEFT_CLICK : TriggerType.RIGHT_CLICK);
-        final TriggerMetadata triggerMetadata = new TriggerMetadata(caster, triggerType, actionHand, null, null, null, null, null);
+        var triggerMetadata = new TriggerMetadata(caster, triggerType, actionHand, null, null, null, null, null);
         caster.triggerSkills(triggerMetadata);
     }
 
