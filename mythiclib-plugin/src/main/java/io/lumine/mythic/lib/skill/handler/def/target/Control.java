@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.api.event.PlayerClickEvent;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
@@ -14,7 +15,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -77,8 +77,8 @@ public class Control extends SkillHandler<TargetSkillResult> {
         }
 
         @EventHandler
-        public void a(PlayerInteractEvent event) {
-            if (event.getPlayer().equals(caster.getPlayer()) && event.getAction().name().contains("LEFT_CLICK")) {
+        public void a(PlayerClickEvent event) {
+            if (event.isLeftClick() && event.getPlayer().equals(caster.getPlayer())) {
                 Vector vec = caster.getPlayer().getEyeLocation().getDirection().multiply(3 * f);
                 vec.setY(Math.max(.5, vec.getY() / 2));
                 entity.setVelocity(vec);

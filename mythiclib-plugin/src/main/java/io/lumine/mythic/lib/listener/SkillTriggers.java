@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.listener;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
+import io.lumine.mythic.lib.api.event.PlayerClickEvent;
 import io.lumine.mythic.lib.api.event.PlayerKillEntityEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
@@ -22,13 +23,15 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
@@ -196,19 +199,23 @@ public class SkillTriggers implements Listener {
      * @implNote Event priority set to {@link EventPriority#LOW} because MI consumes consumables on
      *         priority NORMAL and item abilities require the held item not to be null in hand
      */
-    @EventHandler(priority = EventPriority.LOW)
-    public void click(PlayerInteractEvent event) {
-        if (event.getAction() == Action.PHYSICAL) return;
-        if (MythicLib.plugin.getMMOConfig().ignoreOffhandClickTriggers && event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND)
-            return;
+    @EventHandler
+    public void onClick(PlayerClickEvent event) {
+        var actionHand = event.getHand();
+        var player = event.getPlayer();
 
-        final MMOPlayerData caster = MMOPlayerData.get(event.getPlayer());
-        if (caster.lastDrop + 50 > System.currentTimeMillis()) return;
+        // Ignore off-hand click triggers
+        if (MythicLib.plugin.getMMOConfig().ignoreOffhandClickTriggers && event.getHand() == EquipmentSlot.OFF_HAND) return;
 
-        final boolean left = event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK;
-        final boolean sneaking = event.getPlayer().isSneaking() && !MythicLib.plugin.getMMOConfig().ignoreShiftTriggers;
-        final TriggerType triggerType = sneaking ? (left ? TriggerType.SHIFT_LEFT_CLICK : TriggerType.SHIFT_RIGHT_CLICK) : (left ? TriggerType.LEFT_CLICK : TriggerType.RIGHT_CLICK);
-        final TriggerMetadata triggerMetadata = new TriggerMetadata(caster, triggerType, EquipmentSlot.fromBukkit(event.getHand()), null, null, null, null, null);
+        // Is it a drop?
+        final MMOPlayerData caster = MMOPlayerData.get(player);
+        if (event.isLeftClick() && caster.lastDrop + 50 > System.currentTimeMillis()) return;
+
+        final boolean sneaking = player.isSneaking() && !MythicLib.plugin.getMMOConfig().ignoreShiftTriggers;
+        final TriggerType triggerType = sneaking
+                ? (event.isLeftClick() ? TriggerType.SHIFT_LEFT_CLICK : TriggerType.SHIFT_RIGHT_CLICK)
+                : (event.isLeftClick() ? TriggerType.LEFT_CLICK : TriggerType.RIGHT_CLICK);
+        final TriggerMetadata triggerMetadata = new TriggerMetadata(caster, triggerType, actionHand, null, null, null, null, null);
         caster.triggerSkills(triggerMetadata);
     }
 

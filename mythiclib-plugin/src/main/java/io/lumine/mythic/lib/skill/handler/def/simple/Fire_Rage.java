@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.api.event.PlayerClickEvent;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -17,7 +18,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -89,8 +89,8 @@ public class Fire_Rage extends SkillHandler<SimpleSkillResult> {
         }
 
         @EventHandler
-        public void a(PlayerInteractEvent event) {
-            if (event.getPlayer().equals(caster.getPlayer()) && event.getAction().name().contains("LEFT_CLICK") && (System.currentTimeMillis() - last) > FIREBALL_COOLDOWN) {
+        public void a(PlayerClickEvent event) {
+            if (event.isLeftClick() && event.getPlayer().equals(caster.getPlayer()) && (System.currentTimeMillis() - last) > FIREBALL_COOLDOWN) {
                 last = System.currentTimeMillis();
                 castEffect();
 

@@ -50,6 +50,12 @@ public class MMOPlayerData {
      */
     public long lastDrop;
 
+    /**
+     * This is used to avoid calling left clicks on arm swings
+     * that are due to right clicks.
+     */
+    public long nextLeftClick;
+
     public final AtomicInteger damageParticleCount = new AtomicInteger(0);
 
     // Information shared across all sessions

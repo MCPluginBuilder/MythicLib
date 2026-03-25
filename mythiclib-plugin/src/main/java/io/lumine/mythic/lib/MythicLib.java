@@ -37,6 +37,7 @@ import io.lumine.mythic.lib.hologram.HologramFactory;
 import io.lumine.mythic.lib.hologram.HologramFactoryList;
 import io.lumine.mythic.lib.listener.*;
 import io.lumine.mythic.lib.listener.event.AttackEventListener;
+import io.lumine.mythic.lib.listener.event.PlayerClickEventListener;
 import io.lumine.mythic.lib.listener.option.*;
 import io.lumine.mythic.lib.manager.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
@@ -114,9 +115,6 @@ public class MythicLib extends MMOPlugin {
         new SpigotPlugin(90306, this).checkForUpdate();
         saveDefaultConfig();
 
-        // TODO add an option to disable this fix?
-        Bukkit.getPluginManager().registerEvents(new LeftClickEventFix(), this);
-
         // Detect MMO plugins
         for (var plugin : Bukkit.getPluginManager().getPlugins())
             if (plugin instanceof MMOPlugin) mmoPlugins.add((MMOPlugin) plugin);
@@ -127,6 +125,7 @@ public class MythicLib extends MMOPlugin {
         Bukkit.getPluginManager().registerEvents(new LegacyAttackEffects(), this);
         Bukkit.getPluginManager().registerEvents(new CustomProjectileDamage(), this);
         Bukkit.getPluginManager().registerEvents(new AttackEventListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerClickEventListener(), this);
         Bukkit.getPluginManager().registerEvents(new MythicCraftingManager(), this);
         Bukkit.getPluginManager().registerEvents(new SkillTriggers(), this);
         Bukkit.getPluginManager().registerEvents(new ElementalDamage(), this);
