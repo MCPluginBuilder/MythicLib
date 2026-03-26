@@ -68,6 +68,11 @@
             <name>Citizens Repository</name>
             <url>https://maven.citizensnpcs.co/repo</url>
         </repository>
+        <!-- Jitpack. Access to GitHub releases -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
         <!-- TODO check what this is used for -->
         <repository>
             <id>aikar</id>
@@ -83,6 +88,7 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository> -->
+        <!-- Hikari for SQL -->
         <repository>
             <id>hikari-cp</id>
             <url>https://clojars.org/repo/</url>
@@ -296,9 +302,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>eu.decentsoftware</groupId>
-            <artifactId>DecentHolograms</artifactId>
-            <version>2.5.2</version>
+            <groupId>com.github.decentsoftware-eu</groupId>
+            <artifactId>decentholograms</artifactId>
+            <version>2.9.9</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
