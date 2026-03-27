@@ -1,7 +1,7 @@
 package io.lumine.mythic.lib.skill.handler.def.target;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -27,7 +27,7 @@ public class Minor_Healings extends SkillHandler<TargetSkillResult> {
     @Override
     public void whenCast(TargetSkillResult result, SkillMetadata skillMeta) {
         LivingEntity target = result.getTarget();
-        UtilityMethods.heal(target, skillMeta.getParameter("heal"));
+        Resources.heal(target, skillMeta.getParameter("heal"));
         new SmallParticleEffect(target, Particle.HEART, 1);
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_PLAYER_LEVELUP, 2, 2);
     }

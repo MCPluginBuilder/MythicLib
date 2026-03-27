@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.skill.handler.def.simple;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -32,13 +33,13 @@ public class Grand_Heal extends SkillHandler<SimpleSkillResult> {
         final double radius = skillMeta.getParameter("radius");
 
         final Player caster = skillMeta.getCaster().getPlayer();
-        UtilityMethods.heal(caster, heal);
+        Resources.heal(caster, heal);
 
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_PLAYER_LEVELUP, 1, 2);
         caster.getWorld().spawnParticle(Particle.HEART, caster.getLocation().add(0, .75, 0), 16, 1, 1, 1, 0);
         caster.getWorld().spawnParticle(VParticle.HAPPY_VILLAGER.get(), caster.getLocation().add(0, .75, 0), 16, 1, 1, 1, 0);
         for (Entity entity : caster.getNearbyEntities(radius, radius, radius))
             if (UtilityMethods.canTarget(caster, entity, InteractionType.SUPPORT_SKILL))
-                UtilityMethods.heal((LivingEntity) entity, heal);
+                Resources.heal((LivingEntity) entity, heal);
     }
 }

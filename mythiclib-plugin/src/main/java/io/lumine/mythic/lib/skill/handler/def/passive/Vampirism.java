@@ -1,9 +1,9 @@
 package io.lumine.mythic.lib.skill.handler.def.passive;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.damage.DamageType;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
@@ -47,7 +47,7 @@ public class Vampirism extends SkillHandler<AttackSkillResult> implements Listen
 
         playParticleEffect(target.getLocation());
         target.getWorld().playSound(target.getLocation(), Sounds.ENTITY_WITCH_DRINK, 1, 2);
-        UtilityMethods.heal(caster, skillMeta.getAttackSource().getDamage().getDamage() * skillMeta.getParameter("drain") / 100);
+        Resources.heal(caster, skillMeta.getAttackSource().getDamage().getDamage() * skillMeta.getParameter("drain") / 100);
     }
 
     private static void playParticleEffect(Location loc) {

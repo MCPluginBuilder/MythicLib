@@ -1,6 +1,6 @@
 package io.lumine.mythic.lib.skill.handler.def.simple;
 
-import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -30,6 +30,6 @@ public class Heal extends SkillHandler<SimpleSkillResult> {
         caster.getWorld().playSound(caster.getLocation(), Sounds.ENTITY_PLAYER_LEVELUP, 1, 2);
         caster.getWorld().spawnParticle(Particle.HEART, caster.getLocation().add(0, .75, 0), 16, 1, 1, 1, 0);
         caster.getWorld().spawnParticle(VParticle.HAPPY_VILLAGER.get(), caster.getLocation().add(0, .75, 0), 16, 1, 1, 1, 0);
-        UtilityMethods.heal(caster, skillMeta.getParameter("heal"));
+        Resources.heal(caster, skillMeta.getParameter("heal"));
     }
 }

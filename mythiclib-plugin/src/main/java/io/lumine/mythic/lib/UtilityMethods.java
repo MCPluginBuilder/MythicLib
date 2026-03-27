@@ -7,6 +7,8 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import io.lumine.mythic.lib.player.resource.Resources;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.util.DelayFormat;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
@@ -471,35 +473,9 @@ public class UtilityMethods {
         return item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName();
     }
 
-    /**
-     * @param player Player to heal
-     * @param heal   Heal amount
-     *               <br>
-     *               Negative values are just ignored
-     */
-    public static void heal(@NotNull LivingEntity player, double heal) {
-        heal(player, heal, false);
-    }
-
     @NotNull
     public static <T> Consumer<T> dummyConsume() {
         return ignore -> {};
-    }
-
-    /**
-     * @param entity         Entity to heal
-     * @param heal           Heal amount
-     * @param allowNegatives If passing a negative health value will damage the entity x)
-     *                       <br>
-     *                       If <code>false</code>, negative values are just ignored
-     */
-    public static void heal(@NotNull LivingEntity entity, double heal, boolean allowNegatives) {
-        if (heal == 0) return;
-        if (entity.isDead() || entity.getHealth() <= 0) return;
-        if (heal < 0 && !allowNegatives) return;
-
-        final double maxHealth = entity.getAttribute(Attributes.MAX_HEALTH).getValue();
-        entity.setHealth(Math.min(maxHealth, entity.getHealth() + heal));
     }
 
     /**
@@ -717,6 +693,30 @@ public class UtilityMethods {
     }
 
     //region Deprecated
+
+    /**
+     * @param entity         Entity to heal
+     * @param heal           Heal amount
+     * @param allowNegatives If passing a negative health value will damage the entity x)
+     * @see Resources#heal(LivingEntity, double, ResourceUpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public static void heal(@NotNull LivingEntity entity, double heal, boolean allowNegatives) {
+        if (heal < 0 && !allowNegatives) return;
+        Resources.setHealth(entity, heal, ResourceUpdateReason.OTHER);
+    }
+
+    /**
+     * @param entity Entity to heal
+     * @param heal   Heal amount
+     * @see Resources#heal(LivingEntity, double, ResourceUpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public static void heal(@NotNull LivingEntity entity, double heal) {
+        Resources.setHealth(entity, heal, ResourceUpdateReason.OTHER);
+    }
 
     @Deprecated
     public static Pattern internalPlaceholderPattern(char start, char end) {

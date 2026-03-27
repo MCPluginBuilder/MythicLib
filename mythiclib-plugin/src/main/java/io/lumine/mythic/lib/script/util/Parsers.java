@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
 import io.lumine.mythic.lib.damage.DamageType;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.script.mechanic.shaped.RayTraceMechanic;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -44,6 +45,8 @@ public class Parsers {
     public static final Function<String, InteractionType> INTERACTION_TYPE = Parsers.ofEnum(InteractionType.class, InteractionType::valueOf);
 
     public static final Function<String, EntityLocationType> ENTITY_LOCATION_TYPE = Parsers.ofEnum(EntityLocationType.class, EntityLocationType::valueOf);
+
+    public static final Function<String, ResourceUpdateReason> RESOURCE_UPDATE_REASON = Parsers.ofEnum(ResourceUpdateReason.class, ResourceUpdateReason::valueOf);
 
     @NotNull
     public static <T> Function<String, T> ofEnum(Class<T> enumClass, Function<String, T> valueOf) {
