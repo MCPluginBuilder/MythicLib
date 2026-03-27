@@ -68,6 +68,11 @@
             <name>Citizens Repository</name>
             <url>https://maven.citizensnpcs.co/repo</url>
         </repository>
+        <!-- Fabled -->
+        <repository>
+            <id>magemonkey-snapshots</id>
+            <url>https://repo.travja.dev/snapshots</url>
+        </repository>
         <!-- Jitpack. Access to GitHub releases -->
         <repository>
             <id>jitpack.io</id>
@@ -341,7 +346,7 @@
         <dependency>
             <groupId>studio.magemonkey</groupId>
             <artifactId>fabled</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.4-R0.89-SNAPSHOT</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
