@@ -189,12 +189,9 @@ public class SkillTriggers implements Listener {
      *         <p>
      *         Checking if the event is cancelled points towards the block interaction
      *         and not the item interaction which is NOT what MythicLib is interested in
-     * @implNote Scrap this, it's 100% useless to check if the event is cancelled.
-     *         It makes sense to trigger skills even if the item or block interactions are canceled
-     * @implNote Event priority set to {@link EventPriority#LOW} because MI consumes consumables on
-     *         priority NORMAL and item abilities require the held item not to be null in hand
+     * @implNote Do NOT check if event is canceled otherwise skill triggers
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     public void onClick(PlayerClickEvent event) {
         var actionHand = event.getHand();
         var player = event.getPlayer();
