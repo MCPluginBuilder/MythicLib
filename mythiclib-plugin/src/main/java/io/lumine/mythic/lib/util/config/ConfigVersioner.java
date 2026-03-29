@@ -38,6 +38,7 @@ public class ConfigVersioner {
                 throwable.printStackTrace();
             }
 
+        plugin.reloadConfig(); // Very important, in case it was edited in the meantime.
         plugin.getConfig().set("config-version", entries.size()); // Increment config version
         plugin.saveConfig(); // Save config
     }
