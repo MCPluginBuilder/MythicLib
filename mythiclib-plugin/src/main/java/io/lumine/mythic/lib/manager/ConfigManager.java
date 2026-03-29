@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.rpg.provided.ResourceDisplayOptions;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.config.YamlFile;
@@ -43,6 +44,11 @@ public class ConfigManager extends Module {
 
     @Nullable
     public Script skillCastScript, skillCancelScript;
+
+    public int manaRefreshRate;
+    public double manaLoginRatio, staminaLoginRatio;
+    public ResourceDisplayOptions manaDisplay, staminaDisplay;
+
 
     public ConfigManager(MMOPlugin plugin) {
         super(plugin);
@@ -147,6 +153,13 @@ public class ConfigManager extends Module {
             } catch (Exception exception) {
                 MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load DamageCause/DamageType mapping " + key + ": " + exception.getMessage());
             }
+
+        // Mana & Stamina
+        this.manaRefreshRate = config.getInt("builtin_mana.refresh_rate");
+        this.manaLoginRatio = config.getDouble("builtin_mana.login_ratio.mana") / 100d;
+        this.staminaLoginRatio = config.getDouble("builtin_mana.login_ratio.stamina") / 100d;
+        this.manaDisplay = new ResourceDisplayOptions(config.getConfigurationSection("builtin_mana.bar.mana"));
+        this.staminaDisplay = new ResourceDisplayOptions(config.getConfigurationSection("builtin_mana.bar.stamina"));
     }
 
     /**

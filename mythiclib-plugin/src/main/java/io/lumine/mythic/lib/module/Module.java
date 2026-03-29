@@ -16,7 +16,7 @@ import java.util.Objects;
  * at runtime based on configuration files.
  */
 public abstract class Module {
-    private final MMOPlugin plugin;
+    protected final MMOPlugin plugin;
     private final NamespacedKey key;
 
     // Runtime flags

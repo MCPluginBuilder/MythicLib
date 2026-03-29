@@ -73,7 +73,7 @@ public abstract class PluginPlaceholderExpansion<T> extends PlaceholderExpansion
     protected static final String PLACEHOLDER_NOT_FOUND = "NoMatch";
 
     @NotNull
-    private String parse(@NotNull T playerData, @NotNull String raw) {
+    private String parse(@Nullable T playerData, @NotNull String raw) {
         PlaceholderEntry<T> found = null;
         int endIndex = -1;
 

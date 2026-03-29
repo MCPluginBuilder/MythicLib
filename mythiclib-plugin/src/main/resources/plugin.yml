@@ -6,7 +6,7 @@ version: ${project.version}
 description: ${project.description}
 website: www.phoenixdevt.fr
 softdepend: [ WorldGuard,Residence,MythicMobs,PlaceholderAPI,Fabled ]
-loadbefore: [ MMOProfiles ]
+loadbefore: [ MMOProfiles, MMOCore ]
 commands:
   mythiclib:
     description: 'Main command for MythicLib'

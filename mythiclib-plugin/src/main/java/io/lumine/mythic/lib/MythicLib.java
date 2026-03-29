@@ -22,7 +22,7 @@ import io.lumine.mythic.lib.comp.formula.FormulaParser;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsAttackHandler;
 import io.lumine.mythic.lib.comp.mythicmobs.MythicMobsHook;
 import io.lumine.mythic.lib.comp.placeholder.DefaultPlaceholderParser;
-import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIHook;
+import io.lumine.mythic.lib.comp.placeholder.MythicLibExpansion;
 import io.lumine.mythic.lib.comp.placeholder.PlaceholderAPIParser;
 import io.lumine.mythic.lib.comp.placeholder.PlaceholderParser;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
@@ -42,6 +42,10 @@ import io.lumine.mythic.lib.listener.option.*;
 import io.lumine.mythic.lib.manager.*;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.profile.handler.ProfileHandler;
+import io.lumine.mythic.lib.rpg.ClassModule;
+import io.lumine.mythic.lib.rpg.LevelModule;
+import io.lumine.mythic.lib.rpg.ManaModule;
+import io.lumine.mythic.lib.rpg.provided.DummyModule;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -83,6 +87,9 @@ public class MythicLib extends MMOPlugin {
     private GlowModule glowModule;
     private @Nullable ProfileMode profileMode;
     private @Nullable ProfileHandler profileHandler;
+    private ClassModule classModule;
+    private LevelModule levelModule;
+    private ManaModule manaModule;
 
     @Override
     public void onLoad() {
@@ -149,13 +156,40 @@ public class MythicLib extends MMOPlugin {
 
         // Hologram provider
         try {
-            final HologramFactoryList found = HologramFactoryList.valueOf(UtilityMethods.enumName(getConfig().getString("hologram-provider")));
+            var found = HologramFactoryList.valueOf(UtilityMethods.enumName(getConfig().getString("hologram-provider")));
             hologramFactory = found.provide();
             Bukkit.getServicesManager().register(HologramFactory.class, hologramFactory, this, ServicePriority.Normal); // Backwards compatibility
             getLogger().log(Level.INFO, "Hooked onto " + found.getName() + " (holograms)");
         } catch (Exception | LinkageError throwable) {
             hologramFactory = HologramFactoryList.LEGACY_ARMOR_STANDS.provide();
             getLogger().log(Level.WARNING, "Could not hook onto hologram provider " + getConfig().getString("hologram-provider") + ", using default: " + throwable.getMessage());
+        }
+
+        // Class provider
+        try {
+            this.classModule = ClassModule.from(getConfig().getString("class-plugin"));
+            getLogger().log(Level.INFO, "Hooked onto " + classModule.getClass().getSimpleName() + " (class)");
+        } catch (Exception exception) {
+            this.classModule = DummyModule.INSTANCE;
+            getLogger().log(Level.WARNING, exception.getMessage());
+        }
+
+        // Level provider
+        try {
+            this.levelModule = LevelModule.from(getConfig().getString("level-plugin"));
+            getLogger().log(Level.INFO, "Hooked onto " + levelModule.getClass().getSimpleName() + " (levels)");
+        } catch (Exception exception) {
+            this.levelModule = DummyModule.INSTANCE;
+            getLogger().log(Level.WARNING, exception.getMessage());
+        }
+
+        // Resource provider
+        try {
+            this.manaModule = ManaModule.from(getConfig().getString("mana-plugin"));
+            getLogger().log(Level.INFO, "Hooked onto " + manaModule.getClass().getSimpleName() + " (mana)");
+        } catch (Exception exception) {
+            this.manaModule = DummyModule.INSTANCE;
+            getLogger().log(Level.WARNING, exception.getMessage());
         }
 
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null) try {
@@ -202,7 +236,7 @@ public class MythicLib extends MMOPlugin {
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             //MythicPlaceholders.registerPlaceholder(new MythicPlaceholderAPIHook());
-            new PlaceholderAPIHook().register();
+            new MythicLibExpansion(this).register();
             placeholderParser = new PlaceholderAPIParser();
             getLogger().log(Level.INFO, "Hooked onto PlaceholderAPI");
         } else placeholderParser = new DefaultPlaceholderParser();
@@ -474,6 +508,21 @@ public class MythicLib extends MMOPlugin {
     @NotNull
     public HologramFactory getHologramFactory() {
         return hologramFactory;
+    }
+
+    @NotNull
+    public ClassModule getClassModule() {
+        return classModule;
+    }
+
+    @NotNull
+    public LevelModule getLevelModule() {
+        return levelModule;
+    }
+
+    @NotNull
+    public ManaModule getManaModule() {
+        return manaModule;
     }
 
     @Override

@@ -20,6 +20,7 @@ import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
 import io.lumine.mythic.lib.profile.ProfileSession;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
+import io.lumine.mythic.lib.rpg.provided.PlayerResourceData;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -426,6 +427,11 @@ public class MMOPlayerData {
     @NotNull
     public CooldownMap getCooldownMap() {
         return safePlayerSession().getCooldownMap();
+    }
+
+    @NotNull
+    public PlayerResourceData getResources() {
+        return safePlayerSession().getResources();
     }
 
     /**

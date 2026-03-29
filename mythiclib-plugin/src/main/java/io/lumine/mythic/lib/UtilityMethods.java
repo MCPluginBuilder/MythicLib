@@ -6,9 +6,10 @@ import io.lumine.mythic.lib.api.condition.type.MMOCondition;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.comp.interaction.InteractionType;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.player.PlayerMetadata;
-import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.util.DelayFormat;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.Lazy;
@@ -48,6 +49,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -748,6 +750,19 @@ public class UtilityMethods {
         }
         sb.append(name);
         FileUtils.copyDefaultFile(MythicLib.plugin, sb.toString());
+    }
+
+    @NotNull
+    public static Object bukkitBootstrap(@NotNull MMOPlugin plugin, @NotNull String bukkitClassName) {
+        try {
+            final var bootstrapClass = Class.forName(bukkitClassName);
+            final var bootstrapMethod = bootstrapClass.getDeclaredMethod("bukkitBootstrap", plugin.getClass());
+            return bootstrapMethod.invoke(null, plugin);
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException("Cannot run an API build (for development only)");
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new Error("Could not find, access or invoke bootstrap method", e);
+        }
     }
 
     @Deprecated

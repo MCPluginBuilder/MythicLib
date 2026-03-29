@@ -11,6 +11,7 @@ import io.lumine.mythic.lib.player.permission.PermissionMap;
 import io.lumine.mythic.lib.player.potion.PermanentPotionEffectMap;
 import io.lumine.mythic.lib.player.skill.PassiveSkillMap;
 import io.lumine.mythic.lib.player.skillmod.SkillModifierMap;
+import io.lumine.mythic.lib.rpg.provided.PlayerResourceData;
 import io.lumine.mythic.lib.script.variable.VariableList;
 import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -57,6 +58,9 @@ public class ProfileSession {
         this.particleEffectMap = new ParticleEffectMap(parent);
         this.passiveSkillMap = new PassiveSkillMap(parent);
         this.permissionMap = new PermissionMap(parent);
+        this.cooldownMap = new CooldownMap();
+        this.resourceData = new PlayerResourceData(parent);
+        this.variableList = new VariableList(VariableScope.PROFILE);
     }
 
     /**
@@ -77,6 +81,9 @@ public class ProfileSession {
         this.particleEffectMap = recycled.particleEffectMap;
         this.passiveSkillMap = recycled.passiveSkillMap;
         this.permissionMap = recycled.permissionMap;
+        this.cooldownMap = recycled.cooldownMap;
+        this.resourceData = recycled.resourceData;
+        this.variableList = recycled.variableList;
     }
 
     public boolean hasProfile() {
@@ -347,17 +354,13 @@ public class ProfileSession {
     private final ParticleEffectMap particleEffectMap;
     private final PassiveSkillMap passiveSkillMap;
     private final PermissionMap permissionMap;
-    private final CooldownMap cooldownMap = new CooldownMap();
-    private final VariableList variableList = new VariableList(VariableScope.PROFILE);
+    private final CooldownMap cooldownMap;
+    private final PlayerResourceData resourceData;
+    private final VariableList variableList;
 
     @NotNull
     public StatMap getStatMap() {
         return statMap;
-    }
-
-    @NotNull
-    public CooldownMap getCooldownMap() {
-        return cooldownMap;
     }
 
     @NotNull
@@ -386,6 +389,16 @@ public class ProfileSession {
     }
 
     @NotNull
+    public CooldownMap getCooldownMap() {
+        return cooldownMap;
+    }
+
+    @NotNull
+    public PlayerResourceData getResources() {
+        return resourceData;
+    }
+
+    @NotNull
     public VariableList getVariableList() {
         return variableList;
     }
@@ -398,6 +411,7 @@ public class ProfileSession {
         passiveSkillMap.openSession();
         permissionMap.openSession();
         cooldownMap.openSession();
+        resourceData.openSession();
         // variableList: nothing needed
     }
 
@@ -409,6 +423,7 @@ public class ProfileSession {
         passiveSkillMap.closeSession();
         permissionMap.closeSession();
         cooldownMap.closeSession();
+        resourceData.closeSession();
         // variableList: nothing needed
     }
 
