@@ -18,7 +18,7 @@ public class DummyModule implements ClassModule, LevelModule, ManaModule {
 
     @Override
     public int getLevel(@NotNull MMOPlayerData player) {
-        return 0;
+        return player.getPlayer().getLevel();
     }
 
     @Override
