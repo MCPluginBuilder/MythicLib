@@ -15,6 +15,7 @@ public class DebugCommand extends CommandTreeNode {
         addChild(new AttributesCommand(this));
         addChild(new VersionsCommand(this));
         addChild(new HealthScaleCommand(this));
+        addChild(new InfoCommand(this));
         addChild(new LegacyHealthScaleCommand(this)); // legacy
         addChild(new TestCommand(this));
         addChild(new ParseCommand(this));
