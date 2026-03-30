@@ -111,6 +111,20 @@ public class Argument<T> {
     }
 
     @NotNull
+    private static <T> Function<CommandTreeExplorer, T> throwIfNoDynamicFallback() {
+        return ignore -> {
+            // Defer catching of error to runtime
+            // Checking this statically would require tons of verbose
+            throw new ArgumentParseException("No dynamic fallback provided");
+        };
+    }
+
+    @NotNull
+    public Argument<T> withDynamicFallback() {
+        return new Argument<>(this.key, this.indexInNode, this.autoComplete, this.parser, throwIfNoDynamicFallback());
+    }
+
+    @NotNull
     public Argument<T> empty() {
         return new Argument<>(this.key, this.indexInNode, (explorer, list) -> {
         }, (explorer, input) -> null, explorer -> null);

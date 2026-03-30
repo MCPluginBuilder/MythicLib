@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.command;
 
 import io.lumine.mythic.lib.command.argument.Argument;
+import io.lumine.mythic.lib.command.argument.ArgumentParseException;
 import io.lumine.mythic.lib.command.argument.MissingArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -127,7 +128,11 @@ public class CommandTreeExplorer {
         if (args.length <= argIndex) {
             final var fallback = dynamicFallback != null ? dynamicFallback : arg.getFallback();
             if (fallback == null) throw new MissingArgumentException(arg);
-            return fallback.apply(this);
+            try {
+                return fallback.apply(this);
+            } catch (Exception exception) {
+                throw new ArgumentParseException("Fallback of argument " + arg.getKey() + " failed", exception);
+            }
         }
 
         return arg.parse(this, args[argIndex]);
