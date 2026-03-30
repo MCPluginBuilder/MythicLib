@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
 import io.lumine.mythic.lib.util.IndicatorConfig;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Display;
@@ -24,6 +25,15 @@ public class BukkitHologramFactory implements HologramFactory /*, Listener*/ {
     public BukkitHologramFactory() {
         Validate.isTrue(MythicLib.plugin.getVersion().isAbove(1, 19, 4), "Text displays are only available on 1.19.4+");
         //Bukkit.getPluginManager().registerEvents(this, MythicLib.plugin);
+
+        Bukkit.getScheduler().runTaskLater(MythicLib.plugin, this::clearPreviousEntities, 20L);
+    }
+
+    private void clearPreviousEntities() {
+        // Safeguard in case of server crash
+        for (var world : Bukkit.getWorlds())
+            for (var display : world.getEntitiesByClasses(TextDisplay.class))
+                if (display.getPersistentDataContainer().has(PDC_KEY)) display.remove();
     }
 
     @NotNull

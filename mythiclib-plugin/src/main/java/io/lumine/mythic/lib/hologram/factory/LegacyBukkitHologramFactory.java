@@ -1,13 +1,18 @@
 package io.lumine.mythic.lib.hologram.factory;
 
 import com.google.common.base.Preconditions;
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.hologram.Hologram;
 import io.lumine.mythic.lib.hologram.HologramFactory;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.TextDisplay;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -19,10 +24,23 @@ import java.util.Objects;
 
 public class LegacyBukkitHologramFactory implements HologramFactory {
 
+    public LegacyBukkitHologramFactory() {
+        Bukkit.getScheduler().runTaskLater(MythicLib.plugin, this::clearPreviousEntities, 20L);
+    }
+
     @NotNull
     public Hologram newHologram(@NotNull Location loc, @NotNull List<String> lines) {
         return new HologramImpl(loc, lines);
     }
+
+    private void clearPreviousEntities() {
+        // Safeguard in case of server crash
+        for (var world : Bukkit.getWorlds())
+            for (var display : world.getEntitiesByClasses(TextDisplay.class))
+                if (display.getPersistentDataContainer().has(PDC_KEY)) display.remove();
+    }
+
+    private static final NamespacedKey PDC_KEY = new NamespacedKey(MythicLib.plugin, "hologram");
 
     static final class HologramImpl extends Hologram {
         private static final Method SET_CAN_TICK;
@@ -82,6 +100,7 @@ public class LegacyBukkitHologramFactory implements HologramFactory {
 
                     });
                     as = (ArmorStand) loc.getWorld().spawn(loc, ArmorStand.class);
+                    as.getPersistentDataContainer().set(PDC_KEY, PersistentDataType.BOOLEAN, true);
                     as.setSmall(true);
                     as.setMarker(true);
                     as.setArms(false);
