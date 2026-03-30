@@ -137,7 +137,9 @@ public class SkillTriggers implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void placeBlock(BlockPlaceEvent event) {
-        final MMOPlayerData caster = MMOPlayerData.get(event.getPlayer());
+        var caster = MMOPlayerData.online(event.getPlayer());
+        if (caster == null) return; // Fixes https://gitlab.com/phoenix-dvpmt/mythiclib/-/work_items/362
+
         caster.triggerSkills(new TriggerMetadata(caster, TriggerType.PLACE_BLOCK, event.getBlock().getLocation().add(.5, .5, .5)));
     }
 
