@@ -152,5 +152,21 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Aura Skills -->
+        <dependency>
+            <groupId>dev.aurelium</groupId>
+            <artifactId>auraskills-api-bukkit</artifactId>
+            <version>2.2.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>org.spongepowered</groupId>
+                    <artifactId>configurate-yaml</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 </project>
