@@ -17,5 +17,6 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 @Deprecated
 public interface Openable {
 
+    @Deprecated
     void open(MMOPlayerData player);
 }

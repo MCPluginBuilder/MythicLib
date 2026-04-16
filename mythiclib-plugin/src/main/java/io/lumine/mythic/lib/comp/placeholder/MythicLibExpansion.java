@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.comp.placeholder.api.PlaceholderEntry;
 import io.lumine.mythic.lib.comp.placeholder.api.PluginPlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 
@@ -21,7 +20,7 @@ public class MythicLibExpansion extends PluginPlaceholderExpansion<MMOPlayerData
     }
 
     @Override
-    protected @NonNull MMOPlayerData getPlayerData(OfflinePlayer player) {
+    protected @NotNull MMOPlayerData getPlayerData(OfflinePlayer player) {
         return MMOPlayerData.get(player);
     }
 }
