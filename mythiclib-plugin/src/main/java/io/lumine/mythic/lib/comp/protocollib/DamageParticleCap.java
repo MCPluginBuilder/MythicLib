@@ -5,8 +5,6 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public abstract class DamageParticleCap<E, P> {
 
     /**
@@ -23,12 +21,12 @@ public abstract class DamageParticleCap<E, P> {
     protected abstract void writeNewAmount(P packet, int amount);
 
     public void onPacketSend(Player player, E event, P packet, int originalAmount) {
-//
-//        // Shortcut to reduce performance footprint
-//        if (tickLimit == 0) {
-//            this.cancelEvent(event);
-//            return;
-//        }
+
+        // Shortcut to reduce performance footprint
+        if (tickLimit == 0) {
+            this.cancelEvent(event);
+            return;
+        }
 
         final var playerData = MMOPlayerData.getOrNull(player.getUniqueId());
         if (playerData == null) return;
