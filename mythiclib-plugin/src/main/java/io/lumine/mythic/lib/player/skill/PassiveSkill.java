@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.player.skill;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.player.modifier.ModifierMap;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
 import io.lumine.mythic.lib.skill.SimpleSkill;
@@ -112,13 +113,18 @@ public class PassiveSkill extends PlayerModifier {
     }
 
     @Override
-    public void register(MMOPlayerData playerData) {
+    public void register(@NotNull MMOPlayerData playerData) {
         playerData.getPassiveSkillMap().addModifier(this);
     }
 
     @Override
-    public void unregister(MMOPlayerData playerData) {
+    public void unregister(@NotNull MMOPlayerData playerData) {
         playerData.getPassiveSkillMap().removeModifier(getUniqueId());
+    }
+
+    @Override
+    public ModifierMap<?> getMap(@NotNull MMOPlayerData playerData) {
+        return playerData.getPassiveSkillMap();
     }
 
     @NotNull

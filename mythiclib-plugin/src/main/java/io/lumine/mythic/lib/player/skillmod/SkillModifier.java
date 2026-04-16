@@ -3,6 +3,7 @@ package io.lumine.mythic.lib.player.skillmod;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.api.InstanceModifier;
+import io.lumine.mythic.lib.player.modifier.ModifierMap;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -88,13 +89,18 @@ public class SkillModifier extends InstanceModifier {
     }
 
     @Override
-    public void register(MMOPlayerData playerData) {
+    public void register(@NotNull MMOPlayerData playerData) {
         playerData.getSkillModifierMap().addModifier(this);
     }
 
     @Override
-    public void unregister(MMOPlayerData playerData) {
+    public void unregister(@NotNull MMOPlayerData playerData) {
         playerData.getSkillModifierMap().removeModifier(getUniqueId());
+    }
+
+    @Override
+    public ModifierMap<?> getMap(@NotNull MMOPlayerData playerData) {
+        return playerData.getSkillModifierMap();
     }
 
     @NotNull

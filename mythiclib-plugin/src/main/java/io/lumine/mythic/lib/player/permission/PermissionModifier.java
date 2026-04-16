@@ -2,6 +2,7 @@ package io.lumine.mythic.lib.player.permission;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.player.modifier.ModifierMap;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
@@ -36,6 +37,11 @@ public class PermissionModifier extends PlayerModifier {
     @Override
     public void unregister(@NotNull MMOPlayerData playerData) {
         playerData.getPermissionMap().removeModifier(getUniqueId());
+    }
+
+    @Override
+    public ModifierMap<?> getMap(@NotNull MMOPlayerData playerData) {
+        return playerData.getPermissionMap();
     }
 
     @NotNull

@@ -3,9 +3,11 @@ package io.lumine.mythic.lib.api.stat.modifier;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.api.InstanceModifier;
+import io.lumine.mythic.lib.player.modifier.ModifierMap;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -109,13 +111,18 @@ public class StatModifier extends InstanceModifier {
     }
 
     @Override
-    public void register(MMOPlayerData playerData) {
+    public void register(@NotNull MMOPlayerData playerData) {
         playerData.getStatMap().getInstance(stat).registerModifier(this);
     }
 
     @Override
-    public void unregister(MMOPlayerData playerData) {
+    public void unregister(@NotNull MMOPlayerData playerData) {
         playerData.getStatMap().getInstance(stat).removeModifier(getUniqueId());
+    }
+
+    @Override
+    public ModifierMap<?> getMap(@NotNull MMOPlayerData playerData) {
+        throw new NotImplementedException();
     }
 }
 

@@ -8,7 +8,9 @@ import io.lumine.mythic.lib.player.permission.PermissionModifier;
 import io.lumine.mythic.lib.player.potion.PermanentPotionEffect;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.player.skillmod.SkillModifier;
+import io.lumine.mythic.lib.util.annotation.NotUsed;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -92,6 +94,13 @@ public abstract class PlayerModifier {
     public abstract void register(@NotNull MMOPlayerData playerData);
 
     public abstract void unregister(@NotNull MMOPlayerData playerData);
+
+    @Deprecated
+    @NotUsed
+    public ModifierMap<?> getMap(@NotNull MMOPlayerData playerData) {
+        // TODO implement for temporary modifiers
+        throw new NotImplementedException();
+    }
 
     @Override
     public boolean equals(Object o) {

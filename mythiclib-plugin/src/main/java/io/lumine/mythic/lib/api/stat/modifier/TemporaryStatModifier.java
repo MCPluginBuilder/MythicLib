@@ -8,9 +8,12 @@ import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
+// TODO temporary modifiers could wrap any modifier, not just a stat modifier.
+// TODO deprecate this class
 public class TemporaryStatModifier extends StatModifier implements Closeable {
     private BukkitRunnable closeTask;
     private long duration, startTime;
@@ -58,10 +61,14 @@ public class TemporaryStatModifier extends StatModifier implements Closeable {
      */
     public void register(MMOPlayerData playerData, long duration) {
         Validate.isTrue(!isActive(), "Modifier is already active");
-        super.register(playerData);
+        // Keep ref to modified stat map/instance
+        // See class TemporaryModifier for explanation.
+        var statInstance = playerData.getStatMap().getInstance(getStat());
+        statInstance.registerModifier(this);
         closeTask = new BukkitRunnable() {
             @Override
             public void run() {
+                statInstance.removeModifier(getUniqueId());
                 unregister(playerData);
             }
         };
@@ -71,7 +78,7 @@ public class TemporaryStatModifier extends StatModifier implements Closeable {
     }
 
     @Override
-    public void register(MMOPlayerData playerData) {
+    public void register(@NotNull MMOPlayerData playerData) {
         throw new UnsupportedOperationException("Use #register(MMOPlayerData, long) instead");
     }
 
