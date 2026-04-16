@@ -18,17 +18,17 @@ public enum RPGPluginEnum {
     PLACEHOLDER_CLASS(PlaceholderClassModule.class),
 
     MMOCORE("MMOCore", "net.Indyuce.mmocore.comp.MMOCoreModule"),
-    HEROES("Heroes", "io.lumine.mythic.lib.rpg.compat.HeroesHook"),
-    FABLED("Fabled", "io.lumine.mythic.lib.rpg.compat.FabledHook"),
-    RPGPLAYERLEVELING("RPGPlayerLeveling", "io.lumine.mythic.lib.rpg.compat.RPGPlayerLevelingHook"),
-    RACESANDCLASSES("RacesAndClasses", "io.lumine.mythic.lib.rpg.compat.RacesAndClassesHook"),
-    BATTLELEVELS("BattleLevels", "io.lumine.mythic.lib.rpg.compat.BattleLevelsHook"),
-    MCMMO("mcMMO", "io.lumine.mythic.lib.rpg.compat.McMMOHook"),
-    MCRPG("McRPG", "io.lumine.mythic.lib.rpg.compat.McRPGHook"),
-    AURELIUMSKILLS("AureliumSkills", "io.lumine.mythic.lib.rpg.compat.AureliumSkillsHook"),
-    AURASKILLS("AuraSkills", "io.lumine.mythic.lib.rpg.compat.AuraSkillsHook"),
-    SKILLS("Skills", "io.lumine.mythic.lib.rpg.compat.SkillsHook"),
-    SKILLSPRO("SkillsPro", "io.lumine.mythic.lib.rpg.compat.SkillsProHook"),
+    HEROES("Heroes"),
+    FABLED("Fabled"),
+    RPGPLAYERLEVELING("RPGPlayerLeveling"),
+    RACESANDCLASSES("RacesAndClasses"),
+    BATTLELEVELS("BattleLevels"),
+    MCMMO("mcMMO"),
+    MCRPG("McRPG"),
+    AURELIUMSKILLS("AureliumSkills"),
+    AURASKILLS("AuraSkills"),
+    SKILLS("Skills"),
+    SKILLSPRO("SkillsPro"),
 
     ;
 
@@ -40,8 +40,12 @@ public enum RPGPluginEnum {
         this.pluginName = null;
     }
 
-    RPGPluginEnum(String pluginName, String className) {
-        this.pluginClass = () -> locateClass(className);
+    RPGPluginEnum(String pluginName) {
+        this(pluginName, "io.lumine.mythic.lib.rpg.compat." + pluginName);
+    }
+
+    RPGPluginEnum(String pluginName, String classPath) {
+        this.pluginClass = () -> locateClass(classPath);
         this.pluginName = pluginName;
     }
 
