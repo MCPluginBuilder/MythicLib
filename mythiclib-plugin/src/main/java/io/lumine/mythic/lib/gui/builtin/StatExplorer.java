@@ -39,6 +39,7 @@ public class StatExplorer extends PluginInventory {
             STAT_SLOTS = {37, 38, 39, 40, 41, 42, 43, 46, 47, 48, 49, 50, 51, 52},
             MODIFIER_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.#####");
+    private static final int MAX_DISPLAY_STATS = 20;
 
     public StatExplorer(Player player, MMOPlayerData targetData) {
         super(player);
@@ -71,9 +72,19 @@ public class StatExplorer extends PluginInventory {
             lore.add(ChatColor.GRAY + AltChar.smallListDash + " Default Base Value: " + ChatColor.GOLD + DECIMAL_FORMAT.format(statInstance.getDefaultBase()));
             lore.add("");
             lore.add(ChatColor.GRAY + "Modifier Count: " + ChatColor.GOLD + statInstance.getModifiers().size());
-            for (var modifier : statInstance.getModifiers()) {
+
+            // Lore cannot have more than 256 lines
+            // Only display the first N
+            var statOverflow = statInstance.getModifiers().size() > MAX_DISPLAY_STATS;
+            var modifiers = statOverflow ? new ArrayList<>(statInstance.getModifiers()).subList(0, MAX_DISPLAY_STATS) : statInstance.getModifiers();
+
+            for (var modifier : modifiers) {
                 lore.add(ChatColor.DARK_GRAY + " - " + ChatColor.GRAY + modifier.getKey() + ": " + ChatColor.GOLD + DECIMAL_FORMAT.format(modifier.getValue()));
             }
+            if (statOverflow) {
+                lore.add(ChatColor.DARK_GRAY + "and " + (statInstance.getModifiers().size() - MAX_DISPLAY_STATS) + " more...");
+            }
+
             meta.getPersistentDataContainer().set(STAT_KEY, PersistentDataType.STRING, stat.getStat());
             meta.setLore(lore);
             item.setItemMeta(meta);
