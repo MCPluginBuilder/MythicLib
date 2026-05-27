@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -101,12 +102,17 @@ public class Argument<T> {
     }
 
     @NotNull
+    public Argument<T> required() {
+        return new Argument<>(this.key, this.indexInNode, this.autoComplete, this.parser, null);
+    }
+
+    @NotNull
     public Argument<T> withKey(@NotNull String key) {
         return new Argument<>(key, this.indexInNode, this.autoComplete, this.parser, this.fallback);
     }
 
     @NotNull
-    public Argument<T> withFallback(@NotNull Function<CommandTreeExplorer, T> fallback) {
+    public Argument<T> withFallback(@Nullable Function<CommandTreeExplorer, T> fallback) {
         return new Argument<>(this.key, this.indexInNode, this.autoComplete, this.parser, fallback);
     }
 
@@ -296,6 +302,22 @@ public class Argument<T> {
         list.add("plugin_name");
         list.add("passive_skill_name");
     }, (explorer, input) -> input, explorer -> DEFAULT_MODIFIER_KEY);
+
+    public static Argument<String> modifierKeyOf(Argument<@NotNull Player> argPlayer) {
+        return new Argument<>("key", (tree, list) -> {
+
+            // Collect at most once
+            var collected = new HashSet<String>();
+            var mmoPlayerData = MMOPlayerData.get(tree.parse(argPlayer));
+            for (var inst : mmoPlayerData.getStatMap().getInstances())
+                for (var modifier : inst.getModifiers())
+                    collected.add(modifier.getKey());
+
+            // Dump all
+            list.addAll(collected);
+
+        }, (explorer, input) -> input);
+    }
 
     public static final Argument<String> COOLDOWN_CURRENT = new Argument<>("cooldown_key", (tree, list) -> {
 

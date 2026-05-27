@@ -20,6 +20,7 @@ import java.util.Arrays;
 @Deprecated
 public class TempStatCommand extends CommandTreeNode {
 
+    @Deprecated
     public TempStatCommand(@NotNull CommandTreeNode parent) {
         super(parent, "tempstat");
 
@@ -27,6 +28,7 @@ public class TempStatCommand extends CommandTreeNode {
         addChild(new RemoveCommand(this));
     }
 
+    @Deprecated
     private static class RemoveCommand extends CommandTreeNode {
         private final Argument<@NotNull Player> argPlayer;
         private final Argument<@NotNull String> argStat;
@@ -37,7 +39,7 @@ public class TempStatCommand extends CommandTreeNode {
 
             argPlayer = addArgument(Argument.PLAYER);
             argStat = addArgument(Argument.STAT);
-            argKey = addArgument(Argument.MODIFIER_KEY);
+            argKey = addArgument(Argument.MODIFIER_KEY.required());
         }
 
         @Override
@@ -53,6 +55,7 @@ public class TempStatCommand extends CommandTreeNode {
         }
     }
 
+    @Deprecated
     private static class AddCommand extends CommandTreeNode {
         private final Argument<@NotNull Player> argPlayer;
         private final Argument<@NotNull String> argStat;
@@ -60,6 +63,7 @@ public class TempStatCommand extends CommandTreeNode {
         private final Argument<@NotNull Long> argDuration;
         private final Argument<@NotNull String> argKey;
 
+        @Deprecated
         public AddCommand(@NotNull CommandTreeNode parent) {
             super(parent, "add");
 

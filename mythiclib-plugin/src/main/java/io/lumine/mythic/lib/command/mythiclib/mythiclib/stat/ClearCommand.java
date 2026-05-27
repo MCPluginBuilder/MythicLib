@@ -16,7 +16,7 @@ public class ClearCommand extends CommandTreeNode {
         super(parent, "clear");
 
         argPlayer = addArgument(Argument.PLAYER);
-        argKey = addArgument(Argument.MODIFIER_KEY);
+        argKey = addArgument(Argument.modifierKeyOf(argPlayer));
     }
 
     @Override
