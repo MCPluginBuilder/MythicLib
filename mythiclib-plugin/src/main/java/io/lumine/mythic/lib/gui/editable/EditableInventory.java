@@ -2,7 +2,7 @@ package io.lumine.mythic.lib.gui.editable;
 
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
-import org.apache.commons.lang3.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;

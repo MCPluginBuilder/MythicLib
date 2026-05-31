@@ -1,9 +1,9 @@
 package io.lumine.mythic.lib.version.impl;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.api.GameProfile;
 import io.lumine.mythic.lib.version.api.ModernGameProfile;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.meta.SkullMeta;
 

@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.gui.Navigator;
 import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.util.Tasks;
-import org.apache.commons.lang3.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
