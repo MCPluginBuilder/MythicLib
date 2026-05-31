@@ -143,7 +143,7 @@ public class VersionWrapper_1_15_R1 implements VersionWrapper {
 
     @Override
     public float getAttackCooldown(Player player) {
-        return ((CraftPlayer) player).getHandle().s(0);
+        return ((CraftPlayer) player).getHandle().s(0.5f);
     }
 
     @Override
