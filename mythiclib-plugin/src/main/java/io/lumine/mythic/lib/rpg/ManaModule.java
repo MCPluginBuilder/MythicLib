@@ -28,7 +28,7 @@ public interface ManaModule {
             if (!(newInstance instanceof ManaModule)) throw new IllegalArgumentException("Plugin " + pluginName + " does not support mana");
             return (ManaModule) newInstance;
         } catch (LinkageError | Exception exception) {
-            throw new IllegalArgumentException("Could not load mana plugin " + pluginName + ", using default: " + exception.getMessage());
+            throw new IllegalArgumentException("Could not load mana plugin " + pluginName + ", using default", exception);
         }
     }
 }

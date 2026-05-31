@@ -185,7 +185,7 @@ hologram-provider: TEXT_DISPLAYS
 # - BATTLELEVELS
 # - MCMMO
 # - MCRPG
-# - NONEplaceholder
+# - NONE
 # - %mmocore_level% or any PlaceholderAPI placeholder
 level-plugin: MMOCORE
 

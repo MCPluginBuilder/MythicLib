@@ -20,7 +20,7 @@ public interface LevelModule {
             if (!(newInstance instanceof LevelModule)) throw new IllegalArgumentException("Plugin " + pluginName + " does not support levels");
             return (LevelModule) newInstance;
         } catch (LinkageError | Exception exception) {
-            throw new IllegalArgumentException("Could not load level plugin " + pluginName + ", using default: " + exception.getMessage());
+            throw new IllegalArgumentException("Could not load level plugin " + pluginName + ", using default", exception);
         }
     }
 }

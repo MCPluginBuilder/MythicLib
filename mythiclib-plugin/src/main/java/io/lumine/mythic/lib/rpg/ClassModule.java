@@ -22,7 +22,7 @@ public interface ClassModule {
             if (!(newInstance instanceof ClassModule)) throw new IllegalArgumentException("Plugin " + pluginName + " does not support classes");
             return (ClassModule) newInstance;
         } catch (LinkageError | Exception exception) {
-            throw new IllegalArgumentException("Could not load class plugin " + pluginName + ", using default: " + exception.getMessage());
+            throw new IllegalArgumentException("Could not load class plugin " + pluginName + ", using default", exception);
         }
     }
 }

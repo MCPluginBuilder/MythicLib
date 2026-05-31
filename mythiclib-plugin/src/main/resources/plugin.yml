@@ -5,7 +5,8 @@ api-version: 1.14
 version: ${project.version}
 description: ${project.description}
 website: www.phoenixdevt.fr
-softdepend: [ WorldGuard,Residence,MythicMobs,PlaceholderAPI,Fabled ]
+# AuraSkills must be enabled before initializing API class
+softdepend: [ WorldGuard,Residence,MythicMobs,PlaceholderAPI,Fabled,AureliumSkills,AuraSkills ]
 loadbefore: [ MMOProfiles, MMOCore ]
 commands:
   mythiclib:
