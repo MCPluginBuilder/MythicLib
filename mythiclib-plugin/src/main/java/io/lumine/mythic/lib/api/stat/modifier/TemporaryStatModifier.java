@@ -69,7 +69,6 @@ public class TemporaryStatModifier extends StatModifier implements Closeable {
             @Override
             public void run() {
                 statInstance.removeModifier(getUniqueId());
-                unregister(playerData);
             }
         };
         closeTask.runTaskLater(MythicLib.plugin, duration);
