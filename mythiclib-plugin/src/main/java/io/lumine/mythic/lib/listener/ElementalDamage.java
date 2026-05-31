@@ -1,6 +1,7 @@
 package io.lumine.mythic.lib.listener;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.AttackEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.provider.StatProvider;
@@ -11,7 +12,6 @@ import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DefenseFormula;
 import io.lumine.mythic.lib.util.Lazy;
-import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -41,7 +41,7 @@ public class ElementalDamage implements Listener {
         final StatProvider attacker = event.getAttack().getAttacker();
         final double critChanceCoef = attacker.getStat("CRITICAL_STRIKE_CHANCE") / 100;
         if (event.getDamage().hasType(DamageType.WEAPON)) {
-            final double attackCharge = attacker instanceof PlayerMetadata ? VersionWrapper.get().getAttackCooldown(((PlayerMetadata) attacker).getPlayer()) : 1;
+            final double attackCharge = attacker instanceof PlayerMetadata ? UtilityMethods.baseDamageScaleFactor(((PlayerMetadata) attacker).getData()) : 1;
             for (Element element : MythicLib.plugin.getElements().getAll()) {
                 final double damage = attacker.getStat(element.getId() + "_DAMAGE") * attackCharge;
                 if (damage == 0) continue;

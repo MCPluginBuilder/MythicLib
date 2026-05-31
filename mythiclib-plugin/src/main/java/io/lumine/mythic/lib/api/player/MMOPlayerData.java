@@ -45,6 +45,7 @@ import java.util.logging.Level;
 public class MMOPlayerData {
 
     public final AtomicInteger damageParticleCount = new AtomicInteger(0);
+    public float lastAttackCooldown;
 
     // Information shared across all sessions
     private final ActionBarHandler actionBar = new ActionBarHandler(this);

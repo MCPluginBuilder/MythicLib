@@ -81,6 +81,37 @@ public class UtilityMethods {
         }
     }
 
+    /**
+     * Taken from net.minecraft.world.entity.Player#baseDamageScaleFactor()
+     * <p>
+     * Between 0 and 1, 1 being a fully charged attack
+     * <p>
+     * There's actually a small difference between the player's cooldown
+     * value and the multiplier applied to the attack damage. The minimum
+     * damage ratio a player can deal is 20% at 0% attack charge. The maximum
+     * damage ratio is 100%. It is a quadratic formula, so it actually
+     * penalizes fast attacks..
+     *
+     * @return Damage scale factor depending on player's cooldown value
+     */
+    public static float baseDamageScaleFactor(@NotNull MMOPlayerData attacker) {
+
+        float attackStrengthScale;
+
+        // Get player attack cooldown
+        var serverVersion = ServerVersion.get();
+        if (serverVersion.isPaper() && serverVersion.isAbove(26, 1, 2)) {
+            // On recent builds of Paper, player attack cooldown
+            // is reset BEFORE the attack
+            attackStrengthScale = attacker.lastAttackCooldown;
+        } else {
+            // Works on Bukkit on any version as
+            attackStrengthScale = VersionWrapper.get().getAttackCooldown(attacker.getPlayer());
+        }
+
+        return 0.2f + (attackStrengthScale * attackStrengthScale * 0.8f);
+    }
+
     @NotNull
     public static UUID uniqueIdFromString(@NotNull String input) {
         return UUID.nameUUIDFromBytes(input.getBytes());

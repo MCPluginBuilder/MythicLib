@@ -46,6 +46,7 @@ import io.lumine.mythic.lib.rpg.ClassModule;
 import io.lumine.mythic.lib.rpg.LevelModule;
 import io.lumine.mythic.lib.rpg.ManaModule;
 import io.lumine.mythic.lib.rpg.provided.DummyModule;
+import io.lumine.mythic.lib.software.PaperAdapter;
 import io.lumine.mythic.lib.util.gson.MythicLibGson;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.util.loadingorder.DependencyCycleCheck;
@@ -138,6 +139,11 @@ public class MythicLib extends MMOPlugin {
         Bukkit.getPluginManager().registerEvents(new ElementalDamage(), this);
         Bukkit.getPluginManager().registerEvents(new PvpListener(), this);
         ArmorEquipEvent.registerListener(this);
+
+        if (this.version.isPaper()) {
+            PaperAdapter.init(this);
+            getLogger().log(Level.INFO, "Enabling Paper-only features");
+        }
 
         if (getConfig().getBoolean("vanilla-damage-modifiers.enabled"))
             Bukkit.getPluginManager().registerEvents(new VanillaDamageModifiers(getConfig().getConfigurationSection("vanilla-damage-modifiers")), this);
