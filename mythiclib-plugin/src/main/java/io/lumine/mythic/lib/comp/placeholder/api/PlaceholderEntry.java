@@ -8,6 +8,11 @@ public interface PlaceholderEntry<T> {
 
     public String getFallback();
 
+    // default for backwards compatibility
+    default boolean requiresPlayer() {
+        return true;
+    }
+
     @NotNull
     public String parse(@NotNull PlaceholderMetadata<T> metadata);
 }

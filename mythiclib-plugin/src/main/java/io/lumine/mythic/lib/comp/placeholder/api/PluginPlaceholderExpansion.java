@@ -55,25 +55,7 @@ public abstract class PluginPlaceholderExpansion<T> extends PlaceholderExpansion
     }
 
     @Override
-    public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
-
-        // Retrieve player data
-        final T playerData;
-        try {
-            playerData = getPlayerData(player);
-        } catch (Exception exception) {
-            return NO_PLAYER_PLACEHOLDER;
-        }
-
-        // Error-proof call
-        return this.parse(playerData, params);
-    }
-
-    protected static final String NO_PLAYER_PLACEHOLDER = "OfflinePlayer";
-    protected static final String PLACEHOLDER_NOT_FOUND = "NoMatch";
-
-    @NotNull
-    private String parse(@Nullable T playerData, @NotNull String raw) {
+    public @Nullable String onRequest(OfflinePlayer player, @NotNull String raw) {
         PlaceholderEntry<T> found = null;
         int endIndex = -1;
 
@@ -91,6 +73,15 @@ public abstract class PluginPlaceholderExpansion<T> extends PlaceholderExpansion
         // No placeholder matches
         if (found == null) return PLACEHOLDER_NOT_FOUND;
 
+        // Retrieve player data only if necessary
+        T playerData;
+        try {
+            playerData = getPlayerData(player);
+        } catch (Exception exception) {
+            if (found.requiresPlayer()) return NO_PLAYER_PLACEHOLDER;
+            playerData = null;
+        }
+
         try {
             // Try to parse placeholder
             final var meta = new PlaceholderMetadata<>(playerData, raw, endIndex);
@@ -100,4 +91,7 @@ public abstract class PluginPlaceholderExpansion<T> extends PlaceholderExpansion
             return found.getFallback();
         }
     }
+
+    protected static final String NO_PLAYER_PLACEHOLDER = "OfflinePlayer";
+    protected static final String PLACEHOLDER_NOT_FOUND = "NoMatch";
 }

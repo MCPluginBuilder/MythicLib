@@ -21,7 +21,7 @@ public enum PlaceholderEnum implements PlaceholderEntry<MMOPlayerData> {
     /**
      * Positive/negative space using the negative space resource pack
      */
-    space_(meta -> UtilityMethods.getSpaceFont(Integer.parseInt(meta.params()))),
+    space_(false, "", meta -> UtilityMethods.getSpaceFont(Integer.parseInt(meta.params()))),
 
     defense_damage_reduction(meta -> {
         var defenseStat = meta.playerData.getStatMap().getStat("DEFENSE");
@@ -29,30 +29,30 @@ public enum PlaceholderEnum implements PlaceholderEntry<MMOPlayerData> {
         return MythicLib.plugin.getMMOConfig().decimal.format(damageReduction);
     }),
 
-    raw_stat_(meta -> {
+    raw_stat_(0, meta -> {
         var stat = UtilityMethods.enumName(meta.params());
         return String.valueOf(meta.playerData.getStatMap().getInstance(stat).getFinal());
     }),
 
-    stat_(meta -> {
+    stat_(0, meta -> {
         var stat = UtilityMethods.enumName(meta.params());
         return StatManager.format(stat, meta.playerData);
     }),
 
-    cooldown_(meta -> {
+    cooldown_(0, meta -> {
         var key = meta.params();
         var cooldownLeft = meta.playerData.getCooldownMap().getCooldown(key);
         return MythicLib.plugin.getMMOConfig().decimal.format(cooldownLeft);
     }),
 
-    decfmt_(meta -> {
+    decfmt_(false, "", meta -> {
         var split = meta.params().split("_", 2);
         var format = MythicLib.plugin.getMMOConfig().newDecimalFormat(split[0]);
         var value = Double.parseDouble(split[1]);
         return format.format(value);
     }),
 
-    round_(meta -> {
+    round_(false, 0, meta -> {
         var split = meta.params().split("_", 2);
         var places = Integer.parseInt(split[0]);
         var value = Double.parseDouble(split[1]);
@@ -94,26 +94,22 @@ public enum PlaceholderEnum implements PlaceholderEntry<MMOPlayerData> {
     ;
 
     private final String prefix, fallback;
+    private final boolean requiresPlayer;
     private final Function<PlaceholderMetadata<MMOPlayerData>, String> parser;
 
     private static final String DEFAULT_FALLBACK = "";
-
-    PlaceholderEnum(PlaceholderEnum delegate) {
-        this(delegate.fallback, delegate.parser);
-    }
 
     PlaceholderEnum(Function<PlaceholderMetadata<MMOPlayerData>, String> parser) {
         this(DEFAULT_FALLBACK, parser);
     }
 
     PlaceholderEnum(Object fallback, Function<PlaceholderMetadata<MMOPlayerData>, String> parser) {
-        this.prefix = name();
-        this.parser = parser;
-        this.fallback = String.valueOf(Objects.requireNonNull(fallback, "Default value cannot be null"));
+        this(true, fallback, parser);
     }
 
-    PlaceholderEnum(String prefix, Object fallback, Function<PlaceholderMetadata<MMOPlayerData>, String> parser) {
-        this.prefix = prefix;
+    PlaceholderEnum(boolean requiresPlayer, Object fallback, Function<PlaceholderMetadata<MMOPlayerData>, String> parser) {
+        this.requiresPlayer = requiresPlayer;
+        this.prefix = name();
         this.parser = parser;
         this.fallback = String.valueOf(Objects.requireNonNull(fallback, "Default value cannot be null"));
     }
@@ -126,6 +122,11 @@ public enum PlaceholderEnum implements PlaceholderEntry<MMOPlayerData> {
     @Override
     public String getFallback() {
         return fallback;
+    }
+
+    @Override
+    public boolean requiresPlayer() {
+        return requiresPlayer;
     }
 
     @Override
