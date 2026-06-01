@@ -128,9 +128,12 @@ public class MMOPlayerData {
      * because MythicLib uncaches it when the player leaves for memory purposes.
      *
      * @return If the player is currently online.
+     * @see #isPlaying()
      */
     public boolean isOnline() {
-        return player != null;
+        // #isOnline is necessary as the Player instance is only cleared
+        // 20 ticks after the player logs off to avoid 99% on-logout NPE's
+        return player != null && player.isOnline();
     }
 
     /**

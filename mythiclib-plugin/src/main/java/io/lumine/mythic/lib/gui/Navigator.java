@@ -115,13 +115,16 @@ public class Navigator implements Listener {
     /**
      * Opens the upmost inventory in the stack
      *
-     * @return Upmost inventory in the navigator
+     * @return Upmost inventory in the navigator, or null
+     *         if inventory could not be opened.
      */
     @Nullable
     public PluginInventory openLast() {
-        final PluginInventory upmost = openedInventories.peek();
-        if (!playerData.isOnline()) return upmost;
 
+        // Safeguard. Do not open inventory
+        if (!playerData.isOnline()) return null;
+
+        final var upmost = openedInventories.peek();
         upmost.onOpen(); // Notify inventory open
 
         if (this.recycle) {
