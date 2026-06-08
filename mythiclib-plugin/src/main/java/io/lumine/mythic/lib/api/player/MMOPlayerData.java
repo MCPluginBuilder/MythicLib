@@ -28,6 +28,7 @@ import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -150,6 +151,25 @@ public class MMOPlayerData {
         return Objects.requireNonNull(player, "Player is offline");
     }
 
+    public void onLogout() {
+
+        this.clearNextSessionBuffer();
+        if (this.hasProfileSession())
+            this.getProfileSession().initializeClosing(SessionUpdateReason.LOG_OUT);
+
+        // Only clear the Player instance a few ticks later
+        // TODO improve this, only clear once the session has been closed
+        Bukkit.getScheduler().runTaskLater(MythicLib.plugin, () -> {
+
+            // Ignore if player logged in again
+            if (this.isOnline()) return;
+
+            // Since MMOPlayerData is persistent inside the server RAM for 24h,
+            // we release all Bukkit instances such as the Player instance
+            this.updatePlayer(null);
+        }, 20L);
+    }
+
     /**
      * Caches a new Player instance and refreshes the last log activity.
      * Provided player can be null if the player is disconnecting. This
@@ -157,20 +177,10 @@ public class MMOPlayerData {
      *
      * @param player Player instance to cache (null if logging off)
      */
-    public void updatePlayer(@Nullable Player player) {
-
-        // Player logging off
-        if (player == null && this.player != null) {
-            this.player = null;
-            this.lastLogActivity = System.currentTimeMillis();
-        }
-
-        // Player logging in
-        else if (player != null && this.player == null) {
-            this.player = player;
-            this.lastLogActivity = System.currentTimeMillis();
-            this.lastPlayerName = player.getName();
-        }
+    public void onLogin(@NotNull Player player) {
+        this.player = player;
+        this.lastLogActivity = System.currentTimeMillis();
+        this.lastPlayerName = player.getName();
     }
 
     //endregion
@@ -250,7 +260,7 @@ public class MMOPlayerData {
         }
     }
 
-    public void clearNextSessionBuffer() {
+    private void clearNextSessionBuffer() {
         synchronized (sessionLock) {
             nextSessionBuffered = false;
         }
@@ -582,7 +592,7 @@ public class MMOPlayerData {
     @NotNull
     public static MMOPlayerData setup(@NotNull Player player) {
         final var playerData = setup(player.getUniqueId());
-        playerData.updatePlayer(player);
+        playerData.onLogin(player);
         return playerData;
     }
 
@@ -681,6 +691,20 @@ public class MMOPlayerData {
     //endregion
 
     //region Deprecated
+
+    @Deprecated
+    public void updatePlayer(@Nullable Player player) {
+
+        // Player logging off
+        if (player == null && this.player != null) {
+            this.onLogout();
+        }
+
+        // Player logging in
+        else if (player != null && this.player == null) {
+            this.onLogin(player);
+        }
+    }
 
     @Deprecated
     public <T> T getExternalData(String key, Class<T> objectType) {
