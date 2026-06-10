@@ -16,7 +16,7 @@ public class CheckCommand extends CommandTreeNode {
         super(parent, "check");
 
         argPlayer = addArgument(Argument.PLAYER);
-        argStat = addArgument(Argument.STAT);
+        argStat = addArgument(Argument.statOf(argPlayer));
     }
 
     @Override

@@ -250,6 +250,24 @@ public class Argument<T> {
         return UtilityMethods.enumName(input);
     });
 
+    public static Argument<String> statOf(Argument<@NotNull Player> argPlayer) {
+        return new Argument<>("stat", (tree, list) -> {
+
+            // Collect at most once
+            var collected = new HashSet<>(MythicLib.plugin.getStats().getRegisteredStats());
+            var mmoPlayerData = MMOPlayerData.get(tree.parse(argPlayer));
+            for (var inst : mmoPlayerData.getStatMap().getInstances()) collected.add(inst.getStat());
+
+            // Dump all
+            list.addAll(collected);
+
+        }, (explorer, input) -> {
+            //Validate.isTrue(MythicLib.plugin.getStats().isStatRegistered(stat), stat + " is not a valid stat.");
+            // No validation!
+            return UtilityMethods.enumName(input);
+        });
+    }
+
     public static final Argument<@NotNull Boolean> BOOLEAN = new Argument<>("boolean", (explorer, list) -> {
         list.add("true");
         list.add("false");
@@ -303,7 +321,7 @@ public class Argument<T> {
         list.add("passive_skill_name");
     }, (explorer, input) -> input, explorer -> DEFAULT_MODIFIER_KEY);
 
-    public static Argument<String> modifierKeyOf(Argument<@NotNull Player> argPlayer) {
+    public static Argument<String> statModifierKeyOf(Argument<@NotNull Player> argPlayer) {
         return new Argument<>("key", (tree, list) -> {
 
             // Collect at most once

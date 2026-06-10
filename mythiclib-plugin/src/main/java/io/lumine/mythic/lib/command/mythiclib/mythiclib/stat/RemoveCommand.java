@@ -17,7 +17,7 @@ public class RemoveCommand extends CommandTreeNode {
         super(parent, "remove");
 
         argPlayer = addArgument(Argument.PLAYER);
-        argStat = addArgument(Argument.STAT);
+        argStat = addArgument(Argument.statOf(argPlayer));
         argKey = addArgument(Argument.MODIFIER_KEY.required());
     }
 

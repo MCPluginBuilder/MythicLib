@@ -31,7 +31,7 @@ public class AddCommand extends CommandTreeNode {
         super(parent, "add");
 
         argPlayer = addArgument(Argument.PLAYER);
-        argStat = addArgument(Argument.STAT);
+        argStat = addArgument(Argument.statOf(argPlayer));
         argValue = addArgument(VALUE);
         argDuration = addArgument(Argument.DURATION_TICKS.withFallback(explorer -> 0L));
         argKey = addArgument(Argument.MODIFIER_KEY);
