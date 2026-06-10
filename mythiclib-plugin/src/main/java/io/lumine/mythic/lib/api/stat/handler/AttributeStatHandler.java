@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.gui.builtin.AttributeExplorer;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VersionUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -63,8 +64,10 @@ public class AttributeStatHandler extends StatHandler {
         final var difference = mmoFinal - this.playerDefaultBase;
 
         // Only register attribute modifier if absolutely necessary
-        if (Math.abs(difference) > EPSILON)
+        if (Math.abs(difference) > EPSILON) {
+            if (instance.getStat().equals("MAX_HEALTH")) Bukkit.broadcastMessage("add modifier " + instance.getStat() + " " + difference);
             attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
+        }
     }
 
     @Override

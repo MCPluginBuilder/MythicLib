@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,6 +71,8 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
     @Override
     public void onSessionOpen() {
+
+        Bukkit.broadcastMessage("StatMap#onSessionOpen");
 
         // Update caches and force updates
         for (var handler : MythicLib.plugin.getStats().getHandlers()) {

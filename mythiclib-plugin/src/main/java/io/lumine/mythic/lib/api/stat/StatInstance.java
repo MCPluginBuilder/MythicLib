@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -253,6 +254,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * @param modifier The stat modifier being registered
      */
     public void registerModifier(@NotNull StatModifier modifier) {
+        if (this.stat.equals("MAX_HEALTH")) Bukkit.broadcastMessage("StatInstance#registerModifier " + modifier.toString());
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
         // TODO change "Closeable". add one interface Openable and have code run here instead
         // DO NOT TEST IF MODIFIER IS ALREADY IN THE MAP.
