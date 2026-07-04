@@ -270,7 +270,7 @@ public class VersionWrapper_26_2_R0 implements VersionWrapper, ModernGameProfile
         @Override
         public ItemStack toItem() {
             nms.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
-            return CraftItemStack.asBukkitCopy(nms);
+            return CraftItemStack.asCraftMirror(nms);
         }
 
         @Override
