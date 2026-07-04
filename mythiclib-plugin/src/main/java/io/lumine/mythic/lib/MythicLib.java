@@ -98,7 +98,7 @@ public class MythicLib extends MMOPlugin {
         getLogger().log(Level.INFO, "Plugin file is called '" + getFile().getName() + "'");
 
         try {
-            version = new ServerVersion();
+            version = new ServerVersion(this);
             version.validateMappings(); // After field is initialized
             getLogger().log(Level.INFO, "Detected Bukkit Version: " + version.getCraftBukkitVersion());
         } catch (Exception exception) {

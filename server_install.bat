@@ -12,7 +12,7 @@ rem Needed for branches with different final JAR names built on the same compute
 del /Q "%source_file%"
 
 rem Custom Maven build command
-call mvn clean install -pl mythiclib-plugin,mythiclib-rpg,mythiclib-v26_1_r0,mythiclib-dist
+call mvn install -pl mythiclib-plugin,mythiclib-rpg,mythiclib-v26_2_r0,mythiclib-dist
 
 rem Loop over all provided arguments (each is a folder path)
 :copy_loop

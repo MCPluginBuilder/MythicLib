@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -18,21 +19,35 @@ public class ServerVersion {
     private final VersionWrapper versionWrapper;
     private final boolean paper;
 
-    private static final int MAXIMUM_INDEX = 3;
-    private static final String MOST_RECENT_WRAPPER = "VersionWrapper_26_1_R1";
+    private static final int MAXIMUM_VERSION_SIZE = 3;
+    private static final String MOST_RECENT_WRAPPER = "VersionWrapper_26_2_R0";
 
-    @Deprecated
-    public ServerVersion(Class<?> ignored) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        this();
-    }
+    public ServerVersion(JavaPlugin plugin) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
-    public ServerVersion() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        // TODO not use revision number anymore and properly map each
+        // version to a revision number manually. works on both
+        // paper and Spigot.
+
+        // Running Paper?
+        boolean isPaper = false;
+        try {
+            // Any other works, just the shortest I could find.
+            // TODO use one that actually makes sense, or look for papermc package or something
+            Class.forName("com.destroystokyo.paper.ParticleBuilder");
+            isPaper = true;
+        } catch (ClassNotFoundException ignored) {
+            // Ignored
+        }
+        this.paper = isPaper;
 
         // Version numbers
         final String[] bukkitSplit = Bukkit.getServer().getBukkitVersion().split("\\-")[0].split("\\."); // ["1", "20", "4"]
-        bukkitVersion = new int[Math.min(MAXIMUM_INDEX, bukkitSplit.length)];
-        for (int i = 0; i < bukkitVersion.length; i++)
+        bukkitVersion = new int[Math.min(MAXIMUM_VERSION_SIZE, bukkitSplit.length)];
+        for (int i = 0; i < bukkitVersion.length; i++) {
+            // 26.2 dev builds of Paper have a weird version syntax containing "build"
+            if (bukkitSplit[i].equals("build")) break;
             bukkitVersion[i] = Integer.parseInt(bukkitSplit[i]);
+        }
 
         // Compute rev number
         revNumber = findRevisionNumber();
@@ -42,21 +57,10 @@ public class ServerVersion {
         try {
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + craftBukkitVersion.substring(1)).getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException exception) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Non-natively supported Spigot version detected (" + craftBukkitVersion + "), trying reflection-based compatibility mode");
+            plugin.getLogger().log(Level.WARNING, "Current Bukkit version (" + craftBukkitVersion + ") is not supported natively, trying latest");
             found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper." + MOST_RECENT_WRAPPER).getDeclaredConstructor().newInstance();
         }
         this.versionWrapper = found;
-
-        // Running Paper?
-        boolean isPaper = false;
-        try {
-            // Any other works, just the shortest I could find.
-            Class.forName("com.destroystokyo.paper.ParticleBuilder");
-            isPaper = true;
-        } catch (ClassNotFoundException ignored) {
-            // Ignored
-        }
-        this.paper = isPaper;
     }
 
     public void validateMappings() {
@@ -120,9 +124,9 @@ public class ServerVersion {
      * @return True if server version is either equal to or above provided version.
      */
     public boolean isAbove(int... version) {
-        Validate.isTrue(version.length >= 1 && version.length <= MAXIMUM_INDEX, "Provide at least 1 integer and at most " + MAXIMUM_INDEX);
+        Validate.isTrue(version.length >= 1 && version.length <= MAXIMUM_VERSION_SIZE, "Provide at least 1 integer and at most " + MAXIMUM_VERSION_SIZE);
 
-        final int maxLength = Math.min(MAXIMUM_INDEX, Math.max(version.length, bukkitVersion.length));
+        final int maxLength = Math.min(MAXIMUM_VERSION_SIZE, Math.max(version.length, bukkitVersion.length));
         for (int i = 0; i < maxLength; i++) {
             final int server = i >= bukkitVersion.length ? 0 : bukkitVersion[i];
             final int provided = i >= version.length ? 0 : version[i];
@@ -191,9 +195,9 @@ public class ServerVersion {
 
     @Deprecated
     public boolean isStrictlyHigher(int... version) {
-        Validate.isTrue(version.length >= 1 && version.length <= MAXIMUM_INDEX, "Provide at least 1 integer and at most " + MAXIMUM_INDEX);
+        Validate.isTrue(version.length >= 1 && version.length <= MAXIMUM_VERSION_SIZE, "Provide at least 1 integer and at most " + MAXIMUM_VERSION_SIZE);
 
-        final int maxLength = Math.min(MAXIMUM_INDEX, Math.max(version.length, bukkitVersion.length));
+        final int maxLength = Math.min(MAXIMUM_VERSION_SIZE, Math.max(version.length, bukkitVersion.length));
         for (int i = 0; i < maxLength; i++) {
             final int server = i >= bukkitVersion.length ? 0 : bukkitVersion[i];
             final int provided = i >= version.length ? 0 : version[i];
@@ -201,6 +205,16 @@ public class ServerVersion {
         }
 
         return false;
+    }
+
+    @Deprecated
+    public ServerVersion(Class<?> ignored) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        this();
+    }
+
+    @Deprecated
+    public ServerVersion() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        this(MythicLib.plugin);
     }
 
     @Deprecated
