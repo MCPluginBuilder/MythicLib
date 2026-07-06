@@ -328,7 +328,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * respective stat modifiers before updating vanilla stats like
      * Max Health, Movement Speed.
      */
-    void update() {
+    public void update() {
 
         // Invalid caches
         this.mainHandValueCache = null;

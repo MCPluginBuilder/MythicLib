@@ -8,10 +8,10 @@ import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
-import io.lumine.mythic.lib.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -208,17 +208,18 @@ public class StatManager extends Module {
 
     @Deprecated
     public void runUpdate(StatMap map, String stat) {
-        // TODO map.getInstance(stat).update();
+        this.getHandler(stat).ifPresent(handler -> handler.runUpdates(map.getInstance(stat)));
     }
 
     @Deprecated
     public void runUpdates(@NotNull StatMap map) {
-        // TODO for (StatInstance ins : map.getInstances()) {
+        map.bufferUpdates(() -> map.getInstances().forEach(this::runUpdate));
+
     }
 
     @Deprecated
     public void runUpdate(@NotNull StatInstance instance) {
-        // TODO instance.update();
+        getHandler(instance.getStat()).ifPresent(handler -> handler.runUpdates(instance));
     }
 
     @Deprecated
