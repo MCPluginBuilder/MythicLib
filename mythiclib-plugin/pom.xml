@@ -83,11 +83,6 @@
             <id>aikar</id>
             <url>https://repo.aikar.co/nexus/content/groups/aikar/</url>
         </repository>
-        <!-- Repo for Crunch (math expression evaluator) -->
-        <repository>
-            <id>crunch_repo</id>
-            <url>https://redempt.dev</url>
-        </repository>
         <!-- WG has too many dependencies
         <repository>
             <id>sk89q-repo</id>
