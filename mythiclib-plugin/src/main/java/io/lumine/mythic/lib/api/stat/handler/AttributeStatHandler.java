@@ -48,6 +48,8 @@ public class AttributeStatHandler extends StatHandler {
 
         // Force update on login
         this.updateOnLogin = true;
+
+        addUpdateListener(this::updatePlayerAttribute);
     }
 
     @Override
@@ -70,8 +72,7 @@ public class AttributeStatHandler extends StatHandler {
             if (VersionUtils.matches(mod, ATTRIBUTE_KEY)) ins.removeModifier(mod);
     }
 
-    @Override
-    public void broadcastValueUpdate(@NotNull StatInstance instance) {
+    private void updatePlayerAttribute(@NotNull StatInstance instance) {
         Validate.isTrue(instance.getStat().equals(stat), "Attribute stat handler of " + this.stat + " got stat " + instance.getStat());
 
         // Clear previous modifiers from Bukkit attribute instance

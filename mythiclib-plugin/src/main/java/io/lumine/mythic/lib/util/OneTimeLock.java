@@ -2,6 +2,8 @@ package io.lumine.mythic.lib.util;
 
 import org.jetbrains.annotations.NotNull;
 
+// TODO remove if unused
+@Deprecated
 public class OneTimeLock {
     private boolean lock;
 

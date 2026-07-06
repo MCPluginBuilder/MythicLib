@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatMap extends PlayerDataMap implements PlayerStatProvider {
     private final MMOPlayerData data;
@@ -50,8 +50,8 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      *
      * @param stat The string key of the stat
      * @return The corresponding StatInstance, which can be manipulated to add
-     * (temporary?) stat modifiers to a player, remove modifiers or
-     * calculate stat values in various ways.
+     *         (temporary?) stat modifiers to a player, remove modifiers or
+     *         calculate stat values in various ways.
      */
     @NotNull
     public StatInstance getInstance(String stat) {
@@ -60,8 +60,8 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
     /**
      * @return The StatInstances that have been manipulated so far since the
-     * player has logged in. StatInstances are completely flushed when
-     * the server restarts
+     *         player has logged in. StatInstances are completely flushed when
+     *         the server restarts
      */
     @NotNull
     public Collection<StatInstance> getInstances() {
@@ -107,26 +107,24 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      * <p>
      * This flag {@link #sessionOpen} also presents stat updates but for a different reason
      * (stat maps are disabled when profile session is not alive).
+     * <p>
+     * Multi-thread safe implementation of updates buffered using
+     * an atomic integer to count the number of simultaneous threads
+     * buffering updates.
      */
-    private int attributeUpdateBuffer;
+    private final AtomicInteger updatesBuffered = new AtomicInteger(0);
 
-    public boolean isGraphReady() {
-        // If session is not open yet, or stat graph has not settled
-        // yet, it's useless to update it just yet
-        return attributeUpdateBuffer == 0 && sessionOpen;
+    public boolean isBufferingUpdates() {
+        return updatesBuffered.get() > 0 || !sessionOpen;
     }
 
     public void bufferUpdates(@NotNull Runnable runnable) {
-        attributeUpdateBuffer++;
+        updatesBuffered.incrementAndGet();
         try {
             runnable.run();
-        } catch (Exception exception) {
-            MythicLib.plugin.getLogger().log(Level.WARNING, "Error during call to #bufferUpdates: " + exception.getMessage());
         } finally {
-
-            // De-buffer attribute updates
-            var current = --attributeUpdateBuffer;
-            if (current == 0) stats.values().forEach(StatInstance::releaseBroadcast);
+            var current = updatesBuffered.decrementAndGet();
+            if (current == 0 && sessionOpen) stats.values().forEach(StatInstance::releaseUpdate);
         }
     }
 
@@ -137,11 +135,11 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      *                 the 'Skill Damage' due to the offhand weapon, when casting a
      *                 skill with mainhand?
      * @return Some actions require the player stats to be temporarily saved.
-     * When a player casts a projectile skill, there's a brief delay
-     * before it hits the target: the stat values taken into account
-     * correspond to the stat values when the player cast the skill (not
-     * when it finally hits the target). This cache technique fixes a
-     * huge game breaking glitch
+     *         When a player casts a projectile skill, there's a brief delay
+     *         before it hits the target: the stat values taken into account
+     *         correspond to the stat values when the player cast the skill (not
+     *         when it finally hits the target). This cache technique fixes a
+     *         huge game breaking glitch
      */
     @NotNull
     @Override

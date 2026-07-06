@@ -35,7 +35,7 @@ public class SkillModifierMap extends ModifierMap<SkillModifier> {
                         addScalar += mod.getValue() / 100;
                         continue;
 
-                    case ADDITIVE_MULTIPLIER:
+                    case COMPOUND:
                         // Multiplicative/Compound scalars
                         // Bad naming
                         multScalar *= 1 + (mod.getValue() / 100);

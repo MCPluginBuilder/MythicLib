@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -142,9 +143,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the base & default stat values
-     * as well as the stat modifiers. Relative and scalar stat modifiers apply
-     * onto the sum of the base, default stat values and flat modifiers. The
-     * total stat value is computed with action hand set to MAIN_HAND.
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers. The
+     *         total stat value is computed with action hand set to MAIN_HAND.
      */
     public double getTotal() {
         return getTotal(getBase(), EquipmentSlot.MAIN_HAND);
@@ -159,8 +160,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     * as well as the stat modifiers. Relative and scalar stat modifiers apply
-     * onto the sum of the base, default stat values and flat modifiers.
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers.
      */
     public double getTotal(@NotNull EquipmentSlot actionHand) {
         return getTotal(getBase(), actionHand);
@@ -175,9 +176,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     * as well as the stat modifiers. Relative and scalar stat modifiers apply
-     * onto the sum of the base, default stat values and flat modifiers. The
-     * total stat value is computed with action hand set to MAIN_HAND.
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers. The
+     *         total stat value is computed with action hand set to MAIN_HAND.
      */
     public double getTotal(double base) {
         return getTotal(base, EquipmentSlot.MAIN_HAND);
@@ -192,8 +193,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     * as well as the stat modifiers. Relative and scalar stat modifiers apply
-     * onto the sum of the base, default stat values and flat modifiers.
+     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
+     *         onto the sum of the base, default stat values and flat modifiers.
      */
     public double getTotal(double base, @NotNull EquipmentSlot actionHand) {
 
@@ -232,7 +233,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
                     addScalar += mod.getValue() / 100;
                     continue;
 
-                case ADDITIVE_MULTIPLIER:
+                case COMPOUND:
                     // Multiplicative/Compound scalars
                     // Bad naming
                     multScalar *= 1 + (mod.getValue() / 100);
@@ -318,7 +319,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Stats Updates and Buffering
 
-    private boolean broadcastPending = false;
+    private final AtomicBoolean updatePending = new AtomicBoolean(false);
 
     /**
      * Forces an update on this stat instance. An important convention
@@ -327,31 +328,30 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * respective stat modifiers before updating vanilla stats like
      * Max Health, Movement Speed.
      */
-    public void update() {
+    void update() {
 
         // Invalid caches
         this.mainHandValueCache = null;
         this.offHandValueCache = null;
 
         // Propagate changes
-        // TODO buffer stat updates to reduce nb of updates required?
-        // i'm not sure really necessary, check performance
-        handler.get().ifPresent(handler -> handler.updateStatGraph(this));
+        // TODO on server load/login/logout, clear proxies
+        handler.get().ifPresent(handler -> this.map.bufferUpdates(() -> handler.getChildren().forEach(proxy -> {
+            var targetInstance = this.map.getInstance(proxy.getTargetStat());
+            targetInstance.registerModifier(proxy.newModifier(this, EquipmentSlot.MAIN_HAND));
+            targetInstance.registerModifier(proxy.newModifier(this, EquipmentSlot.OFF_HAND));
+        })));
 
-        // Ask for update
-        if (map.isGraphReady()) tryBroadcastValueUpdate();
-        else broadcastPending = true;
+        if (map.isBufferingUpdates()) updatePending.set(true);
+        else broadcastUpdate();
     }
 
-    public void releaseBroadcast() {
-        if (broadcastPending) {
-            broadcastPending = false;
-            tryBroadcastValueUpdate();
-        }
+    void releaseUpdate() {
+        if (updatePending.getAndSet(false)) broadcastUpdate();
     }
 
-    private void tryBroadcastValueUpdate() {
-        handler.get().ifPresent(handler -> handler.broadcastValueUpdate(this));
+    private void broadcastUpdate() {
+        handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     //endregion
@@ -397,7 +397,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
                     addScalar += modification.apply(mod).getValue() / 100;
                     continue;
 
-                case ADDITIVE_MULTIPLIER:
+                case COMPOUND:
                     // Multiplicative/Compound scalars
                     // Bad naming
                     multScalar *= 1 + (modification.apply(mod).getValue() / 100);

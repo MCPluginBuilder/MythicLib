@@ -41,12 +41,13 @@ public class AddStatModifierMechanic extends TargetMechanic {
         Validate.isTrue(target instanceof Player, "Can only give temporary stats to players");
 
         MMOPlayerData playerData = MMOPlayerData.get((OfflinePlayer) target);
-        long lifetime = Math.max(0, (long) this.lifetime.evaluate(meta));
-        final var uniqueId = unique ? UtilityMethods.uniqueIdFromString(this.key) : UUID.randomUUID();
+        var lifetime = Math.max(0, (long) this.lifetime.evaluate(meta));
+        var uniqueId = unique ? UtilityMethods.uniqueIdFromString(this.key) : UUID.randomUUID();
+        var modifierType = relative ? ModifierType.RELATIVE : ModifierType.FLAT;
 
         if (lifetime > 0)
-            new TemporaryStatModifier(uniqueId, key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, lifetime);
+            new TemporaryStatModifier(uniqueId, key, stat, amount.evaluate(meta), modifierType, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData, lifetime);
         else
-            new StatModifier(uniqueId, key, stat, amount.evaluate(meta), relative ? ModifierType.RELATIVE : ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
+            new StatModifier(uniqueId, key, stat, amount.evaluate(meta), modifierType, EquipmentSlot.OTHER, ModifierSource.OTHER).register(playerData);
     }
 }

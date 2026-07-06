@@ -7,9 +7,8 @@ import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
-import io.lumine.mythic.lib.api.stat.handler.builtin.MovementSpeedStatHandler;
-import io.lumine.mythic.lib.api.stat.handler.builtin.SpeedMalusReductionStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
+import io.lumine.mythic.lib.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
@@ -78,7 +77,8 @@ public class StatManager extends Module {
             {
                 final var msStatHandler = new MovementSpeedStatHandler(statsConfig);
                 registerStat(msStatHandler);
-                final var smrStatHandler = new SpeedMalusReductionStatHandler(statsConfig, msStatHandler);
+                final var smrStatHandler = new StatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION);
+                smrStatHandler.addUpdateListener(ins -> ins.getMap().getInstance(SharedStat.MOVEMENT_SPEED).update());
                 registerStat(smrStatHandler);
             }
 

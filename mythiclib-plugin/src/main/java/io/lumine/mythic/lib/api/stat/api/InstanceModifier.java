@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.util.Pair;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -55,9 +56,7 @@ public abstract class InstanceModifier extends PlayerModifier {
         super(object.getString("key"), EquipmentSlot.OTHER, ModifierSource.OTHER);
 
         value = object.getDouble("value");
-        type = object.getBoolean("multiplicative", false) ? ModifierType.RELATIVE
-                : object.getBoolean("scalar") ? ModifierType.ADDITIVE_MULTIPLIER
-                : ModifierType.FLAT;
+        type = object.parse(ModifierType.FLAT, Parsers.ofEnum(ModifierType.class, ModifierType::valueOf), "type");
     }
 
     @NotNull
@@ -71,6 +70,6 @@ public abstract class InstanceModifier extends PlayerModifier {
 
     @Override
     public String toString() {
-        return MythicLib.plugin.getMMOConfig().decimal.format(value) + type.toStringSuffix();
+        return MythicLib.plugin.getMMOConfig().decimal.format(getValue()) + type.toStringSuffix();
     }
 }

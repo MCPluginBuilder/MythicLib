@@ -84,7 +84,7 @@ public class StatModifier extends InstanceModifier {
     public String toString() {
         return "StatModifier{" +
                 "stat='" + stat + '\'' +
-                ", value=" + value +
+                ", value=" + getValue() +
                 ", type=" + type +
                 '}';
     }

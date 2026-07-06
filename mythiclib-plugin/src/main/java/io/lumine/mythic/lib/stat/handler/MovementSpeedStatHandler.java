@@ -1,4 +1,4 @@
-package io.lumine.mythic.lib.api.stat.handler.builtin;
+package io.lumine.mythic.lib.stat.handler;
 
 import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+// TODO nuke this stat if nobody uses it
 public class MovementSpeedStatHandler extends AttributeStatHandler {
     public MovementSpeedStatHandler(@NotNull ConfigurationSection config) {
         super(config, SharedStat.MOVEMENT_SPEED, .1, Material.LEATHER_BOOTS, "Movement speed of an Entity.");

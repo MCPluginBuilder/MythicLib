@@ -9,16 +9,17 @@ public enum ModifierType {
      * Additive multiplier
      * <p>
      * Multiplies stat value by X%. Additive scalars stack up linearly,
-     * which means +100% and +100% stack up to +200%.
+     * which means +100% and +100% stack up to +200%. and not 210.
      */
     RELATIVE,
 
     /**
      * Compound multiplier
      * <p>
-     * Multiplies final stat value by a set %.
+     * Multiplies final value by (1 + X / 100). Compound multipliers
+     * "compound" with each other, they stack up geometrically.
      */
-    ADDITIVE_MULTIPLIER,
+    COMPOUND,
 
     /**
      * Flat/Additive
@@ -31,7 +32,7 @@ public enum ModifierType {
         switch (this) {
             case RELATIVE:
                 return "%";
-            case ADDITIVE_MULTIPLIER:
+            case COMPOUND:
                 return "s";
             case FLAT:
                 return "";
@@ -48,13 +49,12 @@ public enum ModifierType {
 
     private static ModifierType fromChar(char someChar) {
         switch (someChar) {
+            case 'a':
             case '%':
+                return RELATIVE;
             case 'c':
             case 'm':
-                return RELATIVE;
-            case 'a':
-            case 's':
-                return ADDITIVE_MULTIPLIER;
+                return COMPOUND;
             default:
                 return FLAT;
         }
