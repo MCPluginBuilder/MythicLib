@@ -8,12 +8,11 @@ import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 public class StatMap extends PlayerDataMap implements PlayerStatProvider {
     private final MMOPlayerData data;
@@ -51,8 +50,8 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      *
      * @param stat The string key of the stat
      * @return The corresponding StatInstance, which can be manipulated to add
-     *         (temporary?) stat modifiers to a player, remove modifiers or
-     *         calculate stat values in various ways.
+     * (temporary?) stat modifiers to a player, remove modifiers or
+     * calculate stat values in various ways.
      */
     @NotNull
     public StatInstance getInstance(String stat) {
@@ -61,8 +60,8 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
     /**
      * @return The StatInstances that have been manipulated so far since the
-     *         player has logged in. StatInstances are completely flushed when
-     *         the server restarts
+     * player has logged in. StatInstances are completely flushed when
+     * the server restarts
      */
     @NotNull
     public Collection<StatInstance> getInstances() {
@@ -74,14 +73,20 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
         Bukkit.broadcastMessage("StatMap#onSessionOpen");
 
-        // Update caches and force updates
-        for (var handler : MythicLib.plugin.getStats().getHandlers()) {
-            final @Nullable var instance = handler.updateOnLogin() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
-            if (instance == null) continue;
+        // Sometimes handlers are cached before player data are loaded
+        // On reloads for instance. These would result in invalid StatHandlers
+        getInstances().forEach(StatInstance::invalidateReferences);
 
-            instance.invalidateReferences(); // Sometimes handlers are cached before player data are loaded
-            instance.update(); // Update all stats, whatever
-        }
+        // This forcefully updates all attributes and stats
+        bufferUpdates(() -> {
+
+            // Mark all attributes as forcefully updated
+            // There might be stat modifiers required by the MMO plugins
+            // that are applied to the player and must be removed since the
+            // last time the player logged in
+            for (var handler : MythicLib.plugin.getStats().getHandlers())
+                if (handler.updateOnLogin()) getInstance(handler.getStat()).update();
+        });
     }
 
     @Override
@@ -102,24 +107,26 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      * <p>
      * This flag {@link #sessionOpen} also presents stat updates but for a different reason
      * (stat maps are disabled when profile session is not alive).
-     * <p>
-     * Multi-thread safe implementation of updates buffered using
-     * an atomic integer to count the number of simultaneous threads
-     * buffering updates.
      */
-    private final AtomicInteger updatesBuffered = new AtomicInteger(0);
+    private int attributeUpdateBuffer;
 
-    public boolean isBufferingUpdates() {
-        return updatesBuffered.get() > 0 || !sessionOpen;
+    public boolean isGraphReady() {
+        // If session is not open yet, or stat graph has not settled
+        // yet, it's useless to update it just yet
+        return attributeUpdateBuffer == 0 && sessionOpen;
     }
 
     public void bufferUpdates(@NotNull Runnable runnable) {
-        updatesBuffered.incrementAndGet();
+        attributeUpdateBuffer++;
         try {
             runnable.run();
+        } catch (Exception exception) {
+            MythicLib.plugin.getLogger().log(Level.WARNING, "Error during call to #bufferUpdates: " + exception.getMessage());
         } finally {
-            var current = updatesBuffered.decrementAndGet();
-            if (current == 0 && sessionOpen) stats.values().forEach(StatInstance::releaseUpdates);
+
+            // De-buffer attribute updates
+            var current = --attributeUpdateBuffer;
+            if (current == 0) stats.values().forEach(StatInstance::releaseBroadcast);
         }
     }
 
@@ -130,11 +137,11 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
      *                 the 'Skill Damage' due to the offhand weapon, when casting a
      *                 skill with mainhand?
      * @return Some actions require the player stats to be temporarily saved.
-     *         When a player casts a projectile skill, there's a brief delay
-     *         before it hits the target: the stat values taken into account
-     *         correspond to the stat values when the player cast the skill (not
-     *         when it finally hits the target). This cache technique fixes a
-     *         huge game breaking glitch
+     * When a player casts a projectile skill, there's a brief delay
+     * before it hits the target: the stat values taken into account
+     * correspond to the stat values when the player cast the skill (not
+     * when it finally hits the target). This cache technique fixes a
+     * huge game breaking glitch
      */
     @NotNull
     @Override

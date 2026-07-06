@@ -39,6 +39,7 @@ public class StatHandler {
      */
     public StatHandler(@NotNull ConfigurationSection config, @NotNull String stat) {
         this.stat = stat;
+        // #split does not return empty strings, spaces prevent that
         final String[] splitBounds = (" " + config.getString("min-max-values." + this.stat, "=") + " ").split("=");
         Validate.isTrue(splitBounds.length == 2, "Could not find unique = separator symbol");
         final String cleanMin = splitBounds[0].replace(" ", "");
@@ -87,12 +88,12 @@ public class StatHandler {
         return modifierEditor;
     }
 
-    public void delegateTo(@NotNull String stat) {
-        addUpdateListener(ins -> ins.getMap().getInstance(stat).update());
+    public void updateStatGraph(@NotNull StatInstance instance) {
+        for (var update : updates) update.onUpdate(instance);
     }
 
-    public void runUpdates(@NotNull StatInstance instance) {
-        for (var update : updates) update.onUpdate(instance);
+    public void broadcastValueUpdate(@NotNull StatInstance instance) {
+        // Nothing
     }
 
     /**

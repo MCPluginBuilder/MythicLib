@@ -7,7 +7,8 @@ import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
-import io.lumine.mythic.lib.api.stat.handler.MovementSpeedStatHandler;
+import io.lumine.mythic.lib.api.stat.handler.builtin.MovementSpeedStatHandler;
+import io.lumine.mythic.lib.api.stat.handler.builtin.SpeedMalusReductionStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
@@ -50,7 +51,18 @@ public class StatManager extends Module {
         // Register default stats
         final var statsConfig = new YamlFile("stats").getContent();
 
+        // Load user stats
+        // ==================================================================
+        for (String key : collectReferencedStats(statsConfig))
+            try {
+                final String stat = UtilityMethods.enumName(key);
+                handlers.put(stat, new StatHandler(statsConfig, stat));
+            } catch (Exception exception) {
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load stat '" + key + "': " + exception.getMessage());
+            }
+
         // Default stat handlers
+        // ==================================================================
         try {
 
             // 1.14+
@@ -66,8 +78,7 @@ public class StatManager extends Module {
             {
                 final var msStatHandler = new MovementSpeedStatHandler(statsConfig);
                 registerStat(msStatHandler);
-                final var smrStatHandler = new StatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION);
-                smrStatHandler.delegateTo(SharedStat.MOVEMENT_SPEED);
+                final var smrStatHandler = new SpeedMalusReductionStatHandler(statsConfig, msStatHandler);
                 registerStat(smrStatHandler);
             }
 
@@ -106,15 +117,6 @@ public class StatManager extends Module {
             exception.printStackTrace();
         }
 
-        // Load stat handlers
-        for (String key : collectReferencedStats(statsConfig))
-            try {
-                final String stat = UtilityMethods.enumName(key);
-                handlers.putIfAbsent(stat, new StatHandler(statsConfig, stat));
-            } catch (RuntimeException exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load stat handler '" + key + "': " + exception.getMessage());
-            }
-
         statsLoaded = true;
     }
 
@@ -127,7 +129,7 @@ public class StatManager extends Module {
 
     @NotNull
     private Iterable<String> collectReferencedStats(ConfigurationSection config) {
-        final List<String> keys = new ArrayList<>();
+        var keys = new HashSet<String>();
         for (String key : config.getKeys(false))
             keys.addAll(config.getConfigurationSection(key).getKeys(false));
         return keys;
@@ -206,17 +208,17 @@ public class StatManager extends Module {
 
     @Deprecated
     public void runUpdate(StatMap map, String stat) {
-        map.getInstance(stat).update();
+        // TODO map.getInstance(stat).update();
     }
 
     @Deprecated
     public void runUpdates(@NotNull StatMap map) {
-        for (StatInstance ins : map.getInstances()) ins.update();
+        // TODO for (StatInstance ins : map.getInstances()) {
     }
 
     @Deprecated
     public void runUpdate(@NotNull StatInstance instance) {
-        instance.update();
+        // TODO instance.update();
     }
 
     @Deprecated

@@ -48,26 +48,6 @@ public class AttributeStatHandler extends StatHandler {
 
         // Force update on login
         this.updateOnLogin = true;
-
-        addUpdateListener(this::updateAttributeModifierValue);
-    }
-
-    private void updateAttributeModifierValue(@NotNull StatInstance instance) {
-        Validate.isTrue(instance.getStat().equals(stat), "Attribute stat handler of " + this.stat + " got stat " + instance.getStat());
-
-        // Clear previous modifiers from Bukkit attribute instance
-        final var attributeInstance = instance.getMap().getData().getPlayer().getAttribute(attribute);
-        assert attributeInstance != null;
-        removeModifiers(attributeInstance);
-
-        final var mmoFinal = instance.getTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND);
-        final var difference = mmoFinal - this.playerDefaultBase;
-
-        // Only register attribute modifier if absolutely necessary
-        if (Math.abs(difference) > EPSILON) {
-            if (instance.getStat().equals("MAX_HEALTH")) Bukkit.broadcastMessage("add modifier " + instance.getStat() + " " + difference);
-            attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
-        }
     }
 
     @Override
@@ -88,6 +68,25 @@ public class AttributeStatHandler extends StatHandler {
     protected static void removeModifiers(@NotNull AttributeInstance ins) {
         for (AttributeModifier mod : ins.getModifiers())
             if (VersionUtils.matches(mod, ATTRIBUTE_KEY)) ins.removeModifier(mod);
+    }
+
+    @Override
+    public void broadcastValueUpdate(@NotNull StatInstance instance) {
+        Validate.isTrue(instance.getStat().equals(stat), "Attribute stat handler of " + this.stat + " got stat " + instance.getStat());
+
+        // Clear previous modifiers from Bukkit attribute instance
+        final var attributeInstance = instance.getMap().getData().getPlayer().getAttribute(attribute);
+        assert attributeInstance != null;
+        removeModifiers(attributeInstance);
+
+        final var mmoFinal = instance.getTotal(this.playerDefaultBase + this.baseValue, EquipmentSlot.MAIN_HAND);
+        final var difference = mmoFinal - this.playerDefaultBase;
+
+        // Only register attribute modifier if absolutely necessary
+        if (Math.abs(difference) > EPSILON) {
+            if (instance.getStat().equals("MAX_HEALTH")) Bukkit.broadcastMessage("add modifier " + instance.getStat() + " " + difference);
+            attributeInstance.addModifier(VersionUtils.attrMod(ATTRIBUTE_KEY, difference, AttributeModifier.Operation.ADD_NUMBER));
+        }
     }
 
     @NotNull

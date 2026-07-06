@@ -1,6 +1,7 @@
-package io.lumine.mythic.lib.api.stat.handler;
+package io.lumine.mythic.lib.api.stat.handler.builtin;
 
 import io.lumine.mythic.lib.api.stat.SharedStat;
+import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;

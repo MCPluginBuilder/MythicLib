@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -132,6 +131,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Stat Computation
 
+    private @Nullable Double mainHandValueCache, offHandValueCache;
+
     /**
      * TOTAL stat value refers to the value after all MMO modifiers have been applied.
      * It differs from the FINAL stat value which can be further modified by the
@@ -141,9 +142,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the base & default stat values
-     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
-     *         onto the sum of the base, default stat values and flat modifiers. The
-     *         total stat value is computed with action hand set to MAIN_HAND.
+     * as well as the stat modifiers. Relative and scalar stat modifiers apply
+     * onto the sum of the base, default stat values and flat modifiers. The
+     * total stat value is computed with action hand set to MAIN_HAND.
      */
     public double getTotal() {
         return getTotal(getBase(), EquipmentSlot.MAIN_HAND);
@@ -158,8 +159,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
-     *         onto the sum of the base, default stat values and flat modifiers.
+     * as well as the stat modifiers. Relative and scalar stat modifiers apply
+     * onto the sum of the base, default stat values and flat modifiers.
      */
     public double getTotal(@NotNull EquipmentSlot actionHand) {
         return getTotal(getBase(), actionHand);
@@ -174,9 +175,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
-     *         onto the sum of the base, default stat values and flat modifiers. The
-     *         total stat value is computed with action hand set to MAIN_HAND.
+     * as well as the stat modifiers. Relative and scalar stat modifiers apply
+     * onto the sum of the base, default stat values and flat modifiers. The
+     * total stat value is computed with action hand set to MAIN_HAND.
      */
     public double getTotal(double base) {
         return getTotal(base, EquipmentSlot.MAIN_HAND);
@@ -191,14 +192,15 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * Most users should most likely interact with the FINAL stat value.
      *
      * @return The total stat value taking into account the provided base stat value
-     *         as well as the stat modifiers. Relative and scalar stat modifiers apply
-     *         onto the sum of the base, default stat values and flat modifiers.
+     * as well as the stat modifiers. Relative and scalar stat modifiers apply
+     * onto the sum of the base, default stat values and flat modifiers.
      */
     public double getTotal(double base, @NotNull EquipmentSlot actionHand) {
 
-        /////////////////////////
         // Check cache
-        /////////////////////////
+        // Pretty much inexpensive, and soaks pressure of stat value checks
+        // that are much more frequent than stat/item/inventory updates
+        // ========================================
         var cachedValue = actionHand == EquipmentSlot.MAIN_HAND ? this.mainHandValueCache : offHandValueCache;
         if (cachedValue != null) return cachedValue;
 
@@ -254,7 +256,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      * @param modifier The stat modifier being registered
      */
     public void registerModifier(@NotNull StatModifier modifier) {
-        if (this.stat.equals("MAX_HEALTH")) Bukkit.broadcastMessage("StatInstance#registerModifier " + modifier.toString());
+        if (this.stat.equals("MAX_HEALTH"))
+            Bukkit.broadcastMessage("StatInstance#registerModifier " + modifier.toString());
         final @Nullable StatModifier current = modifiers.put(modifier.getUniqueId(), modifier);
         // TODO change "Closeable". add one interface Openable and have code run here instead
         // DO NOT TEST IF MODIFIER IS ALREADY IN THE MAP.
@@ -313,11 +316,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         handler.flush();
     }
 
-    //region Updates, Buffering and Caches
+    //region Stats Updates and Buffering
 
-    private final AtomicBoolean updateRequired = new AtomicBoolean(false);
-
-    private @Nullable Double mainHandValueCache, offHandValueCache;
+    private boolean broadcastPending = false;
 
     /**
      * Forces an update on this stat instance. An important convention
@@ -332,13 +333,25 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         this.mainHandValueCache = null;
         this.offHandValueCache = null;
 
-        if (map.isBufferingUpdates()) updateRequired.set(true);
-        else handler.get().ifPresent(handler -> handler.runUpdates(this));
+        // Propagate changes
+        // TODO buffer stat updates to reduce nb of updates required?
+        // i'm not sure really necessary, check performance
+        handler.get().ifPresent(handler -> handler.updateStatGraph(this));
+
+        // Ask for update
+        if (map.isGraphReady()) tryBroadcastValueUpdate();
+        else broadcastPending = true;
     }
 
-    public void releaseUpdates() {
-        if (updateRequired.getAndSet(false))
-            handler.get().ifPresent(handler -> handler.runUpdates(this));
+    public void releaseBroadcast() {
+        if (broadcastPending) {
+            broadcastPending = false;
+            tryBroadcastValueUpdate();
+        }
+    }
+
+    private void tryBroadcastValueUpdate() {
+        handler.get().ifPresent(handler -> handler.broadcastValueUpdate(this));
     }
 
     //endregion
