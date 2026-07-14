@@ -43,7 +43,9 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,10 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-// TODO same as 26.1.2 spigot
-// on spigot 26.2 on paper servers, cannot access rev number anymore
-// need an explicit version->class mapping
-public class VersionWrapper_26_2_R0 implements VersionWrapper, ModernGameProfileWrapper {
+public class VersionWrapper_26_1_R1 implements VersionWrapper, ModernGameProfileWrapper {
 
     @Override
     public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
