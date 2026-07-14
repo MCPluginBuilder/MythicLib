@@ -30,8 +30,8 @@
         <module>mythiclib-v1_21_r5</module>
         <module>mythiclib-v1_21_r6</module>
         <module>mythiclib-v1_21_r7</module>
-        <module>mythiclib-v26_1_r0</module>
-        <module>mythiclib-v26_2_r0</module>
+        <module>mythiclib-v26_1</module>
+        <module>mythiclib-v26_1_2</module>
         <module>mythiclib-rpg</module>
     </modules>
 

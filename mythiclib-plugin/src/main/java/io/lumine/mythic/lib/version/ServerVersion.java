@@ -1,7 +1,6 @@
 package io.lumine.mythic.lib.version;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.wrapper.VersionWrapper;
 import org.bukkit.Bukkit;
@@ -10,25 +9,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class ServerVersion {
-    private final String craftBukkitVersion;
-    private final int revNumber;
     private final int[] bukkitVersion;
     private final VersionWrapper versionWrapper;
+    private final NMSVersion nmsVersion;
     private final boolean paper;
 
     private static final int MAXIMUM_VERSION_SIZE = 3;
-    private static final String MOST_RECENT_WRAPPER = "VersionWrapper_26_2_R0";
 
-    public ServerVersion(JavaPlugin plugin) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-
-        // TODO not use revision number anymore and properly map each
-        // version to a revision number manually. works on both
-        // paper and Spigot.
+    public ServerVersion(JavaPlugin ignore) {
 
         // Running Paper?
+        // ===================================================================
         boolean isPaper = false;
         try {
             // Any other works, just the shortest I could find.
@@ -41,7 +35,8 @@ public class ServerVersion {
         this.paper = isPaper;
 
         // Version numbers
-        final String[] bukkitSplit = Bukkit.getServer().getBukkitVersion().split("\\-")[0].split("\\."); // ["1", "20", "4"]
+        // ===================================================================
+        final String[] bukkitSplit = Bukkit.getServer().getBukkitVersion().split("-")[0].split("\\."); // ["1", "20", "4"]
         bukkitVersion = new int[Math.min(MAXIMUM_VERSION_SIZE, bukkitSplit.length)];
         for (int i = 0; i < bukkitVersion.length; i++) {
             // 26.2 dev builds of Paper have a weird version syntax containing "build"
@@ -49,18 +44,14 @@ public class ServerVersion {
             bukkitVersion[i] = Integer.parseInt(bukkitSplit[i]);
         }
 
-        // Compute rev number
-        revNumber = findRevisionNumber();
-        craftBukkitVersion = craftBukkitVersion(revNumber); // "v1_20_R4"
-
-        VersionWrapper found;
+        // Try version mapping directly
+        // ===================================================================
         try {
-            found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + craftBukkitVersion.substring(1)).getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException exception) {
-            plugin.getLogger().log(Level.WARNING, "Current Bukkit version (" + craftBukkitVersion + ") is not supported natively, trying latest");
-            found = (VersionWrapper) Class.forName("io.lumine.mythic.lib.version.wrapper." + MOST_RECENT_WRAPPER).getDeclaredConstructor().newInstance();
+            this.nmsVersion = NMSVersion.resolve(this);
+            this.versionWrapper = this.nmsVersion.instantiateWrapper();
+        } catch (Exception exception) {
+            throw new RuntimeException("Error while initializing version wrapper", exception);
         }
-        this.versionWrapper = found;
     }
 
     public void validateMappings() {
@@ -75,40 +66,6 @@ public class ServerVersion {
         } catch (Exception throwable) {
             throw new RuntimeException("Compatibility error", throwable);
         }
-    }
-
-    @NotNull
-    private String craftBukkitVersion(int revNumber) {
-        return "v" + bukkitVersion[0] + "_" + bukkitVersion[1] + "_R" + revNumber;
-    }
-
-    private static final int MAXIMUM_REVISION_NUMBER = 10;
-    private static final String CLASS_NAME_USED = "CraftServer";
-
-    @BackwardsCompatibility(version = "1.20.5")
-    private int findRevisionNumber() {
-
-        // Spigot || Paper <1.20.5
-        try {
-            final Class<?> bukkitServerClass = Bukkit.getServer().getClass();
-            final String rev = bukkitServerClass.getPackage().getName().replace(".", ",").split(",")[3]; // "1_20_R4"
-            return Integer.parseInt(rev.split("_")[2].replaceAll("[^0-9]", ""));
-        } catch (Exception throwable) {
-            // Ignored
-        }
-
-        // Spigot 1.20.5+
-        for (int revNumber = 1; revNumber < MAXIMUM_REVISION_NUMBER; revNumber++)
-            try {
-                final String candidate = craftBukkitVersion(revNumber);
-                Class.forName("org.bukkit.craftbukkit." + candidate + "." + CLASS_NAME_USED);
-                return revNumber;
-            } catch (Exception throwable) {
-                // Ignored
-            }
-
-        // Assume no need for the revision number (Paper 1.20.5+)
-        return 0;
     }
 
     public boolean isPaper() {
@@ -140,15 +97,6 @@ public class ServerVersion {
         return !isAbove(version);
     }
 
-    @NotNull
-    public String getCraftBukkitVersion() {
-        return craftBukkitVersion;
-    }
-
-    public int getRevisionNumber() {
-        return revNumber;
-    }
-
     public int[] getBukkitVersion() {
         return bukkitVersion;
     }
@@ -160,16 +108,13 @@ public class ServerVersion {
 
     @Override
     public String toString() {
-        return "ServerVersion{" +
-                "revision='" + craftBukkitVersion + '\'' +
-                ", revisionNumber=" + revNumber +
-                ", integers=" + Arrays.toString(bukkitVersion) +
-                ", paper=" + paper +
-                '}';
+        var bukkitVersionStr = Arrays.stream(this.bukkitVersion).mapToObj(String::valueOf).collect(Collectors.joining("."));
+        return bukkitVersionStr + " (" + this.nmsVersion.name() + ")";
     }
 
     //region Static methods
 
+    @NotNull
     public static ServerVersion get() {
         return MythicLib.plugin.getVersion();
     }
@@ -179,8 +124,55 @@ public class ServerVersion {
     //region Deprecated
 
     @Deprecated
+    private String craftBukkitVersion(int revNumber) {
+        return "v" + bukkitVersion[0] + "_" + bukkitVersion[1] + "_R" + revNumber;
+    }
+
+    @Deprecated
+    private static final int MAXIMUM_REVISION_NUMBER = 10;
+    @Deprecated
+    private static final String CLASS_NAME_USED = "CraftServer";
+
+    @Deprecated
+    private int findRevisionNumber() {
+        //@BackwardsCompatibility(version = "1.20.5")
+
+        // Spigot || Paper <1.20.5
+        try {
+            final Class<?> bukkitServerClass = Bukkit.getServer().getClass();
+            final String rev = bukkitServerClass.getPackage().getName().replace(".", ",").split(",")[3]; // "1_20_R4"
+            return Integer.parseInt(rev.split("_")[2].replaceAll("[^0-9]", ""));
+        } catch (Exception throwable) {
+            // Ignored
+        }
+
+        // Spigot 1.20.5+
+        for (int revNumber = 1; revNumber < MAXIMUM_REVISION_NUMBER; revNumber++)
+            try {
+                final String candidate = craftBukkitVersion(revNumber);
+                Class.forName("org.bukkit.craftbukkit." + candidate + "." + CLASS_NAME_USED);
+                return revNumber;
+            } catch (Exception throwable) {
+                // Ignored
+            }
+
+        // Assume no need for the revision number (Paper 1.20.5+)
+        return 0;
+    }
+
+    @Deprecated
+    public int getRevisionNumber() {
+        return findRevisionNumber();
+    }
+
+    @Deprecated
     public String getRevision() {
         return getCraftBukkitVersion();
+    }
+
+    @Deprecated
+    public String getCraftBukkitVersion() {
+        return craftBukkitVersion(getRevisionNumber());
     }
 
     @Deprecated
@@ -223,4 +215,89 @@ public class ServerVersion {
     }
 
     //endregion
+
+    /**
+     * Maps Bukkit versions to their respective NMS version.
+     * <p>
+     * 26.1.2+ Spigot and Paper builds have issues with their
+     * NMS version number, so the easiest now is to hardcode
+     * all the required mappings.
+     */
+    private enum NMSVersion {
+
+        v26_1_2(26, 1, 2),
+        v26_1(26, 1),
+
+        // 1.21
+        // Source: https://www.spigotmc.org/wiki/spigot-nms-and-minecraft-versions-1-21/
+        v1_21_R7(1, 21, 11),
+        v1_21_R6(1, 21, 9),
+        v1_21_R5(1, 21, 6),
+        v1_21_R4(1, 21, 5),
+        v1_21_R3(1, 21, 4),
+        v1_21_R2(1, 21, 2),
+        v1_21_R1(1, 21),
+
+        // 1.16-1.20
+        // Source: https://www.spigotmc.org/wiki/spigot-nms-and-minecraft-versions-1-16/
+        v1_20_R4(1, 20, 5),
+        v1_20_R3(1, 20, 3),
+        v1_20_R2(1, 20, 2),
+        v1_20_R1(1, 20),
+
+        v1_19_R3(1, 19, 4),
+        v1_19_R2(1, 19, 3),
+        v1_19_R1(1, 19),
+
+        v1_18_R2(1, 18, 2),
+        v1_18_R1(1, 18),
+
+        v1_17_R1(1, 17),
+
+        v1_16_R3(1, 16, 4),
+        v1_16_R2(1, 16, 2),
+        v1_16_R1(1, 16),
+
+        // 1.15-1.14
+        // Source: https://www.spigotmc.org/wiki/spigot-nms-and-minecraft-versions-1-10-1-15/
+        v1_15_R1(1, 15),
+
+        v1_14_R1(1, 14),
+
+        ;
+
+        final String suffix;
+        final int[] versionNumbers;
+
+        /**
+         * @param versionNumbers Earliest version that uses this NMS mapping
+         */
+        NMSVersion(int... versionNumbers) {
+            this.suffix = name().substring(1);
+            this.versionNumbers = versionNumbers;
+        }
+
+        @NotNull
+        public static ServerVersion.NMSVersion getLatest() {
+            return NMSVersion.values()[0];
+        }
+
+        public VersionWrapper instantiateWrapper() throws ReflectiveOperationException {
+            var className = "io.lumine.mythic.lib.version.wrapper.VersionWrapper_" + this.suffix;
+            var obj = Class.forName(className).getDeclaredConstructor().newInstance();
+            return (VersionWrapper) obj;
+        }
+
+        @NotNull
+        public static ServerVersion.NMSVersion resolve(ServerVersion serverVersion) {
+
+            // Try every version
+            for (var candidate : NMSVersion.values())
+                if (serverVersion.isAbove(candidate.versionNumbers))
+                    return candidate;
+
+            // This should never happen, latest version should always match
+            throw new IllegalArgumentException("Internal error, no matching version");
+        }
+    }
 }

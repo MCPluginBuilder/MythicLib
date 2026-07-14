@@ -13,7 +13,7 @@ import io.lumine.mythic.lib.version.impl.ModernInventoryViewImpl;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.advancements.criterion.BlockPredicate;
+import net.minecraft.advancements.predicates.BlockPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -24,7 +24,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -44,7 +43,9 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class VersionWrapper_26_1_R0 implements VersionWrapper, ModernGameProfileWrapper {
+public class VersionWrapper_26_1_2 implements VersionWrapper, ModernGameProfileWrapper {
 
     @Override
     public boolean damage(LivingEntity targetBukkit, double amount, Entity source) {
@@ -271,7 +272,7 @@ public class VersionWrapper_26_1_R0 implements VersionWrapper, ModernGameProfile
         @Override
         public ItemStack toItem() {
             nms.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
-            return CraftItemStack.asBukkitCopy(nms);
+            return CraftItemStack.asCraftMirror(nms);
         }
 
         @Override
