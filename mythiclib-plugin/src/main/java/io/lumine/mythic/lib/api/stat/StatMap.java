@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.player.PlayerMetadata;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -70,8 +69,6 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
 
     @Override
     public void onSessionOpen() {
-
-        Bukkit.broadcastMessage("StatMap#onSessionOpen");
 
         // Sometimes handlers are cached before player data are loaded
         // On reloads for instance. These would result in invalid StatHandlers
