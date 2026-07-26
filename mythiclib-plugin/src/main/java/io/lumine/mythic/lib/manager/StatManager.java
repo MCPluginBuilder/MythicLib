@@ -151,7 +151,7 @@ public class StatManager extends Module {
      * whenever the value of the player stat changes (due to a MythicLib
      * stat modifier being added/being removed/expiring).
      *
-     * @param handler Behaviour of given stat
+     * @param handler Behavior of given stat
      */
     public void registerStat(@NotNull StatHandler handler, String... aliases) {
         Validate.notNull(handler, "StatHandler cannot be null");

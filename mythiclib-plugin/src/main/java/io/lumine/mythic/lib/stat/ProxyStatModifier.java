@@ -23,7 +23,7 @@ public class ProxyStatModifier extends StatModifier {
                              @NotNull EquipmentSlot actionHand,
                              @NotNull ModifierType type,
                              double coefficient) {
-        super(generateUniqueId(parentInstance, actionHand), MOD_KEY, stat, 0, type, actionHand, ModifierSource.MELEE_WEAPON);
+        super(generateUniqueId(parentInstance.getStat(), actionHand), MOD_KEY, stat, 0, type, actionHand, ModifierSource.MELEE_WEAPON);
 
         this.actionHand = actionHand;
         this.parentInstance = parentInstance;
@@ -45,8 +45,8 @@ public class ProxyStatModifier extends StatModifier {
         throw new RuntimeException("Not supported");
     }
 
-    private static UUID generateUniqueId(StatInstance parentInstance, EquipmentSlot actionHand) {
-        var asString = parentInstance.getStat() + actionHand.name();
+    private static UUID generateUniqueId(String sourceStat, EquipmentSlot actionHand) {
+        var asString = sourceStat + actionHand.name();
         return UUID.nameUUIDFromBytes(asString.getBytes());
     }
 }

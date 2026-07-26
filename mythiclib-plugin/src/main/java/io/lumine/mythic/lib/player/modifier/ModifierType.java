@@ -42,8 +42,9 @@ public enum ModifierType {
     }
 
     public static Pair<ModifierType, Double> pairFromString(@NotNull String input) {
-        ModifierType type = fromChar(input.toCharArray()[input.length() - 1]);
-        double value = Double.parseDouble(type != ModifierType.FLAT ? input.substring(0, input.length() - 1) : input);
+        if (input.isEmpty()) throw new IllegalArgumentException("Empty string");
+        var type = fromChar(input.toCharArray()[input.length() - 1]);
+        var value = Double.parseDouble(type != ModifierType.FLAT ? input.substring(0, input.length() - 1) : input);
         return Pair.of(type, value);
     }
 

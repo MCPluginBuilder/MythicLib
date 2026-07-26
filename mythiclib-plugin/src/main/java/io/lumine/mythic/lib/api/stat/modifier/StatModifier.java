@@ -82,11 +82,12 @@ public class StatModifier extends InstanceModifier {
 
     @Override
     public String toString() {
-        return "StatModifier{" +
+        return this.getClass().getSimpleName() + "{" +
                 "stat='" + stat + '\'' +
                 ", value=" + getValue() +
+                ", key=" + getKey() +
                 ", type=" + type +
-                '}';
+                '}' ;
     }
 
     @NotNull
