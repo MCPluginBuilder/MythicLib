@@ -30,8 +30,11 @@ public class WorldGuardFlags implements FlagPlugin {
         final FlagRegistry registry = worldguard.getFlagRegistry();
         for (CustomFlag customFlag : CustomFlag.values())
             try {
-                final StateFlag flag = new StateFlag(customFlag.getPath(), customFlag.getDefault());
-                registry.register(flag);
+            	StateFlag flag = (StateFlag) registry.get(customFlag.getPath());
+            	if (flag == null) {
+                    flag = new StateFlag(customFlag.getPath(), customFlag.getDefault());
+                    registry.register(flag);
+            	}
                 flags.put(customFlag, flag);
             } catch (Exception exception) {
                 MythicLib.plugin.getLogger().log(Level.WARNING, "Could not register flag '" + customFlag.getPath() + "':");
