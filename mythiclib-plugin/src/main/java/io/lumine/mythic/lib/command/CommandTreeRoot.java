@@ -90,6 +90,9 @@ public abstract class CommandTreeRoot extends CommandTreeNode implements Command
                     if (!(exception instanceof PermissionException))
                         explorer.fail(exception.getMessage());
                     if (exception instanceof MissingArgumentException) sendCommandUsage(explorer, targetNode);
+                    // TODO properly specify exceptions triggered by commands.
+                    // if we comment this out, it's harder to debug this when an issue happens on prod
+                    // if we dont comment it out, all handled plugin issues throw out issues to console
                     //exception.printStackTrace();
                     return false;
                 }

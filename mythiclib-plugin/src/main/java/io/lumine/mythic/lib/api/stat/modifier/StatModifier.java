@@ -80,6 +80,16 @@ public class StatModifier extends InstanceModifier {
         this.stat = object.getString("stat");
     }
 
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "stat='" + stat + '\'' +
+                ", value=" + getValue() +
+                ", key=" + getKey() +
+                ", type=" + type +
+                '}' ;
+    }
+
     @NotNull
     public String getStat() {
         return stat;

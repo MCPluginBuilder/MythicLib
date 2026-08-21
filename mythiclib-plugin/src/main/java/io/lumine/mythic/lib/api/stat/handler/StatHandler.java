@@ -3,6 +3,8 @@ package io.lumine.mythic.lib.api.stat.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
+import io.lumine.mythic.lib.stat.ProxyStatModifier;
+import io.lumine.mythic.lib.stat.StatProxy;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +26,8 @@ public class StatHandler {
     protected final DecimalFormat decimalFormat;
     protected final String stat;
 
+    private final List<StatProxy> proxies = new ArrayList<>();
+
     private final List<StatUpdateListener> updates = new ArrayList<>();
     @Nullable
     private ModifierEditor modifierEditor;
@@ -39,6 +43,7 @@ public class StatHandler {
      */
     public StatHandler(@NotNull ConfigurationSection config, @NotNull String stat) {
         this.stat = stat;
+        // #split does not return empty strings, spaces prevent that
         final String[] splitBounds = (" " + config.getString("min-max-values." + this.stat, "=") + " ").split("=");
         Validate.isTrue(splitBounds.length == 2, "Could not find unique = separator symbol");
         final String cleanMin = splitBounds[0].replace(" ", "");
@@ -87,13 +92,14 @@ public class StatHandler {
         return modifierEditor;
     }
 
-    public void delegateTo(@NotNull String stat) {
-        addUpdateListener(ins -> ins.getMap().getInstance(stat).update());
+    public List<StatProxy> getChildren() {
+        return proxies;
     }
 
     public void runUpdates(@NotNull StatInstance instance) {
         for (var update : updates) update.onUpdate(instance);
     }
+
 
     /**
      * This is an import class for vanilla attribute based statistics like Max Health.

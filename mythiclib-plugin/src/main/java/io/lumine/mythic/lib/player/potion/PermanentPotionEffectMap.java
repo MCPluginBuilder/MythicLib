@@ -27,7 +27,7 @@ public class PermanentPotionEffectMap extends ModifierMap<PermanentPotionEffect>
     @Override
     public PermanentPotionEffect removeModifier(UUID uniqueId) {
         final @Nullable PermanentPotionEffect removed = super.removeModifier(uniqueId);
-        resolvePermanentEffects();
+        if (removed != null) resolvePermanentEffects();
         return removed;
     }
 
@@ -36,13 +36,13 @@ public class PermanentPotionEffectMap extends ModifierMap<PermanentPotionEffect>
         bukkitEffectCache.forEach(effect -> playerData.getPlayer().addPotionEffect(effect));
     }
 
-    // TODO make it not reset everything everytime
-    // TODO there's probably an algorithmically better solution
     private void resolvePermanentEffects() {
+        // TODO make it not reset everything everytime
+        // TODO there's probably an algorithmically better solution
 
         // Resolve highest levels
-        Map<PotionEffectType, Integer> highestLevels = new HashMap<>();
-        for (PermanentPotionEffect entry : this.modifiers.values())
+        var highestLevels = new HashMap<PotionEffectType, Integer>();
+        for (var entry : this.modifiers.values())
             highestLevels.merge(entry.getEffect(), entry.getAmplifier(), Integer::max);
 
         // Cache Bukkit potion effects

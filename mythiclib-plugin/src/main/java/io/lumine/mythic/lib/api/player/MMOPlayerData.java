@@ -54,7 +54,7 @@ public class MMOPlayerData {
     private final VariableList variableList = new VariableList(VariableScope.PLAYER);
 
     /**
-     * @param lookup   Is this player data beign used for database lookup?
+     * @param lookup   Is this player data being used for database lookup?
      *                 This determines if is_saved should be switched back to 0 when data has been loaded
      *                 and whether MythicLib should try to use the profile UUID for data lookup.
      * @param uniqueId Player's unique ID, or UUID to lookup

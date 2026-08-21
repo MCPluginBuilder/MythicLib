@@ -7,7 +7,6 @@ import io.lumine.mythic.lib.api.stat.provider.PlayerStatProvider;
 import io.lumine.mythic.lib.player.PlayerDataMap;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -71,14 +70,20 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
     @Override
     public void onSessionOpen() {
 
-        // Update caches and force updates
-        for (var handler : MythicLib.plugin.getStats().getHandlers()) {
-            final @Nullable var instance = handler.updateOnLogin() ? getInstance(handler.getStat()) : stats.get(handler.getStat());
-            if (instance == null) continue;
+        // Sometimes handlers are cached before player data are loaded
+        // On reloads for instance. These would result in invalid StatHandlers
+        getInstances().forEach(StatInstance::invalidateReferences);
 
-            instance.invalidateReferences(); // Sometimes handlers are cached before player data are loaded
-            instance.update(); // Update all stats, whatever
-        }
+        // This forcefully updates all attributes and stats
+        bufferUpdates(() -> {
+
+            // Mark all attributes as forcefully updated
+            // There might be stat modifiers required by the MMO plugins
+            // that are applied to the player and must be removed since the
+            // last time the player logged in
+            for (var handler : MythicLib.plugin.getStats().getHandlers())
+                if (handler.updateOnLogin()) getInstance(handler.getStat()).update();
+        });
     }
 
     @Override
@@ -116,7 +121,7 @@ public class StatMap extends PlayerDataMap implements PlayerStatProvider {
             runnable.run();
         } finally {
             var current = updatesBuffered.decrementAndGet();
-            if (current == 0 && sessionOpen) stats.values().forEach(StatInstance::releaseUpdates);
+            if (current == 0 && sessionOpen) stats.values().forEach(StatInstance::releaseUpdate);
         }
     }
 

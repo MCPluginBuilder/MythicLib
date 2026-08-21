@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DecimalFormat;
 import java.util.Collections;
 
+// TODO relocate to package hologram/ or damage/indicator/
 public class IndicatorConfig {
     private final String format;
     private final DecimalFormat decimalFormat;

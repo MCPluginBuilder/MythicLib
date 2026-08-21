@@ -131,6 +131,8 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
 
     //region Stat Computation
 
+    private @Nullable Double mainHandValueCache, offHandValueCache;
+
     /**
      * TOTAL stat value refers to the value after all MMO modifiers have been applied.
      * It differs from the FINAL stat value which can be further modified by the
@@ -195,9 +197,10 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
      */
     public double getTotal(double base, @NotNull EquipmentSlot actionHand) {
 
-        /////////////////////////
         // Check cache
-        /////////////////////////
+        // Pretty much inexpensive, and soaks pressure of stat value checks
+        // that are much more frequent than stat/item/inventory updates
+        // ========================================
         var cachedValue = actionHand == EquipmentSlot.MAIN_HAND ? this.mainHandValueCache : offHandValueCache;
         if (cachedValue != null) return cachedValue;
 
@@ -229,7 +232,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
                     addScalar += mod.getValue() / 100;
                     continue;
 
-                case ADDITIVE_MULTIPLIER:
+                case COMPOUND:
                     // Multiplicative/Compound scalars
                     // Bad naming
                     multScalar *= 1 + (mod.getValue() / 100);
@@ -311,11 +314,9 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         handler.flush();
     }
 
-    //region Updates, Buffering and Caches
+    //region Stats Updates and Buffering
 
-    private final AtomicBoolean updateRequired = new AtomicBoolean(false);
-
-    private @Nullable Double mainHandValueCache, offHandValueCache;
+    private final AtomicBoolean updatePending = new AtomicBoolean(false);
 
     /**
      * Forces an update on this stat instance. An important convention
@@ -330,13 +331,24 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
         this.mainHandValueCache = null;
         this.offHandValueCache = null;
 
-        if (map.isBufferingUpdates()) updateRequired.set(true);
-        else handler.get().ifPresent(handler -> handler.runUpdates(this));
+        // Propagate changes
+        // TODO on server load/login/logout, clear proxies
+        handler.get().ifPresent(handler -> this.map.bufferUpdates(() -> handler.getChildren().forEach(proxy -> {
+            var targetInstance = this.map.getInstance(proxy.getTargetStat());
+            targetInstance.registerModifier(proxy.newModifier(this, EquipmentSlot.MAIN_HAND));
+            targetInstance.registerModifier(proxy.newModifier(this, EquipmentSlot.OFF_HAND));
+        })));
+
+        if (map.isBufferingUpdates()) updatePending.set(true);
+        else broadcastUpdate();
     }
 
-    public void releaseUpdates() {
-        if (updateRequired.getAndSet(false))
-            handler.get().ifPresent(handler -> handler.runUpdates(this));
+    void releaseUpdate() {
+        if (updatePending.getAndSet(false)) broadcastUpdate();
+    }
+
+    private void broadcastUpdate() {
+        handler.get().ifPresent(handler -> handler.runUpdates(this));
     }
 
     //endregion
@@ -382,7 +394,7 @@ public class StatInstance extends ModifiedInstance<StatModifier> {
                     addScalar += modification.apply(mod).getValue() / 100;
                     continue;
 
-                case ADDITIVE_MULTIPLIER:
+                case COMPOUND:
                     // Multiplicative/Compound scalars
                     // Bad naming
                     multScalar *= 1 + (modification.apply(mod).getValue() / 100);

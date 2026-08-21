@@ -81,3 +81,18 @@ base-stat-value:
   BLUNT_RATING: 33
 
   # Add as many as you want...
+
+proxies:
+  MAX_HEALTH_PERCENT:
+    # One unit in MAX_HEALTH_PERCENT increases
+    # MAX_HEALTH by 1%, linearly
+    MAX_HEALTH:
+      coef: 1
+      type: PERCENT
+
+  MAX_HEALTH_SCALAR:
+    # One unit in MAX_HEALTH_SCALAR increases
+    # MAX_HEALTH by 1%, geometrically
+    MAX_HEALTH:
+      coef: 1
+      type: SCALAR

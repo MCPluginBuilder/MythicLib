@@ -7,11 +7,11 @@ import io.lumine.mythic.lib.api.stat.SharedStat;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.handler.AttributeStatHandler;
-import io.lumine.mythic.lib.api.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.module.Module;
 import io.lumine.mythic.lib.module.ModuleInfo;
+import io.lumine.mythic.lib.stat.handler.MovementSpeedStatHandler;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -50,7 +50,18 @@ public class StatManager extends Module {
         // Register default stats
         final var statsConfig = new YamlFile("stats").getContent();
 
+        // Load user stats
+        // ==================================================================
+        for (String key : collectReferencedStats(statsConfig))
+            try {
+                final String stat = UtilityMethods.enumName(key);
+                handlers.put(stat, new StatHandler(statsConfig, stat));
+            } catch (Exception exception) {
+                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load stat '" + key + "': " + exception.getMessage());
+            }
+
         // Default stat handlers
+        // ==================================================================
         try {
 
             // 1.14+
@@ -67,7 +78,7 @@ public class StatManager extends Module {
                 final var msStatHandler = new MovementSpeedStatHandler(statsConfig);
                 registerStat(msStatHandler);
                 final var smrStatHandler = new StatHandler(statsConfig, SharedStat.SPEED_MALUS_REDUCTION);
-                smrStatHandler.delegateTo(SharedStat.MOVEMENT_SPEED);
+                smrStatHandler.addUpdateListener(ins -> ins.getMap().getInstance(SharedStat.MOVEMENT_SPEED).update());
                 registerStat(smrStatHandler);
             }
 
@@ -106,15 +117,6 @@ public class StatManager extends Module {
             exception.printStackTrace();
         }
 
-        // Load stat handlers
-        for (String key : collectReferencedStats(statsConfig))
-            try {
-                final String stat = UtilityMethods.enumName(key);
-                handlers.putIfAbsent(stat, new StatHandler(statsConfig, stat));
-            } catch (RuntimeException exception) {
-                MythicLib.plugin.getLogger().log(Level.WARNING, "Could not load stat handler '" + key + "': " + exception.getMessage());
-            }
-
         statsLoaded = true;
     }
 
@@ -127,7 +129,7 @@ public class StatManager extends Module {
 
     @NotNull
     private Iterable<String> collectReferencedStats(ConfigurationSection config) {
-        final List<String> keys = new ArrayList<>();
+        var keys = new HashSet<String>();
         for (String key : config.getKeys(false))
             keys.addAll(config.getConfigurationSection(key).getKeys(false));
         return keys;
@@ -149,7 +151,7 @@ public class StatManager extends Module {
      * whenever the value of the player stat changes (due to a MythicLib
      * stat modifier being added/being removed/expiring).
      *
-     * @param handler Behaviour of given stat
+     * @param handler Behavior of given stat
      */
     public void registerStat(@NotNull StatHandler handler, String... aliases) {
         Validate.notNull(handler, "StatHandler cannot be null");
@@ -206,17 +208,18 @@ public class StatManager extends Module {
 
     @Deprecated
     public void runUpdate(StatMap map, String stat) {
-        map.getInstance(stat).update();
+        this.getHandler(stat).ifPresent(handler -> handler.runUpdates(map.getInstance(stat)));
     }
 
     @Deprecated
     public void runUpdates(@NotNull StatMap map) {
-        for (StatInstance ins : map.getInstances()) ins.update();
+        map.bufferUpdates(() -> map.getInstances().forEach(this::runUpdate));
+
     }
 
     @Deprecated
     public void runUpdate(@NotNull StatInstance instance) {
-        instance.update();
+        getHandler(instance.getStat()).ifPresent(handler -> handler.runUpdates(instance));
     }
 
     @Deprecated
