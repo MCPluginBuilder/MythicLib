@@ -1,0 +1,61 @@
+name: Mirror GitLab Repo
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出当前 GitHub 仓库（包含工作流文件）
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      # 2. 备份 .github 目录
+      - name: Backup .github directory
+        run: |
+          if [ -d .github ]; then
+            cp -r .github /tmp/backup-github
+          fi
+
+      # 3. 拉取 GitLab 仓库内容，强制覆盖
+      - name: Fetch and reset from GitLab
+        env:
+          GITLAB_REPO: https://gitlab.com/phoenix-dvpmt/mythiclib.git
+          # 如果是私有仓库，使用带 token 的地址：
+          # GITLAB_REPO: https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/phoenix-dvpmt/mmocore.git
+        run: |
+          git remote add gitlab "$GITLAB_REPO"
+          git fetch gitlab
+
+          # 获取 GitLab 默认分支名（通常是 main 或 master）
+          DEFAULT_BRANCH=$(git remote show gitlab | sed -n '/HEAD branch/s/.*: //p')
+          echo "GitLab default branch: $DEFAULT_BRANCH"
+
+          # 将当前分支硬重置为 GitLab 默认分支
+          git reset --hard "gitlab/$DEFAULT_BRANCH"
+
+      # 4. 恢复 .github 目录
+      - name: Restore .github directory
+        run: |
+          if [ -d /tmp/backup-github ]; then
+            cp -r /tmp/backup-github .github
+          fi
+
+      # 5. 提交恢复的文件（如果有变化）并推回 GitHub
+      - name: Commit and push restored .github
+        run: |
+          git add .github
+          if git diff --cached --quiet; then
+            echo "No changes to .github directory."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Restore .github directory after mirror sync"
+            git push origin HEAD --force
+          fi
